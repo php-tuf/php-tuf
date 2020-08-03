@@ -16,13 +16,13 @@
 
 1. Start a `fixtures` directory:
 
-    mkdir fixtures
+       mkdir fixtures
 
 1. Initialize the repository and add/sign a target:
 
-    repo.py --path=fixtures/ --init --consistent  # Defaults to Ed25519
-    echo "Test File" > testtarget.txt
-    repo.py --path=fixtures/ --add testtarget.txt
+       repo.py --path=fixtures/ --init --consistent  # Defaults to Ed25519
+       echo "Test File" > testtarget.txt
+       repo.py --path=fixtures/ --add testtarget.txt
 
 ## Resources
 
