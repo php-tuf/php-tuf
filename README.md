@@ -24,6 +24,18 @@
        echo "Test File" > testtarget.txt
        repo.py --path=fixtures/ --add testtarget.txt
 
+## Using Test Fixtures
+
+1. From `fixtures/tufrepo`:
+
+       python3 -m http.server 8001
+
+1. From `fixtures/tufclient`
+
+       mkdir -p tuftargets
+       curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
+       client.py --repo http://localhost:8001 testtarget.txt
+
 ## Resources
 
 * Python TUF
