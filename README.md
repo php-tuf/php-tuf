@@ -30,7 +30,7 @@
 
        python3 -m http.server 8001
 
-1. From `fixtures/tufclient`
+1. From `fixtures/tufclient`:
 
        mkdir -p tuftargets
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
