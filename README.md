@@ -43,3 +43,4 @@
   * [CLI](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
   * [Python API Readme](https://github.com/theupdateframework/tuf/blob/develop/tuf/client/README.md)
 * [TUF Specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md)
+* [PIP + TUF Integration](https://github.com/theupdateframework/pep-on-pypi-with-tuf)
