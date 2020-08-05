@@ -39,6 +39,7 @@ class WebserverRunner
       $attempts++;
     }
     if ($attempts >= $maxAttempts) {
+      $this->tearDownAfterClass();
       throw new \RuntimeException("Test webserver could not be contacted.");
     }
   }
