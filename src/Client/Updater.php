@@ -1,12 +1,23 @@
 <?php
 
-
 namespace Tuf\Client;
 
-
+/**
+ * Class Updater
+ *
+ * @package Tuf\Client
+ */
 class Updater
 {
-  public function sayHello() {
-    return 'hello';
-  }
+
+  /**
+   * Return salutation.
+   *
+   * @return string
+   *   The salutation.
+   */
+    public function sayHello()
+    {
+        return 'hello';
+    }
 }

@@ -18,7 +18,8 @@
         }
     },
     "scripts": {
-        "code-sniff": "phpcs ./src ./tests",
+        "phpcs": "phpcs --standard=PSR2 ./src ./tests",
+        "phpcbf": "phpcbf --standard=PSR2 ./src ./tests",
         "test": "phpunit ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
     }

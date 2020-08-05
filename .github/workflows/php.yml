@@ -42,8 +42,11 @@ jobs:
       - name: Install dependencies
         run: 'composer install ${{ env.COMPOSER_FLAGS }}'
 
+      - name: PHP linting
+        run: composer lint
+
       - name: Run PHPCS
-        run: composer code-sniff
+        run: composer phpcs
 
       - name: Run test suite
         run: composer test
