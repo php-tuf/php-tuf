@@ -1,0 +1,52 @@
+name: PHP Composer
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, macos-latest]
+        php-versions: ['7.4', '7.3', '7.2', '7.1', '7.0', '5.6', '5.5', '5.4', '5.3']
+    name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Composer v2
+        run: composer self-update --snapshot
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Install dependencies
+        run: 'composer install ${{ env.COMPOSER_FLAGS }}'
+
+      - name: PHP linting
+        run: composer lint
+
+      - name: Run PHPCS
+        run: composer phpcs
+
+      - name: Run test suite
+        run: composer test

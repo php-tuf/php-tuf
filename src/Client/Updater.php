@@ -3,7 +3,11 @@
 
 namespace Tuf\Client;
 
-
+/**
+ * Class Updater
+ *
+ * @package Tuf\Client
+ */
 class Updater
 {
 
@@ -62,13 +66,13 @@ class Updater
     }
     $expires = $signed['expires'];
     $fake_now = '2020-08-04T02:58:56Z';
-    $expire_date = \DateTime::createFromFormat($fake_now);
-    $now_date = \DateTime::createFromFormat($expires);
+    $expire_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fake_now);
+    $now_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
     if ($now_date > $expire_date) {
       throw new \Exception("Root has expired");
     }
 
-    $this->getRepoFile("$version")
+    $this->getRepoFile("$version");
 
 
 
@@ -87,4 +91,5 @@ class Updater
     }
 
   }
+
 }
