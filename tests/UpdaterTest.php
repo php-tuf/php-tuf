@@ -3,6 +3,7 @@
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Tests\Helpers\WebserverRunner;
 
 class UpdaterTest extends TestCase {
 

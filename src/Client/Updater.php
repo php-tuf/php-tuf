@@ -49,11 +49,42 @@ class Updater
    *   Returns true if the target validates.
    */
   public function validateTarget($target_repo_path, $target_stream) {
-    $root_data = json_decode(fopen(__DIR__ . '/../../fixtures/tufclient/tufrepo/metadata/current/root.json'));
-    $version = (int) $root_data['signed']['version'];
+    $root_data = json_decode($this->getRepoFile('root.json'), TRUE);
+    $signed = $root_data['signed'];
+    $version = (int) $signed['version'];
     $next_version = $version + 1;
+    $next_root_contents = $this->getRepoFile("$next_version.root.json");
+    if ($next_root_contents) {
+      // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
+      //  Not production ready🙀.
+      throw new \Exception("Root rotation not implemented.");
+
+    }
+    $expires = $signed['expires'];
+    $fake_now = '2020-08-04T02:58:56Z';
+    $expire_date = \DateTime::createFromFormat($fake_now);
+    $now_date = \DateTime::createFromFormat($expires);
+    if ($now_date > $expire_date) {
+      throw new \Exception("Root has expired");
+    }
+
+    $this->getRepoFile("$version")
+
+
+
+
 
 
     return TRUE;
+  }
+
+  private function getRepoFile($string) {
+    try {
+      return file_get_contents(__DIR__ .  "/../../fixtures/tufclient/tufrepo/metadata/current/$string");
+    }
+    catch (\Exception $exception) {
+      return FALSE;
+    }
+
   }
 }
