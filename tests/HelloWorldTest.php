@@ -11,7 +11,6 @@ class HelloWorldTest extends TestCase
 
   public static function setUpBeforeClass() : void
   {
-    $x = new \Tuf\Tests\TestClass();
     self::$webserver = new WebserverRunner();
     self::$webserver->setUpBeforeClass("fixtures/tufrepo", 8001);
   }
