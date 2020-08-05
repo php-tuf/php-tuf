@@ -1,5 +1,12 @@
 # PHP-TUF
 
+## Running the tests
+1. Ensure you have all required dependencies by running `composer install`.
+2. Run `composer test` at the project's root.
+
+## Code Style
+Run `composer code-sniff` to check for code style compliance.
+
 ## Environment Setup for Python TUF CLI
 
 1. Install Python 3.8+ and PIP 19+ (not tested on earlier but may work).

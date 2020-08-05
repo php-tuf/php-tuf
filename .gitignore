@@ -1,2 +1,4 @@
 fixtures/tufkeystore
 venv/
+
+/vendor/
