@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Client;
 
 
@@ -51,8 +50,13 @@ class Updater
   public function validateTarget($target_repo_path, $target_stream) {
     $root_data = json_decode($this->getRepoFile('root.json'), TRUE);
     $signed = $root_data['signed'];
+    
+    // SPEC: 1.1.
     $version = (int) $signed['version'];
+
+    // SPEC: 1.2.
     $next_version = $version + 1;
+    // @todo According to the spec, this step should have a maximum download size.
     $next_root_contents = $this->getRepoFile("$next_version.root.json");
     if ($next_root_contents) {
       // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
@@ -60,19 +64,22 @@ class Updater
       throw new \Exception("Root rotation not implemented.");
 
     }
+
+    // SPEC: 1.8.    
     $expires = $signed['expires'];
     $fake_now = '2020-08-04T02:58:56Z';
     $expire_date = \DateTime::createFromFormat($fake_now);
     $now_date = \DateTime::createFromFormat($expires);
     if ($now_date > $expire_date) {
-      throw new \Exception("Root has expired");
+      throw new \Exception("Root has expired. Potential freeze attack!");
+      // @todo "On the next update cycle, begin at step 0 and version N of the
+      //   root metadata file."
     }
 
-    $this->getRepoFile("$version")
-
-
-
-
+    // @todo Implement spec 1.9. Does this step rely on root rotation?
+    
+    // SPEC: 1.10. Will be used in spec step 4.3.
+    $consistent = $root_data['consistent'];
 
 
     return TRUE;
@@ -80,6 +87,7 @@ class Updater
 
   private function getRepoFile($string) {
     try {
+      // @todo Ensure the file does not exceed a certain size to prevent DOS attacks.
       return file_get_contents(__DIR__ .  "/../../fixtures/tufclient/tufrepo/metadata/current/$string");
     }
     catch (\Exception $exception) {
