@@ -56,20 +56,20 @@ class Updater
     $root_data = json_decode($this->getRepoFile('root.json'), TRUE);
     $signed = $root_data['signed'];
     
-    // SPEC: 1.1.
+    // SPEC: 5.1.1.
     $version = (int) $signed['version'];
 
-    // SPEC: 1.2.
+    // SPEC: 5.1.2.
     $next_version = $version + 1;
     $next_root_contents = $this->getRepoFile("$next_version.root.json");
     if ($next_root_contents) {
-      // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
+      // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 5.1.3 -> 5.1.7.
       //  Not production ready🙀.
       throw new \Exception("Root rotation not implemented.");
 
     }
 
-    // SPEC: 1.8.    
+    // SPEC: 5.1.8.    
     $expires = $signed['expires'];
     $fake_now = '2020-08-04T02:58:56Z';
     $expire_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fake_now);
@@ -80,9 +80,9 @@ class Updater
       //   root metadata file."
     }
 
-    // @todo Implement spec 1.9. Does this step rely on root rotation?
+    // @todo Implement spec 5.1.9. Does this step rely on root rotation?
     
-    // SPEC: 1.10. Will be used in spec step 4.3.
+    // SPEC: 5.1.10. Will be used in spec step 5.4.3.
     $consistent = $root_data['consistent'];
 
 
