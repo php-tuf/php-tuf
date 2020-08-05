@@ -16,9 +16,7 @@
         }
     },
     "scripts": {
-        "code-sniff": [
-            "./vendor/bin/phpcs ./src"
-        ],
+        "code-sniff": "phpcs ./src ./tests"
         "test": [
             "./vendor/bin/phpunit tests"
         ],
