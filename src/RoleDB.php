@@ -20,8 +20,6 @@ class RoleDB
             if ($roleName == 'root') {
                 $roleInfo['version'] = $rootMetadata['version'];
                 $roleInfo['expires'] = $rootMetadata['expires'];
-                $roleInfo['previous_keyids'] = $roleInfo['keyids'];
-                $roleInfo['previous_threshold'] = $roleInfo['threshold'];
             }
 
           /*
