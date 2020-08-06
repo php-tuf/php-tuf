@@ -11,6 +11,8 @@ env:
 
 jobs:
   build:
+    runs-on: ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php }} Test on ${{ matrix.operating-system }}
     strategy:
       max-parallel: 10
       matrix:
@@ -20,9 +22,7 @@ jobs:
         include:
           - php: 8.0
             experimental: true
-    runs-on: ${{ matrix.operating-system }}
     continue-on-error: ${{ matrix.experimental }}
-    name: PHP ${{ matrix.php }} Test on ${{ matrix.operating-system }}
 
     steps:
       - name: Setup PHP
