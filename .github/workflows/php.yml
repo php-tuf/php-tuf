@@ -10,32 +10,6 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
 
 jobs:
-  build-lowest-version:
-    name: Build lowest version
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.2'
-          tools: composer:v2
-
-      - name: Setup problem matchers for PHP
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-
-      - name: Setup problem matchers for PHPUnit
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Download dependencies
-        run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
-
-      - name: Run test suite
-        run: composer test
-
   build:
     strategy:
       max-parallel: 10
@@ -82,6 +56,32 @@ jobs:
 
       - name: Run PHPCS
         run: composer phpcs
+
+      - name: Run test suite
+        run: composer test
+
+  build-lowest-version:
+    name: Build lowest version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.2'
+          tools: composer:v2
+
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download dependencies
+        run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
       - name: Run test suite
         run: composer test
