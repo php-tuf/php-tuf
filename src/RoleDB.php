@@ -31,7 +31,8 @@ class RoleDB
           $roleInfo['partial_loaded'] = false;
           */
 
-            if (strncmp($roleName, 'targets', strlen('targets') === 0)) {
+            // @TODO verify that testing for start of string rather than equality has a purpose.
+            if (strncmp($roleName, 'targets', strlen('targets')) === 0) {
                 $roleInfo['paths'] = array();
                 $roleInfo['delegations'] = array('keys' => array(), 'roles' => array());
             }
