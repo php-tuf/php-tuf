@@ -13,34 +13,36 @@ class RepositoryDBCollection
   /**
    * ROLE_IX is the index of the repository array where the role DB is found.
    */
-  const ROLE_IX = 0;
+    const ROLE_IX = 0;
   /**
    * KEY_IX is the index of the repository array where the key DB is found.
    */
-  const KEY_IX = 1;
+    const KEY_IX = 1;
 
-  protected $dbCollection = array();
+    protected $dbCollection = array();
 
-  protected static $singleton;
+    protected static $singleton;
 
-  public static function singleton() {
-    if (self::$singleton == null) {
-      self::$singleton = new self();
+    public static function singleton()
+    {
+        if (self::$singleton == null) {
+            self::$singleton = new self();
+        }
+
+        return self::$singleton;
     }
 
-    return self::$singleton;
-  }
+    public function setDatabasesForRepository(KeyDB $keyDB, RoleDB $roleDB, $repositoryName = 'default')
+    {
+        if (!empty($this->dbCollection[$repositoryName])) {
+            throw new \Exception("Repository already has databases: $repositoryName");
+        }
 
-  public function setDatabasesForRepository(KeyDB $keyDB, RoleDB $roleDB, $repositoryName = 'default') {
-    if (!empty($this->dbCollection[$repositoryName])) {
-      throw new \Exception("Repository already has databases: $repositoryName");
+        $this->dbCollection[$repositoryName] = array(
+        self::ROLE_IX => $roleDB,
+        self::KEY_IX => $keyDB,
+        );
     }
-
-    $this->dbCollection[$repositoryName] = array(
-      self::ROLE_IX => $roleDB,
-      self::KEY_IX => $keyDB,
-    );
-  }
 
   /**
    * @param string $repositoryName
@@ -48,11 +50,12 @@ class RepositoryDBCollection
    *   Array containing role database at RepositoryDBCollection::ROLE_IX, key database at RepositoryDBCollection::KEY_IX
    * @throws \Exception
    */
-  public function getDatabasesForRepository($repositoryName = 'default') {
-    if (empty($this->dbCollection[$repositoryName])) {
-      throw new \Exception("Repository name is not known: $repositoryName");
-    }
+    public function getDatabasesForRepository($repositoryName = 'default')
+    {
+        if (empty($this->dbCollection[$repositoryName])) {
+            throw new \Exception("Repository name is not known: $repositoryName");
+        }
 
-    return $this->dbCollection[$repositoryName];
-  }
+        return $this->dbCollection[$repositoryName];
+    }
 }
