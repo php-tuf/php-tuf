@@ -10,13 +10,43 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
 
 jobs:
+  build-lowest-version:
+    name: Build lowest version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.2'
+          tools: composer:v2
+
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download dependencies
+        run: 'composer install ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
+
+      - name: Run test suite
+        run: composer test
   build:
 
     runs-on: ${{ matrix.operating-system }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
-        php-versions: ['7.4', '7.3', '7.2']
+        php-versions: ['7.4', '7.3', '7.2', '8.0']
+        experimental: [false]
+        include:
+          - php-versions: 8.0
+            experimental: true
     name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
 
     steps:
@@ -26,6 +56,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          tools: composer:v2
 
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
@@ -33,17 +64,19 @@ jobs:
       - name: Setup problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-      - name: Composer v2
-        run: composer self-update --snapshot
-
       - name: Validate composer.json and composer.lock
         run: composer validate
 
       - name: Install dependencies
+        if: matrix.php != '8.0'
         run: 'composer install ${{ env.COMPOSER_FLAGS }}'
 
+      - name: Install dependencies (ignore-platform-req)
+        if: matrix.php != '8.0'
+        run: 'composer install ${{ env.COMPOSER_FLAGS }} --ignore-platform-req=php'
+
       - name: PHP linting
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macOS-latest'
+        if: matrix.os != 'windows-latest'
         run: composer lint
 
       - name: Run PHPCS
