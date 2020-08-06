@@ -153,7 +153,7 @@ class Updater
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
         // @TODO check that the key type in $signatureMeta is ed25519; return false if not.
-        return sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
+        return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
     // To be replaced by HTTP / HTTP abstraction layer to the remote repository
