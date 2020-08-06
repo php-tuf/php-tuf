@@ -62,20 +62,20 @@ class Updater
    */
     public function validateTarget($target_repo_path, $target_stream)
     {
-      // @TODO source original "step 0" root data from client state, not repository
+        // @TODO source original "step 0" root data from client state, not repository
         $root_data = json_decode($this->getRepoFile('root.json'), true);
         $signed = $root_data['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
         $keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
-      // @TODO investigate whether we in fact need multiple simultaneous repository support.
+        // @TODO investigate whether we in fact need multiple simultaneous repository support.
         RepositoryDBCollection::singleton()->setDatabasesForRepository($keyDB, $roleDB, 'default');
-    
-      // SPEC: 1.1.
+
+        // SPEC: 1.1.
         $version = (int) $signed['version'];
 
 
-      // SPEC: 1.2.
+        // SPEC: 1.2.
         $next_version = $version + 1;
         $next_root_contents = $this->getRepoFile("$next_version.root.json");
         if ($next_root_contents) {
@@ -84,7 +84,7 @@ class Updater
             throw new \Exception("Root rotation not implemented.");
         }
 
-      // SPEC: 1.8.
+        // SPEC: 1.8.
         $expires = $signed['expires'];
         $fake_now = '2020-08-04T02:58:56Z';
         $expire_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fake_now);
@@ -95,15 +95,15 @@ class Updater
           //   root metadata file."
         }
 
-      // @todo Implement spec 1.9. Does this step rely on root rotation?
-    
-      // SPEC: 1.10. Will be used in spec step 4.3.
-      //$consistent = $root_data['consistent'];
+        // @todo Implement spec 1.9. Does this step rely on root rotation?
 
-      // SPEC: 2
+        // SPEC: 1.10. Will be used in spec step 4.3.
+        //$consistent = $root_data['consistent'];
+
+        // SPEC: 2
         $timestamp_contents = $this->getRepoFile('timestamp.json');
         $timestamp_structure = json_decode($timestamp_contents, true);
-      // SPEC: 2.1
+        // SPEC: 2.1
         if (! $this->checkSignatures($timestamp_structure, 'timestamp')) {
           // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
