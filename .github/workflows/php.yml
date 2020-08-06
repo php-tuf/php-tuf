@@ -35,19 +35,19 @@ jobs:
 
       - name: Run test suite
         run: composer test
-  build:
 
+  build:
     runs-on: ${{ matrix.operating-system }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
-        php-versions: ['7.4', '7.3', '7.2', '8.0']
+        php: ['7.4', '7.3', '7.2', '8.0']
         experimental: [false]
         include:
-          - php-versions: 8.0
+          - php: 8.0
             experimental: true
-    name: PHP ${{ matrix.php-versions }} Test on ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php }} Test on ${{ matrix.operating-system }}
 
     steps:
       - uses: actions/checkout@v2
@@ -55,7 +55,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php }}
           tools: composer:v2
 
       - name: Setup problem matchers for PHP
