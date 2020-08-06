@@ -11,8 +11,7 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=7.2.5",
-        "ext-json": "*",
-        "ext-sodium": "*"
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
