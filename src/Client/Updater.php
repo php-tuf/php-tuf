@@ -3,6 +3,11 @@
 
 namespace Tuf\Client;
 
+use Tuf\KeyDB;
+use Tuf\RepositoryDBCollection;
+use Tuf\RoleDB;
+use Tuf\JsonNormalizer;
+
 /**
  * Class Updater
  *
@@ -21,6 +26,8 @@ class Updater
    */
   protected $mirrors;
 
+  protected $keyRegistry;
+
   /**
    * Updater constructor.
    *
@@ -31,6 +38,8 @@ class Updater
   public function __construct($repository_name, $mirrors) {
     $this->repoName = $repository_name;
     $this->mirrors = $mirrors;
+
+
   }
 
 
@@ -55,9 +64,15 @@ class Updater
   public function validateTarget($target_repo_path, $target_stream) {
     $root_data = json_decode($this->getRepoFile('root.json'), TRUE);
     $signed = $root_data['signed'];
+
+    $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
+    $keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
+    // @TODO investigate whether we in fact need multiple simultaneous repository support.
+    RepositoryDBCollection::singleton()->setDatabasesForRepository($keyDB, $roleDB, 'default');
     
     // SPEC: 1.1.
     $version = (int) $signed['version'];
+
 
     // SPEC: 1.2.
     $next_version = $version + 1;
@@ -83,10 +98,55 @@ class Updater
     // @todo Implement spec 1.9. Does this step rely on root rotation?
     
     // SPEC: 1.10. Will be used in spec step 4.3.
-    $consistent = $root_data['consistent'];
+    //$consistent = $root_data['consistent'];
 
+    // SPEC: 2
+    $timestamp_contents = $this->getRepoFile('timestamp.json');
+    $timestamp_structure = json_decode($timestamp_contents, true);
+    // SPEC: 2.1
+    if (! $this->checkSignatures($timestamp_structure)) {
+      // Exception? Log + return false?
+      throw new \Exception("Improperly signed repository timestamp.");
+    }
 
     return TRUE;
+  }
+
+  protected function checkSignatures($verifiableStructure) {
+    $signatures = $verifiableStructure['signatures'];
+    $signed = $verifiableStructure['signed'];
+
+    list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
+    $roleInfo = $roleDb->getRoleInfo($signed['_type']);
+    $needVerified = $roleInfo['threshold'];
+    $haveVerified = 0;
+
+    $canonical_bytes = JsonNormalizer::asNormalizedJson($signed);
+    foreach ($signatures AS $signature) {
+      if ($this->isKeyIdAcceptableForRole($signature['keyid'], $signed['_type'])) {
+        $haveVerified += (int)$this->verifySingleSignature($canonical_bytes, $signature);
+      }
+      if ($haveVerified >= $needVerified) {
+        break;
+      }
+    }
+
+    return $haveVerified >= $needVerified;
+  }
+
+  protected function isKeyIdAcceptableForRole($keyId, $role) {
+    list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
+    $roleKeyIds = $roleDb->getRoleKeyIds($role);
+    return in_array($keyId, $roleKeyIds);
+  }
+
+  protected function verifySingleSignature($bytes, $signatureMeta) {
+    list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
+    $keyMeta = $keyDb->getKey($signatureMeta['keyid']);
+    $pubkey = $keyMeta['keyval']['public'];
+    $pubkeyBytes = hex2bin($pubkey);
+    $sigBytes = hex2bin($signatureMeta['sig']);
+    return sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
   }
 
   private function getRepoFile($string) {
