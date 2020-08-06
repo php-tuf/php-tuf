@@ -127,6 +127,9 @@ class Updater
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
                 $haveVerified += (int)$this->verifySingleSignature($canonical_bytes, $signature);
             }
+            // @TODO Determine if we should check all signatures and warn for bad
+            //  signatures even this method returns TRUE because the threshold
+            //  has been met.
             if ($haveVerified >= $needVerified) {
                 break;
             }
