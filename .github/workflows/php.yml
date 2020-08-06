@@ -53,7 +53,7 @@ jobs:
         run: 'composer install ${{ env.COMPOSER_FLAGS }} --ignore-platform-req=php'
 
       - name: PHP linting
-        if: matrix.os != 'windows-latest'
+        if: matrix.operating-system != 'windows-latest'
         run: composer lint
 
       - name: Run PHPCS
