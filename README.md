@@ -1,5 +1,19 @@
 # PHP-TUF
 
+## What is PHP-TUF?
+
+## PHP-TUF server requirements
+
+We recommend using the [default CLI implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md) (a Python application) to generate keys and signatures as a part of your project's release creation process.
+
+@todo More detailed instructions.
+
+## PHP-TUF client requirements
+
+The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
+
+Minimum required PHP version: 7.2
+
 ## Running the tests
 1. Ensure you have all required dependencies by running `composer install`.
 2. Run `composer test` at the project's root.
