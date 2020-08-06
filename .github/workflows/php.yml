@@ -23,6 +23,7 @@ jobs:
             php: 8.0
             experimental: true
     name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
+    fail-fast: false
     continue-on-error: ${{ matrix.experimental }}
 
     steps:
