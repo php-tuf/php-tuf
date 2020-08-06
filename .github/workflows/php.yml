@@ -45,7 +45,7 @@ jobs:
         experimental: [false]
         include:
           - php: 8.0
-          experimental: true
+            experimental: true
     runs-on: ${{ matrix.operating-system }}
     continue-on-error: ${{ matrix.experimental }}
     name: PHP ${{ matrix.php }} Test on ${{ matrix.operating-system }}
