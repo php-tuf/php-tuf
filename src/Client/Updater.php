@@ -153,6 +153,7 @@ class Updater
         return sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
+    // To be replaced by HTTP / HTTP abstraction layer to the remote repository
     private function getRepoFile($string)
     {
         try {
