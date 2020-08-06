@@ -17,7 +17,7 @@ class KeyDB
         $db = new self();
 
         foreach ($rootMetadata['keys'] as $keyMeta) {
-            if (! in_array($keyMeta['keytype'], SUPPORTED_KEY_TYPES, true)) {
+            if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
                 throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
             }
           // One key id for each $keyMeta['keyid_hash_algorithms']
@@ -29,6 +29,15 @@ class KeyDB
         }
 
         return $db;
+    }
+
+    public static function getSupportedKeyTypes()
+    {
+        static $types = array();
+        if (count($types) == 0) {
+            $types = explode(" ", SUPPORTED_KEY_TYPES);
+        }
+        return $types;
     }
 
     public static function computeKeyIds($keyMeta)
