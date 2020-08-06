@@ -62,6 +62,7 @@ class Updater
    */
     public function validateTarget($target_repo_path, $target_stream)
     {
+      // @TODO source original "step 0" root data from client state, not repository
         $root_data = json_decode($this->getRepoFile('root.json'), true);
         $signed = $root_data['signed'];
 
@@ -103,7 +104,7 @@ class Updater
         $timestamp_contents = $this->getRepoFile('timestamp.json');
         $timestamp_structure = json_decode($timestamp_contents, true);
       // SPEC: 2.1
-        if (! $this->checkSignatures($timestamp_structure)) {
+        if (! $this->checkSignatures($timestamp_structure, 'timestamp')) {
           // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
         }
@@ -111,19 +112,19 @@ class Updater
         return true;
     }
 
-    protected function checkSignatures($verifiableStructure)
+    protected function checkSignatures($verifiableStructure, $type)
     {
         $signatures = $verifiableStructure['signatures'];
         $signed = $verifiableStructure['signed'];
 
         list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
-        $roleInfo = $roleDb->getRoleInfo($signed['_type']);
+        $roleInfo = $roleDb->getRoleInfo($type);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
         $canonical_bytes = JsonNormalizer::asNormalizedJson($signed);
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $signed['_type'])) {
+            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
                 $haveVerified += (int)$this->verifySingleSignature($canonical_bytes, $signature);
             }
             if ($haveVerified >= $needVerified) {
@@ -148,6 +149,7 @@ class Updater
         $pubkey = $keyMeta['keyval']['public'];
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
+        // @TODO check that the key type in $signatureMeta is ed25519; return false if not.
         return sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
