@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download dependencies
-        run: 'composer install ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
+        run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
       - name: Run test suite
         run: composer test
