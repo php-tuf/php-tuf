@@ -5,7 +5,7 @@ namespace Tuf\Exception;
 
 use Throwable;
 
-class NotFoundException extends \Exception
+class NotFoundException extends TufException
 {
     /**
      * @var string $key

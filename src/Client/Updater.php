@@ -5,6 +5,7 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\FilesystemDurableStorage;
 use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\KeyDB;
@@ -114,7 +115,11 @@ class Updater
 
     protected function metadataTimestampToDatetime(string $timestamp) : \DateTimeImmutable
     {
-        return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
+        $dt = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
+        if ($dt === false) {
+            throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
+        }
+        return $dt;
     }
 
     /**
