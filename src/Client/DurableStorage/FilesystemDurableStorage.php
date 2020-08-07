@@ -7,7 +7,8 @@ namespace Tuf\Client\DurableStorage;
  * Class FilesystemLocalState
  *
  * A simple implementation of LocalStateInterface using the filesystem.
- * Applications might want to provide an alternative implementation with better performance and error handling.
+ * Applications might want to provide an alternative implementation with
+ * better performance and error handling.
  *
  * @TODO Add tests for this class.
  */
