@@ -10,7 +10,7 @@ class ValidatingArrayAccessAdapterTest extends TestCase
 {
     protected function getSystemInTest()
     {
-        return new ValidatingArrayAccessAdapter(new InMemoryBackend());
+        return new ValidatingArrayAccessAdapter(new MemoryStorage());
     }
 
     /**

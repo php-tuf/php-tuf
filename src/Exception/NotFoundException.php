@@ -19,7 +19,7 @@ class NotFoundException extends TufException
      */
     public $itemType;
 
-    public function __construct($key = "", $itemType = "item", $code = 0, Throwable $previous = null)
+    public function __construct($key = "", $itemType = "item", Throwable $previous = null)
     {
         $message = "$itemType not found";
         if ($key != "") {
@@ -27,6 +27,6 @@ class NotFoundException extends TufException
         }
         $this->key = $key;
         $this->itemType = $itemType;
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 0, $previous);
     }
 }

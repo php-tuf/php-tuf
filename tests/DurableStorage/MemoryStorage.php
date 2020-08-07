@@ -4,12 +4,12 @@
 namespace Tuf\Tests\DurableStorage;
 
 /**
- * Class InMemoryBackend
+ * Class MemoryStorage
  *
  * Provides a trivial implementation of \ArrayAccess for testing.
  * Brought to you by https://www.php.net/manual/en/class.arrayaccess and ctrl+v.
  */
-class InMemoryBackend implements \ArrayAccess
+class MemoryStorage implements \ArrayAccess
 {
     private $container = array();
 
