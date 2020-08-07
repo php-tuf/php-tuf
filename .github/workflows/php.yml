@@ -46,7 +46,7 @@ jobs:
         run: composer lint
 
       - name: Run PHPCS
-        run: composer phpcs; lastexit=$?; if [[ $lastexit -eq 1 ]]; then lastexit=0; fi; exit $lastexit;
+        run: composer phpcs-ci
 
       - name: Run test suite
         run: composer test
