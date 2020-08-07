@@ -31,21 +31,44 @@ class FilesystemDurableStorage implements \ArrayAccess
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
+    /**
+     * Implements \ArrayAccess::offsetExists()
+     *
+     * @param mixed $offset
+     * @return bool
+     */
     public function offsetExists($offset)
     {
         return file_exists($this->offsetToPath($offset));
     }
 
+    /**
+     * Implements \ArrayAccess::offsetGet()
+     *
+     * @param mixed $offset
+     * @return false|mixed|string
+     */
     public function offsetGet($offset)
     {
         return file_get_contents($this->offsetToPath($offset));
     }
 
+    /**
+     * Implements \ArrayAccess::offsetSet()
+     *
+     * @param mixed $offset
+     * @param mixed $value
+     */
     public function offsetSet($offset, $value)
     {
         file_put_contents($this->offsetToPath($offset), $value);
     }
 
+    /**
+     * Implements \ArrayAccess::offsetUnset()
+     *
+     * @param mixed $offset
+     */
     public function offsetUnset($offset)
     {
         @unlink($this->offsetToPath($offset));
