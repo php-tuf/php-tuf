@@ -5,6 +5,8 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\FilesystemDurableStorage;
 use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Exception\PotentialAttackException\FreezeAttackException;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -47,22 +49,8 @@ class Updater
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
    *
-   * @param bool $unsafely_update_root_if_necessary
    */
-    public function refresh($unsafely_update_root_if_necessary = true)
-    {
-    }
-
-  /**
-   * Validates a target.
-   *
-   * @param $target_repo_path
-   * @param $target_stream
-   *
-   * @return bool
-   *   Returns true if the target validates.
-   */
-    public function validateTarget($target_repo_path, $target_stream)
+    public function refresh()
     {
         // @TODO Inject DurableStorage
         $durableStorage = new ValidatingArrayAccessAdapter(
@@ -84,20 +72,20 @@ class Updater
         $next_version = $version + 1;
         $next_root_contents = $this->getRepoFile("$next_version.root.json");
         if ($next_root_contents) {
-          // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
-          //  Not production ready🙀.
+            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
+            //  Not production ready🙀.
             throw new \Exception("Root rotation not implemented.");
         }
 
         // SPEC: 1.8.
         $expires = $signed['expires'];
         $fake_now = '2020-08-04T02:58:56Z';
-        $expire_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fake_now);
-        $now_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
+        $expire_date = $this->metadataTimestampToDatetime($expires);
+        $now_date = $this->metadataTimestampToDatetime($fake_now);
         if ($now_date > $expire_date) {
             throw new \Exception("Root has expired. Potential freeze attack!");
-          // @todo "On the next update cycle, begin at step 0 and version N of the
-          //   root metadata file."
+            // @todo "On the next update cycle, begin at step 0 and version N of the
+            //   root metadata file."
         }
 
         // @todo Implement spec 1.9. Does this step rely on root rotation?
@@ -110,11 +98,75 @@ class Updater
         $timestamp_structure = json_decode($timestamp_contents, true);
         // SPEC: 2.1
         if (! $this->checkSignatures($timestamp_structure, 'timestamp')) {
-          // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
         }
 
+        // SPEC: 2.2
+        $currentStateTimestamp = json_decode($durableStorage['timestamp.json'], true);
+        $this->checkRollbackAttack($currentStateTimestamp['signed'], $timestamp_structure['signed']);
+
+        // SPEC: 2.3
+        $this->checkFreezeAttack($timestamp_structure['signed'], $now_date);
+        $durableStorage['timestamp.json'] = $timestamp_contents;
+
         return true;
+    }
+
+    protected function metadataTimestampToDatetime(string $timestamp) : \DateTimeImmutable
+    {
+        return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
+    }
+
+    /**
+     * Verifies that an incoming remote version of a metadata file is >= the last known version.
+     *
+     * @param $localMetadata
+     * @param $remoteMetadata
+     * @throws RollbackAttackException
+     */
+    protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
+    {
+        $localVersion = $localMetadata['version'] + 0;
+        if ($localVersion == 0) {
+            // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
+            // we can't perform this check properly.
+            throw new RollbackAttackException("Empty or invalid local timestamp version \"${localMetadata['version']}\"");
+        }
+        if ($remoteMetadata['version'] + 0 < $localVersion) {
+            throw new RollbackAttackException("remote timestamp metadata version \"${remoteMetadata['version']}\" is less than previously seen timestamp version \"${localMetadata['version']}\"");
+        }
+    }
+
+    /**
+     * Verifies that metadata has not expired, and assumes a potential freeze attack if it has.
+     *
+     * @param array $metadata
+     * @param \DateTimeInterface $now
+     * @throws FreezeAttackException
+     */
+    protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
+    {
+        $metadataExpiration = $this->metadataTimestampToDatetime($metadata['expires']);
+        $type = '';
+        if (!empty($metadata['_type'])) {
+            $type = $metadata['_type'];
+        }
+        if ($metadataExpiration < $now) {
+            throw new FreezeAttackException(sprintf("remote %s metadata expired on %s", $type, $metadataExpiration->format('c')));
+        }
+    }
+
+  /**
+   * Validates a target.
+   *
+   * @param $target_repo_path
+   * @param $target_stream
+   *
+   * @return bool
+   *   Returns true if the target validates.
+   */
+    public function validateTarget($target_repo_path, $target_stream)
+    {
     }
 
     protected function checkSignatures($verifiableStructure, $type)
