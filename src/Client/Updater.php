@@ -3,6 +3,8 @@
 
 namespace Tuf\Client;
 
+use Tuf\Client\DurableStorage\FilesystemDurableStorage;
+use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -62,8 +64,11 @@ class Updater
    */
     public function validateTarget($target_repo_path, $target_stream)
     {
-        // @TODO source original "step 0" root data from client state, not repository
-        $root_data = json_decode($this->getRepoFile('root.json'), true);
+        // @TODO Inject DurableStorage
+        $durableStorage = new ValidatingArrayAccessAdapter(
+            new FilesystemDurableStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
+        );
+        $root_data = json_decode($durableStorage['root.json'], true);
         $signed = $root_data['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
@@ -161,7 +166,7 @@ class Updater
     {
         try {
           // @todo Ensure the file does not exceed a certain size to prevent DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufclient/tufrepo/metadata/current/$string");
+            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
         } catch (\Exception $exception) {
             return false;
         }
