@@ -31,10 +31,10 @@ class RoleDB
 
             // @TODO verify that testing for start of string rather than equality has a purpose.
             if (strncmp($roleName, 'targets', strlen('targets')) === 0) {
-                $roleInfo['paths'] = array();
-                $roleInfo['delegations'] = array('keys' => array(), 'roles' => array());
+                $roleInfo['paths'] = [];
+                $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
             }
-            $roleInfo['paths'] = array();
+            $roleInfo['paths'] = [];
 
             if ($roleInfo['threshold'] + 0 <= 0) {
                 throw new \Exception("Role $roleName threshold must be an integer greater than 0");
@@ -48,7 +48,7 @@ class RoleDB
 
     public function __construct()
     {
-        $this->roles = array();
+        $this->roles = [];
     }
 
     public function addRole($roleName, $roleInfo)

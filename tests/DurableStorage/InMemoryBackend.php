@@ -12,11 +12,11 @@ namespace Tuf\Tests\DurableStorage;
  */
 class InMemoryBackend implements \ArrayAccess
 {
-    private $container = array();
+    private $container = [];
 
     public function __construct()
     {
-        $this->container = array();
+        $this->container = [];
     }
 
     public function offsetSet($offset, $value)
