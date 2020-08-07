@@ -13,14 +13,14 @@ We recommend using the [default CLI implementation](https://github.com/theupdate
 The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
 
 - Minimum required PHP version: 7.2
-- Requires ext-sodium
+- Requires ext-sodium and ext-json
 
 ## Running the tests
 1. Ensure you have all required dependencies by running `composer install`.
 2. Run `composer test` at the project's root.
 
 ## Code Style
-Run `composer code-sniff` to check for code style compliance.
+Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
 
 ## Environment Setup for Python TUF CLI
 
