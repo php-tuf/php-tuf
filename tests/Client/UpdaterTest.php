@@ -19,9 +19,9 @@ class UpdaterTest extends TestCase
         ),
         );
         $updater = new Updater('repo1', $mirrors);
-        $fixture_target = 'testtarget.txt';
-        $target_stream = fopen('data://text/plain,' . 'Test File', 'r');
-        $this->assertTrue($updater->validateTarget($fixture_target, $target_stream));
+        $fixtureTarget = 'testtarget.txt';
+        $targetStream = fopen('data://text/plain,' . 'Test File', 'r');
+        $this->assertTrue($updater->validateTarget($fixtureTarget, $targetStream));
     }
 
   /**
