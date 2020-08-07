@@ -47,9 +47,11 @@ class Updater
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
    *
-   * @param bool $unsafelyUpdateRootIfNecessary
+   * @todo The Python implementation has an optional flag to "unsafely update
+   *     root if necessary". Do we need it?
+   * @see https://github.com/php-tuf/php-tuf/issues/21
    */
-    public function refresh($unsafelyUpdateRootIfNecessary = true)
+    public function refresh()
     {
     }
 
