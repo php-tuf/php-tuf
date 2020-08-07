@@ -31,40 +31,38 @@ class Updater
   /**
    * Updater constructor.
    *
-   * @param string $repository_name
+   * @param string $repositoryName
    * @param array[][] $mirrors
    *   Re
    */
-    public function __construct($repository_name, $mirrors)
+    public function __construct($repositoryName, $mirrors)
     {
-        $this->repoName = $repository_name;
+        $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
     }
 
 
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
-   *
-   * @param bool $unsafely_update_root_if_necessary
    */
-    public function refresh($unsafely_update_root_if_necessary = true)
+    public function refresh()
     {
     }
 
   /**
    * Validates a target.
    *
-   * @param $target_repo_path
-   * @param $target_stream
+   * @param $targetRepoPath
+   * @param $targetStream
    *
    * @return bool
    *   Returns true if the target validates.
    */
-    public function validateTarget($target_repo_path, $target_stream)
+    public function validateTarget($targetRepoPath, $targetStream)
     {
         // @TODO source original "step 0" root data from client state, not repository
-        $root_data = json_decode($this->getRepoFile('root.json'), true);
-        $signed = $root_data['signed'];
+        $rootData = json_decode($this->getRepoFile('root.json'), true);
+        $signed = $rootData['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
         $keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
@@ -76,9 +74,9 @@ class Updater
 
 
         // SPEC: 1.2.
-        $next_version = $version + 1;
-        $next_root_contents = $this->getRepoFile("$next_version.root.json");
-        if ($next_root_contents) {
+        $nextVersion = $version + 1;
+        $nextRootContents = $this->getRepoFile("$nextVersion.root.json");
+        if ($nextRootContents) {
           // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
           //  Not production ready🙀.
             throw new \Exception("Root rotation not implemented.");
@@ -86,10 +84,10 @@ class Updater
 
         // SPEC: 1.8.
         $expires = $signed['expires'];
-        $fake_now = '2020-08-04T02:58:56Z';
-        $expire_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fake_now);
-        $now_date = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
-        if ($now_date > $expire_date) {
+        $fakeNow = '2020-08-04T02:58:56Z';
+        $expireDate = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fakeNow);
+        $nowDate = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
+        if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
           // @todo "On the next update cycle, begin at step 0 and version N of the
           //   root metadata file."
@@ -98,13 +96,13 @@ class Updater
         // @todo Implement spec 1.9. Does this step rely on root rotation?
 
         // SPEC: 1.10. Will be used in spec step 4.3.
-        //$consistent = $root_data['consistent'];
+        //$consistent = $rootData['consistent'];
 
         // SPEC: 2
-        $timestamp_contents = $this->getRepoFile('timestamp.json');
-        $timestamp_structure = json_decode($timestamp_contents, true);
+        $timestampContents = $this->getRepoFile('timestamp.json');
+        $timestampStructure = json_decode($timestampContents, true);
         // SPEC: 2.1
-        if (! $this->checkSignatures($timestamp_structure, 'timestamp')) {
+        if (! $this->checkSignatures($timestampStructure, 'timestamp')) {
           // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
         }
@@ -122,10 +120,10 @@ class Updater
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonical_bytes = JsonNormalizer::asNormalizedJson($signed);
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($signed);
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
-                $haveVerified += (int)$this->verifySingleSignature($canonical_bytes, $signature);
+                $haveVerified += (int)$this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @TODO Determine if we should check all signatures and warn for bad
             //  signatures even this method returns TRUE because the threshold

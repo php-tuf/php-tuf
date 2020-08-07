@@ -25,8 +25,8 @@
         }
     },
     "scripts": {
-        "phpcs": "phpcs --standard=PSR2 ./src ./tests",
-        "phpcbf": "phpcbf --standard=PSR2 ./src ./tests",
+        "phpcs": "phpcs --standard=phpcs-ruleset.xml ./src ./tests",
+        "phpcbf": "phpcbf --standard=phpcs-ruleset.xml ./src ./tests",
         "test": "phpunit ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
     }

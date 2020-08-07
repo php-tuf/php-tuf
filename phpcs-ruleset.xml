@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ruleset name="php-tuf Coding Standard">
+    <!-- We basically follow PSR-2 -->
+    <rule ref="PSR2"/>
+
+    <!-- Since PSR-2 / PSR-12 say nothing about variable lettercase, we choose a standard. -->
+    <rule ref="Squiz.NamingConventions.ValidVariableName"/>
+</ruleset>
