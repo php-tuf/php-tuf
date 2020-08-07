@@ -3,6 +3,8 @@
 
 namespace Tuf\Client;
 
+use Tuf\Client\DurableStorage\FilesystemDurableStorage;
+use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -44,8 +46,10 @@ class Updater
 
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
+   *
+   * @param bool $unsafelyUpdateRootIfNecessary
    */
-    public function refresh()
+    public function refresh($unsafelyUpdateRootIfNecessary = true)
     {
     }
 
@@ -60,8 +64,11 @@ class Updater
    */
     public function validateTarget($targetRepoPath, $targetStream)
     {
-        // @TODO source original "step 0" root data from client state, not repository
-        $rootData = json_decode($this->getRepoFile('root.json'), true);
+        // @TODO Inject DurableStorage
+        $durableStorage = new ValidatingArrayAccessAdapter(
+            new FilesystemDurableStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
+        );
+        $rootData = json_decode($durableStorage['root.json'], true);
         $signed = $rootData['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
@@ -151,7 +158,7 @@ class Updater
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
         // @TODO check that the key type in $signatureMeta is ed25519; return false if not.
-        return sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
+        return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
     // To be replaced by HTTP / HTTP abstraction layer to the remote repository
@@ -159,7 +166,7 @@ class Updater
     {
         try {
           // @todo Ensure the file does not exceed a certain size to prevent DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufclient/tufrepo/metadata/current/$string");
+            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
         } catch (\Exception $exception) {
             return false;
         }
