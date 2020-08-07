@@ -12,23 +12,23 @@ namespace Tuf\Client\DurableStorage;
 class FilesystemDurableStorage implements \ArrayAccess
 {
     /**
-     * @var string $rootPath
-     *   The filesystem directory where durable state is rooted.
+     * @var string $basePath
+     *   The path on the filesystem to this durable storage's files.
      */
-    protected $rootPath;
+    protected $basePath;
 
-    public function __construct(string $rootPath)
+    public function __construct(string $basePath)
     {
-        if (! is_dir($rootPath)) {
-            throw new \RuntimeException("Cannot initialize filesystem local state: \"$rootPath\" is not a directory.");
+        if (! is_dir($basePath)) {
+            throw new \RuntimeException("Cannot initialize filesystem local state: \"$basePath\" is not a directory.");
         }
 
-        $this->rootPath = $rootPath;
+        $this->basePath = $basePath;
     }
 
     protected function offsetToPath($offset)
     {
-        return $this->rootPath . DIRECTORY_SEPARATOR . $offset;
+        return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
     public function offsetExists($offset)
