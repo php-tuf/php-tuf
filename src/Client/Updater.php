@@ -141,7 +141,7 @@ class Updater
             throw new RollbackAttackException("Empty or invalid local timestamp version \"${localMetadata['version']}\"");
         }
         if ($remoteMetadata['version'] + 0 < $localVersion) {
-            throw new RollbackAttackException("remote timestamp metadata version \"${remoteMetadata['version']}\" is less than previously seen timestamp version \"${localMetadata['version']}\"");
+            throw new RollbackAttackException("Remote timestamp metadata version \"${remoteMetadata['version']}\" is less than previously seen timestamp version \"${localMetadata['version']}\"");
         }
     }
 
@@ -160,7 +160,7 @@ class Updater
             $type = $metadata['_type'];
         }
         if ($metadataExpiration < $now) {
-            throw new FreezeAttackException(sprintf("remote %s metadata expired on %s", $type, $metadataExpiration->format('c')));
+            throw new FreezeAttackException(sprintf("Remote %s metadata expired on %s", $type, $metadataExpiration->format('c')));
         }
     }
 
