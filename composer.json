@@ -15,7 +15,7 @@
         "paragonie/sodium_compat": "^1.13"
     },
     "suggest": {
-        "ext-sodium": "Provides faster verification of updates"
+        "ext-libsodium": "Provides faster verification of updates"
     },
     "autoload": {
         "psr-4": {
