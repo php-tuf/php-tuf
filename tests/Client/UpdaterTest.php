@@ -55,11 +55,11 @@ class UpdaterTest extends TestCase
 
         $storage = new InMemoryBackend();
 
-        $iter = new \FilesystemIterator(
+        $fsIterator = new \FilesystemIterator(
             $realpath,
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
-        foreach ($iter as $filename => $info) {
+        foreach ($fsIterator as $filename => $info) {
             /**
              * @var $info \SplFileInfo
              */
