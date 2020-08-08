@@ -134,13 +134,14 @@ class Updater
      */
     protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
     {
-        $localVersion = $localMetadata['version'] + 0;
+        $localVersion = (int)$localMetadata['version'];
         if ($localVersion == 0) {
             // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
             // we can't perform this check properly.
             throw new RollbackAttackException("Empty or invalid local timestamp version \"${localMetadata['version']}\"");
         }
-        if ($remoteMetadata['version'] + 0 < $localVersion) {
+        $remoteVersion = (int)$remoteMetadata['version'];
+        if ($remoteVersion < $localVersion) {
             throw new RollbackAttackException("Remote timestamp metadata version \"${remoteMetadata['version']}\" is less than previously seen timestamp version \"${localMetadata['version']}\"");
         }
     }

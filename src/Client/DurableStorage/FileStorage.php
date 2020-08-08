@@ -28,7 +28,14 @@ class FileStorage implements \ArrayAccess
         $this->basePath = $basePath;
     }
 
-    protected function offsetToPath($offset)
+    /**
+     * Computes the path on the filesystem corresponding to an array key.
+     *
+     * @param $offset
+     *   The array key, or offset as \ArrayAccess calls it.
+     * @return string
+     */
+    protected function pathWithBasePath(string $offset)
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
@@ -41,7 +48,7 @@ class FileStorage implements \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return file_exists($this->offsetToPath($offset));
+        return file_exists($this->pathWithBasePath($offset));
     }
 
     /**
@@ -52,7 +59,7 @@ class FileStorage implements \ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return file_get_contents($this->offsetToPath($offset));
+        return file_get_contents($this->pathWithBasePath($offset));
     }
 
     /**
@@ -63,7 +70,7 @@ class FileStorage implements \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        file_put_contents($this->offsetToPath($offset), $value);
+        file_put_contents($this->pathWithBasePath($offset), $value);
     }
 
     /**
@@ -73,6 +80,6 @@ class FileStorage implements \ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        @unlink($this->offsetToPath($offset));
+        @unlink($this->pathWithBasePath($offset));
     }
 }
