@@ -14,7 +14,7 @@
   *(NB: **Full disclosure**)*
 - **Security issue reporting:** `scott@paragonie.com`
 - **Contacts:** ?
-
+- **Additional dependencies:** None
 
 ## Development dependencies
 
@@ -27,6 +27,9 @@
   not have a security release process.
 - **Security issue reporting:** N/A
 - **Contacts:** N/A
+- **Additional dependencies:** PHPUnit adds numerous additional dependencies
+  to dev builds. The majority are other packages maintained by PHPUnit or its
+  author.
 
 ### Symfony PHPUnit Bridge
 - **Repository:** https://github.com/symfony/phpunit-bridge
@@ -37,7 +40,7 @@
   policy](https://symfony.com/doc/master/contributing/code/security.html)
 - **Security issue reporting:** `security [at] symfony.com`
 - **Contacts:** fabpot, michaelcullum
-
+- **Additional dependencies:** None
 
 ### PHP_CodeSniffer
 - **Repository:** https://github.com/squizlabs/PHP_CodeSniffer
@@ -47,4 +50,5 @@
 - **Security policies:** None listed
 - **Security issue reporting:** ?
 - **Contacts:** ?
+- **Additional dependencies:** None
 
