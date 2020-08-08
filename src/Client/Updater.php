@@ -3,8 +3,8 @@
 
 namespace Tuf\Client;
 
-use Tuf\Client\DurableStorage\FilesystemDurableStorage;
-use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Client\DurableStorage\FileStorage;
+use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
@@ -57,8 +57,8 @@ class Updater
     public function refresh()
     {
         // @TODO Inject DurableStorage
-        $durableStorage = new ValidatingArrayAccessAdapter(
-            new FilesystemDurableStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
+        $durableStorage = new DurableStorageAccessValidator(
+            new FileStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
         );
         $rootData = json_decode($durableStorage['root.json'], true);
         $signed = $rootData['signed'];

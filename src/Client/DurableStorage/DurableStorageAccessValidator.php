@@ -4,11 +4,11 @@
 namespace Tuf\Client\DurableStorage;
 
 /**
- * Class ValidatingArrayAccessAdapter
+ * Class DurableStorageAccessValidator
  *
  * Thin wrapper around ArrayAccess inserted between tuf and the backend \ArrayAccess to limit the valid inputs.
  */
-class ValidatingArrayAccessAdapter implements \ArrayAccess
+class DurableStorageAccessValidator implements \ArrayAccess
 {
     /**
      * @var \ArrayAccess $backend

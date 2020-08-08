@@ -3,15 +3,15 @@
 namespace Tuf\Client\DurableStorage;
 
 /**
- * Class FilesystemLocalState
+ * Class FileStorage
  *
- * A simple implementation of LocalStateInterface using the filesystem.
+ * A simple implementation of \ArrayAccess using the filesystem.
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  *
  * @TODO Add tests for this class.
  */
-class FilesystemDurableStorage implements \ArrayAccess
+class FileStorage implements \ArrayAccess
 {
     /**
      * @var string $basePath
