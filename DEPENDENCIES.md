@@ -8,7 +8,7 @@
   - https://github.com/paragonie/sodium_compat
 - **Release cycle:** No formal policy documented. Follows semver. Old major
   and minor versions appear to receive support after new versions are released.
-- **Security policies:**:
+- **Security policies:**
   [Paragon security
   policy](https://github.com/paragonie/random_compat/security/policy)
   *(NB: **Full disclosure**)*
@@ -22,7 +22,7 @@
 - **Repository:** https://github.com/sebastianbergmann/phpunit
 - **Release cycle:** [Supported versions of
   PHPUnit](https://phpunit.de/supported-versions.html)
-- **Security policies:**: PHPUnit maintainers consider the package a
+- **Security policies:** PHPUnit maintainers consider the package a
   development tool that should not be used in production; therefore, they do
   not have a security release process.
 - **Security issue reporting:** N/A
