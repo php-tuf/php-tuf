@@ -19,7 +19,7 @@ class RepositoryDBCollection
    */
     const KEY_IX = 1;
 
-    protected $dbCollection = array();
+    protected $dbCollection = [];
 
     protected static $singleton;
 
@@ -38,10 +38,10 @@ class RepositoryDBCollection
             throw new \Exception("Repository already has databases: $repositoryName");
         }
 
-        $this->dbCollection[$repositoryName] = array(
+        $this->dbCollection[$repositoryName] = [
         self::ROLE_IX => $roleDB,
         self::KEY_IX => $keyDB,
-        );
+        ];
     }
 
   /**

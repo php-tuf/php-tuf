@@ -10,14 +10,14 @@ class UpdaterTest extends TestCase
 
     public function testUpdateSuccessful()
     {
-        $mirrors = array(
-        'mirror1' => array(
+        $mirrors = [
+        'mirror1' => [
         'url_prefix' => 'http://localhost:8001',
         'metadata_path' => 'metadata',
         'targets_path' => 'targets',
-        'confined_target_dirs' => array(),
-        ),
-        );
+        'confined_target_dirs' => [],
+        ],
+        ];
         $updater = new Updater('repo1', $mirrors);
         $fixtureTarget = 'testtarget.txt';
         $targetStream = fopen('data://text/plain,' . 'Test File', 'r');
