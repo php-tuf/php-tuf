@@ -12,9 +12,9 @@ class UpdaterTest extends TestCase
      * Returns a memory-based updater populated with the test fixtures.
      *
      * @return Updater
-     *   The test updater, which uses the 'current' test fixtures in the
-     *   tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
-     *   mirror.
+     *     The test updater, which uses the 'current' test fixtures in the
+     *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
+     *     mirror.
      */
     protected function getSystemInTest() : Updater
     {
@@ -38,13 +38,14 @@ class UpdaterTest extends TestCase
      * Uses test fixtures at a given path to populate a memory storage backend.
      *
      * @param string $path
-     *   The relative path (within the fixtures directory) for the client data.
+     *     The relative path (within the fixtures directory) for the client
+     *     data.
      *
      * @return InMemoryBackend
-     *   Memory storage containing the test client data.
+     *     Memory storage containing the test client data.
      *
      * @throws \RuntimeException
-     *   Thrown if the relative path is invalid.
+     *     Thrown if the relative path is invalid.
      */
     public function populateMemoryStorageFromFixtures(string $path) : InMemoryBackend
     {
