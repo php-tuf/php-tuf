@@ -87,8 +87,9 @@ dependencies) should undergo the
   - https://github.com/paragonie/sodium_compat
 - **Release cycle:** No formal policy documented. Follows semver. Old major
   and minor versions appear to receive support after new versions are released.
-- **Security policies:**: *NB: **Full disclosure**
+- **Security policies:**:
   [Paragon security policy](https://github.com/paragonie/random_compat/security/policy)
+  *(NB: **Full disclosure**)*
 - **Security issue reporting:** `scott@paragonie.com`
 - **Contacts:** ?
 
@@ -106,8 +107,9 @@ dependencies) should undergo the
 
 #### Symfony PHPUnit Bridge
 - **Repository:** https://github.com/symfony/phpunit-bridge
-- **Release cycle:** Scheduled releases, continuous upgrade path, and
-  long-term support versions. [Symfony releases](https://symfony.com/releases)
+- **Release cycle:** [Symfony releases](https://symfony.com/releases)
+  (Scheduled releases, continuous upgrade path, overlapping major and minor
+  support, and long-term support versions.)
 - **Security policies:**: [Symfony security policy](https://symfony.com/doc/master/contributing/code/security.html)
 - **Security issue reporting:** `security [at] symfony.com`
 - **Contacts:** fabpot, michaelcullum
