@@ -1,6 +1,6 @@
 # PHP-TUF
 
-PHP-TUF is a PHP implementation of [The Update Framework(TUF)](https://theupdateframework.io/) to provide signing and verification for secure PHP application updates. [Read the TUF specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) for more information on how TUF is intended to work and the security it provides.
+PHP-TUF is a PHP implementation of [The Update Framework (TUF)](https://theupdateframework.io/) to provide signing and verification for secure PHP application updates. [Read the TUF specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) for more information on how TUF is intended to work and the security it provides.
 
 PHP-TUF project development is primarily focused on supporting secure automated updates for PHP CMSes. Contributing projects:
 - [Drupal](https://www.drupal.org/)
