@@ -72,6 +72,58 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
        client.py --repo http://localhost:8001 testtarget.txt  # A 404 is expected for N.root.json unless a key has been rotated.
 
+## Dependency policy
+
+To provide a lightweight, reliable, and secure client, external dependencies are
+carefully limited. Any proposed dependency additions (and those dependencies'
+dependencies) should undergo the
+[Drupal core dependency evaluation process](https://www.drupal.org/core/dependencies#criteria).
+
+### Production dependencies
+
+#### Paragonie random_compat and sodium_compat
+- **Repositories:**
+  - https://github.com/paragonie/random_compat
+  - https://github.com/paragonie/sodium_compat
+- **Release cycle:** No formal policy documented. Follows semver. Old major
+  and minor versions appear to receive support after new versions are released.
+- **Security policies:**: *NB: **Full disclosure**
+  [Paragon security policy](https://github.com/paragonie/random_compat/security/policy)
+- **Security issue reporting:** `scott@paragonie.com`
+- **Contacts:** ?
+
+
+### Development dependencies
+
+#### PHPUnit
+- **Repository:** https://github.com/sebastianbergmann/phpunit
+- **Release cycle:** [Supported versions of PHPUnit](https://phpunit.de/supported-versions.html)
+- **Security policies:**: PHPUnit maintainers consider the package a development
+  tool that should not be used in production; therefore, they do not have a
+  security release process.
+- **Security issue reporting:** N/A
+- **Contacts:** N/A
+
+#### Symfony PHPUnit Bridge
+- **Repository:** https://github.com/symfony/phpunit-bridge
+- **Release cycle:** Scheduled releases, continuous upgrade path, and
+  long-term support versions. [Symfony releases](https://symfony.com/releases)
+- **Security policies:**: [Symfony security policy](https://symfony.com/doc/master/contributing/code/security.html)
+- **Security issue reporting:** `security [at] symfony.com`
+- **Contacts:** fabpot, michaelcullum
+
+
+#### PHP_CodeSniffer
+- **Repository:** https://github.com/squizlabs/PHP_CodeSniffer
+- **Release cycle:** No formal policy documented. Follows semver. Old
+  major versions appear to be supported alongside new. Old minor versions
+  do not appear to receive support.
+- **Security policies:**: None listed
+- **Security issue reporting:** ?
+- **Contacts:** ?
+
+
+
 ## Resources
 
 * Python TUF
