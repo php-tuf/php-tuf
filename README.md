@@ -1,31 +1,16 @@
 # PHP-TUF
 
-## What is PHP-TUF?
+PHP-TUF is a PHP implementation of [The Update Framework(TUF)](https://theupdateframework.io/) to provide signing and verification for secure PHP application updates. [Read the TUF specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) for more information on how TUF is intended to work.
 
 ## PHP-TUF server requirements
 
-We recommend using the [default CLI implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md) (a Python application) to generate keys and signatures as a part of your project's release creation process.
+We recommend using the [default CLI implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md) (a Python application) to generate keys and signatures as a part of your project's release creation process. This will require:
+- Python 3.8+
+- PIP 19+
 
 @todo More detailed instructions.
 
-## PHP-TUF client requirements
-
-The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
-
-- Minimum required PHP version: 7.2
-- Requires `ext-json`
-- The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
-  cryptography library; however, installing `ext-sodium` is recommended for
-  better performance and security.
-
-## Running the tests
-1. Ensure you have all required dependencies by running `composer install`.
-2. Run `composer test` at the project's root.
-
-## Code Style
-Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
-
-## Environment Setup for Python TUF CLI
+### Server Environment Setup for Python TUF CLI
 
 1. Install Python 3.8+ and PIP 19+ (not tested on earlier but may work).
 1. Set up a virtual environment:
@@ -37,7 +22,26 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
 
        pip install -r requirements.txt
 
-## Test Fixtures Setup
+## PHP-TUF client requirements
+
+The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
+
+- Minimum required PHP version: 7.2
+- Requires `ext-json`
+- The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
+  cryptography library; however, installing `ext-sodium` is recommended for
+  better performance and security.
+
+## Code Style
+Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
+
+## Testing
+
+### Running the tests
+1. Ensure you have all required dependencies by running `composer install`.
+2. Run `composer test` at the project's root.
+
+### Test Fixtures Setup
 
 1. Start a `fixtures` directory:
 
@@ -49,7 +53,7 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
        echo "Test File" > testtarget.txt
        repo.py --path=fixtures/ --add testtarget.txt
 
-## Using Test Fixtures
+### Using Test Fixtures
 
 1. From `fixtures/tufrepo`:
 
