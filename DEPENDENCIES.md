@@ -44,7 +44,7 @@
 - **Release cycle:** No formal policy documented. Follows semver. Old
   major versions appear to be supported alongside new. Old minor versions
   do not appear to receive support.
-- **Security policies:**: None listed
+- **Security policies:** None listed
 - **Security issue reporting:** ?
 - **Contacts:** ?
 
