@@ -55,7 +55,7 @@ class Updater
    *     be exposed to future instantiations of the Updater that interact with
    *     the same repository.
    */
-    public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage) : void
+    public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage)
     {
         $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
