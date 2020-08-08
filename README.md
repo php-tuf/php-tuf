@@ -2,6 +2,16 @@
 
 PHP-TUF is a PHP implementation of [The Update Framework(TUF)](https://theupdateframework.io/) to provide signing and verification for secure PHP application updates. [Read the TUF specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) for more information on how TUF is intended to work.
 
+## PHP-TUF client requirements
+
+The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
+
+- Minimum required PHP version: 7.2
+- Requires `ext-json`
+- The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
+  cryptography library; however, installing `ext-sodium` is recommended for
+  better performance and security.
+  
 ## PHP-TUF server requirements
 
 We recommend using the [default CLI implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md) (a Python application) to generate keys and signatures as a part of your project's release creation process. This will require:
@@ -21,16 +31,6 @@ We recommend using the [default CLI implementation](https://github.com/theupdate
 1. Install dependencies and TUF:
 
        pip install -r requirements.txt
-
-## PHP-TUF client requirements
-
-The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
-
-- Minimum required PHP version: 7.2
-- Requires `ext-json`
-- The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
-  cryptography library; however, installing `ext-sodium` is recommended for
-  better performance and security.
 
 ## Code Style
 Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
