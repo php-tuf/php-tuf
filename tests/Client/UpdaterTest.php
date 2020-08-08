@@ -55,14 +55,14 @@ class UpdaterTest extends TestCase
 
         $storage = new InMemoryBackend();
 
+        // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
             $realpath,
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
         foreach ($fsIterator as $filename => $info) {
-            /**
-             * @var $info \SplFileInfo
-             */
+            // Only load json files.
+            /** @var $info \SplFileInfo */
             if ($info->isFile() && preg_match("|\.json$|", $filename)) {
                 $storage[$filename] = file_get_contents($info->getRealPath());
             }
