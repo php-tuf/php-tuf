@@ -12,7 +12,6 @@
     "require": {
         "php": ">=7.2.5",
         "ext-json": "*",
-        "ext-sodium": "*",
         "paragonie/sodium_compat": "^1.13"
     },
     "autoload": {
