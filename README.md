@@ -43,6 +43,8 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
 
 ### Test Fixtures Setup
 
+1. [Set up the TUF server environment locally](#server-environment-setup-for-python-tuf-cli).
+
 1. Start a `fixtures` directory:
 
        mkdir fixtures
