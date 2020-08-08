@@ -2,10 +2,8 @@
 
 ## Production dependencies
 
-### Paragon IE random_compat and sodium_compat
-- **Repositories:**
-  - https://github.com/paragonie/random_compat
-  - https://github.com/paragonie/sodium_compat
+### Paragon IE sodium_compat
+- **Repository:** https://github.com/paragonie/sodium_compat
 - **Release cycle:** No formal policy documented. Follows semver. Old major
   and minor versions appear to receive support after new versions are released.
 - **Security policies:**
@@ -14,7 +12,8 @@
   *(NB: **Full disclosure**)*
 - **Security issue reporting:** `scott@paragonie.com`
 - **Contacts:** ?
-- **Additional dependencies:** None
+- **Additional dependencies:** [random_compat](https://github.com/paragonie/random_compat)
+  (Same policies.)
 
 ## Development dependencies
 
