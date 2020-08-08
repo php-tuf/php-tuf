@@ -33,7 +33,7 @@
 - **Release cycle:** [Symfony releases](https://symfony.com/releases)
   (Scheduled releases, continuous upgrade path, overlapping major and minor
   support, and long-term support versions.)
-- **Security policies:**: [Symfony security
+- **Security policies:** [Symfony security
   policy](https://symfony.com/doc/master/contributing/code/security.html)
 - **Security issue reporting:** `security [at] symfony.com`
 - **Contacts:** fabpot, michaelcullum
