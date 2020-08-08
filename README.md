@@ -1,15 +1,23 @@
 # PHP-TUF
 
-PHP-TUF is a PHP implementation of [The Update Framework (TUF)](https://theupdateframework.io/) to provide signing and verification for secure PHP application updates. [Read the TUF specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) for more information on how TUF is intended to work and the security it provides.
+PHP-TUF is a PHP implementation of [The Update Framework 
+(TUF)](https://theupdateframework.io/) to provide signing and verification for 
+secure PHP application updates. [Read the TUF 
+specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) 
+for more information on how TUF is intended to work and the security it provides.
 
-PHP-TUF project development is primarily focused on supporting secure automated updates for PHP CMSes, although it will also work for any PHP application or Composer project. Contributing projects:
+PHP-TUF project development is primarily focused on supporting secure automated
+updates for PHP CMSes, although it should also work for any PHP application or
+Composer project. Contributing projects:
+
 - [Drupal](https://www.drupal.org/)
 - [TYPO3](https://typo3.org/)
 - [Joomla](https://www.joomla.org/)
 
 ## PHP-TUF client requirements
 
-The PHP-TUF client is designed to provide TUF verification to PHP applications for target signatures.
+The PHP-TUF client is designed to provide TUF verification to PHP applications
+for target signatures.
 
 - Minimum required PHP version: 7.2
 - Requires `ext-json`
@@ -19,7 +27,10 @@ The PHP-TUF client is designed to provide TUF verification to PHP applications f
   
 ## PHP-TUF server requirements
 
-We recommend using the [default CLI implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md) (a Python application) to generate keys and signatures as a part of your project's release creation process. This will require:
+We recommend using the [default CLI 
+implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
+(a Python application) to generate keys and signatures as a part of your
+project's release creation process. This will require:
 - Python 3.8+
 - PIP 19+
 
@@ -38,7 +49,9 @@ We recommend using the [default CLI implementation](https://github.com/theupdate
        pip install -r requirements.txt
 
 ## Code style
-Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
+
+Run `composer phpcs` to check for code style compliance. The code adheres to
+PSR-2 code standards.
 
 ## Testing
 
@@ -71,6 +84,17 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
        mkdir -p tuftargets
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
        client.py --repo http://localhost:8001 testtarget.txt  # A 404 is expected for N.root.json unless a key has been rotated.
+
+## Dependency policies and information
+
+
+To provide a lightweight, reliable, and secure client, external dependencies
+are carefully limited. Any proposed dependency additions (and those
+dependencies' dependencies) should undergo the [Drupal core dependency
+evaluation process](https://www.drupal.org/core/dependencies#criteria).
+
+For evaluations and policies of current dependencies, see the [PHP-TUF
+dependency information](DEPENDENCIES.md).
 
 ## Resources
 
