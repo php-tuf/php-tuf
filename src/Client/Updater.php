@@ -28,21 +28,39 @@ class Updater
    */
     protected $mirrors;
 
-    protected $keyRegistry;
+    /**
+     * The permanent storage (e.g., filesystem storage) for the client metadata.
+     *
+     * @var \ArrayAccess
+     */
+    protected $durableStorage;
 
   /**
    * Updater constructor.
    *
    * @param string $repositoryName
-   * @param array[][] $mirrors
-   *   Re
+   *     A name the application assigns to the repository used by this Updater.
+   * @param mixed[][] $mirrors
+   *     A nested array of mirrors to use for fetching signing data from the
+   *     repository. Each child array contains information about the mirror:
+   *     - url_prefix: (string) The URL for the mirror.
+   *     - metadata_path: (string) The path within the repository for signing
+   *       metadata.
+   *     - targets_path: (string) The path within the repository for targets
+   *       (the actual update data that has been signed).
+   *     - confined_target_dirs: (array) @todo What is this for?
+   * @param \ArrayAccess $durableStorage
+   *     An implementation of \ArrayAccess that stores its contents durably, as
+   *     in to disk or a database. Values written for a given repository should
+   *     be exposed to future instantiations of the Updater that interact with
+   *     the same repository.
    */
-    public function __construct($repositoryName, $mirrors)
+    public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage)
     {
         $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
+        $this->durableStorage = new ValidatingArrayAccessAdapter($durableStorage);
     }
-
 
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
@@ -66,11 +84,7 @@ class Updater
    */
     public function validateTarget($targetRepoPath, $targetStream)
     {
-        // @TODO Inject DurableStorage
-        $durableStorage = new ValidatingArrayAccessAdapter(
-            new FilesystemDurableStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
-        );
-        $rootData = json_decode($durableStorage['root.json'], true);
+        $rootData = json_decode($this->durableStorage['root.json'], true);
         $signed = $rootData['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
@@ -115,6 +129,7 @@ class Updater
           // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
         }
+
 
         return true;
     }

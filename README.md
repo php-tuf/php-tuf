@@ -9,6 +9,7 @@ for more information on how TUF is intended to work and the security it provides
 PHP-TUF project development is primarily focused on supporting secure automated
 updates for PHP CMSes, although it should also work for any PHP application or
 Composer project. Contributing projects:
+
 - [Drupal](https://www.drupal.org/)
 - [TYPO3](https://typo3.org/)
 - [Joomla](https://www.joomla.org/)
