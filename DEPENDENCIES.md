@@ -1,9 +1,4 @@
-# PHP-TUF dependency policy
-
-To provide a lightweight, reliable, and secure client, external dependencies
-are carefully limited. Any proposed dependency additions (and those
-dependencies' dependencies) should undergo the [Drupal core dependency
-evaluation process](https://www.drupal.org/core/dependencies#criteria).
+# PHP-TUF dependency information
 
 ## Production dependencies
 

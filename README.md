@@ -74,7 +74,14 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
 
 ## Dependency policies and information
 
-See the [PHP-TUF dependency policy](DEPENDENCIES.md).
+
+To provide a lightweight, reliable, and secure client, external dependencies
+are carefully limited. Any proposed dependency additions (and those
+dependencies' dependencies) should undergo the [Drupal core dependency
+evaluation process](https://www.drupal.org/core/dependencies#criteria).
+
+For evaluations and policies of current dependencies, see the [PHP-TUF
+dependency information](DEPENDENCIES.md).
 
 ## Resources
 
