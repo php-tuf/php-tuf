@@ -11,11 +11,11 @@ namespace Tuf\Tests\DurableStorage;
  */
 class MemoryStorage implements \ArrayAccess
 {
-    private $container = array();
+    private $container = [];
 
     public function __construct()
     {
-        $this->container = array();
+        $this->container = [];
     }
 
     public function offsetSet($offset, $value)

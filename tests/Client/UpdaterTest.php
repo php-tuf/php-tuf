@@ -12,14 +12,14 @@ class UpdaterTest extends TestCase
      */
     protected function getSystemInTest()
     {
-        $mirrors = array(
-            'mirror1' => array(
+        $mirrors = [
+            'mirror1' => [
                 'url_prefix' => 'http://localhost:8001',
                 'metadata_path' => 'metadata',
                 'targets_path' => 'targets',
-                'confined_target_dirs' => array(),
-            ),
-        );
+                'confined_target_dirs' => [],
+            ],
+        ];
         $updater = new Updater('repo1', $mirrors);
         return $updater;
     }

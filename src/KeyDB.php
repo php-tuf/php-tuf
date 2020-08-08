@@ -34,7 +34,7 @@ class KeyDB
 
     public static function getSupportedKeyTypes()
     {
-        static $types = array();
+        static $types = [];
         if (count($types) == 0) {
             $types = explode(" ", SUPPORTED_KEY_TYPES);
         }
@@ -43,12 +43,12 @@ class KeyDB
 
     public static function computeKeyIds($keyMeta)
     {
-        $keyCanonicalStruct = array(
+        $keyCanonicalStruct = [
         'keytype' => $keyMeta['keytype'],
         'scheme' => $keyMeta['scheme'],
         'keyid_hash_algorithms' => $keyMeta['keyid_hash_algorithms'],
-        'keyval' => array('public' => $keyMeta['keyval']['public']),
-        );
+        'keyval' => ['public' => $keyMeta['keyval']['public']],
+        ];
         $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
         return array_map(function ($algo) use ($keyCanonicalForm) {
             return hash($algo, $keyCanonicalForm, false);
@@ -57,7 +57,7 @@ class KeyDB
 
     public function __construct()
     {
-        $this->keys = array();
+        $this->keys = [];
     }
 
     public function addKey($keyMeta)
