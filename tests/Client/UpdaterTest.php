@@ -9,9 +9,14 @@ use Tuf\Tests\DurableStorage\InMemoryBackend;
 class UpdaterTest extends TestCase
 {
     /**
+     * Returns a memory-based updater populated with the test fixtures.
+     *
      * @return Updater
+     *   The test updater, which uses the 'current' test fixtures in the
+     *   tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
+     *   mirror.
      */
-    protected function getSystemInTest()
+    protected function getSystemInTest() : Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -22,13 +27,26 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        // Memory storage used so tests can write without permanent side-effects.
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
         $localRepo = $this->populateMemoryStorageFromFixtures('tufclient/tufrepo/metadata/current');
         $updater = new Updater('repo1', $mirrors, $localRepo);
         return $updater;
     }
 
-    public function populateMemoryStorageFromFixtures($path)
+    /**
+     * Uses test fixtures at a given path to populate a memory storage backend.
+     *
+     * @param string $path
+     *   The relative path (within the fixtures directory) for the client data.
+     *
+     * @return InMemoryBackend
+     *   Memory storage containing the test client data.
+     *
+     * @throws \RuntimeException
+     *   Thrown if the relative path is invalid.
+     */
+    public function populateMemoryStorageFromFixtures(string $path) : InMemoryBackend
     {
         $realpath = realpath(__DIR__ . "/../../fixtures/$path");
         if ($realpath === false || !is_dir($realpath)) {
