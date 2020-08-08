@@ -2,7 +2,7 @@
 
 ## Production dependencies
 
-### Paragonie random_compat and sodium_compat
+### Paragon IE random_compat and sodium_compat
 - **Repositories:**
   - https://github.com/paragonie/random_compat
   - https://github.com/paragonie/sodium_compat
