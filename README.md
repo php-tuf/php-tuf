@@ -20,7 +20,7 @@ We recommend using the [default CLI implementation](https://github.com/theupdate
 
 @todo More detailed instructions.
 
-### Server Environment Setup for Python TUF CLI
+### Server environment setup for the Python TUF CLI
 
 1. Install Python 3.8+ and PIP 19+ (not tested on earlier but may work).
 1. Set up a virtual environment:
@@ -32,7 +32,7 @@ We recommend using the [default CLI implementation](https://github.com/theupdate
 
        pip install -r requirements.txt
 
-## Code Style
+## Code style
 Run `composer phpcs` to check for code style compliance. The code adheres to PSR-2 code standards.
 
 ## Testing
@@ -41,7 +41,7 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
 1. Ensure you have all required dependencies by running `composer install`.
 2. Run `composer test` at the project's root.
 
-### Test Fixtures Setup
+### Test fixtures setup
 
 1. [Set up the TUF server environment locally](#server-environment-setup-for-python-tuf-cli).
 
@@ -55,7 +55,7 @@ Run `composer phpcs` to check for code style compliance. The code adheres to PSR
        echo "Test File" > testtarget.txt
        repo.py --path=fixtures/ --add testtarget.txt
 
-### Using Test Fixtures
+### Using test fixtures
 
 1. From `fixtures/tufrepo`:
 
