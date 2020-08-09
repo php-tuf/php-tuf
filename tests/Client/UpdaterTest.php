@@ -39,13 +39,4 @@ class UpdaterTest extends TestCase
     {
     }
 
-    /*
-    public function testValidateTarget()
-    {
-        $updater = $this->getSystemInTest();
-        $fixture_target = 'testtarget.txt';
-        $target_stream = fopen('data://text/plain,' . 'Test File', 'r');
-        $this->assertTrue($updater->validateTarget($fixture_target, $target_stream));
-    }
-    */
 }
