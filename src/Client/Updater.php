@@ -31,21 +31,39 @@ class Updater
    */
     protected $mirrors;
 
-    protected $keyRegistry;
+    /**
+     * The permanent storage (e.g., filesystem storage) for the client metadata.
+     *
+     * @var \ArrayAccess
+     */
+    protected $durableStorage;
 
   /**
    * Updater constructor.
    *
    * @param string $repositoryName
-   * @param array[][] $mirrors
-   *   Re
+   *     A name the application assigns to the repository used by this Updater.
+   * @param mixed[][] $mirrors
+   *     A nested array of mirrors to use for fetching signing data from the
+   *     repository. Each child array contains information about the mirror:
+   *     - url_prefix: (string) The URL for the mirror.
+   *     - metadata_path: (string) The path within the repository for signing
+   *       metadata.
+   *     - targets_path: (string) The path within the repository for targets
+   *       (the actual update data that has been signed).
+   *     - confined_target_dirs: (array) @todo What is this for?
+   * @param \ArrayAccess $durableStorage
+   *     An implementation of \ArrayAccess that stores its contents durably, as
+   *     in to disk or a database. Values written for a given repository should
+   *     be exposed to future instantiations of the Updater that interact with
+   *     the same repository.
    */
-    public function __construct($repositoryName, $mirrors)
+    public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage)
     {
         $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
+        $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
     }
-
 
   /**
    * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
@@ -56,11 +74,7 @@ class Updater
    */
     public function refresh()
     {
-        // @TODO Inject DurableStorage
-        $durableStorage = new DurableStorageAccessValidator(
-            new FileStorage(__DIR__ . "/../../fixtures/tufrepo/metadata")
-        );
-        $rootData = json_decode($durableStorage['root.json'], true);
+        $rootData = json_decode($this->durableStorage['root.json'], true);
         $signed = $rootData['signed'];
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
@@ -105,8 +119,9 @@ class Updater
             throw new \Exception("Improperly signed repository timestamp.");
         }
 
+
         // SPEC: 2.2
-        $currentStateTimestamp = json_decode($durableStorage['timestamp.json'], true);
+        $currentStateTimestamp = json_decode($this->durableStorage['timestamp.json'], true);
         $this->checkRollbackAttack($currentStateTimestamp['signed'], $timestampStructure['signed']);
 
         // SPEC: 2.3
@@ -138,11 +153,14 @@ class Updater
         if ($localVersion == 0) {
             // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
             // we can't perform this check properly.
-            throw new RollbackAttackException("Empty or invalid local timestamp version \"${localMetadata['version']}\"");
+            $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
+            throw new RollbackAttackException($message);
         }
         $remoteVersion = (int)$remoteMetadata['version'];
         if ($remoteVersion < $localVersion) {
-            throw new RollbackAttackException("Remote timestamp metadata version \"${remoteMetadata['version']}\" is less than previously seen timestamp version \"${localMetadata['version']}\"");
+            $message = "Remote timestamp metadata version \"${remoteMetadata['version']}\"" .
+                " is less than previously seen timestamp version \"${localMetadata['version']}\"";
+            throw new RollbackAttackException($message);
         }
     }
 
@@ -161,7 +179,8 @@ class Updater
             $type = $metadata['_type'];
         }
         if ($metadataExpiration < $now) {
-            throw new FreezeAttackException(sprintf("Remote %s metadata expired on %s", $type, $metadataExpiration->format('c')));
+            $format = "Remote %s metadata expired on %s";
+            throw new FreezeAttackException(sprintf($format, $type, $metadataExpiration->format('c')));
         }
     }
 
