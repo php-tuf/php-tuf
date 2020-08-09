@@ -58,7 +58,7 @@ jobs:
         run: composer lint
 
       - name: Run PHPCS
-        run: composer phpcs-ci
+        run: composer phpcs
 
       - name: Run test suite
         run: composer test

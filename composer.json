@@ -12,7 +12,10 @@
     "require": {
         "php": ">=7.2.5",
         "ext-json": "*",
-        "ext-sodium": "*"
+        "paragonie/sodium_compat": "^1.13"
+    },
+    "suggest": {
+        "ext-libsodium": "Provides faster verification of updates"
     },
     "autoload": {
         "psr-4": {
@@ -27,7 +30,6 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=phpcs-ruleset.xml ./src ./tests",
-        "phpcs-ci": "phpcs -n --standard=phpcs-ruleset.xml ./src ./tests",
         "phpcbf": "phpcbf --standard=phpcs-ruleset.xml ./src ./tests",
         "test": "phpunit ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
