@@ -4,15 +4,14 @@
 namespace Tuf\Client\DurableStorage;
 
 /**
- * Class FilesystemLocalState
+ * Defines a simple filesystem-based storage for fetched PHP-TUF metadata.
  *
- * A simple implementation of LocalStateInterface using the filesystem.
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  *
  * @todo Add tests for this class.
  */
-class FilesystemDurableStorage implements \ArrayAccess
+class FileStorage implements \ArrayAccess
 {
     /**
      * @var string $rootPath
