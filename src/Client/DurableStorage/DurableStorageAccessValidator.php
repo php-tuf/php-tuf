@@ -44,7 +44,8 @@ class DurableStorageAccessValidator implements \ArrayAccess
     public function offsetSet($offset, $value)
     {
         $this->throwIfInvalidOffset($offset);
-        // @TODO Consider application-configurable maximum length here. https://github.com/php-tuf/php-tuf/issues/27
+        // @todo Consider enforcing an application-configurable maximum length
+        //     here. https://github.com/php-tuf/php-tuf/issues/27
         if (! is_string($value)) {
             $format = "Cannot store %s at offset $offset: only strings are allowed in durable storage.";
             throw new \UnexpectedValueException(sprintf($format, gettype($value)));

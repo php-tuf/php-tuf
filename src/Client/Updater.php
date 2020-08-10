@@ -66,10 +66,11 @@ class Updater
     }
 
   /**
-   * @todo Update from python comment https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
-   *
+   * @todo Add docs. See python comments:
+   *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
    * @todo The Python implementation has an optional flag to "unsafely update
    *     root if necessary". Do we need it?
+   *
    * @see https://github.com/php-tuf/php-tuf/issues/21
    */
     public function refresh()
@@ -79,7 +80,8 @@ class Updater
 
         $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
         $keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
-        // @TODO investigate whether we in fact need multiple simultaneous repository support.
+        // @todo investigate whether we in fact need multiple simultaneous
+        //   repository support.
         RepositoryDBCollection::singleton()->setDatabasesForRepository($keyDB, $roleDB, 'default');
 
         // SPEC: 1.1.
@@ -90,8 +92,9 @@ class Updater
         $nextVersion = $version + 1;
         $nextRootContents = $this->getRepoFile("$nextVersion.root.json");
         if ($nextRootContents) {
-            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
-            //  Not production ready🙀.
+            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec
+            //     steps 1.3 -> 1.7.
+            // Not production ready🙀.
             throw new \Exception("Root rotation not implemented.");
         }
 
@@ -102,8 +105,8 @@ class Updater
         $nowDate = $this->metadataTimestampToDatetime($fakeNow);
         if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
-            // @todo "On the next update cycle, begin at step 0 and version N of the
-            //   root metadata file."
+            // @todo "On the next update cycle, begin at step 0 and version N
+            //    of the root metadata file."
         }
 
         // @todo Implement spec 1.9. Does this step rely on root rotation?
@@ -212,9 +215,9 @@ class Updater
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
                 $haveVerified += (int)$this->verifySingleSignature($canonicalBytes, $signature);
             }
-            // @TODO Determine if we should check all signatures and warn for bad
-            //  signatures even this method returns TRUE because the threshold
-            //  has been met.
+            // @todo Determine if we should check all signatures and warn for
+            //     bad signatures even this method returns TRUE because the
+            //     threshold has been met.
             if ($haveVerified >= $needVerified) {
                 break;
             }
@@ -237,7 +240,8 @@ class Updater
         $pubkey = $keyMeta['keyval']['public'];
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
-        // @TODO check that the key type in $signatureMeta is ed25519; return false if not.
+        // @todo check that the key type in $signatureMeta is ed25519; return
+        //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
@@ -245,7 +249,8 @@ class Updater
     private function getRepoFile($string)
     {
         try {
-          // @todo Ensure the file does not exceed a certain size to prevent DOS attacks.
+            // @todo Ensure the file does not exceed a certain size to prevent
+            //     DOS attacks.
             return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
         } catch (\Exception $exception) {
             return false;

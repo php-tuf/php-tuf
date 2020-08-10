@@ -6,7 +6,7 @@ namespace Tuf\Exception;
 use Throwable;
 
 /**
- * @TODO Remove this class if not used.
+ * @todo Remove this class if not used.
  */
 class NotFoundException extends TufException
 {
