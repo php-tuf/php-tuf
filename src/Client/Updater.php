@@ -150,21 +150,8 @@ class Updater
         // @TODO finish implementing SPEC 2.x. See PR#18.
 
         $timestamp = $timestampStructure['signed'];
-        // SPEC: 3
+        // SPEC: 3.0, 3.1
         $snapshotStructure = $this->updateMetadataIfChanged('snapshot', $timestamp);
-        // SPEC: 3.1.
-        // Note that we've already verified versions match. Only snapshots are also subject to the hash
-        // matching the one found in the latest timestamp metadata.
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($snapshotStructure['signed']);
-        $expectedShasFromTimestamp = $timestamp['meta'][$this->roleToFilename('snapshot')]['hashes'] ?? [];
-        // Per specification, "the new snapshot metadata file MUST match the hashes (if any)"
-        if (count($expectedShasFromTimestamp) > 0) {
-            if (!$this->verifyHash($canonicalBytes, $expectedShasFromTimestamp)) {
-                // @TODO Convert to a (new?) subclass of PossibleAttackException once it's merged in. See PR#18.
-                $message = 'Snapshot hash in remote repository timestamp metadata does not match latest snapshot.';
-                throw new \Exception($message);
-            }
-        }
         // SPEC: 3.2
         if (! $this->checkSignatures($snapshotStructure, 'snapshot')) {
             // @TODO Convert to a new subclass of PossibleAttackException once it's merged in. See PR#18.
@@ -307,6 +294,19 @@ class Updater
             $remoteFilename = "${version}.$remoteFilename";
         }
         $rawRepoData = $this->getRepoFile($remoteFilename);
+        if ($roleToUpdate === 'snapshot') {
+            // For snapshot roles only, there may be a hash in the timestamp data that the snapshot should match.
+            // SPEC: 3.1
+            $expectedShasFromTimestamp = $expectedVersionInfo['hashes'] ?? [];
+            // Per specification, "the new snapshot metadata file MUST match the hashes (if any)"
+            if (count($expectedShasFromTimestamp) > 0) {
+                if (!$this->verifyHash($rawRepoData, $expectedShasFromTimestamp)) {
+                    // @TODO Convert to a (new?) subclass of PossibleAttackException once it's merged in. See PR#18.
+                    $message = 'Snapshot hash in remote repository timestamp metadata does not match latest snapshot.';
+                    throw new \Exception($message);
+                }
+            }
+        }
         // @TODO Do something less quick & dirty to get useful types from remote repo. See issue #xx
         $repoData = json_decode($rawRepoData, true);
         return $repoData;
