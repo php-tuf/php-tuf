@@ -41,8 +41,11 @@ class FileStorage implements \ArrayAccess
      *
      * @param mixed offset
      *     The ArrayAccess offset for the item.
+     *
+     * @return string
+     *     The full path for the item in the storage.
      */
-    protected function pathWithBasePath($offset)
+    protected function pathWithBasePath($offset) : string
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
