@@ -4,7 +4,8 @@ PHP-TUF is a PHP implementation of [The Update Framework
 (TUF)](https://theupdateframework.io/) to provide signing and verification for 
 secure PHP application updates. [Read the TUF 
 specification](https://github.com/theupdateframework/specification/blob/master/tuf-spec.md) 
-for more information on how TUF is intended to work and the security it provides.
+for more information on how TUF is intended to work and the security it
+provides.
 
 PHP-TUF project development is primarily focused on supporting secure automated
 updates for PHP CMSes, although it should also work for any PHP application or
@@ -83,7 +84,8 @@ PSR-2 code standards.
 
        mkdir -p tuftargets
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
-       client.py --repo http://localhost:8001 testtarget.txt  # A 404 is expected for N.root.json unless a key has been rotated.
+       client.py --repo http://localhost:8001 testtarget.txt
+       # A 404 is expected for N.root.json unless a key has been rotated.
 
 ## Dependency policies and information
 
