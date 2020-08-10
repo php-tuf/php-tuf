@@ -7,5 +7,4 @@ namespace Tuf\Exception;
  */
 abstract class TufException extends \Exception
 {
-
 }

@@ -7,5 +7,4 @@ namespace Tuf\Exception\PotentialAttackException;
  */
 class RollbackAttackException extends PotentialAttackException
 {
-
 }

@@ -7,5 +7,4 @@ namespace Tuf\Exception\PotentialAttackException;
  */
 class FreezeAttackException extends PotentialAttackException
 {
-
 }
