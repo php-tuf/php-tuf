@@ -14,10 +14,19 @@ class FileStorage implements \ArrayAccess
 {
     /**
      * @var string $basePath
-     *   The path on the filesystem to this durable storage's files.
+     *     The path on the filesystem to this durable storage's files.
      */
     protected $basePath;
 
+    /**
+     * Constructs a new FileStorage instance.
+     *
+     * @param string $basePath
+     *     The path on the filesystem to this durable storage's files.
+     *
+     * @throws \RuntimeException
+     *     Thrown if the base path is not an accessible, existing directory.
+     */
     public function __construct(string $basePath)
     {
         if (! is_dir($basePath)) {
@@ -27,26 +36,44 @@ class FileStorage implements \ArrayAccess
         $this->basePath = $basePath;
     }
 
+    /**
+     * Returns a full path for an item in the storage.
+     *
+     * @param mixed offset
+     *     The ArrayAccess offset for the item.
+     */
     protected function pathWithBasePath($offset)
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset)
     {
         return file_exists($this->pathWithBasePath($offset));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetGet($offset)
     {
         return file_get_contents($this->pathWithBasePath($offset));
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetSet($offset, $value)
     {
         file_put_contents($this->pathWithBasePath($offset), $value);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetUnset($offset)
     {
         @unlink($this->pathWithBasePath($offset));
