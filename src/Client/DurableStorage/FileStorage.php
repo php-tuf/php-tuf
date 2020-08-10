@@ -9,6 +9,7 @@ namespace Tuf\Client\DurableStorage;
  * better performance and error handling.
  *
  * @todo Add tests for this class.
+ *     https://github.com/php-tuf/php-tuf/issues/33
  */
 class FileStorage implements \ArrayAccess
 {
