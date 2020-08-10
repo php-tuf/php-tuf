@@ -13,7 +13,7 @@ class DurableStorageAccessValidatorTest extends TestCase
 {
     protected function getSystemInTest()
     {
-        return new DurableStorageAccessValidator(new InMemoryBackend());
+        return new DurableStorageAccessValidator(new MemoryStorage());
     }
 
     /**
