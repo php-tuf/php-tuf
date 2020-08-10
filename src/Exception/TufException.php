@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Exception;
 
 /**
