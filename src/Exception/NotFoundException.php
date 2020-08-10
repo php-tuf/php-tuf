@@ -1,11 +1,12 @@
 <?php
 
-
 namespace Tuf\Exception;
 
 use Throwable;
 
 /**
+ * Indicates that an item was not found in the repository data.
+ *
  * @todo Remove this class if not used.
  */
 class NotFoundException extends TufException
