@@ -12,7 +12,7 @@ class NotFoundException extends \Exception
 {
     /**
      * @var string $key
-     *   The unique identifier (id, file path, etc.) for the item that was not found.
+     *   The unique identifier (ID, file path, etc.) for the item that was not found.
      */
     public $key;
 
