@@ -27,28 +27,28 @@ class FileStorage implements \ArrayAccess
         $this->basePath = $basePath;
     }
 
-    protected function offsetToPath($offset)
+    protected function pathWithBasePath($offset)
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
     public function offsetExists($offset)
     {
-        return file_exists($this->offsetToPath($offset));
+        return file_exists($this->pathWithBasePath($offset));
     }
 
     public function offsetGet($offset)
     {
-        return file_get_contents($this->offsetToPath($offset));
+        return file_get_contents($this->pathWithBasePath($offset));
     }
 
     public function offsetSet($offset, $value)
     {
-        file_put_contents($this->offsetToPath($offset), $value);
+        file_put_contents($this->pathWithBasePath($offset), $value);
     }
 
     public function offsetUnset($offset)
     {
-        @unlink($this->offsetToPath($offset));
+        @unlink($this->pathWithBasePath($offset));
     }
 }
