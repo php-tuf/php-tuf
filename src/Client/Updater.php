@@ -100,8 +100,8 @@ class Updater
         $nextVersion = $version + 1;
         $nextRootContents = $this->getRepoFile("$nextVersion.root.json");
         if ($nextRootContents) {
-          // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
-          //  Not production ready🙀.
+            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec steps 1.3 -> 1.7.
+            //  Not production ready🙀.
             throw new \Exception("Root rotation not implemented.");
         }
 
@@ -112,8 +112,8 @@ class Updater
         $nowDate = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
         if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
-          // @todo "On the next update cycle, begin at step 0 and version N of the
-          //   root metadata file."
+            // @todo "On the next update cycle, begin at step 0 and version N of the
+            //   root metadata file."
         }
 
         // @todo Implement spec 1.9. Does this step rely on root rotation?

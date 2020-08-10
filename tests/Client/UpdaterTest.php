@@ -75,12 +75,12 @@ class UpdaterTest extends TestCase
     public function testUpdateSuccessful()
     {
         $mirrors = [
-        'mirror1' => [
-        'url_prefix' => 'http://localhost:8001',
-        'metadata_path' => 'metadata',
-        'targets_path' => 'targets',
-        'confined_target_dirs' => [],
-        ],
+            'mirror1' => [
+                'url_prefix' => 'http://localhost:8001',
+                'metadata_path' => 'metadata',
+                'targets_path' => 'targets',
+                'confined_target_dirs' => [],
+            ],
         ];
         $updater = $this->getSystemInTest();
         $fixtureTarget = 'testtarget.txt';
