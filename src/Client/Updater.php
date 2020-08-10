@@ -5,6 +5,7 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\FilesystemDurableStorage;
 use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Exception\RepositoryLayoutException;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -35,6 +36,20 @@ class Updater
      */
     protected $durableStorage;
 
+    /**
+     * List of hash algorithms that may be used for byte stream verification.
+     *
+     * @var \array
+     */
+    private $supportedHashAlgos;
+
+    /**
+     * Indicates whether the remote repository is using the TUF specification's consistent snapshots.
+     *
+     * @var bool
+     */
+    protected $consistentSnapshots;
+
   /**
    * Updater constructor.
    *
@@ -60,6 +75,8 @@ class Updater
         $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
         $this->durableStorage = new ValidatingArrayAccessAdapter($durableStorage);
+        $this->consistentSnapshots = false;
+        $this->supportedHashAlgos = $this->buildSupportedHashAlgosList();
     }
 
   /**
@@ -119,17 +136,40 @@ class Updater
         // @todo Implement spec 1.9. Does this step rely on root rotation?
 
         // SPEC: 1.10. Will be used in spec step 4.3.
-        //$consistent = $rootData['consistent'];
+        $this->consistentSnapshots = (bool)$signed['consistent_snapshot'];
 
         // SPEC: 2
         $timestampContents = $this->getRepoFile('timestamp.json');
         $timestampStructure = json_decode($timestampContents, true);
         // SPEC: 2.1
         if (! $this->checkSignatures($timestampStructure, 'timestamp')) {
-          // Exception? Log + return false?
+            // @TODO Convert to a new subclass of PossibleAttackException once it's merged in. See PR#18.
             throw new \Exception("Improperly signed repository timestamp.");
         }
 
+        // @TODO finish implementing SPEC 2.x. See PR#18.
+
+        $timestamp = $timestampStructure['signed'];
+        // SPEC: 3
+        $snapshotStructure = $this->updateMetadataIfChanged('snapshot', $timestamp);
+        // SPEC: 3.1.
+        // Note that we've already verified versions match. Only snapshots are also subject to the hash
+        // matching the one found in the latest timestamp metadata.
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($snapshotStructure['signed']);
+        $expectedShasFromTimestamp = $timestamp['meta'][$this->roleToFilename('snapshot')]['hashes'] ?? [];
+        // Per specification, "the new snapshot metadata file MUST match the hashes (if any)"
+        if (count($expectedShasFromTimestamp) > 0) {
+            if (!$this->verifyHash($canonicalBytes, $expectedShasFromTimestamp)) {
+                // @TODO Convert to a (new?) subclass of PossibleAttackException once it's merged in. See PR#18.
+                $message = 'Snapshot hash in remote repository timestamp metadata does not match latest snapshot.';
+                throw new \Exception($message);
+            }
+        }
+        // SPEC: 3.2
+        if (! $this->checkSignatures($snapshotStructure, 'snapshot')) {
+            // @TODO Convert to a new subclass of PossibleAttackException once it's merged in. See PR#18.
+            throw new \Exception('Improperly signed repository snapshot.');
+        }
 
         return true;
     }
@@ -176,6 +216,155 @@ class Updater
         $sigBytes = hex2bin($signatureMeta['sig']);
         // @TODO check that the key type in $signatureMeta is ed25519; return false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
+    }
+
+    /**
+     * Verifies that the provided bytes match a provided hash.
+     *
+     * @param string $bytes
+     *   The bytes to verify.
+     * @param array $hashMeta
+     *   An associative array of algorithms and associated hashes.
+     * @return bool
+     *   True if the bytes could be verified using any hash algorithm, false if the hash did not match.
+     * @throws \Exception
+     *   Thrown if none of the provided hash algorithms are supported by the php installation.
+     */
+    protected function verifyHash(string $bytes, array $hashMeta) : bool
+    {
+        foreach ($hashMeta as $algo => $hash) {
+            $algo = strtolower($algo);
+            if (in_array($algo, $this->supportedHashAlgos)) {
+                if (! is_string($hash) || empty($hash)) {
+                    throw new RepositoryLayoutException("Invalid representation of $algo hash.");
+                }
+                return hash($algo, $bytes) === $hash;
+            }
+        }
+        // @TODO Convert to TufException once it's merged in. See PR#18.
+        throw new \Exception("No hash algorithms common to local system and remote repository.");
+    }
+
+    /**
+     * Updates metadata for the given role only if the local copy is not fresh
+     * according to the referencing metadata.
+     *
+     * For example, metadata for the timestamp role references the current
+     * snapshot metadata version. If local snapshot metadata already matches
+     * the version found in the fresh timestamp metadata, then the snapshot
+     * metadata is not refreshed.
+     *
+     * @param string $roleToUpdate
+     *   A role name to update.
+     *   Examples: "snapshot", "targets"
+     * @param array $freshReferencingMetadata
+     *   The signed portion of a referencing metadata.
+     *   The provided metadata MUST be known to be fresh (such as by having
+     *   been just retrieved) and MUST reference the role to update (plus
+     *   encoding extension, such as .json) in its "meta" key.
+     * @return array
+     *   The metadata for the $roleToUpdate, whether or not it was updated.
+     * @throws \Tuf\Exception\RepositoryLayoutException
+     *   Throws if referencing metadata does not refer to the role to update.
+     */
+    protected function updateMetadataIfChanged(string $roleToUpdate, array $freshReferencingMetadata) : array
+    {
+        $metadataFilename = $this->roleToFilename($roleToUpdate);
+        $expectedVersionInfo = $freshReferencingMetadata['meta'][$metadataFilename] ?? null;
+        if ($expectedVersionInfo === null) {
+            $message = "Role ${roleToUpdate} was not referenced in the provided metadata.";
+            throw new RepositoryLayoutException($message);
+        }
+
+        $role = $this->getLocalMetadataIfCurrent($roleToUpdate, $expectedVersionInfo);
+        if ($role !== null) {
+            // Reference shows the local metadata is current.
+            // Before continuing, ensure it is not expired.
+            $this->ensureNotExpired($role);
+            return $role;
+        }
+
+        // Get the metadata remotely.
+        // If consistent snapshots are in use, the remote filename is a function of the current
+        // snapshot metadata, unless the role being updated is snapshots in which case it is a
+        // function of the current timestamp data.
+        $remoteFilename = $this->roleToFilename($roleToUpdate);
+        if ($this->consistentSnapshots) {
+            $version = 0;
+            switch ($roleToUpdate) {
+                case 'snapshot':
+                    $version = $expectedVersionInfo['version'];
+                    break;
+                default:
+                    // All other roles will need to load snapshot from storage and use the version listed there.
+                    throw new \Exception('Not implemented.');
+            }
+            if ((int)$version == 0) {
+                $format = 'The TUF repository is using consistent snapshots, but the current version for \"%s\"'
+                    . 'could not be determined.';
+                throw new RepositoryLayoutException(sprintf($format, $roleToUpdate));
+            }
+            $remoteFilename = "${version}.$remoteFilename";
+        }
+        $rawRepoData = $this->getRepoFile($remoteFilename);
+        // @TODO Do something less quick & dirty to get useful types from remote repo. See issue #xx
+        $repoData = json_decode($rawRepoData, true);
+        return $repoData;
+    }
+
+    protected function ensureNotExpired(array $metadata, \DateTimeImmutable $now) : void
+    {
+        // @TODO compare date in $metadata with $now and throw ExpiredMetadataException
+        // metadataTimestampToDatetime() in #18 will help with this.
+    }
+
+    /**
+     * Gets the metadata for $role from durable storage if it is current according to $expectedVersionInfo.
+     *
+     * @param array $role
+     * @param array $expectedVersionInfo
+     * @return array|null
+     *   The metadata from durable storage if it is current, otherwise null.
+     */
+    protected function getLocalMetadataIfCurrent(string $role, array $expectedVersionInfo)
+    {
+        $localRoleMetadata = $this->durableStorage[$this->roleToFilename($role)] ?? null;
+        if ($localRoleMetadata === null) {
+            return null;
+        }
+        // TODO Do something less quick & dirty to get useful types from durable storage. See issue #xx
+        $localRoleMetadata = json_decode($localRoleMetadata, true);
+        $localRole = $localRoleMetadata['signed'];
+
+        if ((int)$expectedVersionInfo['version'] === $localRole['version']) {
+            return $localRoleMetadata;
+        }
+        return null;
+    }
+
+    /**
+     * Constructs the metadata filename for a role by appending the format extension.
+     *
+     * Currently only .json is supported, so this always returns ${role}.json
+     *
+     * @param string $role
+     * @return string
+     */
+    protected function roleToFilename(string $role) : string
+    {
+        return "${role}.json";
+    }
+
+    /**
+     * Finds hash algorithms that are secure and available in this environment.
+     *
+     * @return array
+     */
+    private function buildSupportedHashAlgosList() : array
+    {
+        $secureAlgos = ['sha256', 'sha512'];
+        $availableAlgos = hash_algos();
+        return array_intersect($secureAlgos, $availableAlgos);
     }
 
     // To be replaced by HTTP / HTTP abstraction layer to the remote repository
