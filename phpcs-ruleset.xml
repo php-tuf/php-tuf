@@ -34,20 +34,23 @@
     <rule ref="Squiz.Arrays.ArrayDeclaration.NoCommaAfterLast">
       <severity>0</severity>
     </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.NotLowerCase">
+
+    <!--
+    -->
+
+    <!-- Disabling leads to incorrect formatting -->
+    <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNotAligned">
       <severity>0</severity>
     </rule>
     <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
       <severity>0</severity>
     </rule>
 
-    <!-- Disabling leads to incorrect formatting -->
-    <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNotAligned">
-      <severity>0</severity>
-    </rule>
-
     <!-- No effect -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
+      <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Arrays.ArrayDeclaration.NotLowerCase">
       <severity>0</severity>
     </rule>
 
