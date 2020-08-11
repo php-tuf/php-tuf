@@ -150,7 +150,6 @@ class Updater
      *     Thrown if the timestamp string format is not valid.
      */
     protected function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
-
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
@@ -264,7 +263,7 @@ class Updater
 
     // To be replaced by HTTP / HTTP abstraction layer to the remote repository
     private function getRepoFile($string)
-g    {
+    {
         try {
             // @todo Ensure the file does not exceed a certain size to prevent
             //     DOS attacks.
