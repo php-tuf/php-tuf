@@ -38,10 +38,11 @@ class RepositoryDBCollection
             throw new \Exception("Repository already has databases: $repositoryName");
         }
 
-        $this->dbCollection[$repositoryName] = [
-        self::ROLE_IX => $roleDB,
-        self::KEY_IX => $keyDB,
-        ];
+        $this->dbCollection[$repositoryName] =
+            [
+             self::ROLE_IX => $roleDB,
+             self::KEY_IX => $keyDB,
+            ];
     }
 
   /**

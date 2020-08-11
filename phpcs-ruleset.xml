@@ -15,24 +15,22 @@
       <exclude name="Squiz.Arrays.ArrayDeclaration.NoKeySpecified"/>
       <exclude name="Squiz.Arrays.ArrayDeclaration.KeySpecified"/>
     </rule>
-    <!-- Disable some error messages that we do not want. -->
+
+    <!-- Disable some rules that lead to incorrect formatting -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned">
       <severity>0</severity>
     </rule>
-
-    <!--
-    -->
-
-    <!-- Disabling leads to incorrect formatting -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNotAligned">
       <severity>0</severity>
     </rule>
     <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
       <severity>0</severity>
     </rule>
+    <!--
     <rule ref="Squiz.Arrays.ArrayDeclaration.KeyNotAligned">
       <severity>0</severity>
     </rule>
+    -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.DoubleArrowNotAligned">
       <severity>0</severity>
     </rule>
@@ -48,6 +46,9 @@
       <severity>0</severity>
     </rule>
     <rule ref="Squiz.Arrays.ArrayDeclaration.FirstValueNoNewline">
+      <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned">
       <severity>0</severity>
     </rule>
 
