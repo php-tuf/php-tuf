@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="php-tuf Coding Standard">
+
     <!-- We basically follow PSR-2 -->
     <rule ref="PSR2"/>
 
@@ -13,40 +14,19 @@
     <rule ref="Generic.Arrays.ArrayIndent"/>
     <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
     <rule ref="Squiz.Arrays.ArrayDeclaration">
-      <exclude name="Squiz.Arrays.ArrayDeclaration.NoKeySpecified"/>
-      <exclude name="Squiz.Arrays.ArrayDeclaration.KeySpecified"/>
-    </rule>
+        <!-- Disable some child rules that cause incorrect formatting. -->
+        <exclude name="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNotAligned"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.KeyNotAligned"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.DoubleArrowNotAligned"/>
 
-    <!-- Disable some child rules that cause incorrect formatting. -->
-    <rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned">
-      <severity>0</severity>
+        <!-- These currently have no effect but are disabled for Drupal.
+             Do we want them? -->
+        <exclude name="Squiz.Arrays.ArrayDeclaration.ValueNoNewline"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.NotLowerCase"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed"/>
+        <exclude name="Squiz.Arrays.ArrayDeclaration.FirstValueNoNewline"/>
     </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNotAligned">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.KeyNotAligned">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.DoubleArrowNotAligned">
-      <severity>0</severity>
-    </rule>
-
-    <!-- These currently have no effect. -->
-    <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.NotLowerCase">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.FirstValueNoNewline">
-      <severity>0</severity>
-    </rule>
-
 
 </ruleset>
