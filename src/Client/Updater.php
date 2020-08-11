@@ -4,7 +4,7 @@
 namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\FilesystemDurableStorage;
-use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -59,7 +59,7 @@ class Updater
     {
         $this->repoName = $repositoryName;
         $this->mirrors = $mirrors;
-        $this->durableStorage = new ValidatingArrayAccessAdapter($durableStorage);
+        $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
     }
 
   /**
