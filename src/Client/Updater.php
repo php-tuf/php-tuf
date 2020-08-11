@@ -212,22 +212,6 @@ class Updater
         }
     }
 
-  /**
-   * Validates a target.
-   *
-   * @param $targetRepoPath
-   * @param $targetStream
-   *
-   * @return bool
-   *   Returns true if the target validates.
-   *
-   * @todo implement target validation.
-   *     https://github.com/php-tuf/php-tuf/issues/35
-   */
-    public function validateTarget($targetRepoPath, $targetStream) : bool
-    {
-    }
-
     protected function checkSignatures($verifiableStructure, $type)
     {
         $signatures = $verifiableStructure['signatures'];
