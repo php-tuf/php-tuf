@@ -5,11 +5,11 @@ namespace Tuf;
 
 class RoleDB
 {
-  /**
-   * @var \array[]
-   *
-   * Key roles indexed by role name.
-   */
+    /**
+     * @var \array[]
+     *
+     * Key roles indexed by role name.
+     */
     protected $roles;
 
     public static function createRoleDBFromRootMetadata($rootMetadata)
@@ -22,12 +22,12 @@ class RoleDB
                 $roleInfo['expires'] = $rootMetadata['expires'];
             }
 
-          /*
-          Stuff Python TUF initializes that we aren't currently using.
-          $roleInfo['signatures'] = array();
-          $roleInfo['signing_keyids'] = array();
-          $roleInfo['partial_loaded'] = false;
-          */
+            /*
+            Stuff Python TUF initializes that we aren't currently using.
+            $roleInfo['signatures'] = array();
+            $roleInfo['signing_keyids'] = array();
+            $roleInfo['partial_loaded'] = false;
+            */
 
             // @todo Verify that testing for start of string rather than
             //     equality has a purpose.
@@ -75,24 +75,24 @@ class RoleDB
         return $this->roles[$roleName];
     }
 
-  /**
-   * @param string $roleName
-   * @return \array[]
-   * @throws \Exception
-   */
+    /**
+     * @param string $roleName
+     * @return \array[]
+     * @throws \Exception
+     */
     public function getRoleKeyIds($roleName)
     {
         $roleInfo = $this->getRoleInfo($roleName);
         return $roleInfo['keyids'];
     }
 
-  /**
-   * Gets the threshold value of the role associated with $roleName
-   *
-   * @param string $roleName
-   * @return int
-   * @throws \Exception
-   */
+    /**
+     * Gets the threshold value of the role associated with $roleName
+     *
+     * @param string $roleName
+     * @return int
+     * @throws \Exception
+     */
     public function getRoleThreshold($roleName)
     {
         if (! $this->roleExists($roleName)) {

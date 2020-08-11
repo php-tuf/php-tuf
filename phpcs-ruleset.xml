@@ -8,4 +8,11 @@
     <rule ref="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps"/>
     <rule ref="Squiz.NamingConventions.ValidVariableName.StringNotCamelCaps"/>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- PSR-2 doesn't enforce commenting standards.
+         https://github.com/squizlabs/PHP_CodeSniffer/issues/2314#issuecomment-448008052
+         https://www.php-fig.org/psr/psr-2/#7-conclusion
+         Add PEAR's rule to make sure comment indentation matches code. -->
+    <rule ref="PEAR.WhiteSpace"/>
+
 </ruleset>
