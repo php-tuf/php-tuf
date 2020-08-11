@@ -195,6 +195,7 @@ class Updater
    *
    * @return bool
    *   Returns true if the target validates.
+   * @TODO implement target validation. https://github.com/php-tuf/php-tuf/issues/35
    */
     public function validateTarget($targetRepoPath, $targetStream)
     {
