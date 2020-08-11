@@ -43,13 +43,12 @@ class KeyDB
 
     public static function computeKeyIds($keyMeta)
     {
-        $keyCanonicalStruct =
-            [
-             'keytype' => $keyMeta['keytype'],
-             'scheme' => $keyMeta['scheme'],
-             'keyid_hash_algorithms' => $keyMeta['keyid_hash_algorithms'],
-             'keyval' => ['public' => $keyMeta['keyval']['public']],
-            ];
+        $keyCanonicalStruct = [
+        'keytype' => $keyMeta['keytype'],
+        'scheme' => $keyMeta['scheme'],
+        'keyid_hash_algorithms' => $keyMeta['keyid_hash_algorithms'],
+        'keyval' => ['public' => $keyMeta['keyval']['public']],
+        ];
         $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
         return array_map(function ($algo) use ($keyCanonicalForm) {
             return hash($algo, $keyCanonicalForm, false);

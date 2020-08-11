@@ -18,16 +18,14 @@ class UpdaterTest extends TestCase
      */
     protected function getSystemInTest() : Updater
     {
-        $mirrors =
-            [
-             'mirror1' =>
-                    [
-                     'url_prefix' => 'http://localhost:8001',
-                     'metadata_path' => 'metadata',
-                     'targets_path' => 'targets',
-                     'confined_target_dirs' => [],
-                    ],
-            ];
+        $mirrors = [
+            'mirror1' => [
+                'url_prefix' => 'http://localhost:8001',
+                'metadata_path' => 'metadata',
+                'targets_path' => 'targets',
+                'confined_target_dirs' => [],
+            ],
+        ];
 
         // Use the memory storage used so tests can write without permanent
         // side-effects.
@@ -76,16 +74,14 @@ class UpdaterTest extends TestCase
 
     public function testUpdateSuccessful()
     {
-        $mirrors =
-            [
-             'mirror1' =>
-                [
-                    'url_prefix' => 'http://localhost:8001',
-                    'metadata_path' => 'metadata',
-                    'targets_path' => 'targets',
-                    'confined_target_dirs' => [],
-                ],
-            ];
+        $mirrors = [
+            'mirror1' => [
+                'url_prefix' => 'http://localhost:8001',
+                'metadata_path' => 'metadata',
+                'targets_path' => 'targets',
+                'confined_target_dirs' => [],
+            ],
+        ];
         $updater = $this->getSystemInTest();
         $fixtureTarget = 'testtarget.txt';
         $targetStream = fopen('data://text/plain,' . 'Test File', 'r');
