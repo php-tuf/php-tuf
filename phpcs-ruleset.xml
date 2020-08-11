@@ -7,23 +7,20 @@
     <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
     <rule ref="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps"/>
     <rule ref="Squiz.NamingConventions.ValidVariableName.StringNotCamelCaps"/>
-    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
 
-    <!-- Squiz sniffs -->
+    <!-- Specify array formatting -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Generic.Arrays.ArrayIndent"/>
     <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
     <rule ref="Squiz.Arrays.ArrayDeclaration">
       <exclude name="Squiz.Arrays.ArrayDeclaration.NoKeySpecified"/>
       <exclude name="Squiz.Arrays.ArrayDeclaration.KeySpecified"/>
     </rule>
-    <!-- Disable some error messages that we do not want. -->
+
+    <!-- Disable some child rules that cause incorrect formatting. -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned">
       <severity>0</severity>
     </rule>
-
-    <!--
-    -->
-
-    <!-- Disabling leads to incorrect formatting -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNotAligned">
       <severity>0</severity>
     </rule>
@@ -37,7 +34,7 @@
       <severity>0</severity>
     </rule>
 
-    <!-- No effect -->
+    <!-- These currently have no effect. -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
       <severity>0</severity>
     </rule>
