@@ -3,22 +3,31 @@
 namespace Tuf\Client\DurableStorage;
 
 /**
- * Class FileStorage
+ * Defines a simple filesystem-based storage for fetched PHP-TUF metadata.
  *
- * A simple implementation of \ArrayAccess using the filesystem.
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  *
- * @TODO Add tests for this class.
+ * @todo Add tests for this class.
+ *     https://github.com/php-tuf/php-tuf/issues/33
  */
 class FileStorage implements \ArrayAccess
 {
     /**
      * @var string $basePath
-     *   The path on the filesystem to this durable storage's files.
+     *     The path on the filesystem to this durable storage's files.
      */
     protected $basePath;
 
+    /**
+     * Constructs a new FileStorage instance.
+     *
+     * @param string $basePath
+     *     The path on the filesystem to this durable storage's files.
+     *
+     * @throws \RuntimeException
+     *     Thrown if the base path is not an accessible, existing directory.
+     */
     public function __construct(string $basePath)
     {
         if (! is_dir($basePath)) {
@@ -29,22 +38,21 @@ class FileStorage implements \ArrayAccess
     }
 
     /**
-     * Computes the path on the filesystem corresponding to an array key.
+     * Returns a full path for an item in the storage.
      *
-     * @param $offset
-     *   The array key, or offset as \ArrayAccess calls it.
+     * @param mixed offset
+     *     The ArrayAccess offset for the item.
+     *
      * @return string
+     *     The full path for the item in the storage.
      */
-    protected function pathWithBasePath(string $offset)
+    protected function pathWithBasePath($offset) : string
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
     /**
-     * Implements \ArrayAccess::offsetExists()
-     *
-     * @param mixed $offset
-     * @return bool
+     * {@inheritdoc}
      */
     public function offsetExists($offset)
     {
@@ -52,10 +60,7 @@ class FileStorage implements \ArrayAccess
     }
 
     /**
-     * Implements \ArrayAccess::offsetGet()
-     *
-     * @param mixed $offset
-     * @return false|mixed|string
+     * {@inheritdoc}
      */
     public function offsetGet($offset)
     {
@@ -63,10 +68,7 @@ class FileStorage implements \ArrayAccess
     }
 
     /**
-     * Implements \ArrayAccess::offsetSet()
-     *
-     * @param mixed $offset
-     * @param mixed $value
+     * {@inheritdoc}
      */
     public function offsetSet($offset, $value)
     {
@@ -74,9 +76,7 @@ class FileStorage implements \ArrayAccess
     }
 
     /**
-     * Implements \ArrayAccess::offsetUnset()
-     *
-     * @param mixed $offset
+     * {@inheritdoc}
      */
     public function offsetUnset($offset)
     {

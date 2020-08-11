@@ -18,6 +18,9 @@ class MemoryStorage implements \ArrayAccess
         $this->container = [];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetSet($offset, $value)
     {
         if (is_null($offset)) {
@@ -27,16 +30,25 @@ class MemoryStorage implements \ArrayAccess
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset)
     {
         return isset($this->container[$offset]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetUnset($offset)
     {
         unset($this->container[$offset]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetGet($offset)
     {
         return isset($this->container[$offset]) ? $this->container[$offset] : null;
