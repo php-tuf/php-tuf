@@ -1,13 +1,14 @@
 <?php
 
-
 namespace Tuf\Exception\PotentialAttackException;
 
 use Tuf\Exception\TufException;
 
 /**
- * Class PotentialAttackException
- *   Base class for all failures to verify trust in remote repository metadata or in a remote target.
+ * Defines an exception base class for potential attacks.
+ *
+ * Use this class for all failures related to verifying trust in the remote
+ * repository metadata or a remote target.
  */
 abstract class PotentialAttackException extends TufException
 {

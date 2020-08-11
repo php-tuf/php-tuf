@@ -8,7 +8,7 @@ class KeyDB
   /**
    * @var \array[]
    *
-   * Keys indexed by key id.
+   * Keys indexed by key ID.
    */
     protected $keys;
 
@@ -21,7 +21,7 @@ class KeyDB
                 // @todo Convert this to a log line as per Python.
                 throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
             }
-            // One key id for each $keyMeta['keyid_hash_algorithms'].
+            // One key ID for each $keyMeta['keyid_hash_algorithms'].
             $computedKeyIds = self::computeKeyIds($keyMeta);
             foreach ($computedKeyIds as $keyId) {
                 $keyMeta['keyid'] = $keyId;
@@ -68,7 +68,7 @@ class KeyDB
     public function getKey($keyId)
     {
         if (empty($this->keys[$keyId])) {
-            throw new \Exception("Unknown key id: $keyId");
+            throw new \Exception("Unknown key ID: $keyId");
         }
         return $this->keys[$keyId];
     }

@@ -6,7 +6,7 @@ namespace Tuf;
 class JsonNormalizer
 {
   /**
-   * Computes the canonical json representation of an associative array as a string.
+   * Computes the canonical JSON string representation of an associative array.
    *
    * @todo This is a very incomplete implementation of
    *     http://wiki.laptop.org/go/Canonical_JSON.

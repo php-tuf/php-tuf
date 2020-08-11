@@ -47,7 +47,8 @@ class RepositoryDBCollection
   /**
    * @param string $repositoryName
    * @return \array[]
-   *   Array containing role database at RepositoryDBCollection::ROLE_IX, key database at RepositoryDBCollection::KEY_IX
+   *     Array containing role database at RepositoryDBCollection::ROLE_IX, key
+   *     database at RepositoryDBCollection::KEY_IX
    * @throws \Exception
    */
     public function getDatabasesForRepository($repositoryName = 'default')

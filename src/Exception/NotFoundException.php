@@ -1,18 +1,20 @@
 <?php
 
-
 namespace Tuf\Exception;
 
 use Throwable;
 
 /**
+ * Indicates that an item was not found in the repository data.
+ *
  * @todo Remove this class if not used.
  */
 class NotFoundException extends TufException
 {
     /**
      * @var string $key
-     *   The unique identifier (id, file path, etc.) for the item that was not found.
+     *   The unique identifier (ID, file path, etc.) for the item that was not
+     *   found.
      */
     public $key;
 

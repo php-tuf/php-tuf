@@ -1,13 +1,11 @@
 <?php
 
-
 namespace Tuf\Exception;
 
 use Throwable;
 
 /**
- * Class FormatException
- *   Indicates an input was not in the required format to be interpreted.
+ *  Indicates an input was not in the required format to be interpreted.
  */
 class FormatException extends TufException
 {
