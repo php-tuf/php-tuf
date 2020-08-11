@@ -113,8 +113,8 @@ class Updater
         // SPEC: 1.8.
         $expires = $signed['expires'];
         $fakeNow = '2020-08-04T02:58:56Z';
-        $expireDate = $this->metadataTimestampToDatetime($expires);
-        $nowDate = $this->metadataTimestampToDatetime($fakeNow);
+        $expireDate = $this->metadataTimestampToDateTime($expires);
+        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
         if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
             // @todo "On the next update cycle, begin at step 0 and version N
@@ -151,7 +151,7 @@ class Updater
      * @throws FormatException
      *     Thrown if the timestamp string format is not valid.
      */
-    protected function metadataTimestampToDatetime(string $timestamp) : \DateTimeImmutable
+    protected function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
