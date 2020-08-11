@@ -78,11 +78,11 @@ class UpdaterTest extends TestCase
         $this->assertTrue($updater->refresh());
     }
 
-  /**
-   * Tests that an error is thrown on an updated root.
-   *
-   * @todo Remove this test when functionality is added.
-   */
+    /**
+     * Tests that an error is thrown on an updated root.
+     *
+     * @todo Remove this test when functionality is added.
+     */
     public function testUpdatedRootError()
     {
     }
