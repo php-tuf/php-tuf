@@ -18,14 +18,14 @@ use Tuf\JsonNormalizer;
 class Updater
 {
 
-  /**
-   * @var string
-   */
+    /**
+     * @var string
+     */
     protected $repoName;
 
-  /**
-   * @var \array[][]
-   */
+    /**
+     * @var \array[][]
+     */
     protected $mirrors;
 
     /**
@@ -35,26 +35,27 @@ class Updater
      */
     protected $durableStorage;
 
-  /**
-   * Updater constructor.
-   *
-   * @param string $repositoryName
-   *     A name the application assigns to the repository used by this Updater.
-   * @param mixed[][] $mirrors
-   *     A nested array of mirrors to use for fetching signing data from the
-   *     repository. Each child array contains information about the mirror:
-   *     - url_prefix: (string) The URL for the mirror.
-   *     - metadata_path: (string) The path within the repository for signing
-   *       metadata.
-   *     - targets_path: (string) The path within the repository for targets
-   *       (the actual update data that has been signed).
-   *     - confined_target_dirs: (array) @todo What is this for?
-   * @param \ArrayAccess $durableStorage
-   *     An implementation of \ArrayAccess that stores its contents durably, as
-   *     in to disk or a database. Values written for a given repository should
-   *     be exposed to future instantiations of the Updater that interact with
-   *     the same repository.
-   */
+    /**
+     * Updater constructor.
+     *
+     * @param string $repositoryName
+     *     A name the application assigns to the repository used by this
+     *     Updater.
+     * @param mixed[][] $mirrors
+     *     A nested array of mirrors to use for fetching signing data from the
+     *     repository. Each child array contains information about the mirror:
+     *     - url_prefix: (string) The URL for the mirror.
+     *     - metadata_path: (string) The path within the repository for signing
+     *       metadata.
+     *     - targets_path: (string) The path within the repository for targets
+     *       (the actual update data that has been signed).
+     *     - confined_target_dirs: (array) @todo What is this for?
+     * @param \ArrayAccess $durableStorage
+     *     An implementation of \ArrayAccess that stores its contents durably,
+     *     as in to disk or a database. Values written for a given repository
+     *     should be exposed to future instantiations of the Updater that
+     *     interact with the same repository.
+     */
     public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage)
     {
         $this->repoName = $repositoryName;
@@ -62,27 +63,27 @@ class Updater
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
     }
 
-  /**
-   * @todo Add docs. See python comments:
-   *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
-   * @todo The Python implementation has an optional flag to "unsafely update
-   *     root if necessary". Do we need it?
-   *
-   * @see https://github.com/php-tuf/php-tuf/issues/21
-   */
+    /**
+     * @todo Add docs. See python comments:
+     *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
+     * @todo The Python implementation has an optional flag to "unsafely update
+     *     root if necessary". Do we need it?
+     *
+     * @see https://github.com/php-tuf/php-tuf/issues/21
+     */
     public function refresh()
     {
     }
 
-  /**
-   * Validates a target.
-   *
-   * @param $targetRepoPath
-   * @param $targetStream
-   *
-   * @return bool
-   *   Returns true if the target validates.
-   */
+    /**
+     * Validates a target.
+     *
+     * @param $targetRepoPath
+     * @param $targetStream
+     *
+     * @return bool
+     *   Returns true if the target validates.
+     */
     public function validateTarget($targetRepoPath, $targetStream)
     {
         $rootData = json_decode($this->durableStorage['root.json'], true);
@@ -129,7 +130,7 @@ class Updater
         $timestampStructure = json_decode($timestampContents, true);
         // SPEC: 2.1
         if (! $this->checkSignatures($timestampStructure, 'timestamp')) {
-          // Exception? Log + return false?
+            // Exception? Log + return false?
             throw new \Exception("Improperly signed repository timestamp.");
         }
 
