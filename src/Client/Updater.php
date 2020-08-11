@@ -133,13 +133,25 @@ class Updater
         return true;
     }
 
+    /**
+     * Converts a metadata timestamp string into an immutable DateTime object.
+     *
+     * @param string $timestamp
+     *     The timestamp string in the metadata.
+     *
+     * @return \DateTimeImmutable
+     *     An immutable DateTime object for the given timestamp.
+     *
+     * @throws FormatException
+     *     Thrown if the timestamp string format is not valid.
+     */
     protected function metadataTimestampToDatetime(string $timestamp) : \DateTimeImmutable
     {
-        $dt = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
-        if ($dt === false) {
+        $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
+        if ($dateTime === false) {
             throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
         }
-        return $dt;
+        return $dateTime;
     }
 
     /**
