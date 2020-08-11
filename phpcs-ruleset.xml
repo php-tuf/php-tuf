@@ -3,17 +3,17 @@
 
     <!-- We basically follow PSR-2 -->
     <rule ref="PSR2"/>
-  
+
+    <!-- Since PSR-2 / PSR-12 say nothing about variable lettercase, we choose a standard. -->
+    <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
+    <rule ref="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps"/>
+    <rule ref="Squiz.NamingConventions.ValidVariableName.StringNotCamelCaps"/>
+
     <!-- PSR-2 doesn't enforce commenting standards.
          https://github.com/squizlabs/PHP_CodeSniffer/issues/2314#issuecomment-448008052
          https://www.php-fig.org/psr/psr-2/#7-conclusion
          Add PEAR's rule to make sure comment indentation matches code. -->
     <rule ref="PEAR.WhiteSpace"/>
-  
-    <!-- Since PSR-2 / PSR-12 say nothing about variable lettercase, we choose a standard. -->
-    <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
-    <rule ref="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps"/>
-    <rule ref="Squiz.NamingConventions.ValidVariableName.StringNotCamelCaps"/>
 
     <!-- Specify array formatting -->
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
