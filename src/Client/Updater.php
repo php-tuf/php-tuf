@@ -158,12 +158,15 @@ class Updater
      * Checks for a rollback attack.
      *
      * Verifies that an incoming remote version of a metadata file is greater
-     *  than or equal to the last known version.
+     * than or equal to the last known version.
      *
-     * @param $localMetadata
-     * @param $remoteMetadata
+     * @param mixed[] $localMetadata
+     *     The locally stored metadata from the most recent update.
+     * @param mixed[] $remoteMetadata
+     *     The latest metadata fetched from the remote repository.
      *
      * @throws RollbackAttackException
+     *     Thrown if a potential rollback attack is detected.
      */
     protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
     {
@@ -188,9 +191,13 @@ class Updater
      * Verifies that metadata has not expired, and assumes a potential freeze
      * attack if it has.
      *
-     * @param array $metadata
+     * @param mixed $metadata
+     *     The metadata for the timestamp role.
      * @param \DateTimeInterface $now
+     *     The current date and time at runtime.
+     *
      * @throws FreezeAttackException
+     *     Thrown if a potential freeze attack is detected.
      */
     protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
     {
