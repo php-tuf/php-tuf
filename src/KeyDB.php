@@ -5,11 +5,11 @@ namespace Tuf;
 
 class KeyDB
 {
-  /**
-   * @var \array[]
-   *
-   * Keys indexed by key ID.
-   */
+    /**
+     * @var \array[]
+     *
+     * Keys indexed by key ID.
+     */
     protected $keys;
 
     public static function createKeyDBFromRootMetadata($rootMetadata)

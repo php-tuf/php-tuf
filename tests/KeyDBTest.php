@@ -8,10 +8,10 @@ use Tuf\KeyDB;
 
 class KeyDBTest extends TestCase
 {
-  /**
-   * @param $metadata
-   * @dataProvider computeKeyIdProvider
-   */
+    /**
+     * @param $metadata
+     * @dataProvider computeKeyIdProvider
+     */
     public function testComputeKeyId($keyMeta, $want)
     {
         $actual = KeyDB::computeKeyIds($keyMeta);

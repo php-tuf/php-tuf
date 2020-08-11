@@ -4,7 +4,7 @@ namespace Tuf\Tests\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
-use Tuf\Tests\DurableStorage\InMemoryBackend;
+use Tuf\Tests\DurableStorage\MemoryStorage;
 
 class UpdaterTest extends TestCase
 {
@@ -41,20 +41,20 @@ class UpdaterTest extends TestCase
      *     The relative path (within the fixtures directory) for the client
      *     data.
      *
-     * @return InMemoryBackend
+     * @return MemoryStorage
      *     Memory storage containing the test client data.
      *
      * @throws \RuntimeException
      *     Thrown if the relative path is invalid.
      */
-    public function populateMemoryStorageFromFixtures(string $path) : InMemoryBackend
+    public function populateMemoryStorageFromFixtures(string $path) : MemoryStorage
     {
         $realpath = realpath(__DIR__ . "/../../fixtures/$path");
         if ($realpath === false || !is_dir($realpath)) {
             throw new \RuntimeException("Client repository fixtures directory not found at $path");
         }
 
-        $storage = new InMemoryBackend();
+        $storage = new MemoryStorage();
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
@@ -88,11 +88,11 @@ class UpdaterTest extends TestCase
         $this->assertTrue($updater->validateTarget($fixtureTarget, $targetStream));
     }
 
-  /**
-   * Tests that an error is thrown on an updated root.
-   *
-   * @todo Remove this test when functionality is added.
-   */
+    /**
+     * Tests that an error is thrown on an updated root.
+     *
+     * @todo Remove this test when functionality is added.
+     */
     public function testUpdatedRootError()
     {
     }

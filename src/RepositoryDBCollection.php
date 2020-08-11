@@ -10,13 +10,13 @@ namespace Tuf;
  */
 class RepositoryDBCollection
 {
-  /**
-   * ROLE_IX is the index of the repository array where the role DB is found.
-   */
+    /**
+     * ROLE_IX is the index of the repository array where the role DB is found.
+     */
     const ROLE_IX = 0;
-  /**
-   * KEY_IX is the index of the repository array where the key DB is found.
-   */
+    /**
+     * KEY_IX is the index of the repository array where the key DB is found.
+     */
     const KEY_IX = 1;
 
     protected $dbCollection = [];
@@ -44,13 +44,13 @@ class RepositoryDBCollection
         ];
     }
 
-  /**
-   * @param string $repositoryName
-   * @return \array[]
-   *     Array containing role database at RepositoryDBCollection::ROLE_IX, key
-   *     database at RepositoryDBCollection::KEY_IX
-   * @throws \Exception
-   */
+    /**
+     * @param string $repositoryName
+     * @return \array[]
+     *     Array containing role database at RepositoryDBCollection::ROLE_IX, key
+     *     database at RepositoryDBCollection::KEY_IX
+     * @throws \Exception
+     */
     public function getDatabasesForRepository($repositoryName = 'default')
     {
         if (empty($this->dbCollection[$repositoryName])) {
