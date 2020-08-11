@@ -26,7 +26,7 @@ class KeyDBTest extends TestCase
                     "keyid_hash_algorithms" => ['sha256', 'sha512'],
                     "keytype" => "ed25519",
                     "keyval" => ["public" => "edcd0a32a07dce33f7c7873aaffbff36d20ea30787574ead335eefd337e4dacd"],
-                    "scheme" => "ed25519"
+                    "scheme" => "ed25519",
                 ],
                 1 => [
                     "59a4df8af818e9ed7abe0764c0b47b4240952aa0d179b5b78346c470ac30278d",
