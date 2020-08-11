@@ -31,9 +31,6 @@
     <rule ref="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed">
       <severity>0</severity>
     </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.NoCommaAfterLast">
-      <severity>0</severity>
-    </rule>
 
     <!--
     -->
