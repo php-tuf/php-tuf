@@ -5,6 +5,7 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\FilesystemDurableStorage;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
+use Tuf\Exception\FormatException;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -111,8 +112,8 @@ class Updater
         // SPEC: 1.8.
         $expires = $signed['expires'];
         $fakeNow = '2020-08-04T02:58:56Z';
-        $expireDate = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $fakeNow);
-        $nowDate = \DateTime::createFromFormat("Y-m-dTH:i:sZ", $expires);
+        $expireDate = $this->metadataTimestampToDatetime($expires);
+        $nowDate = $this->metadataTimestampToDatetime($fakeNow);
         if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
             // @todo "On the next update cycle, begin at step 0 and version N
@@ -137,6 +138,26 @@ class Updater
         return true;
     }
 
+    /**
+     * Converts a metadata timestamp string into an immutable DateTime object.
+     *
+     * @param string $timestamp
+     *     The timestamp string in the metadata.
+     *
+     * @return \DateTimeImmutable
+     *     An immutable DateTime object for the given timestamp.
+     *
+     * @throws FormatException
+     *     Thrown if the timestamp string format is not valid.
+     */
+    protected function metadataTimestampToDatetime(string $timestamp) : \DateTimeImmutable
+    {
+        $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
+        if ($dateTime === false) {
+            throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
+        }
+        return $dateTime;
+    }
     protected function checkSignatures($verifiableStructure, $type)
     {
         $signatures = $verifiableStructure['signatures'];
