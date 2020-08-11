@@ -25,12 +25,6 @@
     <rule ref="Squiz.Arrays.ArrayDeclaration.FirstValueNoNewline">
       <severity>0</severity>
     </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.KeyNotAligned">
-      <severity>0</severity>
-    </rule>
-    <rule ref="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed">
-      <severity>0</severity>
-    </rule>
 
     <!--
     -->
@@ -42,12 +36,18 @@
     <rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
       <severity>0</severity>
     </rule>
+    <rule ref="Squiz.Arrays.ArrayDeclaration.KeyNotAligned">
+      <severity>0</severity>
+    </rule>
 
     <!-- No effect -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
       <severity>0</severity>
     </rule>
     <rule ref="Squiz.Arrays.ArrayDeclaration.NotLowerCase">
+      <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Arrays.ArrayDeclaration.MultiLineNotAllowed">
       <severity>0</severity>
     </rule>
 
