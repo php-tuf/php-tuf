@@ -5,17 +5,17 @@ namespace Tuf;
 
 class JsonNormalizer
 {
-  /**
-   * Computes the canonical JSON string representation of an associative array.
-   *
-   * @todo This is a very incomplete implementation of
-   *     http://wiki.laptop.org/go/Canonical_JSON.
-   *     Consider creating a separate library under php-tuf just for this?
-   *
-   * @param array $structure
-   *
-   * @return string
-   */
+    /**
+     * Computes the canonical JSON string representation of an assoc. array.
+     *
+     * @todo This is a very incomplete implementation of
+     *     http://wiki.laptop.org/go/Canonical_JSON.
+     *     Consider creating a separate library under php-tuf just for this?
+     *
+     * @param array $structure
+     *
+     * @return string
+     */
     public static function asNormalizedJson($structure)
     {
         if (!is_array($structure)) {
