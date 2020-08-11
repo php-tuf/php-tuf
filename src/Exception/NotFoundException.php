@@ -1,14 +1,15 @@
 <?php
 
-
 namespace Tuf\Exception;
 
 use Throwable;
 
 /**
+ * Indicates that an item was not found in the repository data.
+ *
  * @todo Remove this class if not used.
  */
-class NotFoundException extends \Exception
+class NotFoundException extends TufException
 {
     /**
      * @var string $key
@@ -23,7 +24,7 @@ class NotFoundException extends \Exception
      */
     public $itemType;
 
-    public function __construct($key = "", $itemType = "item", $code = 0, Throwable $previous = null)
+    public function __construct($key = "", $itemType = "item", Throwable $previous = null)
     {
         $message = "$itemType not found";
         if ($key != "") {
@@ -31,6 +32,6 @@ class NotFoundException extends \Exception
         }
         $this->key = $key;
         $this->itemType = $itemType;
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 0, $previous);
     }
 }
