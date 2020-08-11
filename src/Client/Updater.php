@@ -122,7 +122,6 @@ class Updater
             throw new \Exception("Improperly signed repository timestamp.");
         }
 
-
         // SPEC: 2.2
         $currentStateTimestamp = json_decode($this->durableStorage['timestamp.json'], true);
         $this->checkRollbackAttack($currentStateTimestamp['signed'], $timestampStructure['signed']);
@@ -144,22 +143,26 @@ class Updater
     }
 
     /**
-     * Verifies that an incoming remote version of a metadata file is >= the last known version.
+     * Checks for a rollback attack.
+     *
+     * Verifies that an incoming remote version of a metadata file is greater
+     *  than or equal to the last known version.
      *
      * @param $localMetadata
      * @param $remoteMetadata
+     *
      * @throws RollbackAttackException
      */
     protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
     {
-        $localVersion = (int)$localMetadata['version'];
+        $localVersion = (int) $localMetadata['version'];
         if ($localVersion == 0) {
             // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
             // we can't perform this check properly.
             $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
             throw new RollbackAttackException($message);
         }
-        $remoteVersion = (int)$remoteMetadata['version'];
+        $remoteVersion = (int) $remoteMetadata['version'];
         if ($remoteVersion < $localVersion) {
             $message = "Remote timestamp metadata version \"${remoteMetadata['version']}\"" .
                 " is less than previously seen timestamp version \"${localMetadata['version']}\"";
@@ -168,7 +171,10 @@ class Updater
     }
 
     /**
-     * Verifies that metadata has not expired, and assumes a potential freeze attack if it has.
+     * Checks for a freeze attack.
+     *
+     * Verifies that metadata has not expired, and assumes a potential freeze
+     * attack if it has.
      *
      * @param array $metadata
      * @param \DateTimeInterface $now
@@ -195,9 +201,11 @@ class Updater
    *
    * @return bool
    *   Returns true if the target validates.
-   * @TODO implement target validation. https://github.com/php-tuf/php-tuf/issues/35
+   *
+   * @todo implement target validation.
+   *     https://github.com/php-tuf/php-tuf/issues/35
    */
-    public function validateTarget($targetRepoPath, $targetStream)
+    public function validateTarget($targetRepoPath, $targetStream) : bool
     {
     }
 
@@ -214,7 +222,7 @@ class Updater
         $canonicalBytes = JsonNormalizer::asNormalizedJson($signed);
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
-                $haveVerified += (int)$this->verifySingleSignature($canonicalBytes, $signature);
+                $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
             //     bad signatures even this method returns TRUE because the
