@@ -39,8 +39,8 @@ class RepositoryDBCollection
         }
 
         $this->dbCollection[$repositoryName] = [
-        self::ROLE_IX => $roleDB,
-        self::KEY_IX => $keyDB,
+            self::ROLE_IX => $roleDB,
+            self::KEY_IX => $keyDB,
         ];
     }
 
