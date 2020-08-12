@@ -35,8 +35,10 @@ class JsonNormalizer
      *
      * @throws \Exception
      *     Thrown if sorting the array fails.
+     *
+     * @return void
      */
-    private static function rKeySort(array &$structure)
+    private static function rKeySort(array &$structure) : void
     {
         if (!ksort($structure, SORT_STRING)) {
             throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
