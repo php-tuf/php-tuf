@@ -9,27 +9,26 @@ namespace Tuf\Exception;
  */
 class NotFoundException extends TufException
 {
-    /**
-     * @var string $key
-     *   The unique identifier (ID, file path, etc.) for the item that was not
-     *   found.
-     */
-    public $key;
 
     /**
-     * @var string $itemType
-     *   The type of item (signing key, file, etc.) that was not found.
+     * Constructs the exception.
+     *
+     * @param string $key
+     *     (optional) The unique identifier, if any, for the item that was not
+     *     found.
+     * @param string $itemType
+     *     (optional) The type of item (signing key, file, etc.) that was not
+     *     found. Used to construct the exception message. If left blank, the
+     *     word 'item' will be used by default.
+     * @param \Throwable|null $previous
+     *     (optional) The previous exception, if any, for exception chaining.
      */
-    public $itemType;
-
-    public function __construct($key = "", $itemType = "item", \Throwable $previous = null)
+    public function __construct(string $key = '', string $itemType = 'item', \Throwable $previous = null)
     {
         $message = "$itemType not found";
         if ($key != "") {
             $message = "$itemType not found: $key";
         }
-        $this->key = $key;
-        $this->itemType = $itemType;
         parent::__construct($message, 0, $previous);
     }
 }
