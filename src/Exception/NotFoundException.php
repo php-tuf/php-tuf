@@ -2,8 +2,6 @@
 
 namespace Tuf\Exception;
 
-use Throwable;
-
 /**
  * Indicates that an item was not found in the repository data.
  *
@@ -24,7 +22,7 @@ class NotFoundException extends TufException
      */
     public $itemType;
 
-    public function __construct($key = "", $itemType = "item", Throwable $previous = null)
+    public function __construct($key = "", $itemType = "item", \Throwable $previous = null)
     {
         $message = "$itemType not found";
         if ($key != "") {

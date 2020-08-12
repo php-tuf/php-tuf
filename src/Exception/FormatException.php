@@ -2,8 +2,6 @@
 
 namespace Tuf\Exception;
 
-use Throwable;
-
 /**
  *  Indicates an input was not in the required format to be interpreted.
  */
@@ -11,7 +9,7 @@ class FormatException extends TufException
 {
     protected $malformedValue;
 
-    public function __construct($malformedValue, $message = "", Throwable $previous = null)
+    public function __construct($malformedValue, $message = "", \Throwable $previous = null)
     {
         if (empty($message)) {
             $message = 'Bad format';
