@@ -1,9 +1,7 @@
 <?php
 
-
 namespace Tuf\Client;
 
-use Tuf\Client\DurableStorage\FilesystemDurableStorage;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\KeyDB;
