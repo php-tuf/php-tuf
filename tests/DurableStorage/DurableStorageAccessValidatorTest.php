@@ -4,16 +4,16 @@
 namespace Tuf\Tests\DurableStorage;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter;
+use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 
 /**
- * @coversDefaultClass \Tuf\Client\DurableStorage\ValidatingArrayAccessAdapter
+ * @coversDefaultClass \Tuf\Client\DurableStorage\DurableStorageAccessValidator
  */
-class ValidatingArrayAccessAdapterTest extends TestCase
+class DurableStorageAccessValidatorTest extends TestCase
 {
     protected function getSystemInTest()
     {
-        return new ValidatingArrayAccessAdapter(new InMemoryBackend());
+        return new DurableStorageAccessValidator(new MemoryStorage());
     }
 
     /**

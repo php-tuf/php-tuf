@@ -4,13 +4,13 @@
 namespace Tuf\Tests\DurableStorage;
 
 /**
- * Class InMemoryBackend
+ * Class MemoryStorage
  *
  * Provides a trivial implementation of \ArrayAccess for testing.
  * Brought to you by https://www.php.net/manual/en/class.arrayaccess and
  * the letters c,t,r,l and v.
  */
-class InMemoryBackend implements \ArrayAccess
+class MemoryStorage implements \ArrayAccess
 {
     private $container = [];
 
@@ -19,6 +19,9 @@ class InMemoryBackend implements \ArrayAccess
         $this->container = [];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetSet($offset, $value)
     {
         if (is_null($offset)) {
@@ -28,16 +31,25 @@ class InMemoryBackend implements \ArrayAccess
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetExists($offset)
     {
         return isset($this->container[$offset]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetUnset($offset)
     {
         unset($this->container[$offset]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetGet($offset)
     {
         return isset($this->container[$offset]) ? $this->container[$offset] : null;
