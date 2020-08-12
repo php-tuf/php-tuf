@@ -9,18 +9,6 @@ namespace Tuf\Exception;
  */
 class NotFoundException extends TufException
 {
-    /**
-     * @var string $key
-     *   The unique identifier (ID, file path, etc.) for the item that was not
-     *   found.
-     */
-    public $key;
-
-    /**
-     * @var string $itemType
-     *   The type of item (signing key, file, etc.) that was not found.
-     */
-    public $itemType;
 
     public function __construct($key = "", $itemType = "item", \Throwable $previous = null)
     {
@@ -28,8 +16,6 @@ class NotFoundException extends TufException
         if ($key != "") {
             $message = "$itemType not found: $key";
         }
-        $this->key = $key;
-        $this->itemType = $itemType;
         parent::__construct($message, 0, $previous);
     }
 }

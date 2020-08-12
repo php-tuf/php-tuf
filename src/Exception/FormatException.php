@@ -7,7 +7,6 @@ namespace Tuf\Exception;
  */
 class FormatException extends TufException
 {
-    protected $malformedValue;
 
     public function __construct($malformedValue, $message = "", \Throwable $previous = null)
     {
@@ -15,12 +14,7 @@ class FormatException extends TufException
             $message = 'Bad format';
         }
         $message = $message . sprintf(": %s", $malformedValue);
-        $this->malformedValue = $malformedValue;
         parent::__construct($message, 0, $previous);
     }
 
-    public function getMalformedValue()
-    {
-        return $this->malformedValue;
-    }
 }
