@@ -51,8 +51,12 @@ project's release creation process. This will require:
 
 ## Code style
 
-Run `composer phpcs` to check for code style compliance. The code adheres to
-PSR-2 code standards.
+The code generally follows PSR-2 with some additional formatting rules for
+code documentation and array formatting.
+
+- Run `composer phpcs` to check for code style compliance.
+- Run `composer phpcs-ci` to check only coding standards that will be hard
+  blockers for a merge.
 
 ## Testing
 
