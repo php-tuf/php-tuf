@@ -27,5 +27,4 @@ class FormatException extends TufException
         $message = $message . sprintf(": %s", $malformedValue);
         parent::__construct($message, 0, $previous);
     }
-
 }
