@@ -30,8 +30,7 @@ class KeyDBTest extends TestCase
                 ],
             1 => [
               "59a4df8af818e9ed7abe0764c0b47b4240952aa0d179b5b78346c470ac30278d",
-              "594e8b4bdafc33fd87e9d03a95be13a6dc93a836086614fd421116d829af68d8f0110ae93e3dde9a246897fd85171455ea53191b"
-              . "b96cf9e589ba047d057dbd66"
+              "594e8b4bdafc33fd87e9d03a95be13a6dc93a836086614fd421116d829af68d8f0110ae93e3dde9a246897fd85171455ea53191bb96cf9e589ba047d057dbd66"
             ]
           ]
         ];
