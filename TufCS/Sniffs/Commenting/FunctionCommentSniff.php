@@ -69,6 +69,49 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             }
         }
 
+        // The parent sniff doesn't detect parameter documentation on a
+        // subsequent line of the docblock, which we use for readability
+        // and better compliance with PSR-2 line length recommendations.
+        // E.g.:
+        // /**
+        //  * @param type $name
+        //  *     Comment explaining the parameter here.
+        //  */
+        //  Our ruleset XML therefore skips the
+        //  TufCS.Commenting.FunctionComment.MissingParamComment error.
+        //  Therefore, we need to raise our own error instead.
+        foreach ($tokens[$commentStart]['comment_tags'] as $pos => $tag) {
+            if ($tokens[$tag]['content'] !== '@param') {
+                // We're only checking paramter tag comments for now.
+                continue;
+            }
+
+            // Unlike the parent sniff, our comment isn't in a single string
+            // with the type and parameter name, since it's on a newline and
+            // after an additional '*'. So, instead, search ahead for the next
+            // docblock tag and look for anything in between.
+            // This might also be the last tag in the docblock, so stop at the
+            // comment end if that comes first.
+            $endOfTag = $tokens[$commentStart]['comment_tags'][$pos + 1] ?? $tokens[$commentStart]['comment_closer'];
+
+            // Find the comment string(s), if any.
+            $tagComment = [];
+
+            // Search ahead.
+            // @todo The +3 magic number assumes a param type and name before
+            //     the comment. Will the sniff give a false error if they are
+            //     missing? Somehow it seems to work even for missing param
+            //     types and names currently.
+            for ($i = $tokens[$commentStart]['comment_tags'][$pos] + 3; $i < $endOfTag; $i++) {
+                if ($tokens[$i]['code'] === T_DOC_COMMENT_STRING) {
+                    $tagComment[]= $tokens[$i]['content'];
+                }
+            }
+            if (empty($tagComment)) {
+                $phpcsFile->addError('Missing parameter comment', $stackPtr, 'MissingParamCommentOnNewline');
+            }
+        }
+
         return parent::processParams($phpcsFile, $stackPtr, $commentStart);
     }
 
