@@ -31,7 +31,7 @@ class FileStorage implements \ArrayAccess
     public function __construct(string $basePath)
     {
         if (! is_dir($basePath)) {
-            throw new \RuntimeException("Cannot initialize filesystem local state: \"$basePath\" is not a directory.");
+            throw new \RuntimeException("Cannot initialize filesystem local state: '$basePath' is not a directory.");
         }
 
         $this->basePath = $basePath;
@@ -40,7 +40,7 @@ class FileStorage implements \ArrayAccess
     /**
      * Returns a full path for an item in the storage.
      *
-     * @param mixed offset
+     * @param mixed $offset
      *     The ArrayAccess offset for the item.
      *
      * @return string

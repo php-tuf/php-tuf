@@ -25,7 +25,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
         // The offset validation is meant as a security measure to reduce likelihood of undesired backend behavior.
         // For example, a filesystem-backed backend can't be tricked into working in a different directory.
         if (! is_string($offset) || !preg_match("|^[\w._-]+$|", $offset)) {
-            throw new \OutOfBoundsException("Array offset \"$offset\" is not a valid durable storage key.");
+            throw new \OutOfBoundsException("Array offset '$offset' is not a valid durable storage key.");
         }
     }
 

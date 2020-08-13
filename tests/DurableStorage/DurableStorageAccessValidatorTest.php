@@ -109,6 +109,6 @@ class DurableStorageAccessValidatorTest extends TestCase
 
     private function getOffSetException($offset)
     {
-        return "Array offset \"$offset\" is not a valid durable storage key.";
+        return "Array offset '$offset' is not a valid durable storage key.";
     }
 }
