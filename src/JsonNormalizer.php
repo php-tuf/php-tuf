@@ -1,36 +1,47 @@
 <?php
 
-
 namespace Tuf;
 
+/**
+ * Provdes normalization to convert an array to a canonical JSON string.
+ */
 class JsonNormalizer
 {
     /**
-     * Computes the canonical JSON string representation of an assoc. array.
+     * Encodes an associative array into a string of canonical JSON.
+     *
+     * @param mixed[] $structure
+     *     The associative array of JSON data.
+     *
+     * @return string
+     *     An encoded string of normalized, canonical JSON data.
      *
      * @todo This is a very incomplete implementation of
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
-     *
-     * @param array $structure
-     *
-     * @return string
      */
-    public static function asNormalizedJson($structure)
+    public static function asNormalizedJson(array $structure) : string
     {
-        if (!is_array($structure)) {
-            throw new \Exception("Array of keys to canonicalize is required");
-        }
-
         self::rKeySort($structure);
 
         return json_encode($structure);
     }
 
-    private static function rKeySort(&$structure)
+    /**
+     * Sorts the JSON data array into a canonical order.
+     *
+     * @param mixed[] $structure
+     *     The array of JSON to sort, passed by reference.
+     *
+     * @throws \Exception
+     *     Thrown if sorting the array fails.
+     *
+     * @return void
+     */
+    private static function rKeySort(array &$structure) : void
     {
         if (!ksort($structure, SORT_STRING)) {
-            throw new \Exception("Failure sorting keys, canonicalization is not possible.");
+            throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
         }
 
         foreach ($structure as $item => $value) {

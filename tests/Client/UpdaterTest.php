@@ -72,7 +72,12 @@ class UpdaterTest extends TestCase
         return $storage;
     }
 
-    public function testRefreshRepository()
+    /**
+     * Tests refreshing the repository.
+     *
+     * @return void
+     */
+    public function testRefreshRepository() : void
     {
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
@@ -81,9 +86,11 @@ class UpdaterTest extends TestCase
     /**
      * Tests that an error is thrown on an updated root.
      *
+     * @return void
+     *
      * @todo Remove this test when functionality is added.
      */
-    public function testUpdatedRootError()
+    public function testUpdatedRootError() : void
     {
     }
 }

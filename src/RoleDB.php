@@ -90,7 +90,7 @@ class RoleDB
      * Gets the threshold value of the role associated with $roleName
      *
      * @param string $roleName
-     * @return int
+     * @return integer
      * @throws \Exception
      */
     public function getRoleThreshold($roleName)

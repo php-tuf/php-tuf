@@ -14,6 +14,9 @@ class MemoryStorage implements \ArrayAccess
 {
     private $container = [];
 
+    /**
+     * Constructs a new MemoryStorage instance.
+     */
     public function __construct()
     {
         $this->container = [];

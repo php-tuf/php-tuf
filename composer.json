@@ -30,6 +30,7 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=phpcs-ruleset.xml ./src ./tests",
+        "phpcs-ci": "phpcs --standard=phpcs-ci-ruleset.xml ./src ./tests",
         "phpcbf": "phpcbf --standard=phpcs-ruleset.xml ./src ./tests",
         "test": "phpunit ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
