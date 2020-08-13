@@ -15,4 +15,12 @@
          Add PEAR's rule to make sure comment indentation matches code. -->
     <rule ref="PEAR.WhiteSpace"/>
 
+    <!-- Ensure code is documented. -->
+    <rule ref="TufCS/ruleset.xml">
+        <properties>
+            <property name="skipIfInheritdoc" value="true"/>
+        </properties>
+    </rule>
+
+
 </ruleset>
