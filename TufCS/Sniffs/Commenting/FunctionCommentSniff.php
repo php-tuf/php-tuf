@@ -22,6 +22,9 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
     {
         $tokens = $phpcsFile->getTokens();
 
+        // Add support for the public property to skip {@inheritdoc} docblocks.
+        // @todo This can be removed if it gets merged upstream.
+        //     https://github.com/squizlabs/PHP_CodeSniffer/pull/3051
         if ($this->skipIfInheritdoc === true) {
             if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
                 return;
@@ -38,6 +41,9 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
     {
         $tokens = $phpcsFile->getTokens();
 
+        // Add support for the public property to skip {@inheritdoc} docblocks.
+        // @todo This can be removed if it gets merged upstream.
+        //     https://github.com/squizlabs/PHP_CodeSniffer/pull/3051
         if ($this->skipIfInheritdoc === true) {
             if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
                 return;
@@ -54,6 +60,9 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
     {
         $tokens = $phpcsFile->getTokens();
 
+        // Add support for the public property to skip {@inheritdoc} docblocks.
+        // @todo This can be removed if it gets merged upstream.
+        //     https://github.com/squizlabs/PHP_CodeSniffer/pull/3051
         if ($this->skipIfInheritdoc === true) {
             if ($this->checkInheritdoc($phpcsFile, $stackPtr, $commentStart) === true) {
                 return;
