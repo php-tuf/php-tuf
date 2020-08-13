@@ -23,7 +23,6 @@
 
         <!-- The default rule doesn't detect @param / @return / @throws on the
              following line. Disable for now. -->
-        <exclude name="TufCS.Commenting.FunctionComment.MissingParamComment"/>
         <exclude name="TufCS.Commenting.FunctionComment.EmptyThrows"/>
 
         <!-- The spacing requirements are also silly. -->

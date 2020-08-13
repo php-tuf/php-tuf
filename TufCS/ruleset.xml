@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
 <ruleset name="TufCs">
- <description>A custom coding standard for the PHP-TUF project.</description>
+    <description>A custom coding standard for the PHP-TUF project.</description>
+    <rule ref="TufCS.Commenting.FunctionComment">
+        <exclude name="TufCS.Commenting.FunctionComment.MissingParamComment"/>
+    </rule>
 </ruleset>
