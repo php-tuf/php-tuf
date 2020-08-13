@@ -16,7 +16,7 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
     public $skipIfInheritdoc = false;
 
     /**
-     * {@inheridoc}
+     * {@inheritdoc}
      */
     protected function processReturn(File $phpcsFile, $stackPtr, $commentStart)
     {
@@ -51,8 +51,8 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
         }
 
         // Check for a comment for the @throws tag.
-        // Squiz.Commenting.FunctionComment.EmptyThrows also doesn't work with
-        // our newline format.
+        // Squiz.Commenting.FunctionComment.EmptyThrows doesn't work with our
+        // newline format.
         $this->checkForTagComment($phpcsFile, $stackPtr, $commentStart, '@throws');
 
         return parent::processThrows($phpcsFile, $stackPtr, $commentStart);
@@ -75,6 +75,8 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
         }
 
         // Check for a comment for the parameter tag.
+        // Squiz.Commenting.FunctionComment.MissingParamComment doesn't work
+        // with our newline format.
         $this->checkForTagComment($phpcsFile, $stackPtr, $commentStart, '@param');
 
         return parent::processParams($phpcsFile, $stackPtr, $commentStart);
@@ -151,21 +153,18 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
         // Construct an error type based on the specified tag.
         $errorType = 'Missing' . ucfirst(substr($tagType, 1)) . 'CommentOnNewline';
 
-        //  Our ruleset XML therefore skips our extended version of
-        //  Squiz.Commenting.FunctionComment.MissingParamComment.
-        //  Therefore, we need to raise our own error instead.
         foreach ($tokens[$commentStart]['comment_tags'] as $pos => $tag) {
             if ($tokens[$tag]['content'] !== $tagType) {
                 // Only check the given tag type.
                 continue;
             }
 
-            // Unlike the parent sniff, our comment isn't in a single string
-            // with the type and parameter name, since it's on a newline and
-            // after an additional '*'. So, instead, search ahead for the next
-            // docblock tag and look for anything in between.
-            // This might also be the last tag in the docblock, so stop at the
-            // comment end if that comes first.
+            // Unlike the parent sniff's @tag comment format, our comment
+            // format doesn't ahve a single string with the type and parameter
+            // name, since it's on a newline and after an additional '*'. So,
+            // instead, search ahead for the next docblock tag and look for
+            // anything in between. The tag might also be the last tag in the
+            // docblock, so stop at the comment end if that comes first.
             $endOfTag = $tokens[$commentStart]['comment_tags'][$pos + 1] ?? $tokens[$commentStart]['comment_closer'];
 
             // Find the comment string(s), if any.
