@@ -160,7 +160,7 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             }
 
             // Unlike the parent sniff's @tag comment format, our comment
-            // format doesn't ahve a single string with the type and parameter
+            // format doesn't have a single string with the type and parameter
             // name, since it's on a newline and after an additional '*'. So,
             // instead, search ahead for the next docblock tag and look for
             // anything in between. The tag might also be the last tag in the
@@ -171,10 +171,14 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             $tagComment = [];
 
             // Search ahead.
-            // @todo The +3 magic number assumes a param type and name before
-            //     the comment. Will the sniff give a false error if they are
-            //     missing? Somehow it seems to work even for missing param
-            //     types and names currently.
+            // @todo The +3 magic number will:
+            //     - Ensure that the type and parameter name (if any) are not
+            //       counted as content.
+            //     - Match anything after (0) the tag, (1) whitespace,
+            //       (2) the '*' on the newline, and (3) the next whitespace.
+            //     This might raise a misleading error if the correct
+            //     formatting is not used (e.g., the docs are on the same line
+            //     or there is a missing space).
             for ($i = $tokens[$commentStart]['comment_tags'][$pos] + 3; $i < $endOfTag; $i++) {
                 if ($tokens[$i]['code'] === T_DOC_COMMENT_STRING) {
                     $tagComment[]= $tokens[$i]['content'];
