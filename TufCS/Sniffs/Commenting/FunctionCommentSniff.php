@@ -90,7 +90,9 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
      * @param int $commentStart
      *     The position in the stack where the comment started.
      *
-     * @return void
+     * @return bool
+     *     TRUE if the docblock contains only {@inheritdoc} (case-insensitive),
+     *     or FALSE otherwise.
      */
     protected function checkInheritdoc(File $phpcsFile, $stackPtr, $commentStart)
     {
