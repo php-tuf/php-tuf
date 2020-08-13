@@ -80,7 +80,7 @@ class Updater
      * @param $targetRepoPath
      * @param $targetStream
      *
-     * @return bool
+     * @return boolean
      *   Returns true if the target validates.
      */
     public function validateTarget($targetRepoPath, $targetStream)

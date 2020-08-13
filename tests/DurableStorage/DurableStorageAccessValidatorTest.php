@@ -11,7 +11,13 @@ use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
  */
 class DurableStorageAccessValidatorTest extends TestCase
 {
-    protected function getSystemInTest()
+
+    /**
+     * Creates a validated, memory-based storage for the test.
+     *
+     * @return \ArrayAccess
+     */
+    protected function getSystemInTest() : \ArrayAccess
     {
         return new DurableStorageAccessValidator(new MemoryStorage());
     }
@@ -20,8 +26,15 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @covers ::offsetSet
      *
      * @dataProvider offsetsProvider
+     *
+     * @param mixed $offset
+     *     The ArrayAccess offset for the data.
+     * @param boolean $expectValid
+     *     Whether the value at $offset is expected to be valid.
+     *
+     * @return void
      */
-    public function testOffsetSet($offset, bool $expectValid)
+    public function testOffsetSet($offset, bool $expectValid) : void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -39,8 +52,15 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @covers ::offsetGet
      *
      * @dataProvider offsetsProvider
+     *
+     * @param mixed $offset
+     *     The ArrayAccess offset for the data.
+     * @param boolean $expectValid
+     *     Whether the value at $offset is expected to be valid.
+     *
+     * @return void
      */
-    public function testOffsetGet($offset, bool $expectValid)
+    public function testOffsetGet($offset, bool $expectValid) : void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -58,8 +78,15 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @covers ::offsetExists
      *
      * @dataProvider offsetsProvider
+     *
+     * @param mixed $offset
+     *     The ArrayAccess offset for the data.
+     * @param boolean $expectValid
+     *     Whether the value at $offset is expected to be valid.
+     *
+     * @return void
      */
-    public function testOffsetExists($offset, bool $expectValid)
+    public function testOffsetExists($offset, bool $expectValid) : void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -77,8 +104,15 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @covers ::offsetUnset
      *
      * @dataProvider offsetsProvider
+     *
+     * @param mixed $offset
+     *     The ArrayAccess offset for the data.
+     * @param boolean $expectValid
+     *     Whether the value at $offset is expected to be valid.
+     *
+     * @return void
      */
-    public function testOffsetUnset($offset, bool $expectValid)
+    public function testOffsetUnset($offset, bool $expectValid) : void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -92,7 +126,10 @@ class DurableStorageAccessValidatorTest extends TestCase
         $this->assertEquals($expectValid, $actualValid);
     }
 
-    public function offsetsProvider()
+    /**
+     * @return array[]
+     */
+    public function offsetsProvider() : array
     {
         return [
             ['a', true],
@@ -107,7 +144,15 @@ class DurableStorageAccessValidatorTest extends TestCase
         ];
     }
 
-    private function getOffSetException($offset)
+    /**
+     * Gets the expected exception message if an offset is invalid.
+     *
+     * @param mixed $offset
+     *     The \ArrayAccess offset.
+     *
+     * @return string
+     */
+    private function getOffSetException($offset) : string
     {
         return "Array offset '$offset' is not a valid durable storage key.";
     }
