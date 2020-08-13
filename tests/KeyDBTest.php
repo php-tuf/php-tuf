@@ -5,19 +5,38 @@ namespace Tuf\Tests;
 use PHPUnit\Framework\TestCase;
 use Tuf\KeyDB;
 
+/**
+ * Tests KeyDB functionality.
+ */
 class KeyDBTest extends TestCase
 {
     /**
-     * @param $metadata
+     * Tests that computed key IDs match expected values in the repository.
+     *
      * @dataProvider computeKeyIdProvider
+     *
+     * @param mixed[] $metadata
+     *     The metadata for which to compute keys.
+     * @param string[] $expected
+     *     The expected key values.
+     *
+     * @return void
      */
-    public function testComputeKeyId($metadata, $expected)
+    public function testComputeKeyId(array $metadata, array $expected) : void
     {
         $actual = KeyDB::computeKeyIds($metadata);
         $this->assertEquals($expected, $actual);
     }
 
-    public function computeKeyIdProvider()
+    /**
+     * Data provider for testComputeKeyId().
+     *
+     * @return array[][]
+     *     An associative array of test cases, each containing:
+     *     - metadata: The key metadata to check.
+     *     - expected: The expected keys from the repository.
+     */
+    public function computeKeyIdProvider() : array
     {
         return [
           'case 1' => [
