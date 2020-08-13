@@ -14,6 +14,7 @@ class RepositoryDBCollection
      * ROLE_IX is the index of the repository array where the role DB is found.
      */
     const ROLE_IX = 0;
+
     /**
      * KEY_IX is the index of the repository array where the key DB is found.
      */
@@ -32,7 +33,7 @@ class RepositoryDBCollection
         return self::$singleton;
     }
 
-    public function setDatabasesForRepository(KeyDB $keyDB, RoleDB $roleDB, $repositoryName = 'default')
+    public function setDatabasesForRepository(KeyDB $keyDB, RoleDB $roleDB, string $repositoryName = 'default') : void
     {
         if (!empty($this->dbCollection[$repositoryName])) {
             throw new \Exception("Repository already has databases: $repositoryName");
@@ -47,11 +48,11 @@ class RepositoryDBCollection
     /**
      * @param string $repositoryName
      * @return \array[]
-     *     Array containing role database at RepositoryDBCollection::ROLE_IX, key
-     *     database at RepositoryDBCollection::KEY_IX
+     *     Array containing role database at RepositoryDBCollection::ROLE_IX,
+     *     key database at RepositoryDBCollection::KEY_IX
      * @throws \Exception
      */
-    public function getDatabasesForRepository($repositoryName = 'default')
+    public function getDatabasesForRepository(string $repositoryName = 'default')
     {
         if (empty($this->dbCollection[$repositoryName])) {
             throw new \Exception("Repository name is not known: $repositoryName");

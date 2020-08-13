@@ -72,7 +72,12 @@ class UpdaterTest extends TestCase
         return $storage;
     }
 
-    public function testUpdateSuccessful()
+    /**
+     * Tests that a valid update is successfully validated.
+     *
+     * @return void
+     */
+    public function testUpdateSuccessful() : void
     {
         $mirrors = [
             'mirror1' => [
@@ -91,9 +96,11 @@ class UpdaterTest extends TestCase
     /**
      * Tests that an error is thrown on an updated root.
      *
+     * @return void
+     *
      * @todo Remove this test when functionality is added.
      */
-    public function testUpdatedRootError()
+    public function testUpdatedRootError() : void
     {
     }
 }
