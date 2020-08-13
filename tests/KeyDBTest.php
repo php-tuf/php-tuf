@@ -11,10 +11,10 @@ class KeyDBTest extends TestCase
      * @param $metadata
      * @dataProvider computeKeyIdProvider
      */
-    public function testComputeKeyId($metadata, $want)
+    public function testComputeKeyId($metadata, $expected)
     {
         $actual = KeyDB::computeKeyIds($metadata);
-        $this->assertEquals($want, $actual);
+        $this->assertEquals($expected, $actual);
     }
 
     public function computeKeyIdProvider()
