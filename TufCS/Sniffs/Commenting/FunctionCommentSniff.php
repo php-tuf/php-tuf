@@ -200,20 +200,21 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             $tagComment = [];
 
             // Search ahead.
-            // @todo The +3 magic number will:
-            //     - Ensure that the type and parameter name (if any) are not
-            //       counted as content.
-            //     - Match anything after (0) the tag, (1) whitespace,
-            //       (2) the '*' on the newline, and (3) the next whitespace.
-            //     This might raise a misleading error if the correct
-            //     formatting is not used (e.g., the docs are on the same line
-            //     or there is a missing space).
-            for ($i = $startOfTag + 3; $i < $endOfTag; $i++) {
-
+            for ($i = $startOfTag; $i < $endOfTag; $i++) {
                 if ($tokens[$i]['code'] === T_DOC_COMMENT_STRING) {
                     $tagComment[]= $tokens[$i]['content'];
                 }
             }
+
+            // For @param, the first element of the array should contain the
+            // parameter type and name, e.g. 'string $paramName'.
+            // For @return and @throws, it should contain just the data type.
+            // Other sniffs will detect if any of that is malformed. Shift it
+            // off our content.
+            array_unshift($tagComment);
+
+            // The remaining elements of the array contain any documentation
+            // for the parameter. Throw an error if there isn't anything.
             if (empty($tagComment)) {
                 $phpcsFile->addError("Missing comment documenting $tagType", $stackPtr, $errorType);
             }
