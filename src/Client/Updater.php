@@ -169,11 +169,18 @@ class Updater
      *
      * @throws RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
+     * @throws \UnexpectedValueException
+     *     Thrown if metadata types are not the same.
      */
     protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
     {
+        if ($localMetadata['_type'] !== $remoteMetadata['_type']) {
+            throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
+               . "Local is {$localMetadata['_type']} and remote is {$remoteMetadata['_type']}.");
+        }
+        $type = $localMetadata['_type'];
         $localVersion = (int) $localMetadata['version'];
-        if ($localVersion == 0) {
+        if ($localVersion === 0) {
             // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
             // we can't perform this check properly.
             $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
@@ -181,8 +188,8 @@ class Updater
         }
         $remoteVersion = (int) $remoteMetadata['version'];
         if ($remoteVersion < $localVersion) {
-            $message = "Remote timestamp metadata version \"${remoteMetadata['version']}\"" .
-                " is less than previously seen timestamp version \"${localMetadata['version']}\"";
+            $message = "Remote $type metadata version \"${remoteMetadata['version']}\"" .
+                " is less than previously seen $type version \"${localMetadata['version']}\"";
             throw new RollbackAttackException($message);
         }
     }
