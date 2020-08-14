@@ -4,6 +4,7 @@ namespace Tuf\Tests\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\JsonNormalizer;
 use Tuf\Tests\DurableStorage\MemoryStorage;
 
@@ -23,7 +24,7 @@ class UpdaterTest extends TestCase
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest() : Updater
+    protected function getSystemInTest(bool $skipSignatureVerification = false) : Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -37,7 +38,11 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = self::populateMemoryStorageFromFixtures('tufclient/tufrepo/metadata/current');
-        $updater = new Updater('repo1', $mirrors, $this->localRepo);
+        if ($skipSignatureVerification) {
+            $updater =  new TestUpdater('repo1', $mirrors, $this->localRepo);
+        } else {
+            $updater = new Updater('repo1', $mirrors, $this->localRepo);
+        }
         return $updater;
     }
 
@@ -92,10 +97,13 @@ class UpdaterTest extends TestCase
 
     public function testRollbackAttach() : void
     {
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest(true);
         $timestamp = json_decode($this->localRepo['timestamp.json'], true);
+        $timestamp['signed']['version'] = 3;
         $this->localRepo['timestamp.json'] = JsonNormalizer::asNormalizedJson($timestamp);
-        $this->assertTrue($updater->refresh());
+        $this->expectException(RollbackAttackException::class);
+        $this->expectExceptionMessage('Remote timestamp metadata version "2" is less than previously seen timestamp version "3"');
+        $updater->refresh();
 
 
     }
@@ -110,4 +118,17 @@ class UpdaterTest extends TestCase
     public function testUpdatedRootError() : void
     {
     }
+}
+
+/**
+ * A test updater to allow manipulating fixtures without resigning them.
+ *
+ */
+class TestUpdater extends Updater {
+
+    protected function verifySingleSignature($bytes, $signatureMeta)
+    {
+        return true;
+    }
+
 }
