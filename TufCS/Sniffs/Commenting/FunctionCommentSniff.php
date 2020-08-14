@@ -182,8 +182,8 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
         // Construct an error type based on the specified tag.
         $errorType = 'Missing' . ucfirst(substr($tagType, 1)) . 'CommentOnNewline';
 
-        foreach ($tokens[$commentStart]['comment_tags'] as $pos => $tag) {
-            if ($tokens[$tag]['content'] !== $tagType) {
+        foreach ($tokens[$commentStart]['comment_tags'] as $pos => $startOfTag) {
+            if ($tokens[$startOfTag]['content'] !== $tagType) {
                 // Only check the given tag type.
                 continue;
             }
@@ -208,7 +208,8 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             //     This might raise a misleading error if the correct
             //     formatting is not used (e.g., the docs are on the same line
             //     or there is a missing space).
-            for ($i = $tokens[$commentStart]['comment_tags'][$pos] + 3; $i < $endOfTag; $i++) {
+            for ($i = $startOfTag + 3; $i < $endOfTag; $i++) {
+
                 if ($tokens[$i]['code'] === T_DOC_COMMENT_STRING) {
                     $tagComment[]= $tokens[$i]['content'];
                 }
