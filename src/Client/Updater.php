@@ -211,13 +211,12 @@ class Updater
     protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
     {
         $metadataExpiration = $this->metadataTimestampToDatetime($metadata['expires']);
-        $type = '';
-        if (!empty($metadata['_type'])) {
-            $type = $metadata['_type'];
+        if (empty($metadata['_type'])) {
+            throw new \UnexpectedValueException('All metadata files must set a value for "_type"');
         }
         if ($metadataExpiration < $now) {
             $format = "Remote %s metadata expired on %s";
-            throw new FreezeAttackException(sprintf($format, $type, $metadataExpiration->format('c')));
+            throw new FreezeAttackException(sprintf($format, $metadata['_type'], $metadataExpiration->format('c')));
         }
     }
 
