@@ -31,6 +31,35 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             }
         }
 
+        // Don't check the @return of constructors or destructors.
+        $methodName = $phpcsFile->getDeclarationName($stackPtr);
+        $isSpecialMethod = ($methodName === '__construct' || $methodName === '__destruct');
+        if ($isSpecialMethod) {
+            return;
+        }
+
+        // Find the return tag. The parent method will ensure that it is
+        // present and unique.
+        $return = null;
+        foreach ($tokens[$commentStart]['comment_tags'] as $tag) {
+            if ($tokens[$tag]['content'] === '@return') {
+                $return = $tag;
+            }
+        }
+
+        // Copied from the parent sniff to parse out the return type.
+        $content = $tokens[($return + 2)]['content'];
+        preg_match('`^((?:\|?(?:array\([^\)]*\)|[\\\\a-z0-9\[\]]+))*)( .*)?`i', $content, $returnParts);
+
+        // The parent sniff will raise errors if the return type is missing or
+        // malformatted.
+        $returnType = $returnParts[1] ?? null;
+
+        // if the return type is 'void', skip checking for a @return comment.
+        if ($returnType !== 'void') {
+            $this->checkForTagComment($phpcsFile, $stackPtr, $commentStart, '@return');
+        }
+
         return parent::processReturn($phpcsFile, $stackPtr, $commentStart);
     }
 
