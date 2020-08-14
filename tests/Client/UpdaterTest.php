@@ -4,10 +4,17 @@ namespace Tuf\Tests\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\JsonNormalizer;
 use Tuf\Tests\DurableStorage\MemoryStorage;
 
 class UpdaterTest extends TestCase
 {
+
+    /**
+     * @var \Tuf\Tests\DurableStorage\MemoryStorage
+     */
+    protected $localRepo;
+
     /**
      * Returns a memory-based updater populated with the test fixtures.
      *
@@ -29,8 +36,8 @@ class UpdaterTest extends TestCase
 
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $localRepo = $this->populateMemoryStorageFromFixtures('tufclient/tufrepo/metadata/current');
-        $updater = new Updater('repo1', $mirrors, $localRepo);
+        $this->localRepo = self::populateMemoryStorageFromFixtures('tufclient/tufrepo/metadata/current');
+        $updater = new Updater('repo1', $mirrors, $this->localRepo);
         return $updater;
     }
 
@@ -47,7 +54,7 @@ class UpdaterTest extends TestCase
      * @throws \RuntimeException
      *     Thrown if the relative path is invalid.
      */
-    public function populateMemoryStorageFromFixtures(string $path) : MemoryStorage
+    private static function populateMemoryStorageFromFixtures(string $path) : MemoryStorage
     {
         $realpath = realpath(__DIR__ . "/../../fixtures/$path");
         if ($realpath === false || !is_dir($realpath)) {
@@ -81,6 +88,16 @@ class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
+    }
+
+    public function testRollbackAttach() : void
+    {
+        $updater = $this->getSystemInTest();
+        $timestamp = json_decode($this->localRepo['timestamp.json'], true);
+        $this->localRepo['timestamp.json'] = JsonNormalizer::asNormalizedJson($timestamp);
+        $this->assertTrue($updater->refresh());
+
+
     }
 
     /**
