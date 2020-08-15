@@ -128,7 +128,7 @@ class RoleDB
      * Verify whether 'rolename' is stored in the role database.
      *
      * @param $roleName
-     *     An object representing the role's name, conformant to 'ROLENAME_SCHEMA'
+     *     A string representing the role's name, conformant to 'ROLENAME_SCHEMA'
      *     (e.g., 'root', 'snapshot', 'timestamp').
      *
      * @return bool
