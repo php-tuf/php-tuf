@@ -65,7 +65,10 @@ code documentation and array formatting.
 
 ### Test fixtures setup
 
-1. [Set up the TUF server environment locally](#server-environment-setup-for-python-tuf-cli).
+1. Install the Python TUF implementation and enable the pipenv:
+
+       pipenv install
+       pipenv shell
 
 1. Initialize the repository and add/sign a target:
 
