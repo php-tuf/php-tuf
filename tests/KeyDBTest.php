@@ -50,7 +50,7 @@ class KeyDBTest extends TestCase
                             'keytype' => 'ed25519',
                             'keyval' => ['public' => 'edcd0a32a07dce33f7c7873aaffbff36d20ea30787574ead335eefd337e4dacd'],
                             'scheme' => 'ed25519',
-                      ],
+                        ],
                     ],
                 ],
                 'expected_keys' => [
