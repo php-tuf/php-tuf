@@ -94,7 +94,7 @@ class RoleDB
      *     The role name.
      *
      * @return bool
-     *     True if 'rolename' is found in the role database, False otherwise.
+     *     True if the role is found in the role database, False otherwise.
      */
     public function roleExists($roleName)
     {
@@ -102,7 +102,8 @@ class RoleDB
     }
 
     /**
-     * Gets the role information
+     * Gets the role information.
+     *
      * @param $roleName
      *    The role name.
      *
@@ -146,6 +147,7 @@ class RoleDB
      *    The role name.
      *
      * @return integer
+     *
      * @throws \Exception
      */
     public function getRoleThreshold($roleName)

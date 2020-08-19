@@ -32,7 +32,9 @@ class KeyDB
      *    to section 4.3 of the TUF specification.
      *
      * @return \Tuf\KeyDB
+     *
      * @throws \Exception
+     *   Thrown if an unsupported key type exists in the metadata.
      */
     public static function createKeyDBFromRootMetadata($rootMetadata)
     {
