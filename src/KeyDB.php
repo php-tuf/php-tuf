@@ -4,18 +4,14 @@
 namespace Tuf;
 
 /**
- * Represent a collection of keys and their organization.  This class ensures
- * the layout of the collection remain consistent and easily verifiable.
- * Provided are functions to add and delete keys from the database, retrieve a
- * single key, and assemble a collection from keys stored in TUF 'Root'
- * Metadata. The Update Framework process maintains a set of role info for
- * multiple repositories.
+ * Represent a collection of keys and their organization.
  *
- * Keys are set/get in this class primarily by their key ID.
- * Key IDs are used as identifiers for keys and are hexadecimal representations
- * of the hash of key objects.  See computeKeyIds() to learn precisely how
- * keyids are generated.  One may get the keyid of a key object by simply
- * accessing the array's 'keyid' key (i.e., $keyMeta['keyid']).
+ * This class ensures the layout of the collection remain consistent and easily
+ * verifiable. Keys are set/get in this class primarily by their key ID. Key IDs
+ * are used as identifiers for keys and are hexadecimal representations of the
+ * hash of key objects.  See computeKeyIds() to learn precisely how keyids are
+ * generated.  One may get the keyid of a key object by simply accessing the
+ * array's 'keyid' key (i.e., $keyMeta['keyid']).
  *
  * @see https://github.com/theupdateframework/tuf/blob/292b18926b45106b27f582dc3cb1433363d03a9a/tuf/keydb.py
  */
@@ -29,7 +25,7 @@ class KeyDB
     protected $keys;
 
     /**
-     * Populate the key database with the unique keys found in 'root_metadata'.
+     * Creates a key database with the unique keys found in root metadata.
      *
      * @param $rootMetadata
      *    An associative array as one would obtain by decoding json conformant
@@ -58,6 +54,11 @@ class KeyDB
         return $db;
     }
 
+    /**
+     * Gets the supported key types.
+     *
+     * @return string[]
+     */
     public static function getSupportedKeyTypes()
     {
         static $types = [];
@@ -67,6 +68,13 @@ class KeyDB
         return $types;
     }
 
+    /**
+     * Computes the keys ids for the keys in the key metadata.
+     *
+     * @param $keyMeta
+     *
+     * @return string[]
+     */
     public static function computeKeyIds($keyMeta)
     {
         $keyCanonicalStruct = [
@@ -87,12 +95,9 @@ class KeyDB
     }
 
     /**
-     * Add 'rsakey_dict' to the key database while avoiding duplicates.
+     * Adds key metadata to the key database while avoiding duplicates.
      *
-     * @TODO If keyid is provided, verify it is the correct keyid for 'rsakey_dict'
-     *        and raise an exception if it is not.
-     *
-     * @param $keyMeta
+     * @param array $keyMeta
      */
     public function addKey($keyMeta)
     {
@@ -103,15 +108,13 @@ class KeyDB
      * Return the key belonging to 'keyid'.
      *
      * @param $keyId
-     *     An object conformant to 'securesystemslib.formats.KEYID_SCHEMA'. It
-     *     is used as an identifier for keys.
+     *     The key id.
      *
      * @return array
-     *     The key matching 'keyid'.  In the case of RSA keys, a dictionary
-     *     conformant to 'securesystemslib.formats.RSAKEY_SCHEMA' is returned.
+     *     The key matching $keyId.
      *
      * @throws \Exception
-     *     Thrown if 'keyid' is not found in the keydb database.
+     *     Thrown if the key id is not found in the keydb database.
      */
     public function getKey($keyId)
     {
