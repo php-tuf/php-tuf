@@ -1,8 +1,8 @@
 {
  "signatures": [
   {
-   "keyid": "387d1c9e8a44e7ad3a1ea595bf718a94cc28a09fbfb9f03795404a4ea1d0bbbd",
-   "sig": "2d4936c050f08d33cdd7fa7a0254f2c41a0ee31db573abb0c0c91ae9ac3dd7db83bc685e5939846bee8baa9c08bc5431aa89f18ad60a4922ac599c0abdf2de01"
+   "keyid": "f801fb96ba8f6732f8b77427aa507a02320d591320616881ce4bcb458a23d043",
+   "sig": "7b3da4c9ef2ee91070e108c2bbdfd088d61c05f28496c573aed414f1079858998e752c10b446aa887a44c469694b42824c4dcf9219b42239fb0a22c5e9874004"
   }
  ],
  "signed": {
@@ -11,7 +11,7 @@
    "keys": {},
    "roles": []
   },
-  "expires": "2020-11-03T01:26:06Z",
+  "expires": "2020-11-21T01:47:18Z",
   "spec_version": "1.0.0",
   "targets": {},
   "version": 1
