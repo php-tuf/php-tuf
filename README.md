@@ -65,17 +65,17 @@ code documentation and array formatting.
 
 ### Test fixtures setup
 
-1. [Set up the TUF server environment locally](#server-environment-setup-for-python-tuf-cli).
+1. Install the Python TUF implementation and enable the pipenv:
 
-1. Start a `fixtures` directory:
-
-       mkdir fixtures
+       pipenv install
+       pipenv shell
 
 1. Initialize the repository and add/sign a target:
 
        repo.py --path=fixtures/ --init --consistent  # Defaults to Ed25519
        echo "Test File" > testtarget.txt
        repo.py --path=fixtures/ --add testtarget.txt
+       rm testtarget.txt
 
 ### Using test fixtures
 
