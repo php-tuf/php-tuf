@@ -37,6 +37,20 @@ class Updater
     protected $durableStorage;
 
     /**
+     * The role database for the repository.
+     *
+     * @var \Tuf\RoleDB
+     */
+    protected $roleDB;
+
+    /**
+     * The key database for the repository.
+     *
+     * @var \Tuf\KeyDB
+     */
+    protected $keyDB;
+
+    /**
      * Updater constructor.
      *
      * @param string $repositoryName
@@ -77,11 +91,9 @@ class Updater
         $rootData = json_decode($this->durableStorage['root.json'], true);
         $signed = $rootData['signed'];
 
-        $roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
-        $keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
-        // @todo investigate whether we in fact need multiple simultaneous
-        //   repository support.
-        RepositoryDBCollection::singleton()->setDatabasesForRepository($keyDB, $roleDB, 'default');
+        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
+        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
+
 
         // SPEC: 1.1.
         $version = (int) $signed['version'];
@@ -225,8 +237,7 @@ class Updater
         $signatures = $verifiableStructure['signatures'];
         $signed = $verifiableStructure['signed'];
 
-        list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
-        $roleInfo = $roleDb->getRoleInfo($type);
+        $roleInfo = $this->roleDB->getRoleInfo($type);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
@@ -248,15 +259,13 @@ class Updater
 
     protected function isKeyIdAcceptableForRole($keyId, $role)
     {
-        list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
-        $roleKeyIds = $roleDb->getRoleKeyIds($role);
+        $roleKeyIds = $this->roleDB->getRoleKeyIds($role);
         return in_array($keyId, $roleKeyIds);
     }
 
     protected function verifySingleSignature($bytes, $signatureMeta)
     {
-        list($roleDb, $keyDb) = RepositoryDBCollection::singleton()->getDatabasesForRepository();
-        $keyMeta = $keyDb->getKey($signatureMeta['keyid']);
+        $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
         $pubkey = $keyMeta['keyval']['public'];
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
