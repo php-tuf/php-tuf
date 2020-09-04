@@ -1,12 +1,14 @@
 <?php
 
-
 namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\Tests\PublicVisibility\Client\Updater;
+use Tuf\Client\Updater;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
+/**
+ * @covers \Tuf\Client\Updater
+ */
 class UpdaterTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
@@ -17,7 +19,10 @@ class UpdaterTest extends TestCase
         return new Updater('repo', [], $localRepo);
     }
 
-    public function testCheckRollbackAttack_noAttack()
+    /**
+     * @covers ::checkRollbackAttack
+     */
+    public function testCheckRollbackAttackNoAttack()
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
@@ -31,15 +36,19 @@ class UpdaterTest extends TestCase
             '_type' => 'any',
             'version' => 2,
         ];
-
-        $sut->unitTest_checkRollbackAttack($localMetadata, $incomingMetadata);
+        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $localMetadata, $incomingMetadata);
 
         // Incoming at same version as local.
         $incomingMetadata['version'] = $localMetadata['version'];
-        $sut->unitTest_checkRollbackAttack($localMetadata, $incomingMetadata);
+        $method->invoke($sut, $localMetadata, $incomingMetadata);
     }
 
-    public function testCheckRollbackAttack_attack()
+    /**
+     * @covers ::checkRollbackAttack
+     */
+    public function testCheckRollbackAttackAttack()
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
 
@@ -52,11 +61,15 @@ class UpdaterTest extends TestCase
             '_type' => 'any',
             'version' => 1,
         ];
-
-        $sut->unitTest_checkRollbackAttack($localMetadata, $incomingMetadata);
+        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $localMetadata, $incomingMetadata);
     }
 
-    public function testCheckFreezeAttack_noAttack()
+    /**
+     * @covers ::checkFreezeAttack
+     */
+    public function testCheckFreezeAttackNoAttack()
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
@@ -70,14 +83,19 @@ class UpdaterTest extends TestCase
         $nowString = '1970-01-01T00:00:00Z';
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $nowString);
 
-        $sut->unitTest_checkFreezeAttack($signedMetadata, $now);
+        $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $signedMetadata, $now);
 
         // At expiration time.
         $signedMetadata['expires'] = $nowString;
-        $sut->unitTest_checkFreezeAttack($signedMetadata, $now);
+        $method->invoke($sut, $signedMetadata, $now);
     }
 
-    public function testCheckFreezeAttack_attack()
+    /**
+     * @covers ::checkFreezeAttack
+     */
+    public function testCheckFreezeAttackAttack()
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
 
@@ -89,6 +107,8 @@ class UpdaterTest extends TestCase
         // 1 second later.
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", '1970-01-01T00:00:01Z');
 
-        $sut->unitTest_checkFreezeAttack($signedMetadata, $now);
+        $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $signedMetadata, $now);
     }
 }

@@ -5,6 +5,7 @@ namespace Tuf\Tests\DurableStorage;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
+use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 
 /**
  * @coversDefaultClass \Tuf\Client\DurableStorage\DurableStorageAccessValidator
