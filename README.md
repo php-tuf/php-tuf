@@ -39,15 +39,14 @@ project's release creation process. This will require:
 
 ### Server environment setup for the Python TUF CLI
 
-1. Install Python 3.8+ and PIP 19+ (not tested on earlier but may work).
-1. Set up a virtual environment:
+1. Install Python 3.8+ and [Pipenv](https://pipenv.pypa.io/en/latest/#install-pipenv-today). Fedora 33+ should have a fresh version of `pipenv`, but Fedora 32 should use the build from COPR: `sudo dnf copr enable @python/pipenv`
+1. Configure the virtual environment:
 
-       python3 -m venv venv
-       source venv/bin/activate
+       pipenv --three install
 
-1. Install dependencies and TUF:
+1. Launch a shell within the virtual environment:
 
-       pip install -r requirements.txt
+       pipenv shell
 
 ## Code style
 
@@ -66,17 +65,17 @@ code documentation and array formatting.
 
 ### Test fixtures setup
 
-1. [Set up the TUF server environment locally](#server-environment-setup-for-python-tuf-cli).
+1. Install the Python TUF implementation and enable the pipenv:
 
-1. Start a `fixtures` directory:
-
-       mkdir fixtures
+       pipenv install
+       pipenv shell
 
 1. Initialize the repository and add/sign a target:
 
        repo.py --path=fixtures/ --init --consistent  # Defaults to Ed25519
        echo "Test File" > testtarget.txt
        repo.py --path=fixtures/ --add testtarget.txt
+       rm testtarget.txt
 
 ### Using test fixtures
 

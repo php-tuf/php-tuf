@@ -1,6 +1,6 @@
 # PHP-TUF dependency information
 
-## Production dependencies
+## Production PHP dependencies
 
 ### Paragon IE sodium_compat
 - **Repository:** https://github.com/paragonie/sodium_compat
@@ -15,7 +15,7 @@
 - **Additional dependencies:** [random_compat](https://github.com/paragonie/random_compat)
   (Same policies.)
 
-## Development dependencies
+## Development PHP dependencies
 
 ### PHPUnit
 - **Repository:** https://github.com/sebastianbergmann/phpunit
@@ -50,4 +50,7 @@
 - **Security issue reporting:** ?
 - **Contacts:** ?
 - **Additional dependencies:** None
+
+## Development Python dependencies
+@todo
 
