@@ -34,7 +34,7 @@
     </rule>
 
     <!-- Ensure code is documented. -->
-    <rule ref="TufCS/ruleset.xml">
+    <rule ref="PHP_CodeSniffer/Tuf/ruleset.xml">
         <properties>
             <property name="skipIfInheritdoc" value="true"/>
         </properties>

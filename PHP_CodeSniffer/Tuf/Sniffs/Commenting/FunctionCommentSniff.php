@@ -1,6 +1,6 @@
 <?php
 
-namespace TufCS\Sniffs\Commenting;
+namespace Tuf\Sniffs\Commenting;
 
 use PHP_CodeSniffer\Files\File;
 use PHP_CodeSniffer\Standards\Squiz\Sniffs\Commenting\FunctionCommentSniff as SquizFunctionCommentSniff;

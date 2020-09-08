@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<ruleset name="TufCs">
+<ruleset name="Tuf">
     <description>A custom coding standard for the PHP-TUF project.</description>
-    <rule ref="TufCS.Commenting.FunctionComment">
+    <rule ref="Tuf.Commenting.FunctionComment">
         <!-- Unlike the Squiz standard, our docblock formatting for parameters
              has the parameter comment on a newline, e.g.:
                  /**
@@ -12,11 +12,11 @@
              So, we need to extend the sniff and override the
              MissingParamComment and EmptyThrows errors with our own checks
              that look at subsequent newlines. -->
-        <exclude name="TufCS.Commenting.FunctionComment.MissingParamComment"/>
-        <exclude name="TufCS.Commenting.FunctionComment.EmptyThrows"/>
+        <exclude name="Tuf.Commenting.FunctionComment.MissingParamComment"/>
+        <exclude name="Tuf.Commenting.FunctionComment.EmptyThrows"/>
 
         <!-- The Squiz parameter spacing check is also irrelevant for our
                formatting, so skip that too. -->
-        <exclude name="TufCS.Commenting.FunctionComment.SpacingAfterParamType"/>
+        <exclude name="Tuf.Commenting.FunctionComment.SpacingAfterParamType"/>
     </rule>
 </ruleset>
