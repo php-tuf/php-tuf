@@ -105,7 +105,7 @@ class RoleDB
     /**
      * Verifies whether a given role name is stored in the role database.
      *
-     * @param $roleName
+     * @param string $roleName
      *     The role name.
      *
      * @return bool
@@ -119,7 +119,7 @@ class RoleDB
     /**
      * Gets the role information.
      *
-     * @param $roleName
+     * @param string $roleName
      *    The role name.
      *
      * @return array
@@ -141,7 +141,7 @@ class RoleDB
     }
 
     /**
-     * Gets a list of key ids for a role.
+     * Gets a list of key IDs for a role.
      *
      * @param string $roleName
      *    The role name.
@@ -151,6 +151,8 @@ class RoleDB
      *
      * @throws \Exception
      *    Thrown if the role does not exist.
+     *
+     * @todo Better docs.
      */
     public function getRoleKeyIds($roleName)
     {
@@ -159,7 +161,7 @@ class RoleDB
     }
 
     /**
-     * Gets the threshold value of the role associated with $roleName
+     * Gets the threshold required for a given role.
      *
      * @param string $roleName
      *    The role name.
