@@ -77,16 +77,21 @@ class KeyDB
     }
 
     /**
-     * Computes the keys IDs for the keys in the key metadata.
+     * Computes the hashed keys IDs for the given key metadata.
      *
      * @param array $keyMeta
      *     An associative array of key metadata. See self::addKey() and the TUF
      *     specification for the array structure.
      *
      * @return string[]
-     *     @todo Add description here.
+     *     An array of hashed key IDs for the key metadata. Each entry is a
+     *     string hash of the key signature and all its associated metadata.
+     *     There is one entry for each hashing algorithm specified in the
+     *     'keyid_hash_algorithms' child array.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     *
+     * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
     public static function computeKeyIds($keyMeta)
     {
@@ -97,6 +102,9 @@ class KeyDB
             'keyval' => ['public' => $keyMeta['keyval']['public']],
         ];
         $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
+
+        // Generate a hash of the key and its metadata for each of the listed
+        // keyid_hash_algorithms.
         return array_map(function ($algo) use ($keyCanonicalForm) {
             return hash($algo, $keyCanonicalForm, false);
         }, $keyMeta['keyid_hash_algorithms']);
@@ -117,10 +125,13 @@ class KeyDB
      *     An associative array of key metadata, including:
      *     - keytype: The public key signature system, e.g. 'ed25519'.
      *     - scheme: The corresponding signature scheme, e.g. 'ed25519'.
-     *     - keyid_hash_algorithms: @todo This differs from the spec.
      *     - keyval: An associative array containing the public key value.
+     *     - keyid_hash_algorithms: @todo This differs from the spec. See
+     *       linked issue.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     *
+     * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
     public function addKey($keyMeta)
     {

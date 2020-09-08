@@ -52,6 +52,12 @@ class RoleDB
             //     equality has a purpose.
             if (strncmp($roleName, 'targets', strlen('targets')) === 0) {
                 $roleInfo['paths'] = [];
+                // @todo In the spec, delegations are not part of the role
+                //     structure; delegations reference roles rather than vice
+                //     versa and are in a separate part of the document. Review
+                //     this once https://github.com/php-tuf/php-tuf/issues/52
+                //     is resolved.
+                // @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
                 $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
             }
             $roleInfo['paths'] = [];
@@ -81,17 +87,20 @@ class RoleDB
      *     The role name.
      * @param array $roleInfo
      *     An associative array of role metadata, including:
-     *     - keyids: An array of public key signatures for the role. (?)
-     *     - paths: The paths that this role may sign. (?)
-     *     - delegations: An array containing delegation roles and keys.
-     *       (?)
+     *     - keyids: An array of authorized public key signatures for the role.
      *     - threshold: An integer for the threshold of signatures required for
      *       this role.
+     *     - paths: An array of the path patterns that this role may sign.
      *
      * @throws \Exception
      *     Thrown if the role already exists.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     *
+     * @todo Provide more complete documentation of the structure once
+     *     delgation is implemented and fixtures are regenerated. Issues:
+     *     - https://github.com/php-tuf/php-tuf/issues/50
+     *     - https://github.com/php-tuf/php-tuf/issues/52
      */
     public function addRole(string $roleName, array $roleInfo)
     {
@@ -141,18 +150,16 @@ class RoleDB
     }
 
     /**
-     * Gets a list of key IDs for a role.
+     * Gets a list of authorized key IDs for a role.
      *
      * @param string $roleName
      *    The role name.
      *
      * @return string[]
-     *    A list of key IDs.
+     *    A list of key IDs that are authorized to sign for the role.
      *
      * @throws \Exception
      *    Thrown if the role does not exist.
-     *
-     * @todo Better docs.
      */
     public function getRoleKeyIds($roleName)
     {
