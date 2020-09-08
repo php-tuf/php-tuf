@@ -31,7 +31,7 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public static function createRoleDBFromRootMetadata($rootMetadata)
+    public static function createRoleDBFromRootMetadata(array $rootMetadata)
     {
         $db = new self();
 
@@ -92,6 +92,8 @@ class RoleDB
      *       this role.
      *     - paths: An array of the path patterns that this role may sign.
      *
+     * @return void
+     *
      * @throws \Exception
      *     Thrown if the role already exists.
      *
@@ -117,10 +119,10 @@ class RoleDB
      * @param string $roleName
      *     The role name.
      *
-     * @return bool
+     * @return boolean
      *     True if the role is found in the role database; false otherwise.
      */
-    public function roleExists($roleName)
+    public function roleExists(string $roleName)
     {
         return !empty($this->roles[$roleName]);
     }
@@ -140,7 +142,7 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public function getRoleInfo($roleName)
+    public function getRoleInfo(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
             throw new \Exception("Role does not exist: $roleName");
@@ -161,7 +163,7 @@ class RoleDB
      * @throws \Exception
      *    Thrown if the role does not exist.
      */
-    public function getRoleKeyIds($roleName)
+    public function getRoleKeyIds(string $roleName)
     {
         $roleInfo = $this->getRoleInfo($roleName);
         return $roleInfo['keyids'];
@@ -178,7 +180,7 @@ class RoleDB
      *
      * @throws \Exception
      */
-    public function getRoleThreshold($roleName)
+    public function getRoleThreshold(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
             throw new \Exception("Role does not exist: $roleName");

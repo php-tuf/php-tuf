@@ -39,7 +39,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public static function createKeyDBFromRootMetadata($rootMetadata)
+    public static function createKeyDBFromRootMetadata(array $rootMetadata)
     {
         $db = new self();
 
@@ -93,7 +93,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public static function computeKeyIds($keyMeta)
+    public static function computeKeyIds(array $keyMeta)
     {
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],
@@ -129,11 +129,13 @@ class KeyDB
      *     - keyid_hash_algorithms: @todo This differs from the spec. See
      *       linked issue.
      *
+     * @return void
+     *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public function addKey($keyMeta)
+    public function addKey(array $keyMeta)
     {
         $this->keys[$keyMeta['keyid']] = $keyMeta;
     }
@@ -153,7 +155,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public function getKey($keyId)
+    public function getKey(string $keyId)
     {
         if (empty($this->keys[$keyId])) {
             throw new \Exception("Unknown key ID: $keyId");
