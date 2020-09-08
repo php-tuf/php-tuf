@@ -89,6 +89,20 @@ class Updater
     }
 
     /**
+     * Stub. For experimentation with our public API only. Not production ready.
+     * Gets target info for one given target.
+     *
+     * @param string $targetPath
+     * @return array
+     */
+    public function getOneValidTargetInfo(string $targetPath) :array {
+        $targets = $this->getRepoFile('targets.json');
+        $targets = json_decode($targets, true);
+        $targets = $targets['signed']['targets'];
+        return $targets[$targetPath];
+    }
+
+    /**
      * Validates a target.
      *
      * @param $targetRepoPath
