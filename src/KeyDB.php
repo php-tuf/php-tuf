@@ -27,7 +27,7 @@ class KeyDB
     /**
      * Creates a key database with the unique keys found in root metadata.
      *
-     * @param $rootMetadata
+     * @param array[] $rootMetadata
      *    An associative array as one would obtain by decoding JSON conformant
      *    to section 4.3 of the TUF specification.
      *
@@ -80,13 +80,13 @@ class KeyDB
      * Computes the keys IDs for the keys in the key metadata.
      *
      * @param array $keyMeta
-     *     An associative array of key metadata, including:
-     *     - @todo
+     *     An associative array of key metadata. See self::addKey() and the TUF
+     *     specification for the array structure.
      *
      * @return string[]
      *     @todo Add description here.
      *
-     * @see @todo Add reference here.
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public static function computeKeyIds($keyMeta)
     {
@@ -113,11 +113,14 @@ class KeyDB
     /**
      * Adds key metadata to the key database while avoiding duplicates.
      *
-     * @param array[] $keyMeta
+     * @param array $keyMeta
      *     An associative array of key metadata, including:
-     *     - @todo
+     *     - keytype: The public key signature system, e.g. 'ed25519'.
+     *     - scheme: The corresponding signature scheme, e.g. 'ed25519'.
+     *     - keyid_hash_algorithms: @todo This differs from the spec.
+     *     - keyval: An associative array containing the public key value.
      *
-     * @see @todo Add reference here.
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public function addKey($keyMeta)
     {
@@ -131,10 +134,13 @@ class KeyDB
      *     The key ID.
      *
      * @return array
-     *     The key matching $keyId.
+     *     The key metadata matching $keyId. See self::addKey() and the TUF
+     *     specification for the array structure.
      *
      * @throws \Exception
      *     Thrown if the key ID is not found in the keydb database.
+     *
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public function getKey($keyId)
     {

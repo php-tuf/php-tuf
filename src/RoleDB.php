@@ -20,13 +20,16 @@ class RoleDB
     /**
      *  Creates a role database from all of the unique roles in the metadata.
      *
-     * @param $rootMetadata
-     *     The root metadata.
+     * @param array[] $rootMetadata
+     *    An associative array as one would obtain by decoding JSON conformant
+     *    to section 4.3 of the TUF specification.
      *
      * @return \Tuf\RoleDB
      *    The created RoleDB.
      *
      * @throws \Exception
+     *
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public static function createRoleDBFromRootMetadata($rootMetadata)
     {
@@ -63,6 +66,9 @@ class RoleDB
         return $db;
     }
 
+    /**
+     * Constructs a new RoleDB object.
+     */
     public function __construct()
     {
         $this->roles = [];
@@ -74,9 +80,18 @@ class RoleDB
      * @param string $roleName
      *     The role name.
      * @param array $roleInfo
-     *     The role metadata.
+     *     An associative array of role metadata, including:
+     *     - keyids: An array of public key signatures for the role. (?)
+     *     - paths: The paths that this role may sign. (?)
+     *     - delegations: An array containing delegation roles and keys.
+     *       (?)
+     *     - threshold: An integer for the threshold of signatures required for
+     *       this role.
+     *
      * @throws \Exception
      *     Thrown if the role already exists.
+     *
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public function addRole(string $roleName, array $roleInfo)
     {
@@ -88,13 +103,13 @@ class RoleDB
     }
 
     /**
-     * Verifies whether 'rolename' is stored in the role database.
+     * Verifies whether a given role name is stored in the role database.
      *
      * @param $roleName
      *     The role name.
      *
      * @return bool
-     *     True if the role is found in the role database, False otherwise.
+     *     True if the role is found in the role database; false otherwise.
      */
     public function roleExists($roleName)
     {
@@ -108,10 +123,13 @@ class RoleDB
      *    The role name.
      *
      * @return array
-     *    The role information.
+     *    The role information. See self::addRole() and the TUF specification
+     *    for the array the structure.
      *
      * @throws \Exception
      *     Thrown if the role does not exist.
+     *
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public function getRoleInfo($roleName)
     {
@@ -129,7 +147,7 @@ class RoleDB
      *    The role name.
      *
      * @return string[]
-     *    A list of key ids.
+     *    A list of key IDs.
      *
      * @throws \Exception
      *    Thrown if the role does not exist.
@@ -147,6 +165,7 @@ class RoleDB
      *    The role name.
      *
      * @return integer
+     *     The threshold number of signatures required for the role.
      *
      * @throws \Exception
      */
