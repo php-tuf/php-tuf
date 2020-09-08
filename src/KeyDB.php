@@ -130,7 +130,7 @@ class KeyDB
     /**
      * Returns the key metadata for a given key ID.
      *
-     * @param $keyId
+     * @param string $keyId
      *     The key ID.
      *
      * @return array
