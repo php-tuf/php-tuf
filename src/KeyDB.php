@@ -6,21 +6,21 @@ namespace Tuf;
 /**
  * Represent a collection of keys and their organization.
  *
- * This class ensures the layout of the collection remain consistent and easily
- * verifiable. Keys are set/get in this class primarily by their key ID. Key IDs
- * are used as identifiers for keys and are hexadecimal representations of the
- * hash of key objects.  See computeKeyIds() to learn precisely how keyids are
- * generated.  One may get the keyid of a key object by simply accessing the
- * array's 'keyid' key (i.e., $keyMeta['keyid']).
+ * This class ensures the layout of the collection remains consistent and
+ * easily verifiable. Keys are set/get in this class primarily by their key ID.
+ * Key IDs are used as identifiers for keys and are hexadecimal representations
+ * of the hash of key objects.  See computeKeyIds() to learn precisely how
+ * key IDs are generated.  One may get the key ID of a key object by accessing
+ * the array's 'keyid' key (i.e., $keyMeta['keyid']).
  *
  * @see https://github.com/theupdateframework/tuf/blob/292b18926b45106b27f582dc3cb1433363d03a9a/tuf/keydb.py
  */
 class KeyDB
 {
     /**
-     * @var \array[]
-     *
      * Keys indexed by key ID.
+     *
+     * @var \array[]
      */
     protected $keys;
 
@@ -28,13 +28,16 @@ class KeyDB
      * Creates a key database with the unique keys found in root metadata.
      *
      * @param $rootMetadata
-     *    An associative array as one would obtain by decoding json conformant
+     *    An associative array as one would obtain by decoding JSON conformant
      *    to section 4.3 of the TUF specification.
      *
      * @return \Tuf\KeyDB
+     *     The constructed key database object.
      *
      * @throws \Exception
      *   Thrown if an unsupported key type exists in the metadata.
+     *
+     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public static function createKeyDBFromRootMetadata($rootMetadata)
     {
@@ -57,9 +60,12 @@ class KeyDB
     }
 
     /**
-     * Gets the supported key types.
+     * Gets the supported encryption key types.
      *
      * @return string[]
+     *     An array of supported encryption key type names (e.g. 'ed25519').
+     *
+     * @see src/constants.php
      */
     public static function getSupportedKeyTypes()
     {
@@ -71,11 +77,16 @@ class KeyDB
     }
 
     /**
-     * Computes the keys ids for the keys in the key metadata.
+     * Computes the keys IDs for the keys in the key metadata.
      *
-     * @param $keyMeta
+     * @param array $keyMeta
+     *     An associative array of key metadata, including:
+     *     - @todo
      *
      * @return string[]
+     *     @todo Add description here.
+     *
+     * @see @todo Add reference here.
      */
     public static function computeKeyIds($keyMeta)
     {
@@ -91,6 +102,9 @@ class KeyDB
         }, $keyMeta['keyid_hash_algorithms']);
     }
 
+    /**
+     * Constructs a new KeyDB.
+     */
     public function __construct()
     {
         $this->keys = [];
@@ -99,7 +113,11 @@ class KeyDB
     /**
      * Adds key metadata to the key database while avoiding duplicates.
      *
-     * @param array $keyMeta
+     * @param array[] $keyMeta
+     *     An associative array of key metadata, including:
+     *     - @todo
+     *
+     * @see @todo Add reference here.
      */
     public function addKey($keyMeta)
     {
@@ -107,16 +125,16 @@ class KeyDB
     }
 
     /**
-     * Return the key belonging to 'keyid'.
+     * Returns the key metadata for a given key ID.
      *
      * @param $keyId
-     *     The key id.
+     *     The key ID.
      *
      * @return array
      *     The key matching $keyId.
      *
      * @throws \Exception
-     *     Thrown if the key id is not found in the keydb database.
+     *     Thrown if the key ID is not found in the keydb database.
      */
     public function getKey($keyId)
     {
