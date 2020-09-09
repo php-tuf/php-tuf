@@ -3,6 +3,11 @@
 
 namespace Tuf\Tests\TestHelpers\DurableStorage;
 
+/**
+ * Provides a helper method to load MemoryStorage instance from a path.
+ *
+ * @see \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
+ */
 trait MemoryStorageLoaderTrait
 {
     /**
