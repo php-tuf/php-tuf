@@ -22,14 +22,20 @@ class TargetsMetadataTest extends MetaDataBaseTest
      */
     protected $expectedType = 'targets';
 
-    public function providerExpectedField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerExpectedField() : array
     {
         $data = parent::providerExpectedField();
         // @todo Add targets specifics.
         return $data;
     }
 
-    public function providerValidField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerValidField() : array
     {
         $data = parent::providerValidField();
         // @todo Add targets specifics.

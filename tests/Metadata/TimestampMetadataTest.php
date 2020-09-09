@@ -23,7 +23,10 @@ class TimestampMetadataTest extends MetaDataBaseTest
      */
     protected $expectedType = 'timestamp';
 
-    public function providerExpectedField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerExpectedField() : array
     {
         $data = parent::providerExpectedField();
         $data[] = ['signed:meta'];
@@ -34,7 +37,10 @@ class TimestampMetadataTest extends MetaDataBaseTest
         return $data;
     }
 
-    public function providerValidField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerValidField() : array
     {
         $data = parent::providerValidField();
         $data[] = ['signed:meta', 'array'];

@@ -52,6 +52,8 @@ abstract class MetaDataBaseTest extends TestCase
 
     /**
      * Tests for valid metadata.
+     *
+     * @return void
      */
     public function testValidMetaData()
     {
@@ -59,10 +61,17 @@ abstract class MetaDataBaseTest extends TestCase
         $this->testClass::createFromJson($this->localRepo[$this->validJson]);
     }
 
-    public function testInvalidType() {
+    /**
+     * Tests that validation fails on invalid type.
+     *
+     *  @return void
+     */
+    public function testInvalidType()
+    {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Array[signed][_type]") . ".*This value should be equal to \"{$this->expectedType}\"";
+        $expectedMessage = preg_quote("Array[signed][_type]", '/');
+        $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         $this->testClass::createFromJson(JsonNormalizer::asNormalizedJson($metadata));
@@ -72,12 +81,14 @@ abstract class MetaDataBaseTest extends TestCase
      * Tests for metadata with a missing field.
      *
      * @param string $expectedField
+     *   The name of the field. Nested fields indicated with ":".
      *
      * @param string $exception
      *   A different exception message to expect.
      *
-     * @dataProvider providerExpectedField
+     * @return void
      *
+     * @dataProvider providerExpectedField
      */
     public function testMissingField(string $expectedField, string $exception = null)
     {
@@ -102,6 +113,8 @@ abstract class MetaDataBaseTest extends TestCase
      *   Ordered keys to the value to unset.
      * @param array $data
      *   The array to modify.
+     *
+     * @return void
      */
     protected function nestedUnset(array $keys, array &$data)
     {
@@ -117,11 +130,14 @@ abstract class MetaDataBaseTest extends TestCase
      * Tests for metadata with a field of invalid type.
      *
      * @param string $expectedField
+     *   The name of the field. Nested fields indicated with ":".
      *
      * @param string $expectedType
+     *   The type of the field.
+     *
+     * @return void
      *
      * @dataProvider providerValidField
-     *
      */
     public function testInvalidField(string $expectedField, string $expectedType)
     {
@@ -156,6 +172,8 @@ abstract class MetaDataBaseTest extends TestCase
      *   The array to modify.
      * @param mixed $newValue
      *   The new value to set.
+     *
+     * @return void
      */
     protected function nestedChange(array $keys, array &$data, $newValue)
     {
@@ -169,8 +187,11 @@ abstract class MetaDataBaseTest extends TestCase
 
     /**
      * Dataprovider for testMissingField().
+     *
+     * @return array
+     *   Array of arrays of expected field name, and optional exception message.
      */
-    public function providerExpectedField()
+    public function providerExpectedField() : array
     {
         return [
             ['signed'],
@@ -186,6 +207,9 @@ abstract class MetaDataBaseTest extends TestCase
 
     /**
      * Dataprovider for testInvalidField().
+     *
+     * @return array
+     *   Array of arrays of expected field name, and field data type.
      */
     public function providerValidField()
     {

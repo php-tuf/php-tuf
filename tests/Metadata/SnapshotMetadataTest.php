@@ -22,7 +22,10 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      */
     protected $expectedType = 'snapshot';
 
-    public function providerExpectedField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerExpectedField() : array
     {
         $data = parent::providerExpectedField();
         $data[] = ['signed:meta'];
@@ -31,7 +34,10 @@ class SnapshotMetadataTest extends MetaDataBaseTest
         return $data;
     }
 
-    public function providerValidField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerValidField() : array
     {
         $data = parent::providerValidField();
         $data[] = ['signed:meta', 'array'];
@@ -39,5 +45,4 @@ class SnapshotMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:meta:targets.json:version', 'int'];
         return $data;
     }
-
 }

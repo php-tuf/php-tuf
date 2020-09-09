@@ -22,14 +22,20 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     protected $expectedType = 'root';
 
-    public function providerExpectedField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerExpectedField() : array
     {
         $data = parent::providerExpectedField();
         // @todo Add root specifics.
         return $data;
     }
 
-    public function providerValidField()
+    /**
+     * {@inheritdoc}
+     */
+    public function providerValidField() : array
     {
         $data = parent::providerValidField();
         // @todo Add root specifics.

@@ -31,17 +31,17 @@ class UpdaterTest extends TestCase
 
         $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $localMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn('1');
+        $localMetadata->expects(self::any())->method('getVersion')->willReturn(1);
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn('2');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $sut = $this->getSystemInTest();
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
 
         // Incoming at same version as local.
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn('2');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
     }
 
@@ -55,10 +55,10 @@ class UpdaterTest extends TestCase
         $sut = $this->getSystemInTest();
         $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $localMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn('2');
+        $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn('1');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
