@@ -4,6 +4,9 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
+use Tuf\Exception\PotentialAttackException\FreezeAttackException;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\KeyDB;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
@@ -86,19 +89,6 @@ class Updater
      */
     public function refresh()
     {
-    }
-
-    /**
-     * Validates a target.
-     *
-     * @param $targetRepoPath
-     * @param $targetStream
-     *
-     * @return boolean
-     *   Returns true if the target validates.
-     */
-    public function validateTarget($targetRepoPath, $targetStream)
-    {
         $rootData = json_decode($this->durableStorage['root.json'], true);
         $signed = $rootData['signed'];
 
@@ -123,8 +113,10 @@ class Updater
         // SPEC: 1.8.
         $expires = $signed['expires'];
         $fakeNow = '2020-08-04T02:58:56Z';
+
         $expireDate = $this->metadataTimestampToDateTime($expires);
         $nowDate = $this->metadataTimestampToDateTime($fakeNow);
+
         if ($nowDate > $expireDate) {
             throw new \Exception("Root has expired. Potential freeze attack!");
             // @todo "On the next update cycle, begin at step 0 and version N
@@ -140,11 +132,16 @@ class Updater
         $timestampContents = $this->getRepoFile('timestamp.json');
         $timestampStructure = json_decode($timestampContents, true);
         // SPEC: 2.1
-        if (! $this->checkSignatures($timestampStructure, 'timestamp')) {
-            // Exception? Log + return false?
-            throw new \Exception("Improperly signed repository timestamp.");
-        }
+        $this->checkSignatures($timestampStructure, 'timestamp');
 
+
+        // SPEC: 2.2
+        $currentStateTimestamp = json_decode($this->durableStorage['timestamp.json'], true);
+        $this->checkRollbackAttack($currentStateTimestamp['signed'], $timestampStructure['signed']);
+
+        // SPEC: 2.3
+        $this->checkFreezeAttack($timestampStructure['signed'], $nowDate);
+        $durableStorage['timestamp.json'] = $timestampContents;
 
         return true;
     }
@@ -169,7 +166,81 @@ class Updater
         }
         return $dateTime;
     }
-    protected function checkSignatures($verifiableStructure, $type)
+
+    /**
+     * Checks for a rollback attack.
+     *
+     * Verifies that an incoming remote version of a metadata file is greater
+     * than or equal to the last known version.
+     *
+     * @param mixed[] $localMetadata
+     *     The locally stored metadata from the most recent update.
+     * @param mixed[] $remoteMetadata
+     *     The latest metadata fetched from the remote repository.
+     *
+     * @throws RollbackAttackException
+     *     Thrown if a potential rollback attack is detected.
+     * @throws \UnexpectedValueException
+     *     Thrown if metadata types are not the same.
+     */
+    protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
+    {
+        if ($localMetadata['_type'] !== $remoteMetadata['_type']) {
+            throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
+               . "Local is {$localMetadata['_type']} and remote is {$remoteMetadata['_type']}.");
+        }
+        $type = $localMetadata['_type'];
+        $localVersion = (int) $localMetadata['version'];
+        if ($localVersion === 0) {
+            // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
+            // we can't perform this check properly.
+            $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
+            throw new RollbackAttackException($message);
+        }
+        $remoteVersion = (int) $remoteMetadata['version'];
+        if ($remoteVersion < $localVersion) {
+            $message = "Remote $type metadata version \"${remoteMetadata['version']}\"" .
+                " is less than previously seen $type version \"${localMetadata['version']}\"";
+            throw new RollbackAttackException($message);
+        }
+    }
+
+    /**
+     * Checks for a freeze attack.
+     *
+     * Verifies that metadata has not expired, and assumes a potential freeze
+     * attack if it has.
+     *
+     * @param mixed $metadata
+     *     The metadata for the timestamp role.
+     * @param \DateTimeInterface $now
+     *     The current date and time at runtime.
+     *
+     * @throws FreezeAttackException
+     *     Thrown if a potential freeze attack is detected.
+     */
+    protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
+    {
+        $metadataExpiration = $this->metadataTimestampToDatetime($metadata['expires']);
+        if (empty($metadata['_type'])) {
+            throw new \UnexpectedValueException('All metadata files must set a value for "_type"');
+        }
+        if ($metadataExpiration < $now) {
+            $format = "Remote %s metadata expired on %s";
+            throw new FreezeAttackException(sprintf($format, $metadata['_type'], $metadataExpiration->format('c')));
+        }
+    }
+
+    /**
+     * Checks signatures on a verifiable structure.
+     *
+     * @param array $verifiableStructure
+     * @param string $type
+     *
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if the signature thresold has not be reached.
+     */
+    protected function checkSignatures(array $verifiableStructure, string $type)
     {
         $signatures = $verifiableStructure['signatures'];
         $signed = $verifiableStructure['signed'];
@@ -181,7 +252,7 @@ class Updater
         $canonicalBytes = JsonNormalizer::asNormalizedJson($signed);
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
-                $haveVerified += (int)$this->verifySingleSignature($canonicalBytes, $signature);
+                $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
             //     bad signatures even this method returns TRUE because the
@@ -191,7 +262,9 @@ class Updater
             }
         }
 
-        return $haveVerified >= $needVerified;
+        if ($haveVerified < $needVerified) {
+            throw new SignatureThresholdExpception("Signature threshold not met on $type");
+        }
     }
 
     protected function isKeyIdAcceptableForRole($keyId, $role)
