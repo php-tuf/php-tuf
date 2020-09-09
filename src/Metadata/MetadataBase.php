@@ -7,6 +7,7 @@ use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\EqualTo;
+use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
@@ -132,6 +133,7 @@ abstract class MetadataBase
                 'version' => [
                     new NotBlank(),
                     new Type(['type' => 'integer']),
+                    new GreaterThan(['value' => 0]),
                 ],
             ],
             'allowExtraFields' => true,

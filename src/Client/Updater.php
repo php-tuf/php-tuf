@@ -138,10 +138,10 @@ class Updater
 
         // SPEC: 2.2
         $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-        $this->checkRollbackAttack($currentStateTimestampData->getSigned(), $timestampData->getSigned());
+        $this->checkRollbackAttack($currentStateTimestampData, $timestampData);
 
         // SPEC: 2.3
-        $this->checkFreezeAttack($timestampData->getSigned(), $nowDate);
+        $this->checkFreezeAttack($timestampData, $nowDate);
         // @todo Why is the branch adding this back? It should not have changed???
         //$durableStorage['timestamp.json'] = $timestampContents;
 
@@ -175,9 +175,9 @@ class Updater
      * Verifies that an incoming remote version of a metadata file is greater
      * than or equal to the last known version.
      *
-     * @param mixed[] $localMetadata
+     * @param \Tuf\Metadata\MetadataBase $localMetadata
      *     The locally stored metadata from the most recent update.
-     * @param mixed[] $remoteMetadata
+     * @param \Tuf\Metadata\MetadataBase $remoteMetadata
      *     The latest metadata fetched from the remote repository.
      *
      * @throws RollbackAttackException
@@ -185,24 +185,18 @@ class Updater
      * @throws \UnexpectedValueException
      *     Thrown if metadata types are not the same.
      */
-    protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
+    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata)
     {
-        if ($localMetadata['_type'] !== $remoteMetadata['_type']) {
+        if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
-               . "Local is {$localMetadata['_type']} and remote is {$remoteMetadata['_type']}.");
+               . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
         }
-        $type = $localMetadata['_type'];
-        $localVersion = (int) $localMetadata['version'];
-        if ($localVersion === 0) {
-            // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
-            // we can't perform this check properly.
-            $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
-            throw new RollbackAttackException($message);
-        }
-        $remoteVersion = (int) $remoteMetadata['version'];
+        $type = $localMetadata->getType();
+        $localVersion = $localMetadata->getVersion();
+        $remoteVersion = $remoteMetadata->getVersion();
         if ($remoteVersion < $localVersion) {
-            $message = "Remote $type metadata version \"${remoteMetadata['version']}\"" .
-                " is less than previously seen $type version \"${localMetadata['version']}\"";
+            $message = "Remote $type metadata version \"$" . $remoteMetadata->getVersion() .
+                "\" is less than previously seen $type version \"$" . $localMetadata->getVersion() . '"';
             throw new RollbackAttackException($message);
         }
     }
@@ -213,7 +207,7 @@ class Updater
      * Verifies that metadata has not expired, and assumes a potential freeze
      * attack if it has.
      *
-     * @param mixed $metadata
+     * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata for the timestamp role.
      * @param \DateTimeInterface $now
      *     The current date and time at runtime.
@@ -221,15 +215,12 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
+    protected function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now)
     {
-        $metadataExpiration = $this->metadataTimestampToDatetime($metadata['expires']);
-        if (empty($metadata['_type'])) {
-            throw new \UnexpectedValueException('All metadata files must set a value for "_type"');
-        }
+        $metadataExpiration = $this->metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
             $format = "Remote %s metadata expired on %s";
-            throw new FreezeAttackException(sprintf($format, $metadata['_type'], $metadataExpiration->format('c')));
+            throw new FreezeAttackException(sprintf($format, $metadata->getType(), $metadataExpiration->format('c')));
         }
     }
 
@@ -265,7 +256,7 @@ class Updater
         }
 
         if ($haveVerified < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on $type");
+            throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getType());
         }
     }
 
