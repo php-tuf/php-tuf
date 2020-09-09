@@ -72,10 +72,8 @@ code documentation and array formatting.
 
 1. Initialize the repository and add/sign a target:
 
-       repo.py --path=fixtures/ --init --consistent  # Defaults to Ed25519
-       echo "Test File" > testtarget.txt
-       repo.py --path=fixtures/ --add testtarget.txt
-       rm testtarget.txt
+       cd fixtures/
+       python generate.py
 
 ### Using test fixtures
 

@@ -1,8 +1,8 @@
 {
  "signatures": [
   {
-   "keyid": "40746696032ec3e5887efe0e898b26fe8b7f0edb197d9eedde423186deaa3fa4",
-   "sig": "13dfe8ec5e050bffec5820c89859360ccf65b96a8e01b369c366c5b8b56d85b5152e2238237fe6843fa10cb5e1db382576e1de9ca04ded4740effa97d24c2e03"
+   "keyid": "562a42af565087e00aa4da5373e3a247d93103f14e6f4e000666110eec841493",
+   "sig": "ffdb489f9b388fbddebba3905ff7b6993276762347fa3a8124427ec136ebe0cc076562610cbbaa498b5fcbc0ae85cebfd2ee2c94559066a5692f1f14868e1b0a"
   }
  ],
  "signed": {
@@ -11,15 +11,15 @@
    "keys": {},
    "roles": []
   },
-  "expires": "2020-11-16T08:47:55Z",
+  "expires": "2020-12-09T23:10:48Z",
   "spec_version": "1.0.0",
   "targets": {
    "testtarget.txt": {
     "hashes": {
-     "sha256": "3fd48de5c648bce27acaa6ddda51f35a0c69f07075ac472a4347c66502bb0d48",
-     "sha512": "9fa485f95dfc0e8aa7801029b06554ec8282e7b6ff548c4661fefec5b23c95477d08756567cfdb693aacaf10f00fa93457e1fb4564efcbf1e6d6128459f49e01"
+     "sha256": "a1028f793b0aae9c51fa83e39975b254d78947620868f09e4a648e73486a623c",
+     "sha512": "f3dbad03656495d503b4e97dcc39a8f33d5a340aa841fa6139cc8e83975085d6a96ce635ae418fee43f14983bebb743300b103abb210e7a656acdfa8cf2888a5"
     },
-    "length": 10
+    "length": 9
    }
   },
   "version": 2

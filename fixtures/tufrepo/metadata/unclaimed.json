@@ -1,0 +1,23 @@
+{
+ "signatures": [],
+ "signed": {
+  "_type": "targets",
+  "delegations": {
+   "keys": {},
+   "roles": []
+  },
+  "expires": "2020-12-09T23:10:48Z",
+  "spec_version": "1.0.0",
+  "targets": {
+   "testunclaimedtarget.txt": {
+    "custom": {},
+    "hashes": {
+     "sha256": "fb6a80e063231fe2c80682786746f32d22dcc14dc218357535b792e41591106e",
+     "sha512": "8398c10b14e068913776cfc54509f947fa0b4d6cf08ef0c6022107fd63633ac1b07e913f02fa023306ffe6f536d00d679ede255415776c45418d5632a05125c7"
+    },
+    "length": 19
+   }
+  },
+  "version": 1
+ }
+}
