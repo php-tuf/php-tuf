@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Tuf\Tests\DurableStorage;
+namespace Tuf\Tests\TestHelpers\DurableStorage;
 
 /**
  * Class MemoryStorage
