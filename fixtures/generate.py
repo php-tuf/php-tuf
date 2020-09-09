@@ -50,7 +50,7 @@ repository.targets.add_targets(list_of_targets)
 
 # Mark everything below the root as dirty.
 repository.mark_dirty(['snapshot', 'targets', 'timestamp'])
-repository.writeall()
+repository.writeall(consistent_snapshot=True)
 
 # Delegate to an unclaimed target-signing key
 (public_unclaimed_key, private_unclaimed_key) = write_and_import_keypair('targets_delegated')
@@ -61,7 +61,7 @@ with open('tufrepo/targets/testunclaimedtarget.txt', 'w') as targetfile:
     targetfile.write("Test Delegated File")
 repository.targets("unclaimed").add_target("testunclaimedtarget.txt")
 repository.mark_dirty(['snapshot', 'targets','timestamp', 'unclaimed'])
-repository.writeall()
+repository.writeall(consistent_snapshot=True)
 
 # Publish the metadata
 shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/')
