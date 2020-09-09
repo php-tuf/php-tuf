@@ -5,6 +5,7 @@ namespace Tuf\Tests\Unit\Client;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
+
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**

@@ -92,6 +92,7 @@ class Updater
      */
     public function refresh()
     {
+
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
         $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData->getSigned());
