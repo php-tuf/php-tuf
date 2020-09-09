@@ -211,7 +211,7 @@ class FunctionCommentSniff extends SquizFunctionCommentSniff
             // For @return and @throws, it should contain just the data type.
             // Other sniffs will detect if any of that is malformed. Shift it
             // off our content.
-            array_unshift($tagComment);
+            array_shift($tagComment);
 
             // The remaining elements of the array contain any documentation
             // for the parameter. Throw an error if there isn't anything.
