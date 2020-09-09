@@ -3,4 +3,7 @@
     <rule ref="phpcs-ruleset.xml">
         <exclude name="Generic.Files.LineLength.TooLong"/>
     </rule>
+    <rule ref="PHP_CodeSniffer/Tuf/ruleset.xml">
+        <exclude name="Tuf.Commenting.FunctionComment"/>
+    </rule>
 </ruleset>
