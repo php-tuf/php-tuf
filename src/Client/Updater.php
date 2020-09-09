@@ -8,6 +8,9 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\KeyDB;
+use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\TimestampMetadata;
 use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
 use Tuf\JsonNormalizer;
@@ -89,15 +92,14 @@ class Updater
      */
     public function refresh()
     {
-        $rootData = json_decode($this->durableStorage['root.json'], true);
-        $signed = $rootData['signed'];
+        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
-        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($signed);
-        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($signed);
+        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData->getSigned());
+        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData->getSigned());
 
 
         // SPEC: 1.1.
-        $version = (int) $signed['version'];
+        $version = $rootData->getVersion();
 
 
         // SPEC: 1.2.
@@ -111,7 +113,7 @@ class Updater
         }
 
         // SPEC: 1.8.
-        $expires = $signed['expires'];
+        $expires = $rootData->getExpires();
         $fakeNow = '2020-08-04T02:58:56Z';
 
         $expireDate = $this->metadataTimestampToDateTime($expires);
@@ -129,19 +131,19 @@ class Updater
         //$consistent = $rootData['consistent'];
 
         // SPEC: 2
-        $timestampContents = $this->getRepoFile('timestamp.json');
-        $timestampStructure = json_decode($timestampContents, true);
+        $timestampData = TimestampMetadata::createFromJson($this->getRepoFile('timestamp.json'));
         // SPEC: 2.1
-        $this->checkSignatures($timestampStructure, 'timestamp');
+        $this->checkSignatures($timestampData);
 
 
         // SPEC: 2.2
-        $currentStateTimestamp = json_decode($this->durableStorage['timestamp.json'], true);
-        $this->checkRollbackAttack($currentStateTimestamp['signed'], $timestampStructure['signed']);
+        $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+        $this->checkRollbackAttack($currentStateTimestampData->getSigned(), $timestampData->getSigned());
 
         // SPEC: 2.3
-        $this->checkFreezeAttack($timestampStructure['signed'], $nowDate);
-        $durableStorage['timestamp.json'] = $timestampContents;
+        $this->checkFreezeAttack($timestampData->getSigned(), $nowDate);
+        // @todo Why is the branch adding this back? It should not have changed???
+        //$durableStorage['timestamp.json'] = $timestampContents;
 
         return true;
     }
@@ -234,24 +236,24 @@ class Updater
     /**
      * Checks signatures on a verifiable structure.
      *
-     * @param array $verifiableStructure
+     * @param \Tuf\Metadata\MetadataBase $verifiableStructure
      * @param string $type
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    protected function checkSignatures(array $verifiableStructure, string $type)
+    protected function checkSignatures(MetadataBase $metaData)
     {
-        $signatures = $verifiableStructure['signatures'];
-        $signed = $verifiableStructure['signed'];
+        $signatures = $metaData->getSignatures();
+        $signed = $metaData->getSigned();
 
-        $roleInfo = $this->roleDB->getRoleInfo($type);
+        $roleInfo = $this->roleDB->getRoleInfo($metaData->getType());
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($signed);
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
+            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getType())) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for

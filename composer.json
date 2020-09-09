@@ -12,7 +12,8 @@
     "require": {
         "php": ">=7.2.5",
         "ext-json": "*",
-        "paragonie/sodium_compat": "^1.13"
+        "paragonie/sodium_compat": "^1.13",
+        "symfony/validator": "^5.1"
     },
     "suggest": {
         "ext-libsodium": "Provides faster verification of updates"
@@ -29,7 +30,7 @@
         }
     },
     "scripts": {
-        "phpcs": "phpcs --standard=phpcs-ruleset.xml ./src ./tests",
+        "phpcs": "phpcs -s --standard=phpcs-ruleset.xml ./src ./tests",
         "phpcs-ci": "phpcs --standard=phpcs-ci-ruleset.xml ./src ./tests",
         "phpcbf": "phpcbf --standard=phpcs-ruleset.xml ./src ./tests",
         "test": "phpunit ./tests",
