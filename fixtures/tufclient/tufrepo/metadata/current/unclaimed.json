@@ -1,12 +1,17 @@
 {
- "signatures": [],
+ "signatures": [
+  {
+   "keyid": "79f4dfc5bdc47c14b41e7b9ce6a3b305f4e4d52e05c2f4c8274308ef1f9ab112",
+   "sig": "ad5020947e7f372acdd36fb65110072aec0e3cd0ee3d9f95e9eb8757de391ed42fb31a59a78cf554d8ebd3ac3c4b8eee0e4570de832f3d16e0e12fa520b4890d"
+  }
+ ],
  "signed": {
   "_type": "targets",
   "delegations": {
    "keys": {},
    "roles": []
   },
-  "expires": "2020-12-11T00:21:05Z",
+  "expires": "2020-12-11T02:20:36Z",
   "spec_version": "1.0.0",
   "targets": {
    "testunclaimedtarget.txt": {
