@@ -55,25 +55,25 @@ class RootMetadata extends MetadataBase
             ]),
         ]);
         $options['fields']['roles'] = new Required([
-          new Type('array'),
-          new Count(['min' => 1]),
-          new All([
-            new Collection([
-              'keyids' => [
-                new Count(['min' => 1]),
-                new Type(['type' => 'array']),
+            new Type('array'),
+            new Count(['min' => 1]),
+            new All([
+                new Collection([
+                    'keyids' => [
+                        new Count(['min' => 1]),
+                        new Type(['type' => 'array']),
                   // The keys for 'hashes is not know but they all must be strings.
-                new All([
-                  new Type(['type' => 'string']),
-                  new NotBlank(),
+                        new All([
+                            new Type(['type' => 'string']),
+                            new NotBlank(),
+                        ]),
+                    ],
+                    'threshold' => [
+                        new Type(['type' => 'integer']),
+                        new GreaterThan(0),
+                    ],
                 ]),
-              ],
-              'threshold' => [
-                new Type(['type' => 'integer']),
-                new GreaterThan(0),
-              ],
             ]),
-          ]),
         ]);
         return $options;
     }
