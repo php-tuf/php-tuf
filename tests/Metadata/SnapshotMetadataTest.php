@@ -15,13 +15,15 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $testClass = SnapshotMetadata::class;
+    protected $expectedType = 'snapshot';
 
     /**
      * {@inheritdoc}
      */
-    protected $expectedType = 'snapshot';
-
+    protected static function callCreateFromJson(string $json)
+    {
+        SnapshotMetadata::createFromJson($json);
+    }
     /**
      * {@inheritdoc}
      */

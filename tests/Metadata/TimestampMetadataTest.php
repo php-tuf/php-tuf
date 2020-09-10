@@ -15,12 +15,15 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $testClass = TimestampMetadata::class;
+    protected $expectedType = 'timestamp';
 
     /**
      * {@inheritdoc}
      */
-    protected $expectedType = 'timestamp';
+    protected static function callCreateFromJson(string $json)
+    {
+        TimestampMetadata::createFromJson($json);
+    }
 
     /**
      * {@inheritdoc}

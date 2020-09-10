@@ -27,13 +27,6 @@ abstract class MetaDataBaseTest extends TestCase
     protected $validJson;
 
     /**
-     * The class being tested.
-     *
-     * @var string
-     */
-    protected $testClass;
-
-    /**
      * The expected metadata type;
      * @var string
      */
@@ -50,6 +43,16 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
+     * Calls createFromJson() for the test class.
+     *
+     * @param string $json
+     *   The json string.
+     *
+     * @return void
+     */
+    abstract protected static function callCreateFromJson(string $json);
+
+    /**
      * Tests for valid metadata.
      *
      * @return void
@@ -57,7 +60,7 @@ abstract class MetaDataBaseTest extends TestCase
     public function testValidMetaData()
     {
         $this->expectNotToPerformAssertions();
-        $this->testClass::createFromJson($this->localRepo[$this->validJson]);
+        static::callCreateFromJson($this->localRepo[$this->validJson]);
     }
 
     /**
@@ -73,7 +76,7 @@ abstract class MetaDataBaseTest extends TestCase
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $this->testClass::createFromJson(JsonNormalizer::asNormalizedJson($metadata));
+        static::callCreateFromJson(JsonNormalizer::asNormalizedJson($metadata));
     }
 
     /**
@@ -103,7 +106,7 @@ abstract class MetaDataBaseTest extends TestCase
         } else {
             $this->expectExceptionMessageMatches("/Array$fieldName.*This field is missing./s");
         }
-        $this->testClass::createFromJson($json);
+        static::callCreateFromJson($json);
     }
 
     /**
@@ -160,7 +163,7 @@ abstract class MetaDataBaseTest extends TestCase
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
-        $this->testClass::createFromJson($json);
+        static::callCreateFromJson($json);
     }
 
     /**

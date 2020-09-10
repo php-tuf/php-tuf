@@ -12,16 +12,19 @@ class TargetsMetadataTest extends MetaDataBaseTest
      */
     protected $validJson = '1.targets.json';
 
-    /**
-     * {@inheritdoc}
-     */
-    protected $testClass = TargetsMetadata::class;
 
     /**
      * {@inheritdoc}
      */
     protected $expectedType = 'targets';
 
+    /**
+     * {@inheritdoc}
+     */
+    protected static function callCreateFromJson(string $json)
+    {
+        TargetsMetadata::createFromJson($json);
+    }
     /**
      * {@inheritdoc}
      */

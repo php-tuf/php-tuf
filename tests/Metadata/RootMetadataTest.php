@@ -15,12 +15,15 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $testClass = RootMetadata::class;
+    protected $expectedType = 'root';
 
     /**
      * {@inheritdoc}
      */
-    protected $expectedType = 'root';
+    protected static function callCreateFromJson(string $json)
+    {
+        RootMetadata::createFromJson($json);
+    }
 
     /**
      * {@inheritdoc}
