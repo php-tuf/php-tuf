@@ -12,7 +12,6 @@ use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RepositoryDBCollection;
-use Tuf\RoleDB;
 use Tuf\JsonNormalizer;
 
 /**
@@ -41,18 +40,16 @@ class Updater
     protected $durableStorage;
 
     /**
-     * The role database for the repository.
-     *
-     * @var \Tuf\RoleDB
-     */
-    protected $roleDB;
-
-    /**
      * The key database for the repository.
      *
      * @var \Tuf\KeyDB
      */
     protected $keyDB;
+
+    /**
+     * @var \Tuf\Metadata\RootMetadata
+     */
+    protected $rootData;
 
     /**
      * Updater constructor.
@@ -92,14 +89,12 @@ class Updater
      */
     public function refresh()
     {
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $this->rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
-        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData->getSigned());
-        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData->getSigned());
-
+        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($this->rootData->getSigned());
 
         // SPEC: 1.1.
-        $version = $rootData->getVersion();
+        $version = $this->rootData->getVersion();
 
 
         // SPEC: 1.2.
@@ -113,7 +108,7 @@ class Updater
         }
 
         // SPEC: 1.8.
-        $expires = $rootData->getExpires();
+        $expires = $this->rootData->getExpires();
         $fakeNow = '2020-08-04T02:58:56Z';
 
         $expireDate = $this->metadataTimestampToDateTime($expires);
@@ -128,7 +123,7 @@ class Updater
         // @todo Implement spec 1.9. Does this step rely on root rotation?
 
         // SPEC: 1.10. Will be used in spec step 4.3.
-        //$consistent = $rootData['consistent'];
+        //$consistent = $this->rootData['consistent'];
 
         // SPEC: 2
         $timestampData = TimestampMetadata::createFromJson($this->getRepoFile('timestamp.json'));
@@ -235,9 +230,7 @@ class Updater
     protected function checkSignatures(MetadataBase $metaData)
     {
         $signatures = $metaData->getSignatures();
-
-        $roleInfo = $this->roleDB->getRoleInfo($metaData->getType());
-        $needVerified = $roleInfo['threshold'];
+        $needVerified = $this->rootData->getRoleThreshold($metaData->getType());
         $haveVerified = 0;
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
@@ -260,7 +253,7 @@ class Updater
 
     protected function isKeyIdAcceptableForRole($keyId, $role)
     {
-        $roleKeyIds = $this->roleDB->getRoleKeyIds($role);
+        $roleKeyIds = $this->rootData->getRoleKeyIds($role);
         return in_array($keyId, $roleKeyIds);
     }
 
