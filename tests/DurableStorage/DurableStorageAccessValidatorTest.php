@@ -17,6 +17,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      * Creates a validated, memory-based storage for the test.
      *
      * @return \ArrayAccess
+     *     The test storage.
      */
     protected function getSystemInTest() : \ArrayAccess
     {
@@ -128,7 +129,12 @@ class DurableStorageAccessValidatorTest extends TestCase
     }
 
     /**
+     * Data provider for testOffsetUnset().
+     *
      * @return array[]
+     *     Test cases. Each test contains:
+     *     - The test case \ArrayAccess offset.
+     *     - Whether the value is expected to be valid.
      */
     public function offsetsProvider() : array
     {
@@ -152,6 +158,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *     The \ArrayAccess offset.
      *
      * @return string
+     *     The expected exception message.
      */
     private function getOffSetException($offset) : string
     {

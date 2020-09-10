@@ -13,6 +13,12 @@ class UpdaterTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
 
+    /**
+     * Creates a test Updater using memory storage of client fixture data.
+     *
+     * @return \Tuf\Client\Updater
+     *     The test Updater from the 'current' test fixture data.
+     */
     protected function getSystemInTest() : Updater
     {
         $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
@@ -20,14 +26,21 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests that no rollback attack is flagged when one is not performed.
+     *
      * @covers ::checkRollbackAttack
+     *
+     * @return void
      */
-    public function testCheckRollbackAttackNoAttack()
+    public function testCheckRollbackAttackNoAttack() : void
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
 
         $sut = $this->getSystemInTest();
+
+        // The incoming version is newer than the local version, so no
+        // rollback attack is present.
         $localMetadata = [
             '_type' => 'any',
             'version' => 1,
@@ -46,13 +59,20 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests that the correct exception is thrown in case of a rollback attack.
+     *
      * @covers ::checkRollbackAttack
+     *
+     * @return void
      */
-    public function testCheckRollbackAttackAttack()
+    public function testCheckRollbackAttackAttack() : void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
 
         $sut = $this->getSystemInTest();
+
+        // The incoming version is lower than the local version, so this should
+        // be identified as a rollback attack.
         $localMetadata = [
             '_type' => 'any',
             'version' => 2,
@@ -67,9 +87,13 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests that no freeze attack is flagged when the data has not expired.
+     *
      * @covers ::checkFreezeAttack
+     *
+     * @return void
      */
-    public function testCheckFreezeAttackNoAttack()
+    public function testCheckFreezeAttackNoAttack() : void
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
@@ -85,17 +109,24 @@ class UpdaterTest extends TestCase
 
         $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
         $method->setAccessible(true);
+
+        // The update's expiration is later than now, so no freeze attack
+        // exception should be thrown.
         $method->invoke($sut, $signedMetadata, $now);
 
-        // At expiration time.
+        // No exception should be thrown exactly at expiration time.
         $signedMetadata['expires'] = $nowString;
         $method->invoke($sut, $signedMetadata, $now);
     }
 
     /**
+     * Tests that the correct exception is thrown when the update is expired.
+     *
      * @covers ::checkFreezeAttack
+     *
+     * @return void
      */
-    public function testCheckFreezeAttackAttack()
+    public function testCheckFreezeAttackAttack() : void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
 
@@ -109,6 +140,9 @@ class UpdaterTest extends TestCase
 
         $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
         $method->setAccessible(true);
+
+        // The update has already expired, so a freeze attack exception should
+        // be thrown.
         $method->invoke($sut, $signedMetadata, $now);
     }
 }

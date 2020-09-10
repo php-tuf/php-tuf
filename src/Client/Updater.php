@@ -85,9 +85,12 @@ class Updater
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
      *
+     * @return boolean
+     *     TRUE if the data was successfully refreshed.
+     *
      * @see https://github.com/php-tuf/php-tuf/issues/21
      */
-    public function refresh()
+    public function refresh() : bool
     {
         $rootData = json_decode($this->durableStorage['root.json'], true);
         $signed = $rootData['signed'];
@@ -178,12 +181,14 @@ class Updater
      * @param mixed[] $remoteMetadata
      *     The latest metadata fetched from the remote repository.
      *
+     * @return void
+     *
      * @throws RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      * @throws \UnexpectedValueException
      *     Thrown if metadata types are not the same.
      */
-    protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata)
+    protected function checkRollbackAttack(array $localMetadata, array $remoteMetadata) : void
     {
         if ($localMetadata['_type'] !== $remoteMetadata['_type']) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -192,8 +197,8 @@ class Updater
         $type = $localMetadata['_type'];
         $localVersion = (int) $localMetadata['version'];
         if ($localVersion === 0) {
-            // Failsafe: if local metadata just doesn't have a version property or it is not an integer,
-            // we can't perform this check properly.
+            // Failsafe: If local metadata just doesn't have a version property
+            //  or it is not an integer, we can't perform this check properly.
             $message = "Empty or invalid local timestamp version \"${localMetadata['version']}\"";
             throw new RollbackAttackException($message);
         }
@@ -211,15 +216,17 @@ class Updater
      * Verifies that metadata has not expired, and assumes a potential freeze
      * attack if it has.
      *
-     * @param mixed $metadata
+     * @param mixed[] $metadata
      *     The metadata for the timestamp role.
      * @param \DateTimeInterface $now
      *     The current date and time at runtime.
      *
+     * @return void
+     *
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now)
+    protected function checkFreezeAttack(array $metadata, \DateTimeInterface $now) : void
     {
         $metadataExpiration = $this->metadataTimestampToDatetime($metadata['expires']);
         if (empty($metadata['_type'])) {
@@ -235,23 +242,29 @@ class Updater
      * Checks signatures on a verifiable structure.
      *
      * @param array $verifiableStructure
-     * @param string $type
+     *     The canonical array structure of the decoded JSON from a repository
+     *     metadata file (e.g., 'timestamp.json').
+     * @param string $roleName
+     *     The role name for which to check signatures (e.g. 'root',
+     *     'timestamp', etc.).
+     *
+     * @return void
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    protected function checkSignatures(array $verifiableStructure, string $type)
+    protected function checkSignatures(array $verifiableStructure, string $roleName) : void
     {
         $signatures = $verifiableStructure['signatures'];
         $signed = $verifiableStructure['signed'];
 
-        $roleInfo = $this->roleDB->getRoleInfo($type);
+        $roleInfo = $this->roleDB->getRoleInfo($roleName);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($signed);
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
+            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $roleName)) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
@@ -263,34 +276,72 @@ class Updater
         }
 
         if ($haveVerified < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on $type");
+            throw new SignatureThresholdExpception("Signature threshold not met on $roleName");
         }
     }
 
-    protected function isKeyIdAcceptableForRole($keyId, $role)
+    /**
+     * Checks whether the given key is authorized for the role.
+     *
+     * @param string $keyId
+     *     The key ID to check.
+     * @param string $roleName
+     *     The role name to check (e.g. 'root', 'snapshot', etc.).
+     *
+     * @return boolean
+     *     TRUE if the key is authorized for the given role, or FALSE
+     *     otherwise.
+     */
+    protected function isKeyIdAcceptableForRole(string $keyId, string $roleName) : bool
     {
-        $roleKeyIds = $this->roleDB->getRoleKeyIds($role);
+        $roleKeyIds = $this->roleDB->getRoleKeyIds($roleName);
         return in_array($keyId, $roleKeyIds);
     }
 
-    protected function verifySingleSignature($bytes, $signatureMeta)
+    /**
+     * @param string $bytes
+     *     The canonical JSON string of the 'signed' section of the given file.
+     * @param string[] $signatureMeta
+     *     The associative metadata array for the signature. Each signature
+     *     metadata array contains two elements:
+     *     - keyid: The identifier of the key signing the role data.
+     *     - sig: The hex-encoded signature of the canonical form of the
+     *       metadata for the role.
+     *
+     * @return boolean
+     *     TRUE if the signature is valid for the.
+     */
+    protected function verifySingleSignature(string $bytes, array $signatureMeta)
     {
+        // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
         $pubkey = $keyMeta['keyval']['public'];
+
+        // Encode the pubkey and signature, and check that the signature is
+        // valid for the given data and pubkey.
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
-        // @todo check that the key type in $signatureMeta is ed25519; return
+        // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
-    // To be replaced by HTTP / HTTP abstraction layer to the remote repository
-    private function getRepoFile($string)
+    /**
+     * To be replaced by HTTP / HTTP abstraction layer to the remote repository.
+     *
+     * @param string $filename
+     *     The filename within the fixture repo.
+     *
+     * @return string|false
+     *     The contents of the file, or FALSE if the file could not be
+     *     retrieved.
+     */
+    private function getRepoFile(string $filename)
     {
         try {
             // @todo Ensure the file does not exceed a certain size to prevent
             //     DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
+            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$filename");
         } catch (\Exception $exception) {
             return false;
         }
