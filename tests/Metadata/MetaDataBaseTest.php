@@ -49,6 +49,9 @@ abstract class MetaDataBaseTest extends TestCase
      *   The json string.
      *
      * @return void
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   If validation fails.
      */
     abstract protected static function callCreateFromJson(string $json);
 
@@ -84,8 +87,6 @@ abstract class MetaDataBaseTest extends TestCase
         ];
     }
 
-
-
     /**
      * Tests that validation fails on invalid type.
      *
@@ -99,7 +100,29 @@ abstract class MetaDataBaseTest extends TestCase
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(JsonNormalizer::asNormalizedJson($metadata));
+        static::callCreateFromJson(json_encode($metadata));
+    }
+
+    /**
+     * Tests valida and invalid expires dates.
+     *
+     *  @return void
+     *
+     * @dataProvider providerExpires
+     */
+    public function testExpires(string $expires, bool $valid) : void
+    {
+        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata['signed']['expires'] = $expires;
+        if (!$valid) {
+            $expectedMessage = preg_quote('Array[signed][expires]', '/');
+            $expectedMessage .= '.*This value is not valid.';
+            $this->expectException(MetadataException::class);
+            $this->expectExceptionMessageMatches("/$expectedMessage/s");
+        } else {
+            $this->expectNotToPerformAssertions();
+        }
+        static::callCreateFromJson(json_encode($metadata));
     }
 
     /**
@@ -209,6 +232,29 @@ abstract class MetaDataBaseTest extends TestCase
         } else {
             $data[$key] = $newValue;
         }
+    }
+
+    /**
+     * Dataprovider for testExpires().
+     *
+     * @return array
+     *   Array of arrays of expires, and whether it should be valid.
+     */
+    public function providerExpires() : array
+    {
+        return [
+            ['1970', false],
+            ['1970-01-01T00:00:00Z', false],
+            ['2000-01-01', false],
+            ['2000-01-01T00:00:00', false],
+            ['3000-01-01T00:00:00Z', false],
+            ['2000-01-01T00:00:61Z', false],
+            ['2000-01-01T24:00:01Z', false],
+            ['2000-01-01T00:00:00Z', true],
+            ['2030-01-01T20:50:10Z', true],
+            ['2030-11-01T20:50:10Z', true],
+            ['2330-12-21T20:50:10Z', true],
+        ];
     }
 
     /**
