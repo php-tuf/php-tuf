@@ -4,6 +4,7 @@ namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
@@ -23,9 +24,12 @@ class TargetsMetadata extends MetadataBase
         $options = parent::getSignedCollectionOptions();
         $options['fields']['delegations'] = new Required([
             new Collection([
-                'keys' => [
-                    new Type(['type' => 'array']),
-                ],
+                'keys' => new Required([
+                    new Type('array'),
+                    new All([
+                        static::getKeyConstraints(),
+                    ]),
+                ]),
                 'roles' => new All([
                     new Type(['type' => 'array']),
                     new Collection([

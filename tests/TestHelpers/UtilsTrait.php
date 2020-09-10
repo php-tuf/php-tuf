@@ -29,4 +29,30 @@ trait UtilsTrait
         }
         return $realpath;
     }
+
+    /**
+     * Helper methods for dataProvider methods to return keyed arrays.
+     *
+     * @param array $providedData
+     *   The dataProvider data.
+     *
+     * @return array
+     *   The new keyed array where the keys are string concatenation of the
+     *   arguments.
+     */
+    protected static function getKeyedArray(array $providedData)
+    {
+        $newData = [];
+        foreach ($providedData as $arguments) {
+            $key = '';
+            foreach ($arguments as $argument) {
+                $key .= (string) $argument;
+            }
+            if (isset($newData[$key])) {
+                throw new \RuntimeException("Cannot produce unique keys");
+            }
+            $newData[$key] = $arguments;
+        }
+        return $newData;
+    }
 }

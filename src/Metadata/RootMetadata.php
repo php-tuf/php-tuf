@@ -24,33 +24,7 @@ class RootMetadata extends MetadataBase
             new Type('array'),
             new Count(['min' => 1]),
             new All([
-                new Collection([
-                    'keyid_hash_algorithms' => [
-                        new Count(['min' => 1]),
-                        new Type(['type' => 'array']),
-                        // The keys for 'hashes is not know but they all must be strings.
-                        new All([
-                            new Type(['type' => 'string']),
-                            new NotBlank(),
-                        ]),
-                    ],
-                    'keytype' => [
-                        new Type(['type' => 'string']),
-                        new NotBlank(),
-                    ],
-                    'keyval' => [
-                        new Collection([
-                            'public' => [
-                                new Type(['type' => 'string']),
-                                new NotBlank(),
-                            ],
-                        ]),
-                    ],
-                    'scheme' => [
-                        new Type(['type' => 'string']),
-                        new NotBlank(),
-                    ],
-                ]),
+                static::getKeyConstraints(),
             ]),
         ]);
         $options['fields']['roles'] = new Required([

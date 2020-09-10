@@ -250,4 +250,27 @@ abstract class MetaDataBaseTest extends TestCase
             ['signatures:0:sig', 'string'],
         ];
     }
+
+    /**
+     * Determines the first key for the 'keys' element to avoid the test
+     * breaking every time the test fixtures are recreated.
+     *
+     * @param string $fixtureName
+     *   The fixture file name.
+     * @param array $nestedKeys
+     *   The keys to access the array.
+     *
+     * @return string
+     *   The first key.
+     */
+    protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
+    {
+        $realPath = static::getFixturesRealPath("tufclient/tufrepo/metadata/current/$fixtureName", false);
+        $data = json_decode(file_get_contents($realPath), true);
+        foreach ($nestedKeys as $nestedKey) {
+            $data = $data[$nestedKey];
+        }
+        $keys = array_keys($data);
+        return array_shift($keys);
+    }
 }

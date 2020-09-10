@@ -46,13 +46,19 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $data = parent::providerExpectedField();
         $data[] = ['signed:delegations'];
         $data[] = ['signed:delegations:keys'];
+        $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'keys']);
+        $data[] = ["signed:delegations:keys:$firstKey:keyid_hash_algorithms"];
+        $data[] = ["signed:delegations:keys:$firstKey:keytype"];
+        $data[] = ["signed:delegations:keys:$firstKey:keyval"];
+        $data[] = ["signed:delegations:keys:$firstKey:keyval:public"];
+        $data[] = ["signed:delegations:keys:$firstKey:scheme"];
         $data[] = ['signed:delegations:roles'];
         $data[] = ['signed:delegations:roles:0:keyids'];
         $data[] = ['signed:delegations:roles:0:name'];
         $data[] = ['signed:delegations:roles:0:paths'];
         $data[] = ['signed:delegations:roles:0:terminating'];
         $data[] = ['signed:delegations:roles:0:threshold'];
-        return $data;
+        return static::getKeyedArray($data);
     }
 
     /**
