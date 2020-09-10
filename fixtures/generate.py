@@ -61,6 +61,7 @@ repository.targets.delegate('unclaimed', [public_unclaimed_key], ['testunclaimed
 with open('tufrepo/targets/testunclaimedtarget.txt', 'w') as targetfile:
     targetfile.write("Test Delegated File")
 repository.targets("unclaimed").add_target("testunclaimedtarget.txt")
+repository.targets("unclaimed").load_signing_key(private_unclaimed_key)
 repository.mark_dirty(['snapshot', 'targets','timestamp', 'unclaimed'])
 repository.writeall(consistent_snapshot=True)
 
