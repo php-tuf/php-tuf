@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests\Metadata;
 
-use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
 class TimestampMetadataTest extends MetaDataBaseTest

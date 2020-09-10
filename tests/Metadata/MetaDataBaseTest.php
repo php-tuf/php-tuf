@@ -4,7 +4,6 @@ namespace Tuf\Tests\Metadata;
 
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
-use Tuf\Metadata\MetadataBase;
 use PHPUnit\Framework\TestCase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -83,7 +82,8 @@ abstract class MetaDataBaseTest extends TestCase
      * @param string $expectedField
      *   The name of the field. Nested fields indicated with ":".
      *
-     * @param string $exception
+     * @param string|null $exception
+     *
      *   A different exception message to expect.
      *
      * @return void

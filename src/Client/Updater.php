@@ -227,8 +227,7 @@ class Updater
     /**
      * Checks signatures on a verifiable structure.
      *
-     * @param \Tuf\Metadata\MetadataBase $verifiableStructure
-     * @param string $type
+     * @param \Tuf\Metadata\MetadataBase $metaData
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
@@ -236,7 +235,6 @@ class Updater
     protected function checkSignatures(MetadataBase $metaData)
     {
         $signatures = $metaData->getSignatures();
-        $signed = $metaData->getSigned();
 
         $roleInfo = $this->roleDB->getRoleInfo($metaData->getType());
         $needVerified = $roleInfo['threshold'];

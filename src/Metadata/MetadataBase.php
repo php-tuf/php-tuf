@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
