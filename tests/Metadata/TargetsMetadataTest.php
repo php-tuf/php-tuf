@@ -10,7 +10,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $validJson = '1.targets.json';
+    protected $validJson = '3.targets.json';
 
 
     /**
@@ -44,7 +44,14 @@ class TargetsMetadataTest extends MetaDataBaseTest
     public function providerExpectedField() : array
     {
         $data = parent::providerExpectedField();
-        // @todo Add targets specifics.
+        $data[] = ['signed:delegations'];
+        $data[] = ['signed:delegations:keys'];
+        $data[] = ['signed:delegations:roles'];
+        $data[] = ['signed:delegations:roles:0:keyids'];
+        $data[] = ['signed:delegations:roles:0:name'];
+        $data[] = ['signed:delegations:roles:0:paths'];
+        $data[] = ['signed:delegations:roles:0:terminating'];
+        $data[] = ['signed:delegations:roles:0:threshold'];
         return $data;
     }
 

@@ -51,4 +51,40 @@ trait ConstraintsTrait
             ],
         ];
     }
+
+    /**
+     * Gets the common threshold constraint.
+     *
+     * @return array[]
+     *   The threshold constraint.
+     */
+    protected static function getThresholdConstraint()
+    {
+        return [
+            'threshold' => [
+                new Type(['type' => 'integer']),
+                new GreaterThanOrEqual(1),
+            ],
+        ];
+    }
+    /**
+     * Gets the common keyids constraint.
+     *
+     * @return array[]
+     *   The keysids constraint.
+     */
+    protected static function getKeyidsConstraint()
+    {
+        return [
+            'keyids' => [
+                new Count(['min' => 1]),
+                new Type(['type' => 'array']),
+                // The keys for 'hashes is not know but they all must be strings.
+                new All([
+                    new Type(['type' => 'string']),
+                    new NotBlank(),
+                ]),
+            ],
+        ];
+    }
 }
