@@ -55,6 +55,9 @@ abstract class MetaDataBaseTest extends TestCase
     /**
      * Tests for valid metadata.
      *
+     * @param string $validJson
+     *   The valid json key from $localRepo.
+     *
      * @return void
      *
      * @dataProvider providerValidMetaData
@@ -71,6 +74,8 @@ abstract class MetaDataBaseTest extends TestCase
      * Subclasses should override to test multiple files.
      *
      * @return \string[][]
+     *   The valid json key from $localRepo.
+     *
      */
     public function providerValidMetaData()
     {

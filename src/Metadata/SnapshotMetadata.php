@@ -24,12 +24,7 @@ class SnapshotMetadata extends MetadataBase
             new Type('array'),
             new Count(['min' => 1]),
             new All([
-                new Collection([
-                    'version' => [
-                        new NotBlank(),
-                        new Type(['type' => 'integer']),
-                    ],
-                ]),
+                new Collection(static::getVersionConstraint()),
             ]),
         ]);
         return $options;

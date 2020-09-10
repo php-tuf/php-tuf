@@ -19,6 +19,7 @@ use Tuf\Exception\MetadataException;
  */
 abstract class MetadataBase
 {
+    use ConstraintsTrait;
 
     /**
      * The metadata.
@@ -153,12 +154,7 @@ abstract class MetadataBase
                     new Type(['type' => 'string']),
                     new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
                 ],
-                'version' => [
-                    new NotBlank(),
-                    new Type(['type' => 'integer']),
-                    new GreaterThan(['value' => 0]),
-                ],
-            ],
+            ] + static::getVersionConstraint(),
             'allowExtraFields' => true,
         ];
     }

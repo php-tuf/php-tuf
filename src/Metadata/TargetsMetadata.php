@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TargetsMetadata extends MetadataBase
 {
+    use ConstraintsTrait;
 
     protected const TYPE = 'targets';
 
@@ -35,20 +36,11 @@ class TargetsMetadata extends MetadataBase
         $options['fields']['targets'] = new Required([
             new All([
                 new Collection([
-                    'hashes' => [
-                        new Count(['min' => 1]),
-                        new Type(['type' => 'array']),
-                  // The keys for 'hashes is not know but they all must be strings.
-                        new All([
-                            new Type(['type' => 'string']),
-                            new NotBlank(),
-                        ]),
-                    ],
                     'length' => [
                         new Type(['type' => 'integer']),
                         new GreaterThanOrEqual(1),
                     ],
-                ]),
+                ] + static::getHashesConstraint()),
             ]),
 
         ]);

@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TimestampMetadata extends MetadataBase
 {
+    use ConstraintsTrait;
 
     protected const TYPE = 'timestamp';
 
@@ -26,24 +27,11 @@ class TimestampMetadata extends MetadataBase
             new Count(['min' => 1]),
             new All([
                 new Collection([
-                    'hashes' => [
-                        new Count(['min' => 1]),
-                        new Type(['type' => 'array']),
-                        // The keys for 'hashes is not know but they all must be strings.
-                        new All([
-                            new Type(['type' => 'string']),
-                            new NotBlank(),
-                        ]),
-                    ],
                     'length' => [
                         new Type(['type' => 'integer']),
                         new GreaterThanOrEqual(1),
                     ],
-                    'version' => [
-                        new Type(['type' => 'integer']),
-                        new GreaterThanOrEqual(1),
-                    ],
-                ]),
+                ] + static::getHashesConstraint() + static::getVersionConstraint()),
             ]),
         ]);
         return $options;
