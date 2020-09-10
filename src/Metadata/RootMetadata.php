@@ -75,6 +75,4 @@ class RootMetadata extends MetadataBase
             throw new \UnexpectedValueException("Role $roleName does not exist");
         }
     }
-
-
 }
