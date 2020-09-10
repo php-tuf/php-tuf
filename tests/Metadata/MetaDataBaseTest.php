@@ -56,19 +56,37 @@ abstract class MetaDataBaseTest extends TestCase
      * Tests for valid metadata.
      *
      * @return void
+     *
+     * @dataProvider providerValidMetaData
      */
-    public function testValidMetaData()
+    public function testValidMetaData(string $validJson) : void
     {
         $this->expectNotToPerformAssertions();
-        static::callCreateFromJson($this->localRepo[$this->validJson]);
+        static::callCreateFromJson($this->localRepo[$validJson]);
     }
+
+    /**
+     * Dataprovider for testValidMetaData().
+     *
+     * Subclasses should override to test multiple files.
+     *
+     * @return \string[][]
+     */
+    public function providerValidMetaData()
+    {
+        return [
+            [$this->validJson],
+        ];
+    }
+
+
 
     /**
      * Tests that validation fails on invalid type.
      *
      *  @return void
      */
-    public function testInvalidType()
+    public function testInvalidType() : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';

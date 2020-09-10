@@ -25,6 +25,19 @@ class TargetsMetadataTest extends MetaDataBaseTest
     {
         TargetsMetadata::createFromJson($json);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerValidMetaData()
+    {
+        return [
+            '1.targets.json' => ['1.targets.json'],
+            '3.targets.json' => ['3.targets.json'],
+        ];
+    }
+
+
     /**
      * {@inheritdoc}
      */
