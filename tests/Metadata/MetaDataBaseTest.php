@@ -109,7 +109,12 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
-     * Tests valida and invalid expires dates.
+     * Tests valid and invalid expires dates.
+     *
+     * @param string $expires
+     *   Expires date to test.
+     * @param boolean $valid
+     *   Whether it's valid.
      *
      *  @return void
      *
@@ -121,6 +126,33 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][expires]', '/');
+            $expectedMessage .= '.*This value is not valid.';
+            $this->expectException(MetadataException::class);
+            $this->expectExceptionMessageMatches("/$expectedMessage/s");
+        } else {
+            $this->expectNotToPerformAssertions();
+        }
+        static::callCreateFromJson(json_encode($metadata));
+    }
+
+    /**
+     * Tests valid and invalid spec versions.
+     *
+     * @param string $version
+     *   Spec version to test.
+     * @param boolean $valid
+     *   Whether it's valid.
+     *
+     *  @return void
+     *
+     * @dataProvider providerSpecVersion
+     */
+    public function testSpecVersion(string $version, bool $valid) : void
+    {
+        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata['signed']['spec_version'] = $version;
+        if (!$valid) {
+            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -259,6 +291,25 @@ abstract class MetaDataBaseTest extends TestCase
             ['2030-01-01T20:50:10Z', true],
             ['2030-11-01T20:50:10Z', true],
             ['2330-12-21T20:50:10Z', true],
+        ];
+    }
+
+    /**
+     * Dataprovider for testSpecVersion().
+     *
+     * @return array
+     *   Array of arrays of spec version, and whether it should be valid.
+     */
+    public function providerSpecVersion() : array
+    {
+        return [
+            ['1', false],
+            ['1.0', false],
+            ['2.00', false],
+            ['1.0.a', false],
+            ['1.0.1', true],
+            ['1.99.8', true],
+            ['1.1.1', true],
         ];
     }
 
