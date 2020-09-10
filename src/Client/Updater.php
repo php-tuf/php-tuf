@@ -231,7 +231,9 @@ class Updater
         try {
             // @todo Ensure the file does not exceed a certain size to prevent
             //     DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
+            $basePath = $this->mirrors[0]['url_prefix'];
+            $url = $basePath . DIRECTORY_SEPARATOR . 'metadata' . DIRECTORY_SEPARATOR . $string;
+            return file_get_contents($url);
         } catch (\Exception $exception) {
             return false;
         }
