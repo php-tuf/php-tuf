@@ -74,17 +74,22 @@ abstract class MetaDataBaseTest extends TestCase
     /**
      * Dataprovider for testValidMetaData().
      *
-     * Subclasses should override to test multiple files.
-     *
      * @return \string[][]
-     *   The valid json key from $localRepo.
+     *   The nested array containing all client fixture files for the type.
      *
      */
     public function providerValidMetaData()
     {
-        return [
-            [$this->validJson],
-        ];
+        $fixturesDir = static::getFixturesRealPath('tufclient/tufrepo/metadata/current');
+        $files = glob("$fixturesDir/*.{$this->expectedType}.json");
+        if (empty($files)) {
+            throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
+        }
+        $data[] = [$this->expectedType . ".json"];
+        foreach ($files as $file) {
+            $data[] = [basename($file)];
+        }
+        return static::getKeyedArray($data);
     }
 
     /**
