@@ -88,9 +88,12 @@ class Updater
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
      *
+     * @return boolean
+     *     TRUE if the data was successfully refreshed.
+     *
      * @see https://github.com/php-tuf/php-tuf/issues/21
      */
-    public function refresh()
+    public function refresh() : bool
     {
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
@@ -180,6 +183,8 @@ class Updater
      * @param \Tuf\Metadata\MetadataBase $remoteMetadata
      *     The latest metadata fetched from the remote repository.
      *
+     * @return void
+     *
      * @throws RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      * @throws \UnexpectedValueException
@@ -212,6 +217,8 @@ class Updater
      * @param \DateTimeInterface $now
      *     The current date and time at runtime.
      *
+     * @return void
+     *
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
@@ -228,11 +235,17 @@ class Updater
      * Checks signatures on a verifiable structure.
      *
      * @param \Tuf\Metadata\MetadataBase $metaData
+     *     The metadata to check signatures on.
+     * @param string $roleName
+     *     The role name for which to check signatures (e.g. 'root',
+     *     'timestamp', etc.).
+     *
+     * @return void
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    protected function checkSignatures(MetadataBase $metaData)
+    protected function checkSignatures(MetadataBase $metaData) : void
     {
         $signatures = $metaData->getSignatures();
 
@@ -258,30 +271,68 @@ class Updater
         }
     }
 
-    protected function isKeyIdAcceptableForRole($keyId, $role)
+    /**
+     * Checks whether the given key is authorized for the role.
+     *
+     * @param string $keyId
+     *     The key ID to check.
+     * @param string $roleName
+     *     The role name to check (e.g. 'root', 'snapshot', etc.).
+     *
+     * @return boolean
+     *     TRUE if the key is authorized for the given role, or FALSE
+     *     otherwise.
+     */
+    protected function isKeyIdAcceptableForRole(string $keyId, string $roleName) : bool
     {
-        $roleKeyIds = $this->roleDB->getRoleKeyIds($role);
+        $roleKeyIds = $this->roleDB->getRoleKeyIds($roleName);
         return in_array($keyId, $roleKeyIds);
     }
 
-    protected function verifySingleSignature($bytes, $signatureMeta)
+    /**
+     * @param string $bytes
+     *     The canonical JSON string of the 'signed' section of the given file.
+     * @param string[] $signatureMeta
+     *     The associative metadata array for the signature. Each signature
+     *     metadata array contains two elements:
+     *     - keyid: The identifier of the key signing the role data.
+     *     - sig: The hex-encoded signature of the canonical form of the
+     *       metadata for the role.
+     *
+     * @return boolean
+     *     TRUE if the signature is valid for the.
+     */
+    protected function verifySingleSignature(string $bytes, array $signatureMeta)
     {
+        // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
         $pubkey = $keyMeta['keyval']['public'];
+
+        // Encode the pubkey and signature, and check that the signature is
+        // valid for the given data and pubkey.
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
-        // @todo check that the key type in $signatureMeta is ed25519; return
+        // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
-    // To be replaced by HTTP / HTTP abstraction layer to the remote repository
-    private function getRepoFile($string)
+    /**
+     * To be replaced by HTTP / HTTP abstraction layer to the remote repository.
+     *
+     * @param string $filename
+     *     The filename within the fixture repo.
+     *
+     * @return string|false
+     *     The contents of the file, or FALSE if the file could not be
+     *     retrieved.
+     */
+    private function getRepoFile(string $filename)
     {
         try {
             // @todo Ensure the file does not exceed a certain size to prevent
             //     DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$string");
+            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$filename");
         } catch (\Exception $exception) {
             return false;
         }

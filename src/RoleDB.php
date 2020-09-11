@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf;
 
 /**
@@ -28,6 +27,7 @@ class RoleDB
      *    The created RoleDB.
      *
      * @throws \Exception
+     *     Thrown if a threshold value in the metadata is not valid.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
@@ -179,6 +179,7 @@ class RoleDB
      *     The threshold number of signatures required for the role.
      *
      * @throws \Exception
+     *     Thrown if the role does not exist.
      */
     public function getRoleThreshold(string $roleName)
     {

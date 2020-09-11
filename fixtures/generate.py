@@ -1,4 +1,5 @@
 from tuf.repository_tool import *
+import os
 import shutil
 
 # This file largely derives from the TUF tutorial:
@@ -13,9 +14,9 @@ def write_and_import_keypair(filename):
     return (public_key, private_key)
 
 # Clean up
-shutil.rmtree('tufrepo/')
-shutil.rmtree('tufkeystore/')
-shutil.rmtree('tufclient/')
+if os.path.isdir('tufrepo'): shutil.rmtree('tufrepo/')
+if os.path.isdir('tufkeystore'): shutil.rmtree('tufkeystore/')
+if os.path.isdir('tufclient'): shutil.rmtree('tufclient/')
 
 # Create and Import Keypairs
 (public_root_key, private_root_key) = write_and_import_keypair('root')
@@ -60,6 +61,7 @@ repository.targets.delegate('unclaimed', [public_unclaimed_key], ['testunclaimed
 with open('tufrepo/targets/testunclaimedtarget.txt', 'w') as targetfile:
     targetfile.write("Test Delegated File")
 repository.targets("unclaimed").add_target("testunclaimedtarget.txt")
+repository.targets("unclaimed").load_signing_key(private_unclaimed_key)
 repository.mark_dirty(['snapshot', 'targets','timestamp', 'unclaimed'])
 repository.writeall(consistent_snapshot=True)
 
