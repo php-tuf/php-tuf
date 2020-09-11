@@ -2,9 +2,8 @@
 
 namespace Tuf\Tests\Metadata;
 
-use Tuf\Exception\MetadataException;
-use Tuf\JsonNormalizer;
 use PHPUnit\Framework\TestCase;
+use Tuf\Exception\MetadataException;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
