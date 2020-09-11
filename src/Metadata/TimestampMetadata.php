@@ -11,8 +11,9 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TimestampMetadata extends MetadataBase
 {
-    use ConstraintsTrait;
-
+    /**
+     * {@inheritdoc}
+     */
     protected const TYPE = 'timestamp';
 
     /**
@@ -30,7 +31,7 @@ class TimestampMetadata extends MetadataBase
                         new Type(['type' => 'integer']),
                         new GreaterThanOrEqual(1),
                     ],
-                ] + static::getHashesConstraint() + static::getVersionConstraint()),
+                ] + static::getHashesConstraints() + static::getVersionConstraints()),
             ]),
         ]);
         return $options;

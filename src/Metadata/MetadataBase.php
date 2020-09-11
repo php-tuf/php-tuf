@@ -56,7 +56,7 @@ abstract class MetadataBase
      *   The new instance.
      *
      * @throws \Tuf\Exception\MetadataException
-     *   If validation fails.
+     *   Thrown if validation fails.
      */
     public static function createFromJson(string $json)
     {
@@ -74,7 +74,7 @@ abstract class MetadataBase
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
-     *   If validation fails.
+     *   Thrown if validation fails.
      */
     protected static function validateMetaData(array $metadata) : void
     {
@@ -122,7 +122,7 @@ abstract class MetadataBase
     }
 
     /**
-     * Gets options as for the 'signed' metadata property.
+     * Gets options for the 'signed' metadata property.
      *
      * @return array
      *   An options array as expected by
@@ -153,7 +153,7 @@ abstract class MetadataBase
                     new Type(['type' => 'string']),
                     new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
                 ],
-            ] + static::getVersionConstraint(),
+            ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
     }

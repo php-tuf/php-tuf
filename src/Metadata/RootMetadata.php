@@ -12,6 +12,9 @@ use Symfony\Component\Validator\Constraints\Type;
 class RootMetadata extends MetadataBase
 {
 
+    /**
+     * {@inheritdoc}
+     */
     protected const TYPE = 'root';
 
     /**
@@ -31,7 +34,7 @@ class RootMetadata extends MetadataBase
             new Type('array'),
             new Count(['min' => 1]),
             new All([
-                new Collection(self::getKeyidsConstraint() + static::getThresholdConstraint()),
+                new Collection(self::getKeyidsConstraints() + static::getThresholdConstraints()),
             ]),
         ]);
         return $options;

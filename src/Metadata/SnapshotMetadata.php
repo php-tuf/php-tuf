@@ -11,6 +11,9 @@ use Symfony\Component\Validator\Constraints\Type;
 class SnapshotMetadata extends MetadataBase
 {
 
+    /**
+     * {@inheritdoc}
+     */
     protected const TYPE = 'snapshot';
 
     /**
@@ -23,7 +26,7 @@ class SnapshotMetadata extends MetadataBase
             new Type('array'),
             new Count(['min' => 1]),
             new All([
-                new Collection(static::getVersionConstraint()),
+                new Collection(static::getVersionConstraints()),
             ]),
         ]);
         return $options;

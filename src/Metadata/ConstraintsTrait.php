@@ -17,12 +17,12 @@ trait ConstraintsTrait
 {
 
     /**
-     * Gets the common hash constraint.
+     * Gets the common hash constraints.
      *
-     * @return array[]
-     *   The hash constraint.
+     * @return \Symfony\Component\Validator\Constraint[][]
+     *   The hash constraints.
      */
-    protected static function getHashesConstraint() : array
+    protected static function getHashesConstraints() : array
     {
         return [
             'hashes' => [
@@ -38,12 +38,12 @@ trait ConstraintsTrait
     }
 
     /**
-     * Gets the common version constraint.
+     * Gets the common version constraints.
      *
-     * @return array[]
-     *   The version constraint.
+     * @return \Symfony\Component\Validator\Constraint[][]
+     *   The version constraints.
      */
-    protected static function getVersionConstraint() : array
+    protected static function getVersionConstraints() : array
     {
         return [
             'version' => [
@@ -54,12 +54,12 @@ trait ConstraintsTrait
     }
 
     /**
-     * Gets the common threshold constraint.
+     * Gets the common threshold constraints.
      *
-     * @return array[]
-     *   The threshold constraint.
+     * @return \Symfony\Component\Validator\Constraint[][]
+     *   The threshold constraints.
      */
-    protected static function getThresholdConstraint() : array
+    protected static function getThresholdConstraints() : array
     {
         return [
             'threshold' => [
@@ -69,12 +69,12 @@ trait ConstraintsTrait
         ];
     }
     /**
-     * Gets the common keyids constraint.
+     * Gets the common keyids constraints.
      *
-     * @return array[]
-     *   The keysids constraint.
+     * @return \Symfony\Component\Validator\Constraint[][]
+     *   The keysids constraints.
      */
-    protected static function getKeyidsConstraint() : array
+    protected static function getKeyidsConstraints() : array
     {
         return [
             'keyids' => [
@@ -90,10 +90,10 @@ trait ConstraintsTrait
     }
 
     /**
-     * Gets the common keyids constraint.
+     * Gets the common key Collection constraints.
      *
      * @return Collection
-     *   The keysids constraint.
+     *   The 'key' Collection constraint.
      */
     protected static function getKeyConstraints() : Collection
     {

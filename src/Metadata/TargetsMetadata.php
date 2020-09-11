@@ -12,8 +12,10 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TargetsMetadata extends MetadataBase
 {
-    use ConstraintsTrait;
 
+    /**
+     * {@inheritdoc}
+     */
     protected const TYPE = 'targets';
 
     /**
@@ -47,7 +49,7 @@ class TargetsMetadata extends MetadataBase
                         'terminating' => [
                             new Type(['type' => 'boolean']),
                         ],
-                    ] + static::getKeyidsConstraint() + static::getThresholdConstraint()),
+                    ] + static::getKeyidsConstraints() + static::getThresholdConstraints()),
                 ]),
             ]),
         ]);
@@ -58,7 +60,7 @@ class TargetsMetadata extends MetadataBase
                         new Type(['type' => 'integer']),
                         new GreaterThanOrEqual(1),
                     ],
-                ] + static::getHashesConstraint()),
+                ] + static::getHashesConstraints()),
             ]),
 
         ]);
