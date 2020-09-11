@@ -236,9 +236,6 @@ class Updater
      *
      * @param \Tuf\Metadata\MetadataBase $metaData
      *     The metadata to check signatures on.
-     * @param string $roleName
-     *     The role name for which to check signatures (e.g. 'root',
-     *     'timestamp', etc.).
      *
      * @return void
      *
