@@ -53,7 +53,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    abstract protected static function callCreateFromJson(string $json);
+    abstract protected static function callCreateFromJson(string $json) : void;
 
     /**
      * Tests for valid metadata.
@@ -78,7 +78,7 @@ abstract class MetaDataBaseTest extends TestCase
      *   The nested array containing all client fixture files for the type.
      *
      */
-    public function providerValidMetaData()
+    public function providerValidMetaData() : array
     {
         $fixturesDir = static::getFixturesRealPath('tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
@@ -176,7 +176,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerExpectedField
      */
-    public function testMissingField(string $expectedField, string $exception = null)
+    public function testMissingField(string $expectedField, string $exception = null) : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
@@ -202,7 +202,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      */
-    protected function nestedUnset(array $keys, array &$data)
+    protected function nestedUnset(array $keys, array &$data) : void
     {
         $key = array_shift($keys);
         if ($keys) {
@@ -225,7 +225,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerValidField
      */
-    public function testInvalidField(string $expectedField, string $expectedType)
+    public function testInvalidField(string $expectedField, string $expectedType) : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
@@ -261,7 +261,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      */
-    protected function nestedChange(array $keys, array &$data, $newValue)
+    protected function nestedChange(array $keys, array &$data, $newValue) : void
     {
         $key = array_shift($keys);
         if ($keys) {
@@ -339,7 +339,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return array
      *   Array of arrays of expected field name, and field data type.
      */
-    public function providerValidField()
+    public function providerValidField() : array
     {
         return [
             ['signed', 'array'],
@@ -365,7 +365,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return string
      *   The first key.
      */
-    protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
+    protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
     {
         $realPath = static::getFixturesRealPath("tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);

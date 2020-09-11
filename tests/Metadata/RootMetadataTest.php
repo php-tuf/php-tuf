@@ -20,7 +20,7 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json)
+    protected static function callCreateFromJson(string $json) : void
     {
         RootMetadata::createFromJson($json);
     }

@@ -22,7 +22,7 @@ trait ConstraintsTrait
      * @return array[]
      *   The hash constraint.
      */
-    protected static function getHashesConstraint()
+    protected static function getHashesConstraint() : array
     {
         return [
             'hashes' => [
@@ -43,7 +43,7 @@ trait ConstraintsTrait
      * @return array[]
      *   The version constraint.
      */
-    protected static function getVersionConstraint()
+    protected static function getVersionConstraint() : array
     {
         return [
             'version' => [
@@ -59,7 +59,7 @@ trait ConstraintsTrait
      * @return array[]
      *   The threshold constraint.
      */
-    protected static function getThresholdConstraint()
+    protected static function getThresholdConstraint() : array
     {
         return [
             'threshold' => [
@@ -74,7 +74,7 @@ trait ConstraintsTrait
      * @return array[]
      *   The keysids constraint.
      */
-    protected static function getKeyidsConstraint()
+    protected static function getKeyidsConstraint() : array
     {
         return [
             'keyids' => [
@@ -95,7 +95,7 @@ trait ConstraintsTrait
      * @return Collection
      *   The keysids constraint.
      */
-    protected static function getKeyConstraints()
+    protected static function getKeyConstraints() : Collection
     {
         return new Collection([
             'keyid_hash_algorithms' => [

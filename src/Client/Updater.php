@@ -190,7 +190,7 @@ class Updater
      * @throws \UnexpectedValueException
      *     Thrown if metadata types are not the same.
      */
-    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata)
+    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata) : void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -222,7 +222,7 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now)
+    protected function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) :void
     {
         $metadataExpiration = $this->metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {

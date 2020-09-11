@@ -76,7 +76,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    protected static function validateMetaData(array $metadata)
+    protected static function validateMetaData(array $metadata) : void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
