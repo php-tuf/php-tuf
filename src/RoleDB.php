@@ -35,12 +35,11 @@ class RoleDB
     public static function createRoleDBFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
-
-            if ($roleName == 'root') {
-                $roleInfo['version'] = $rootMetadata['version'];
-                $roleInfo['expires'] = $rootMetadata['expires'];
-            }
         foreach ($rootMetadata->getRoles() as $roleName => $roleInfo) {
+            if ($roleName == 'root') {
+                $roleInfo['version'] = $rootMetadata->getVersion();
+                $roleInfo['expires'] = $rootMetadata->getExpires();
+            }
             /*
             Stuff Python TUF initializes that we aren't currently using.
             $roleInfo['signatures'] = array();
