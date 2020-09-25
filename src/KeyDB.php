@@ -35,7 +35,9 @@ class KeyDB
      * @return \Tuf\KeyDB
      *     The constructed key database object.
      *
-     * @throws \Exception Thrown if an unsupported key type exists in the metadata.
+     * @throws \Exception
+     *   Thrown if an unsupported key type exists in the metadata.
+     *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public static function createKeyDBFromRootMetadata(RootMetadata $rootMetadata)

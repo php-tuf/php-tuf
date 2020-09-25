@@ -27,13 +27,19 @@ class RoleDB
      * @return \Tuf\RoleDB
      *    The created RoleDB.
      *
-     * @throws \Exception Thrown if a threshold value in the metadata is not valid.
+     * @throws \Exception
+     *     Thrown if a threshold value in the metadata is not valid.
+     *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
     public static function createRoleDBFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
 
+            if ($roleName == 'root') {
+                $roleInfo['version'] = $rootMetadata['version'];
+                $roleInfo['expires'] = $rootMetadata['expires'];
+            }
         foreach ($rootMetadata->getRoles() as $roleName => $roleInfo) {
             /*
             Stuff Python TUF initializes that we aren't currently using.

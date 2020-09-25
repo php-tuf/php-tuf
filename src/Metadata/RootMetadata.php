@@ -5,13 +5,15 @@ namespace Tuf\Metadata;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
 class RootMetadata extends MetadataBase
 {
 
+    /**
+     * {@inheritdoc}
+     */
     protected const TYPE = 'root';
 
     /**
