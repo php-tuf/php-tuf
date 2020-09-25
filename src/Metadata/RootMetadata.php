@@ -37,49 +37,6 @@ class RootMetadata extends MetadataBase
         return $options;
     }
 
-    public function getRoleNames(): array {
-        return array_keys($this->getSigned()['roles']);
-    }
-
-    /**
-     * @param string $roleName
-     *   The role name.
-     * @return integer
-     *   The threshold.
-     */
-    public function getRoleThreshold(string $roleName)
-    {
-        $this->validateRoleName($roleName);
-        return $this->getSigned()['roles'][$roleName]['threshold'];
-    }
-
-    /**
-     * @param string $roleName
-     *   The role name.
-     *
-     * @return string[]
-     *   The key ids.
-     */
-    public function getRoleKeyIds(string $roleName)
-    {
-        $this->validateRoleName($roleName);
-        return $this->getSigned()['roles'][$roleName]['keyids'];
-    }
-
-    /**
-     * @param string $roleName
-     *   The role name.
-     *
-     * @return void
-     */
-    private function validateRoleName(string $roleName)
-    {
-        $signed = $this->getSigned();
-        if (!isset($signed['roles'][$roleName])) {
-            throw new \UnexpectedValueException("Role $roleName does not exist");
-        }
-    }
-
     /**
      * Gets the roles from the metadata.
      *
