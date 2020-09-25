@@ -4,6 +4,8 @@ namespace Tuf\Tests\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -13,12 +15,15 @@ class UpdaterTest extends TestCase
     /**
      * Returns a memory-based updater populated with the test fixtures.
      *
+     * @param \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage|null $localRepo
+     *   The local storage to use or NULL to use default.
+     *
      * @return Updater
      *     The test updater, which uses the 'current' test fixtures in the
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest() : Updater
+    protected function getSystemInTest(MemoryStorage $localRepo = null) : Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -31,7 +36,9 @@ class UpdaterTest extends TestCase
 
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        if (!$localRepo) {
+            $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        }
         $updater = new Updater('repo1', $mirrors, $localRepo);
         return $updater;
     }
@@ -45,6 +52,23 @@ class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
+    }
+
+    /**
+     * Tests refreshing the repository which needs a updated root.
+     *
+     * @return void
+     */
+    public function testUpdatingRoot()
+    {
+        $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        // Rollback the root file to version 1.
+        $localRepo['root.json'] = $localRepo['1.root.json'];
+        $this->assertSame(1, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
+        $updater = $this->getSystemInTest($localRepo);
+        $this->assertTrue($updater->refresh());
+        // Confirm the root was updated.
+        $this->assertSame(3, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
     }
 
     /**

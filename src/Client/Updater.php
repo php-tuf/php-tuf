@@ -23,6 +23,8 @@ use Tuf\JsonNormalizer;
 class Updater
 {
 
+    const MAX_ROOT_DOWNLOADS = 10000000;
+
     /**
      * @var string
      */
@@ -100,33 +102,9 @@ class Updater
         $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
         $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
+        $this->updateRoot($rootData);
 
-        // SPEC: 1.1.
-        $version = $rootData->getVersion();
-
-
-        // SPEC: 1.2.
-        $nextVersion = $version + 1;
-        $nextRootContents = $this->getRepoFile("$nextVersion.root.json");
-        if ($nextRootContents) {
-            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec
-            //     steps 1.3 -> 1.7.
-            // Not production ready🙀.
-            throw new \Exception("Root rotation not implemented.");
-        }
-
-        // SPEC: 1.8.
-        $expires = $rootData->getExpires();
-        $fakeNow = '2020-08-04T02:58:56Z';
-
-        $expireDate = $this->metadataTimestampToDateTime($expires);
-        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
-
-        if ($nowDate > $expireDate) {
-            throw new \Exception("Root has expired. Potential freeze attack!");
-            // @todo "On the next update cycle, begin at step 0 and version N
-            //    of the root metadata file."
-        }
+        $nowDate = $this->getCurrentTime();
 
         // @todo Implement spec 1.9. Does this step rely on root rotation?
 
@@ -333,5 +311,67 @@ class Updater
         } catch (\Exception $exception) {
             return false;
         }
+    }
+
+    /**
+     * Updates the root metadata if needed.
+     *
+     * @param \Tuf\Metadata\RootMetadata $rootData
+     *   The current root metadata.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     *   Throw if a freeze attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *   Throw if a rollback attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if an updated root file is not signed with the need signatures.
+     *
+     * @return void
+     */
+    private function updateRoot(RootMetadata $rootData)
+    {
+        $rootsDownloaded = 0;
+        // SPEC: 1.2
+        while ($nextRootContents = $this->getRepoFile(($rootData->getVersion() + 1) . ".root.json")) {
+            $rootsDownloaded++;
+            if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
+                throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
+            }
+            $nextRoot = RootMetadata::createFromJson($nextRootContents);
+            // SPEC: 1.3
+            $this->checkSignatures($nextRoot);
+            // Update Role and Key databases to use the new root information.
+            $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
+            $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
+            $this->checkSignatures($nextRoot);
+            // SPEC: 1.4
+            $this->checkRollbackAttack($rootData, $nextRoot);
+            $rootData = $nextRoot;
+            // SPEC: 1.5 - Needs no action.
+            // Note that the expiration of the new (intermediate) root metadata
+            // file does not matter yet, because we will check for it in step
+            // 1.8.
+
+            // SPEC: 1.6
+            $this->durableStorage['root.json'] = $nextRootContents;
+            // SPEC: 1.7 Repeat the above steps.
+        }
+        $this->checkFreezeAttack($rootData, $this->getCurrentTime());
+    }
+
+    /**
+     * Gets the current time.
+     * @return \DateTimeImmutable
+     *    The current time.
+     * @throws \Tuf\Exception\FormatException
+     *    Thrown if time format is not valid.
+     */
+    private function getCurrentTime(): \DateTimeImmutable
+    {
+        $fakeNow = '2020-08-04T02:58:56Z';
+        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
+        return $nowDate;
     }
 }
