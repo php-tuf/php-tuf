@@ -3,6 +3,8 @@
 
 namespace Tuf;
 
+use Tuf\Metadata\RootMetadata;
+
 /**
  * Represent a collection of keys and their organization.
  *
@@ -27,23 +29,20 @@ class KeyDB
     /**
      * Creates a key database with the unique keys found in root metadata.
      *
-     * @param array[] $rootMetadata
-     *    An associative array as one would obtain by decoding JSON conformant
-     *    to section 4.3 of the TUF specification.
+     * @param \Tuf\Metadata\RootMetadata $rootMetadata
+     *    The root metadata.
      *
      * @return \Tuf\KeyDB
      *     The constructed key database object.
      *
-     * @throws \Exception
-     *   Thrown if an unsupported key type exists in the metadata.
-     *
+     * @throws \Exception Thrown if an unsupported key type exists in the metadata.
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public static function createKeyDBFromRootMetadata(array $rootMetadata)
+    public static function createKeyDBFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
 
-        foreach ($rootMetadata['keys'] as $keyMeta) {
+        foreach ($rootMetadata->getKeys() as $keyMeta) {
             if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
                 // @todo Convert this to a log line as per Python.
                 throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");

@@ -97,8 +97,8 @@ class Updater
     {
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
-        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData->getSigned());
-        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData->getSigned());
+        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
+        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
 
         // SPEC: 1.1.
