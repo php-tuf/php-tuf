@@ -23,7 +23,7 @@ use Tuf\JsonNormalizer;
 class Updater
 {
 
-    const MAX_ROOT_DOWNLOADS = 10000000;
+    const MAX_ROOT_DOWNLOADS = 1024;
 
     /**
      * @var string
