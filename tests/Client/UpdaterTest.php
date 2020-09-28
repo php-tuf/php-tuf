@@ -34,10 +34,18 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
         if (!$localRepo) {
+            // Use the memory storage used so tests can write without permanent
+            // side-effects.
             $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        }
+        // Remove all '*.[TYPE].json' because they are needed for the tests.
+        $fixtureFiles = scandir($this->getFixturesRealPath('tufclient/tufrepo/metadata/current'));
+        $this->assertNotEmpty($fixtureFiles);
+        foreach ($fixtureFiles as $fileName) {
+            if (preg_match('/.*\..*\.json/', $fileName)) {
+                unset($localRepo[$fileName]);
+            }
         }
         $updater = new Updater('repo1', $mirrors, $localRepo);
         return $updater;
@@ -57,18 +65,42 @@ class UpdaterTest extends TestCase
     /**
      * Tests refreshing the repository which needs a updated root.
      *
+     * @param integer $rootStart
+     *   The version of the root file the test should start with.
+     *
      * @return void
+     *
+     * @dataProvider providerUpdatingRoot
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Thrown if the metadata is invalid.
      */
-    public function testUpdatingRoot()
+    public function testUpdatingRoot(int $rootStart)
     {
         $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        // Rollback the root file to version 1.
-        $localRepo['root.json'] = $localRepo['1.root.json'];
-        $this->assertSame(1, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
+        // Rollback the root file to version.
+        $localRepo['root.json'] = $localRepo["$rootStart.root.json"];
+        $this->assertSame($rootStart, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
         $updater = $this->getSystemInTest($localRepo);
         $this->assertTrue($updater->refresh());
-        // Confirm the root was updated.
+        // Confirm the root was updated to version 3 which is the highest
+        // version in the test fixtures.
         $this->assertSame(3, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
+    }
+
+    /**
+     * Data provider for testUpdatingRoot().
+     *
+     * @return \int[][]
+     *   The test arguments.
+     */
+    public function providerUpdatingRoot()
+    {
+        return [
+            [1],
+            [2],
+            [3],
+        ];
     }
 
     /**
