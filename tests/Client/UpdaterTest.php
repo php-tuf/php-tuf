@@ -13,6 +13,11 @@ class UpdaterTest extends TestCase
     use MemoryStorageLoaderTrait;
 
     /**
+     * The maximum version of root file in the test repo.
+     */
+    private const MAX_REPO_ROOT_VERSION = 5;
+
+    /**
      * Returns a memory-based updater populated with the test fixtures.
      *
      * @param \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage|null $localRepo
@@ -85,7 +90,10 @@ class UpdaterTest extends TestCase
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 3 which is the highest
         // version in the test fixtures.
-        $this->assertSame(3, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
+        $this->assertSame(
+            static::MAX_REPO_ROOT_VERSION,
+            RootMetadata::createFromJson($localRepo['root.json'])->getVersion()
+        );
     }
 
     /**
