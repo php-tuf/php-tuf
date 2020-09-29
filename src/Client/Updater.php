@@ -112,19 +112,23 @@ class Updater
         //$consistent = $rootData['consistent'];
 
         // SPEC: 2
-        $timestampData = TimestampMetadata::createFromJson($this->getRepoFile('timestamp.json'));
+        $newTimestampContents = $this->getRepoFile('timestamp.json');
+        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
         // SPEC: 2.1
-        $this->checkSignatures($timestampData);
+        $this->checkSignatures($newTimestampData);
 
-
-        // SPEC: 2.2
-        $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-        $this->checkRollbackAttack($currentStateTimestampData, $timestampData);
+        // If the timestamp or snapshot keys were rotating then the timestamp file
+        // will not exist.
+        if (isset($this->durableStorage['timestamp.json'])) {
+            // SPEC: 2.2.1
+            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+            $this->checkRollbackAttack($currentStateTimestampData, $newTimestampData);
+        }
 
         // SPEC: 2.3
-        $this->checkFreezeAttack($timestampData, $nowDate);
-        // @todo Why is the branch adding this back? It should not have changed???
-        //$durableStorage['timestamp.json'] = $timestampContents;
+        $this->checkFreezeAttack($newTimestampData, $nowDate);
+        $this->durableStorage['timestamp.json'] = $newTimestampContents;
+
 
         return true;
     }
@@ -333,6 +337,7 @@ class Updater
     private function updateRoot(RootMetadata $rootData)
     {
         $rootsDownloaded = 0;
+        $originalRootData = $rootData;
         // SPEC: 1.2
         while ($nextRootContents = $this->getRepoFile(($rootData->getVersion() + 1) . ".root.json")) {
             $rootsDownloaded++;
@@ -358,7 +363,14 @@ class Updater
             $this->durableStorage['root.json'] = $nextRootContents;
             // SPEC: 1.7 Repeat the above steps.
         }
+        // SPEC: 1.8
         $this->checkFreezeAttack($rootData, $this->getCurrentTime());
+
+        if ($rootsDownloaded &&
+           ($this->hasRotatedKeys($originalRootData, $rootData, 'timestamp')
+           || $this->hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
+            unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
+        }
     }
 
     /**
@@ -373,5 +385,20 @@ class Updater
         $fakeNow = '2020-08-04T02:58:56Z';
         $nowDate = $this->metadataTimestampToDateTime($fakeNow);
         return $nowDate;
+    }
+
+    /**
+     * @param \Tuf\Metadata\RootMetadata $previousRoot
+     * @param \Tuf\Metadata\RootMetadata $newRootData
+     * @param string $role
+     */
+    private function hasRotatedKeys(RootMetadata $previousRoot, RootMetadata $newRootData, string $role)
+    {
+        $previousRole = $previousRoot->getRoles()[$role] ?? null;
+        $newRole = $newRootData->getRoles()[$role] ?? null;
+        if (empty($previousRole) && empty($newRole)) {
+            return false;
+        }
+        return $previousRole !== $newRole;
     }
 }
