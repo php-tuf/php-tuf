@@ -2,7 +2,7 @@
  "signatures": [
   {
    "keyid": "b19b42f1f175c9d133e6c4be68c35bc135960f3f0e976b0536cb95012ad52a1f",
-   "sig": "150aec29667ffb24f961e6d4094e5114fe862bc8777a3e4a9730cb2733adf19fa2e79af0d303b3a12d04dacda521d2fa142c4336dc39babd0c2def86a41c170a"
+   "sig": "ec00143cf64a8bc8b34f5144a8b991be30dac0cf066d990a0b67956a9d7dd56736f15b41f2a12809e0815146540dafa0d108caccdfafd3a57647ffe5a3e61700"
   }
  ],
  "signed": {
@@ -32,6 +32,17 @@
     },
     "scheme": "ed25519"
    },
+   "7fa7ec351684480d7c36ac7513f828065dc9c7c26889afc27989a13cf154bc9a": {
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keytype": "ed25519",
+    "keyval": {
+     "public": "18839a0a560c1ce6d137fd8e3ba3316d1d73e0f1038a18338d53834e6e22b5ef"
+    },
+    "scheme": "ed25519"
+   },
    "b19b42f1f175c9d133e6c4be68c35bc135960f3f0e976b0536cb95012ad52a1f": {
     "keyid_hash_algorithms": [
      "sha256",
@@ -53,6 +64,17 @@
      "public": "3c03b002e7a34c3dd0661f3d539e2371ae8979fc89a639a0ad01cc16df0ea144"
     },
     "scheme": "ed25519"
+   },
+   "e60944288d1e4b0045fb3734374e4e3ee1ecd0c3ac3413c987cec5eabe9869c2": {
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keytype": "ed25519",
+    "keyval": {
+     "public": "d952526b381821f58f8c499afb72edd9cfc4a4741e4a172670fb7cb8c4436943"
+    },
+    "scheme": "ed25519"
    }
   },
   "roles": {
@@ -64,13 +86,15 @@
    },
    "snapshot": {
     "keyids": [
-     "bb681763c3e0f42461152603317e885a7dafccf64a745674ac1f6d65be2bda89"
+     "bb681763c3e0f42461152603317e885a7dafccf64a745674ac1f6d65be2bda89",
+     "e60944288d1e4b0045fb3734374e4e3ee1ecd0c3ac3413c987cec5eabe9869c2"
     ],
     "threshold": 1
    },
    "targets": {
     "keyids": [
-     "67e6f0f5247a14f92304588c45af93c538a519b088c5bc6f0566484a9f757718"
+     "67e6f0f5247a14f92304588c45af93c538a519b088c5bc6f0566484a9f757718",
+     "7fa7ec351684480d7c36ac7513f828065dc9c7c26889afc27989a13cf154bc9a"
     ],
     "threshold": 1
    },
@@ -82,6 +106,6 @@
    }
   },
   "spec_version": "1.0.0",
-  "version": 2
+  "version": 4
  }
 }

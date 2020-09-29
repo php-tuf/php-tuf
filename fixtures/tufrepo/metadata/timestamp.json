@@ -1,18 +1,18 @@
 {
  "signatures": [
   {
-   "keyid": "ad19cad4b290b45bb849059c475e81baae62f6acd9b1a9fa8f626ce607a52dbd",
-   "sig": "732b699a51a97bae88d7677b8f510dbebae4352d2e0b60466b0e3363e3d3870014c83ecab1b4d52bad179d357f20df81755636dcddfe5e59c64e0f71e3eeff0c"
+   "keyid": "360c9a178790c081f734965106a09b0969768278f0b357d17b1a34fcfdcb6349",
+   "sig": "b7ef8419642c8d68956f5393aac92682636ce90c4ca000dd97a4e22fc032cc4fc989c87435098f1708f0b8f39550d7f075b089aa1c3ac6f13f80e6ba8780cd0c"
   }
  ],
  "signed": {
   "_type": "timestamp",
-  "expires": "2020-09-11T18:53:26Z",
+  "expires": "2020-09-30T12:12:11Z",
   "meta": {
    "snapshot.json": {
     "hashes": {
-     "sha256": "7fdbcc477b3aa2efae5be9591e7b8dc75171245e371132fcddfa37ffa3275e49",
-     "sha512": "124a736a595f8a191064b55255cf494b5e1344683f26fdceec4d5f09eecffa25321c29e5c704bdcd7c8d8029622bcb6540ff5be258e6cd62d9669901034ee212"
+     "sha256": "1ae202b436a2bae13fd090fd56b6092bf8865b8dbcc331f9d861a6864892a5b6",
+     "sha512": "a564f9fcf263d87dcc7f6bbf56d5e700c3f2cf511d1ccd697ab5d96f01cfa0bd76b003c8b735dfe903aa38aeb9da7a725cec59f2f16333f09afd7db84a0e8935"
     },
     "length": 477,
     "version": 3
