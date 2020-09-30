@@ -18,9 +18,23 @@ class UpdaterTest extends TestCase
     private const MAX_REPO_ROOT_VERSION = 5;
 
     /**
+     * The local repo.
+     *
+     * @var \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
+     */
+    protected $localRepo;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+    }
+
+
+    /**
      * Returns a memory-based updater populated with the test fixtures.
      *
-     * @param \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage|null $localRepo
+     * @param \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage $localRepo
      *   The local storage to use or NULL to use default.
      *
      * @return Updater
@@ -28,7 +42,7 @@ class UpdaterTest extends TestCase
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(MemoryStorage $localRepo = null) : Updater
+    protected function getSystemInTest() : Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -39,20 +53,15 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        if (!$localRepo) {
-            // Use the memory storage used so tests can write without permanent
-            // side-effects.
-            $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        }
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir($this->getFixturesRealPath('tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
-                unset($localRepo[$fileName]);
+                unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new Updater('repo1', $mirrors, $localRepo);
+        $updater = new Updater('repo1', $mirrors, $this->localRepo);
         return $updater;
     }
 
@@ -82,17 +91,16 @@ class UpdaterTest extends TestCase
      */
     public function testUpdatingRoot(int $rootStart)
     {
-        $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
         // Rollback the root file to version.
-        $localRepo['root.json'] = $localRepo["$rootStart.root.json"];
-        $this->assertSame($rootStart, RootMetadata::createFromJson($localRepo['root.json'])->getVersion());
-        $updater = $this->getSystemInTest($localRepo);
+        $this->localRepo['root.json'] = $this->localRepo["$rootStart.root.json"];
+        $this->assertSame($rootStart, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 3 which is the highest
         // version in the test fixtures.
         $this->assertSame(
             static::MAX_REPO_ROOT_VERSION,
-            RootMetadata::createFromJson($localRepo['root.json'])->getVersion()
+            RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
         );
     }
 
