@@ -128,8 +128,6 @@ class Updater
         // SPEC: 2.3
         $this->checkFreezeAttack($newTimestampData, $nowDate);
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
-
-
         return true;
     }
 
@@ -375,6 +373,7 @@ class Updater
 
     /**
      * Gets the current time.
+     *
      * @return \DateTimeImmutable
      *    The current time.
      * @throws \Tuf\Exception\FormatException
@@ -388,13 +387,21 @@ class Updater
     }
 
     /**
-     * @param \Tuf\Metadata\RootMetadata $previousRoot
+     * Determines if the new root metadata has rotated keys for a role.
+     *
+     * @param \Tuf\Metadata\RootMetadata $previousRootData
+     *   The previous root metadata.
      * @param \Tuf\Metadata\RootMetadata $newRootData
+     *   The new root metadta.
      * @param string $role
+     *   The role to check for rotated keys.
+     *
+     * @return boolean
+     *   True if the keys for the role have been rotated, otherwise false.
      */
-    private function hasRotatedKeys(RootMetadata $previousRoot, RootMetadata $newRootData, string $role)
+    private function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
     {
-        $previousRole = $previousRoot->getRoles()[$role] ?? null;
+        $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
         if (empty($previousRole) && empty($newRole)) {
             return false;
