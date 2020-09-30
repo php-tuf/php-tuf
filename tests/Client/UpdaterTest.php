@@ -74,6 +74,10 @@ class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
+        $this->assertSame(
+          static::MAX_REPO_ROOT_VERSION,
+          RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
+        );
     }
 
     /**
