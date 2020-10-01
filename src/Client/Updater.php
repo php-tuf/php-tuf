@@ -162,26 +162,30 @@ class Updater
      *     The locally stored metadata from the most recent update.
      * @param \Tuf\Metadata\MetadataBase $remoteMetadata
      *     The latest metadata fetched from the remote repository.
+     * @param int|null $expectedRemoteVersion
+     *     If not null this is expected version of remote metadata.
      *
      * @return void
      *
-     * @throws RollbackAttackException
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
-     * @throws \UnexpectedValueException
-     *     Thrown if metadata types are not the same.
      */
-    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata) : void
+    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
                . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
         }
         $type = $localMetadata->getType();
-        $localVersion = $localMetadata->getVersion();
         $remoteVersion = $remoteMetadata->getVersion();
+        if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
+            throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
+              "does not the expected version \"$$expectedRemoteVersion\"");
+        }
+        $localVersion = $localMetadata->getVersion();
         if ($remoteVersion < $localVersion) {
-            $message = "Remote $type metadata version \"$" . $remoteMetadata->getVersion() .
-                "\" is less than previously seen $type version \"$" . $localMetadata->getVersion() . '"';
+            $message = "Remote $type metadata version \"$$remoteVersion\" " .
+                "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
         }
     }
@@ -337,7 +341,8 @@ class Updater
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
         // SPEC: 1.2
-        while ($nextRootContents = $this->getRepoFile(($rootData->getVersion() + 1) . ".root.json")) {
+        $nextVersion = $rootData->getVersion() + 1;
+        while ($nextRootContents = $this->getRepoFile("$nextVersion.root.json")) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
@@ -350,7 +355,7 @@ class Updater
             $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
             $this->checkSignatures($nextRoot);
             // SPEC: 1.4
-            $this->checkRollbackAttack($rootData, $nextRoot);
+            $this->checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $rootData = $nextRoot;
             // SPEC: 1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -359,6 +364,7 @@ class Updater
 
             // SPEC: 1.6
             $this->durableStorage['root.json'] = $nextRootContents;
+            $nextVersion = $rootData->getVersion() + 1;
             // SPEC: 1.7 Repeat the above steps.
         }
         // SPEC: 1.8

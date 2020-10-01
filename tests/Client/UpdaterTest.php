@@ -24,6 +24,8 @@ class UpdaterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
     }
 
