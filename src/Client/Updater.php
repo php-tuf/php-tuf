@@ -162,7 +162,7 @@ class Updater
      *     The locally stored metadata from the most recent update.
      * @param \Tuf\Metadata\MetadataBase $remoteMetadata
      *     The latest metadata fetched from the remote repository.
-     * @param int|null $expectedRemoteVersion
+     * @param integer|null $expectedRemoteVersion
      *     If not null this is expected version of remote metadata.
      *
      * @return void
