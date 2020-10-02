@@ -17,7 +17,7 @@ class KeyDBTest extends TestCase
      *
      * @param mixed[] $rootMetadata
      *     The metadata for which to compute keys.
-     * @param string[] $expected
+     * @param string[] $expectedKeys
      *     The expected key values.
      *
      * @return void
