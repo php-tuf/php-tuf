@@ -2,6 +2,7 @@
 
 namespace Tuf\Client;
 
+use phpDocumentor\Reflection\Types\Static_;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
@@ -21,9 +22,10 @@ class Updater
 {
 
     /**
-     * @var string
+     * The maximum number of bytes to download if the remote file size is not
+     * known.
      */
-    protected $repoName;
+    const MAXIMUM_DOWNLOAD_BYTES = 100000;
 
     /**
      * @var \array[][]
@@ -52,11 +54,17 @@ class Updater
     protected $keyDB;
 
     /**
+     * The remote repo file fetcher.
+     *
+     * @var \Tuf\Client\RemoteRepoFileFetcherInterface
+     */
+    protected $remoteRepo;
+
+    /**
      * Updater constructor.
      *
-     * @param string $repositoryName
-     *     A name the application assigns to the repository used by this
-     *     Updater.
+     * @param \Tuf\Client\RemoteRepoFileFetcherInterface $remoteRepo
+     *     The remote repo fetcher.
      * @param mixed[][] $mirrors
      *     A nested array of mirrors to use for fetching signing data from the
      *     repository. Each child array contains information about the mirror:
@@ -72,9 +80,9 @@ class Updater
      *     should be exposed to future instantiations of the Updater that
      *     interact with the same repository.
      */
-    public function __construct(string $repositoryName, array $mirrors, \ArrayAccess $durableStorage)
+    public function __construct(RemoteRepoFileFetcherInterface $remoteRepo, array $mirrors, \ArrayAccess $durableStorage)
     {
-        $this->repoName = $repositoryName;
+        $this->remoteRepo = $remoteRepo;
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
     }
@@ -105,7 +113,7 @@ class Updater
 
         // SPEC: 1.2.
         $nextVersion = $version + 1;
-        $nextRootContents = $this->getRepoFile("$nextVersion.root.json");
+        $nextRootContents = $this->remoteRepo->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES);
         if ($nextRootContents) {
             // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec
             //     steps 1.3 -> 1.7.
@@ -132,7 +140,7 @@ class Updater
         //$consistent = $rootData['consistent'];
 
         // SPEC: 2
-        $timestampContents = $this->getRepoFile('timestamp.json');
+        $timestampContents = $this->remoteRepo->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
         $timestampStructure = json_decode($timestampContents, true);
         // SPEC: 2.1
         $this->checkSignatures($timestampStructure, 'timestamp');
@@ -324,26 +332,5 @@ class Updater
         // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
-    }
-
-    /**
-     * To be replaced by HTTP / HTTP abstraction layer to the remote repository.
-     *
-     * @param string $filename
-     *     The filename within the fixture repo.
-     *
-     * @return string|false
-     *     The contents of the file, or FALSE if the file could not be
-     *     retrieved.
-     */
-    private function getRepoFile(string $filename)
-    {
-        try {
-            // @todo Ensure the file does not exceed a certain size to prevent
-            //     DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$filename");
-        } catch (\Exception $exception) {
-            return false;
-        }
     }
 }
