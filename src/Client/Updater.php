@@ -54,7 +54,7 @@ class Updater
     protected $keyDB;
 
     /**
-     * The remote repo file fetcher.
+     * The repo file fetcher.
      *
      * @var \Tuf\Client\RepoFileFetcherInterface
      */
