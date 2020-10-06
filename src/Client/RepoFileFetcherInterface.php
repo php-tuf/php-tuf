@@ -3,9 +3,9 @@
 namespace Tuf\Client;
 
 /**
- * Defines an interface for fetching remote repo files.
+ * Defines an interface for fetching repo files.
  */
-interface RemoteRepoFileFetcherInterface
+interface RepoFileFetcherInterface
 {
 
     /**
@@ -15,7 +15,7 @@ interface RemoteRepoFileFetcherInterface
      *   The file name.
      *
      * @param integer $maxBytes
-     *   The maximum number of bytes to download
+     *   The maximum number of bytes to download.
      *
      * @return string
      *   The file contents.

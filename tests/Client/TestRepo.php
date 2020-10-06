@@ -2,10 +2,10 @@
 
 namespace Tuf\Tests\Client;
 
-use Tuf\Client\RemoteRepoFileFetcherInterface;
+use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 
-class TestRemoteRepo implements RemoteRepoFileFetcherInterface
+class TestRepo implements RepoFileFetcherInterface
 {
 
     /**

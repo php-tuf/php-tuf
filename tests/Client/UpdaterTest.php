@@ -32,7 +32,7 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        $updater = new Updater(new TestRemoteRepo(), $mirrors, $localRepo);
+        $updater = new Updater(new TestRepo(), $mirrors, $localRepo);
         return $updater;
     }
 
