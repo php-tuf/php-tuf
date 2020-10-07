@@ -32,6 +32,7 @@ class RootMetadata extends MetadataBase
         $options['fields']['roles'] = new Required([
             new Type('array'),
             new Count(['min' => 1]),
+            new RequiredKeysConstraint(['root', 'timestamp', 'snapshot', 'targets']),
             new All([
                 new Collection(self::getKeyidsConstraints() + static::getThresholdConstraints()),
             ]),

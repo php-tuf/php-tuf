@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Exception\MetadataException;
 use Tuf\Metadata\RootMetadata;
 
 class RootMetadataTest extends MetaDataBaseTest
@@ -60,5 +61,40 @@ class RootMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:roles:targets:keyids', 'array'];
         $data[] = ['signed:roles:targets:threshold', 'int'];
         return $data;
+    }
+
+    /**
+     * Tests that an exception will thrown if a required role is missing.
+     *
+     * @param string $missingRole
+     *   The required role to test.
+     *
+     * @return void
+     *
+     * @dataProvider providerRequireRoles
+     */
+    public function testRequiredRoles(string $missingRole)
+    {
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage("The following keys \"$missingRole\" are required");
+        $data = json_decode($this->localRepo[$this->validJson], true);
+        unset($data['signed']['roles'][$missingRole]);
+        static::callCreateFromJson(json_encode($data));
+    }
+
+    /**
+     * Dataprovider for testRequiredRoles().
+     *
+     * @return string[][]
+     *   The test cases.
+     */
+    public function providerRequireRoles()
+    {
+        return static::getKeyedArray([
+            ['root'],
+            ['timestamp'],
+            ['snapshot'],
+            ['targets'],
+        ]);
     }
 }
