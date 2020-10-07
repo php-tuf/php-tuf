@@ -2,19 +2,17 @@
 
 namespace Tuf\Client;
 
-use phpDocumentor\Reflection\Types\Static_;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
-use Tuf\JsonNormalizer;
 
 /**
  * Class Updater
