@@ -116,26 +116,24 @@ class Updater
 
         $nowDate = $this->getCurrentTime();
 
-        // @todo Implement spec 1.9. Does this step rely on root rotation?
-
-        // SPEC: 1.10. Will be used in spec step 4.3.
+        // TUF-SPEC-v1.0.9 Section 5.1.11. Will be used in spec step 5.4.3.
         //$consistent = $rootData['consistent'];
 
-        // SPEC: 2
+        // *TUF-SPEC-v1.0.9 Section 5.2
         $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        // SPEC: 2.1
+        // *TUF-SPEC-v1.0.9 Section 5.2.1
         $this->checkSignatures($newTimestampData);
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
-            // SPEC: 2.2.1
+            // *TUF-SPEC-v1.0.9 Section 5.2.2.1
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             $this->checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
 
-        // SPEC: 2.3
+        // *TUF-SPEC-v1.0.9 Section 5.2.3
         $this->checkFreezeAttack($newTimestampData, $nowDate);
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
         return true;
@@ -330,7 +328,7 @@ class Updater
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
-        // SPEC: 1.2
+        // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
         while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
@@ -338,29 +336,29 @@ class Updater
                 throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            // SPEC: 1.3
+            // *TUF-SPEC-v1.0.9 Section 5.1.3
             $this->checkSignatures($nextRoot);
             // Update Role and Key databases to use the new root information.
             $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
             $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
             $this->checkSignatures($nextRoot);
-            // SPEC: 1.4
+            // *TUF-SPEC-v1.0.9 Section 5.1.4
             $this->checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $rootData = $nextRoot;
-            // SPEC: 1.5 - Needs no action.
+            // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
             // file does not matter yet, because we will check for it in step
             // 1.8.
 
-            // SPEC: 1.6
+            // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
             $this->durableStorage['root.json'] = $nextRootContents;
             $nextVersion = $rootData->getVersion() + 1;
-            // SPEC: 1.7 Repeat the above steps.
+            // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
         }
-        // SPEC: 1.8
+        // *TUF-SPEC-v1.0.9 Section 5.1.9
         $this->checkFreezeAttack($rootData, $this->getCurrentTime());
 
-        // SPEC 1.9: Delete the trusted timestamp and snapshot files if either
+        // *TUF-SPEC-v1.0.9 Section 5.1.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
         if ($rootsDownloaded &&
            ($this->hasRotatedKeys($originalRootData, $rootData, 'timestamp')
