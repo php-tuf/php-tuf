@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
 
@@ -13,7 +14,6 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
  */
 class UpdaterTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
 
     /**
      * Creates a test Updater using memory storage of client fixture data.
@@ -23,8 +23,9 @@ class UpdaterTest extends TestCase
      */
     protected function getSystemInTest() : Updater
     {
-        $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        return new Updater('repo', [], $localRepo);
+        $localRepo = $this->getMockBuilder(\ArrayAccess::class)->getMock();
+        $repoFetcher = $this->getMockBuilder(RepoFileFetcherInterface::class)->getMock();
+        return new Updater($repoFetcher, [], $localRepo);
     }
 
     /**
