@@ -56,7 +56,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new Updater('repo1', $mirrors, $this->localRepo);
+        $updater = new Updater(new TestRepo(), $mirrors, $this->localRepo);
         return $updater;
     }
 
