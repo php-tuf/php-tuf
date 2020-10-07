@@ -397,9 +397,6 @@ class Updater
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
-        if (empty($previousRole) && empty($newRole)) {
-            return false;
-        }
         return $previousRole !== $newRole;
     }
 }
