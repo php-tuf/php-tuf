@@ -34,7 +34,6 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-
         $this->testRepo = new TestRepo();
     }
 
@@ -88,8 +87,8 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that an exception is thrown when attempting to update to root fail
-     * that does not have a valid signature.
+     * Tests that an exception is thrown when attempting to refresh the repository with file that has an invalid valid
+     * signature.
      *
      * @param string $fileToFail
      *   The repo fail that should fail the signature check.
