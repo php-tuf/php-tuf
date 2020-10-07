@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Client;
 
+use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -90,13 +91,21 @@ class UpdaterTest extends TestCase
      * Tests that an exception is thrown when attempting to update to root fail
      * that does not have a valid signature.
      *
+     * @param string $fileToFail
+     *   The repo fail that should fail the signature check.
+     * @param integer $expectedRootVersion
+     *   The expected root version after the refresh attempt.
+     * @param string $expectionMessage
+     *   The expected exception message.
+     *
      * @return void
+     *
+     * @dataProvider providerSignatureError
      */
-    public function testUpdateRootSignatureError() : void
+    public function testSignatureError(string $fileToFail, int $expectedRootVersion, string $expectionMessage) : void
     {
         $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
-        // Set '5.root.json' to fail the signature check.
-        $this->testRepo->setFilesToFailSignature(['5.root.json']);
+        $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
@@ -104,11 +113,39 @@ class UpdaterTest extends TestCase
             // Confirm the root was updated to version 4 but not to 5 because
             // 5.root.json should throw an exception.
             $this->assertSame(
-                4,
+                $expectedRootVersion,
                 RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
             );
+            $this->assertSame($expectionMessage, $exception->getMessage());
             return;
         }
         $this->fail('No SignatureThresholdExpception thrown');
+    }
+
+    /**
+     * Dataprovider for testSignatureError().
+     *
+     * @return array[]
+     *   The test cases for testSignatureError().
+     */
+    public function providerSignatureError()
+    {
+        return [
+            [
+                '4.root.json',
+                3,
+                'Signature threshold not met on root',
+            ],
+            [
+                '5.root.json',
+                4,
+                'Signature threshold not met on root',
+            ],
+            [
+                'timestamp.json',
+                5,
+                'Signature threshold not met on timestamp',
+            ],
+        ];
     }
 }
