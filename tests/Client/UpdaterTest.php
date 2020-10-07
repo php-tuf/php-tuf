@@ -129,7 +129,7 @@ class UpdaterTest extends TestCase
      */
     public function providerSignatureError()
     {
-        return [
+        return $this->getKeyedArray([
             [
                 '4.root.json',
                 3,
@@ -145,6 +145,6 @@ class UpdaterTest extends TestCase
                 5,
                 'Signature threshold not met on timestamp',
             ],
-        ];
+        ], 0);
     }
 }
