@@ -308,26 +308,6 @@ class Updater
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
-    /**
-     * To be replaced by HTTP / HTTP abstraction layer to the remote repository.
-     *
-     * @param string $filename
-     *     The filename within the fixture repo.
-     *
-     * @return string|false
-     *     The contents of the file, or FALSE if the file could not be
-     *     retrieved.
-     */
-    private function getRepoFile(string $filename)
-    {
-        try {
-            // @todo Ensure the file does not exceed a certain size to prevent
-            //     DOS attacks.
-            return file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$filename");
-        } catch (\Exception $exception) {
-            return false;
-        }
-    }
 
     /**
      * Updates the root metadata if needed.
@@ -352,7 +332,7 @@ class Updater
         $originalRootData = $rootData;
         // SPEC: 1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->getRepoFile("$nextVersion.root.json")) {
+        while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
@@ -380,6 +360,8 @@ class Updater
         // SPEC: 1.8
         $this->checkFreezeAttack($rootData, $this->getCurrentTime());
 
+        // SPEC 1.9: Delete the trusted timestamp and snapshot files if either
+        // file has rooted keys.
         if ($rootsDownloaded &&
            ($this->hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || $this->hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {

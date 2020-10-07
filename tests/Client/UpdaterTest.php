@@ -4,6 +4,7 @@ namespace Tuf\Tests\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -19,6 +20,11 @@ class UpdaterTest extends TestCase
     protected $localRepo;
 
     /**
+     * @var \Tuf\Tests\Client\TestRepo
+     */
+    protected $testRepo;
+
+    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
@@ -27,6 +33,8 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+
+        $this->testRepo = new TestRepo();
     }
 
     /**
@@ -56,7 +64,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new Updater(new TestRepo(), $mirrors, $this->localRepo);
+        $updater = new Updater($this->testRepo, $mirrors, $this->localRepo);
         return $updater;
     }
 
@@ -79,13 +87,28 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that an error is thrown on an updated root.
+     * Tests that an exception is thrown when attempting to update to root fail
+     * that does not have a valid signature.
      *
      * @return void
-     *
-     * @todo Remove this test when functionality is added.
      */
-    public function testUpdatedRootError() : void
+    public function testUpdateRootSignatureError() : void
     {
+        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        // Set '5.root.json' to fail the signature check.
+        $this->testRepo->setFilesToFailSignature(['5.root.json']);
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (SignatureThresholdExpception $exception) {
+            // Confirm the root was updated to version 4 but not to 5 because
+            // 5.root.json should throw an exception.
+            $this->assertSame(
+                4,
+                RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
+            );
+            return;
+        }
+        $this->fail('No SignatureThresholdExpception thrown');
     }
 }
