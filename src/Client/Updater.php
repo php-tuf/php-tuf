@@ -2,19 +2,17 @@
 
 namespace Tuf\Client;
 
-use phpDocumentor\Reflection\Types\Static_;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\RepositoryDBCollection;
 use Tuf\RoleDB;
-use Tuf\JsonNormalizer;
 
 /**
  * Class Updater
@@ -23,6 +21,8 @@ use Tuf\JsonNormalizer;
  */
 class Updater
 {
+
+    const MAX_ROOT_DOWNLOADS = 1024;
 
     /**
      * The maximum number of bytes to download if the remote file size is not
@@ -110,55 +110,30 @@ class Updater
         $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
         $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
+        $this->updateRoot($rootData);
 
-        // SPEC: 1.1.
-        $version = $rootData->getVersion();
+        $nowDate = $this->getCurrentTime();
 
-
-        // SPEC: 1.2.
-        $nextVersion = $version + 1;
-        $nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES);
-        if ($nextRootContents) {
-            // @todo 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥Add steps do root rotation spec
-            //     steps 1.3 -> 1.7.
-            // Not production ready🙀.
-            throw new \Exception("Root rotation not implemented.");
-        }
-
-        // SPEC: 1.8.
-        $expires = $rootData->getExpires();
-        $fakeNow = '2020-08-04T02:58:56Z';
-
-        $expireDate = $this->metadataTimestampToDateTime($expires);
-        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
-
-        if ($nowDate > $expireDate) {
-            throw new \Exception("Root has expired. Potential freeze attack!");
-            // @todo "On the next update cycle, begin at step 0 and version N
-            //    of the root metadata file."
-        }
-
-        // @todo Implement spec 1.9. Does this step rely on root rotation?
-
-        // SPEC: 1.10. Will be used in spec step 4.3.
+        // TUF-SPEC-v1.0.9 Section 5.1.11. Will be used in spec step 5.4.3.
         //$consistent = $rootData['consistent'];
 
-        // SPEC: 2
-        $timestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
-        $timestampData = TimestampMetadata::createFromJson($timestampContents);
-        // SPEC: 2.1
-        $this->checkSignatures($timestampData);
+        // *TUF-SPEC-v1.0.9 Section 5.2
+        $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
+        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        // *TUF-SPEC-v1.0.9 Section 5.2.1
+        $this->checkSignatures($newTimestampData);
 
+        // If the timestamp or snapshot keys were rotating then the timestamp file
+        // will not exist.
+        if (isset($this->durableStorage['timestamp.json'])) {
+            // *TUF-SPEC-v1.0.9 Section 5.2.2.1
+            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+            $this->checkRollbackAttack($currentStateTimestampData, $newTimestampData);
+        }
 
-        // SPEC: 2.2
-        $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-        $this->checkRollbackAttack($currentStateTimestampData, $timestampData);
-
-        // SPEC: 2.3
-        $this->checkFreezeAttack($timestampData, $nowDate);
-        // @todo Why is the branch adding this back? It should not have changed???
-        //$durableStorage['timestamp.json'] = $timestampContents;
-
+        // *TUF-SPEC-v1.0.9 Section 5.2.3
+        $this->checkFreezeAttack($newTimestampData, $nowDate);
+        $this->durableStorage['timestamp.json'] = $newTimestampContents;
         return true;
     }
 
@@ -193,26 +168,30 @@ class Updater
      *     The locally stored metadata from the most recent update.
      * @param \Tuf\Metadata\MetadataBase $remoteMetadata
      *     The latest metadata fetched from the remote repository.
+     * @param integer|null $expectedRemoteVersion
+     *     If not null this is expected version of remote metadata.
      *
      * @return void
      *
-     * @throws RollbackAttackException
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
-     * @throws \UnexpectedValueException
-     *     Thrown if metadata types are not the same.
      */
-    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata) : void
+    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
                . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
         }
         $type = $localMetadata->getType();
-        $localVersion = $localMetadata->getVersion();
         $remoteVersion = $remoteMetadata->getVersion();
+        if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
+            throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
+              "does not the expected version \"$$expectedRemoteVersion\"");
+        }
+        $localVersion = $localMetadata->getVersion();
         if ($remoteVersion < $localVersion) {
-            $message = "Remote $type metadata version \"$" . $remoteMetadata->getVersion() .
-                "\" is less than previously seen $type version \"$" . $localMetadata->getVersion() . '"';
+            $message = "Remote $type metadata version \"$$remoteVersion\" " .
+                "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
         }
     }
@@ -323,5 +302,101 @@ class Updater
         // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
+    }
+
+
+    /**
+     * Updates the root metadata if needed.
+     *
+     * @param \Tuf\Metadata\RootMetadata $rootData
+     *   The current root metadata.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     *   Throw if a freeze attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *   Throw if a rollback attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if an updated root file is not signed with the need signatures.
+     *
+     * @return void
+     */
+    private function updateRoot(RootMetadata $rootData)
+    {
+        $rootsDownloaded = 0;
+        $originalRootData = $rootData;
+        // *TUF-SPEC-v1.0.9 Section 5.1.2
+        $nextVersion = $rootData->getVersion() + 1;
+        while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+            $rootsDownloaded++;
+            if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
+                throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
+            }
+            $nextRoot = RootMetadata::createFromJson($nextRootContents);
+            // *TUF-SPEC-v1.0.9 Section 5.1.3
+            $this->checkSignatures($nextRoot);
+            // Update Role and Key databases to use the new root information.
+            $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
+            $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
+            $this->checkSignatures($nextRoot);
+            // *TUF-SPEC-v1.0.9 Section 5.1.4
+            $this->checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $rootData = $nextRoot;
+            // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
+            // Note that the expiration of the new (intermediate) root metadata
+            // file does not matter yet, because we will check for it in step
+            // 1.8.
+
+            // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
+            $this->durableStorage['root.json'] = $nextRootContents;
+            $nextVersion = $rootData->getVersion() + 1;
+            // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
+        }
+        // *TUF-SPEC-v1.0.9 Section 5.1.9
+        $this->checkFreezeAttack($rootData, $this->getCurrentTime());
+
+        // *TUF-SPEC-v1.0.9 Section 5.1.10: Delete the trusted timestamp and snapshot files if either
+        // file has rooted keys.
+        if ($rootsDownloaded &&
+           ($this->hasRotatedKeys($originalRootData, $rootData, 'timestamp')
+           || $this->hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
+            unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
+        }
+    }
+
+    /**
+     * Gets the current time.
+     *
+     * @return \DateTimeImmutable
+     *    The current time.
+     * @throws \Tuf\Exception\FormatException
+     *    Thrown if time format is not valid.
+     */
+    private function getCurrentTime(): \DateTimeImmutable
+    {
+        $fakeNow = '2020-08-04T02:58:56Z';
+        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
+        return $nowDate;
+    }
+
+    /**
+     * Determines if the new root metadata has rotated keys for a role.
+     *
+     * @param \Tuf\Metadata\RootMetadata $previousRootData
+     *   The previous root metadata.
+     * @param \Tuf\Metadata\RootMetadata $newRootData
+     *   The new root metadta.
+     * @param string $role
+     *   The role to check for rotated keys.
+     *
+     * @return boolean
+     *   True if the keys for the role have been rotated, otherwise false.
+     */
+    private function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
+    {
+        $previousRole = $previousRootData->getRoles()[$role] ?? null;
+        $newRole = $newRootData->getRoles()[$role] ?? null;
+        return $previousRole !== $newRole;
     }
 }

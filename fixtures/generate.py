@@ -70,3 +70,34 @@ shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/')
 
 # Generate client metadata
 create_tuf_client_directory("tufrepo/", "tufclient/tufrepo/")
+
+# === Point of No Return ===
+# Past this point, we don't re-export the client. This supports testing the
+# client's own ability to pick up and trust new data from the repository.
+
+# Generate new keys for target and snapshot roles.
+(public_targets_key_2, private_targets_key_2) = write_and_import_keypair('targets2')
+(public_snapshots_key_2, private_snapshots_key_2) = write_and_import_keypair('snapshot2')
+
+# Add new verification keys.
+repository.targets.add_verification_key(public_targets_key_2)
+repository.targets.load_signing_key(private_targets_key_2)
+repository.snapshot.add_verification_key(public_snapshots_key_2)
+repository.snapshot.load_signing_key(private_snapshots_key_2)
+repository.status()
+
+# Write the updated repository data.
+repository.mark_dirty(['root', 'snapshot', 'targets'])
+repository.writeall(consistent_snapshot=True)
+shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
+
+# Revoke the older keys.
+repository.targets.remove_verification_key(public_targets_key)
+repository.snapshot.remove_verification_key(public_snapshots_key)
+repository.status()
+
+# Write the updated repository data.
+repository.mark_dirty(['root', 'snapshot', 'targets'])
+repository.writeall(consistent_snapshot=True)
+shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
+

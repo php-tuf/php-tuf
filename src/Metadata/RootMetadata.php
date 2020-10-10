@@ -5,6 +5,7 @@ namespace Tuf\Metadata;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
@@ -29,12 +30,16 @@ class RootMetadata extends MetadataBase
                 static::getKeyConstraints(),
             ]),
         ]);
-        $options['fields']['roles'] = new Required([
-            new Type('array'),
-            new Count(['min' => 1]),
-            new All([
-                new Collection(self::getKeyidsConstraints() + static::getThresholdConstraints()),
-            ]),
+        $roleConstraints = new Collection(
+            self::getKeyidsConstraints() +
+            static::getThresholdConstraints()
+        );
+        $options['fields']['roles'] = new Collection([
+            'targets' => new Required($roleConstraints),
+            'timestamp' => new Required($roleConstraints),
+            'snapshot' => new Required($roleConstraints),
+            'root' => new Required($roleConstraints),
+            'mirror' => new Optional($roleConstraints),
         ]);
         return $options;
     }

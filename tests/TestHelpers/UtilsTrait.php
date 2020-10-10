@@ -36,18 +36,26 @@ trait UtilsTrait
      * @param array $providedData
      *   The dataProvider data.
      *
+     * @param integer|null $useArgumentNumber
+     *   (optional) The argument to user the key.
+     *
      * @return array
      *   The new keyed array where the keys are string concatenation of the
      *   arguments.
      */
-    protected static function getKeyedArray(array $providedData)
+    protected static function getKeyedArray(array $providedData, int $useArgumentNumber = null)
     {
         $newData = [];
         foreach ($providedData as $arguments) {
             $key = '';
-            foreach ($arguments as $argument) {
-                $key .= (string) $argument;
+            if ($useArgumentNumber !== null) {
+                $key = (string) $arguments[$useArgumentNumber];
+            } else {
+                foreach ($arguments as $argument) {
+                    $key .= (string) $argument;
+                }
             }
+
             if (isset($newData[$key])) {
                 throw new \RuntimeException("Cannot produce unique keys");
             }

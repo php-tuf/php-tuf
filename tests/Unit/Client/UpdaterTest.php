@@ -68,6 +68,7 @@ class UpdaterTest extends TestCase
     public function testCheckRollbackAttackAttack() : void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
 
         $sut = $this->getSystemInTest();
 
@@ -82,6 +83,33 @@ class UpdaterTest extends TestCase
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
+    }
+
+    /**
+     * Tests that the correct exception is thrown in case of a rollback attack
+     * where the incoming metadata does not match the expected version.
+     *
+     * @covers ::checkRollbackAttack
+     *
+     * @return void
+     */
+    public function testCheckRollbackAttackAttackExpectedVersion() : void
+    {
+        $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectExceptionMessage('Remote any metadata version "$2" does not the expected version "$3"');
+
+        $sut = $this->getSystemInTest();
+
+        // The incoming version is lower than the local version, so this should
+        // be identified as a rollback attack.
+        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $localMetadata, $incomingMetadata, 3);
     }
 
     /**
