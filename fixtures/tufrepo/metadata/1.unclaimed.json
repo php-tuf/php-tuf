@@ -1,8 +1,8 @@
 {
  "signatures": [
   {
-   "keyid": "74e7c7dc60cfbf859ac0b9c8c77da7bdae17439e19be614162d4e4ac0f66f220",
-   "sig": "d9aecc9c72da5e5f0922a02d445543a0cd4ab91ecffe8048dc8181407066e6814fc0aa024f3dcb568f44c3ea06cff648b8b69a92a0152b940a2bc9582bbb5801"
+   "keyid": "0468bd3c0d36b0463ed3a0061b08cd29f5ae3c6bbc1f1fcdfc59a1cdee25fc7a",
+   "sig": "d3f0a60b1b82e2b30544818b35f8100b3598c0b6d7b3cb9b8ca44bc021c0698c5439f2bfb9c06cda57f462a4fceda9a0d74f91f46b2b8fcd713c24ee863fba0d"
   }
  ],
  "signed": {
@@ -11,7 +11,7 @@
    "keys": {},
    "roles": []
   },
-  "expires": "2020-12-29T19:39:21Z",
+  "expires": "2021-01-29T04:14:33Z",
   "spec_version": "1.0.0",
   "targets": {
    "testunclaimedtarget.txt": {

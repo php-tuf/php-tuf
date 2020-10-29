@@ -1,26 +1,26 @@
 {
  "signatures": [
   {
-   "keyid": "67e6f0f5247a14f92304588c45af93c538a519b088c5bc6f0566484a9f757718",
-   "sig": "8fd63473cb8bdc8b59af5484f5829ba45f0f76a18f7c2797728dfb1a804eb8b6c3e5a5b9f1022127b4b3ce93715cc14fcb2c7378ed936c369cf4056edceaa607"
+   "keyid": "92073e92c0b4e1a9521ef64392814231582f34ea2d06a296f295d51bd626058c",
+   "sig": "53ab537bc4a13bf6da3873f051a5b2098cc0cfc58e0c7cb947ff6c227e2dd8e3086505e626a75c5d55ecc3a9927b4d4617aefba8232d603e3f3893792b2c2805"
   },
   {
-   "keyid": "7fa7ec351684480d7c36ac7513f828065dc9c7c26889afc27989a13cf154bc9a",
-   "sig": "5e705be6c58e7b0a4a4ecc2921fd5710beb7615e6f64593e0f152c3c6f954b2a7f0558a2dfd0124193430291f26e306997f26a4bf67333160b60c349931a3a06"
+   "keyid": "ff977fcfd764c0d59cd52d756fcc95ffaab477c97858e4ff9d22f1a0574097b3",
+   "sig": "59f5c184fd98127cbf2bac44496f600426006e5970b253f0d0b0d47631f6aedb787092458daf085a7973d938fc636d8afa9e6e043b92bd54b868374457305800"
   }
  ],
  "signed": {
   "_type": "targets",
   "delegations": {
    "keys": {
-    "74e7c7dc60cfbf859ac0b9c8c77da7bdae17439e19be614162d4e4ac0f66f220": {
+    "0468bd3c0d36b0463ed3a0061b08cd29f5ae3c6bbc1f1fcdfc59a1cdee25fc7a": {
      "keyid_hash_algorithms": [
       "sha256",
       "sha512"
      ],
      "keytype": "ed25519",
      "keyval": {
-      "public": "40ee153be4ad45478b835a52b5f63d245ffe8bf1c6fdedfc029f39bf6221570b"
+      "public": "7f5ecc5bf46675cca2de00d809a2382c94d5f2f579e6da0978926dbe175842fa"
      },
      "scheme": "ed25519"
     }
@@ -28,7 +28,7 @@
    "roles": [
     {
      "keyids": [
-      "74e7c7dc60cfbf859ac0b9c8c77da7bdae17439e19be614162d4e4ac0f66f220"
+      "0468bd3c0d36b0463ed3a0061b08cd29f5ae3c6bbc1f1fcdfc59a1cdee25fc7a"
      ],
      "name": "unclaimed",
      "paths": [
@@ -39,7 +39,7 @@
     }
    ]
   },
-  "expires": "2020-12-29T19:39:21Z",
+  "expires": "2021-01-29T04:14:32Z",
   "spec_version": "1.0.0",
   "targets": {
    "testtarget.txt": {

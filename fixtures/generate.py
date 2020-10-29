@@ -87,7 +87,7 @@ repository.snapshot.load_signing_key(private_snapshots_key_2)
 repository.status()
 
 # Write the updated repository data.
-repository.mark_dirty(['root', 'snapshot', 'targets'])
+repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
 repository.writeall(consistent_snapshot=True)
 shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
 
@@ -97,7 +97,7 @@ repository.snapshot.remove_verification_key(public_snapshots_key)
 repository.status()
 
 # Write the updated repository data.
-repository.mark_dirty(['root', 'snapshot', 'targets'])
+repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
 repository.writeall(consistent_snapshot=True)
 shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
 
