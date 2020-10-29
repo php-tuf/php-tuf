@@ -41,6 +41,9 @@ class RootMetadata extends MetadataBase
             'root' => new Required($roleConstraints),
             'mirror' => new Optional($roleConstraints),
         ]);
+        $options['fields']['consistent_snapshot'] = new Required([
+            new Type('boolean'),
+        ]);
         return $options;
     }
 
@@ -74,5 +77,16 @@ class RootMetadata extends MetadataBase
     public function getKeys()
     {
         return $this->getSigned()['keys'];
+    }
+
+    /**
+     * Determines whether consistent snapshots are supported.
+     *
+     * @return boolean
+     *   Whether consistent snapshots are supported.
+     */
+    public function supportsConsistentSnapshots() : bool
+    {
+        return $this->getSigned()['consistent_snapshot'];
     }
 }

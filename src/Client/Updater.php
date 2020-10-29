@@ -133,6 +133,7 @@ class Updater
 
         // *TUF-SPEC-v1.0.9 Section 5.2.3
         $this->checkFreezeAttack($newTimestampData, $nowDate);
+        // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
         return true;
     }

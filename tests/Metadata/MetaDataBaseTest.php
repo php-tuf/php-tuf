@@ -4,6 +4,7 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
@@ -52,7 +53,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    abstract protected static function callCreateFromJson(string $json) : void;
+    abstract protected static function callCreateFromJson(string $json) : MetadataBase;
 
     /**
      * Tests for valid metadata.
@@ -238,6 +239,9 @@ abstract class MetaDataBaseTest extends TestCase
                 break;
             case 'array':
                 $newValue = 3060;
+                break;
+            case 'boolean':
+                $newValue = 'this is a string';
                 break;
         }
 
