@@ -154,10 +154,10 @@ class Updater
         // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
 
-        // TUF-SPEC-v1.0.9 Section 5.3
-        $snapshotInfo = $newTimestampData->getMetaValue('snapshot.json');
+        $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
 
+        // TUF-SPEC-v1.0.9 Section 5.3
         if ($rootData->supportsConsistentSnapshots()) {
             $newSnapshotContents = $this->repoFileFetcher->fetchFile(
                 "$snapShotVersion.snapshot.json",
@@ -248,11 +248,11 @@ class Updater
         }
         if ($type === 'timestamp' || $type === 'snapshot') {
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
-            $remoteMetaFileInfos = $remoteMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
-                if (isset($remoteMetaFileInfos[$fileName])) {
-                    if ($remoteMetaFileInfos[$fileName]['version'] < $localFileInfo['version']) {
-                        $message = "Remote $type metadata file '$fileName' version \"${$remoteMetaFileInfos[$fileName]['version']}\" " .
+                /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
+                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName)) {
+                    if ($remoteFileInfo['version'] < $localFileInfo['version']) {
+                        $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
                           "is less than previously seen  version \"${$localFileInfo['version']}\"";
                         throw new RollbackAttackException($message);
                     }
@@ -260,7 +260,7 @@ class Updater
                     // TUF-SPEC-v1.0.9 Section 5.3.3
                     // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
                     // continue to be listed in the new snapshot metadata file.
-                    throw new RollbackAttackException("Remote snapshot' metadata file reference '$fileName' but this is not present in the remote file");
+                    throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
                 }
             }
         }

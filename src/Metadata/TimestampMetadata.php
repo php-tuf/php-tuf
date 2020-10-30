@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TimestampMetadata extends MetadataBase
 {
+    use MetaFileInfoTrait;
+
     /**
      * {@inheritdoc}
      */
@@ -35,20 +37,5 @@ class TimestampMetadata extends MetadataBase
             ]),
         ]);
         return $options;
-    }
-
-    /**
-     * Gets file information value under the 'meta' key.
-     *
-     * @param string $key
-     *   The array key under 'meta'.
-     *
-     * @return mixed[]|null
-     *   The file information if available or null if not set.
-     */
-    public function getMetaValue(string $key)
-    {
-        $signed = $this->getSigned();
-        return $signed['meta'][$key] ?? null;
     }
 }

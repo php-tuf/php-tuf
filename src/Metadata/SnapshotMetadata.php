@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class SnapshotMetadata extends MetadataBase
 {
+    use MetaFileInfoTrait;
 
     /**
      * {@inheritdoc}
