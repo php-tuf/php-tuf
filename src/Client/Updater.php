@@ -95,6 +95,22 @@ class Updater
     }
 
     /**
+     * Gets the type for the file name.
+     *
+     * @param string $fileName
+     *   The file name.
+     *
+     * @return string
+     *   The type.
+     */
+    private static function getFileNameType(string $fileName)
+    {
+        $parts = explode('.', $fileName);
+        array_pop($parts);
+        return array_pop($parts);
+    }
+
+    /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
      * @todo The Python implementation has an optional flag to "unsafely update
@@ -160,6 +176,7 @@ class Updater
 
         if (isset($this->durableStorage['snapshot.json'])) {
             $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+            // TUF-SPEC-v1.0.9 Section 5.3.3
             $this->checkRollbackAttack($currentSnapShotData, $newSnapshotData);
         }
 
@@ -234,6 +251,11 @@ class Updater
                           "is less than previously seen  version \"${$localFileInfo['version']}\"";
                         throw new RollbackAttackException($message);
                     }
+                } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
+                    // TUF-SPEC-v1.0.9 Section 5.3.3
+                    // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
+                    // continue to be listed in the new snapshot metadata file.
+                    throw new RollbackAttackException("Remote snapshot' metadata file reference '$fileName' but this is not present in the remote file");
                 }
             }
         }
