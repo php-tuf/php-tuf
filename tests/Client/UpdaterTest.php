@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -61,32 +63,27 @@ class UpdaterTest extends TestCase
      *
      * @param string $fixturesSet
      *   The fixtures set to use.
-     * @param integer $expectedStartRootVersion
-     *   The expected root start version.
-     * @param integer $expectedUpdatedRootVersion
-     *   The expected root updated version.
+     * @param array $expectedStartVersions
+     *   The expected start versions.
+     * @param array $expectedUpdatedVersions
+     *   The expected updated versions.
      *
      * @return void
      *
-     * @throws \Tuf\Exception\MetadataException
-     *   If there is metadata validation error.
      * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository(string $fixturesSet, int $expectedStartRootVersion, int $expectedUpdatedRootVersion) : void
+    public function testRefreshRepository(string $fixturesSet, array $expectedStartVersions, array $expectedUpdatedVersions) : void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertSame($expectedStartRootVersion, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        $this->assertRepoVersions($expectedStartVersions);
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
-        $this->assertSame(
-            $expectedUpdatedRootVersion,
-            RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
-        );
+        $this->assertRepoVersions($expectedUpdatedVersions);
     }
 
     /**
@@ -98,9 +95,60 @@ class UpdaterTest extends TestCase
     public function providerRefreshRepository()
     {
         return $this->getKeyedArray([
-            ['delegated', 3, 5],
-            ['simple', 2, 3],
-        ]);
+            [
+                'delegated',
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                ],
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                ],
+            ],
+            [
+                'simple',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                ],
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                ],
+            ],
+        ], 0);
+    }
+
+    /**
+     * Asserts that files in the repo are at expected versions.
+     *
+     * @param array $expectedVersions
+     *   The expected versions.
+     *
+     * @return void
+     */
+    protected function assertRepoVersions(array $expectedVersions): void
+    {
+        $this->assertSame(
+            $expectedVersions['root'],
+            RootMetadata::createFromJson($this->localRepo['root.json'])
+            ->getVersion()
+        );
+        $this->assertSame(
+            $expectedVersions['timestamp'],
+            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
+            ->getVersion()
+        );
+        $this->assertSame(
+            $expectedVersions['snapshot'],
+            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
+            ->getVersion()
+        );
     }
 
     /**
