@@ -113,9 +113,6 @@ class Updater
         $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
         $this->updateRoot($rootData);
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
-        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
-        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
         $nowDate = $this->getCurrentTime();
 
@@ -368,7 +365,7 @@ class Updater
      *
      * @return void
      */
-    private function updateRoot(RootMetadata $rootData)
+    private function updateRoot(RootMetadata &$rootData)
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
