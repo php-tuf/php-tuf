@@ -14,18 +14,18 @@ def write_and_import_keypair(filename):
     return (public_key, private_key)
 
 
-def create_repo_fixtures(directory, complete_build):
-    # Clean up
-    if os.path.isdir(directory): shutil.rmtree(directory + '/')
-    os.mkdir(directory)
-    os.chdir(directory)
+def create_repo_fixtures(feature_set):
+    # Clean up previously created repo
+    if os.path.isdir(feature_set): shutil.rmtree(feature_set + '/')
+    os.mkdir(feature_set)
+    os.chdir(feature_set)
     # Create and Import Keypairs
     (public_root_key, private_root_key) = write_and_import_keypair('root')
     (public_targets_key, private_targets_key) = write_and_import_keypair('targets')
     (public_snapshots_key, private_snapshots_key) = write_and_import_keypair('snapshot')
     (public_timestamps_key, private_timestamps_key) = write_and_import_keypair('timestamp')
     # Bootstrap Repository
-    repository = create_new_repository("tufrepo", directory)
+    repository = create_new_repository("tufrepo", feature_set)
     repository.root.add_verification_key(public_root_key)
     repository.root.load_signing_key(private_root_key)
     # Add additional roles
@@ -48,7 +48,7 @@ def create_repo_fixtures(directory, complete_build):
     repository.mark_dirty(['snapshot', 'targets', 'timestamp'])
     repository.writeall(consistent_snapshot=True)
 
-    if complete_build == False:
+    if feature_set == 'simple':
         # Publish the metadata
         shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/')
         # Generate client metadata
@@ -66,9 +66,10 @@ def create_repo_fixtures(directory, complete_build):
     # Publish the metadata
     shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
 
-    if complete_build == False:
-      os.chdir('..')
-      return
+    if feature_set == 'simple':
+        # Move back to original directory.
+        os.chdir('..')
+        return
 
     # Generate client metadata
     create_tuf_client_directory("tufrepo/", "tufclient/tufrepo/")
@@ -96,9 +97,11 @@ def create_repo_fixtures(directory, complete_build):
     repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
     repository.writeall(consistent_snapshot=True)
     shutil.copytree('tufrepo/metadata.staged/', 'tufrepo/metadata/', dirs_exist_ok=True)
+    # Move back to original directory.
     os.chdir('..')
 
 
-create_repo_fixtures('delegated', True)
-create_repo_fixtures('simple', False)
+# Create 2 fixture sets to test different scenarios.
+create_repo_fixtures('delegated')
+create_repo_fixtures('simple')
 
