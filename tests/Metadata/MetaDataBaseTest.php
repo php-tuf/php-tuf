@@ -200,9 +200,11 @@ abstract class MetaDataBaseTest extends TestCase
      * @param mixed $value
      *   The value to set.
      *
+     * @return void
+     *
      * @dataProvider providerOptionalFields
      */
-    public function testOptionalFields($optionalField, $value) : void
+    public function testOptionalFields(string $optionalField, $value) : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $this->nestedChange(explode(':', $optionalField), $metadata, $value);
@@ -210,10 +212,16 @@ abstract class MetaDataBaseTest extends TestCase
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
     }
 
+    /**
+     * Dataprovider for testOptionalFields().
+     *
+     * @return mixed[]
+     *   The test cases for testOptionalFields().
+     */
     public function providerOptionalFields()
     {
         return static::getKeyedArray([
-          ['signed:ignored_value', 1],
+            ['signed:ignored_value', 1],
         ]);
     }
 

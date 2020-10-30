@@ -56,11 +56,9 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     {
         $data = parent::providerOptionalFields();
         $data[] = [
-          'signed:meta:targets.json:length',
+            'signed:meta:targets.json:length',
             789,
         ];
         return static::getKeyedArray($data);
     }
-
-
 }

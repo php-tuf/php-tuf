@@ -112,11 +112,9 @@ class RootMetadataTest extends MetaDataBaseTest
         $data[] = [
             'signed:roles:mirror',
             [
-              'keyids' => [
-                '76b9ae56adaeebe44ebfd4e73c57bb68e920ee046ff03c6f7e1424a9078af785',
-              ],
-              'threshold' => 1,
-            ]
+                'keyids' => ['76b9ae56adaeebe44ebfd4e73c57bb68e920ee046ff03c6f7e1424a9078af785'],
+                'threshold' => 1,
+            ],
         ];
         return static::getKeyedArray($data, 0);
     }
