@@ -4,6 +4,7 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -11,6 +12,7 @@ use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 
@@ -111,6 +113,9 @@ class Updater
         $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
         $this->updateRoot($rootData);
+        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
+        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
 
         $nowDate = $this->getCurrentTime();
 
@@ -135,6 +140,33 @@ class Updater
         $this->checkFreezeAttack($newTimestampData, $nowDate);
         // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
+
+        // TUF-SPEC-v1.0.9 Section 5.3
+        $snapshotInfo = $newTimestampData->getMetaValue('snapshot.json');
+        $snapShotVersion = $snapshotInfo['version'];
+
+        if ($rootData->supportsConsistentSnapshots()) {
+            $newSnapshotContents = $this->repoFileFetcher->fetchFile(
+              "$snapShotVersion.snapshot.json",
+              static::MAXIMUM_DOWNLOAD_BYTES);
+            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        }
+        else {
+            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+        }
+        // TUF-SPEC-v1.0.9 Section 5.3.1
+        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
+           throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
+        }
+        // TUF-SPEC-v1.0.9 Section 5.3.2
+        $this->checkSignatures($newSnapshotData);
+
+        if (isset($this->durableStorage['snapshot.json'])) {
+            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+            $this->checkRollbackAttack($currentSnapShotData, $newSnapshotData);
+        }
+
+
         return true;
     }
 
@@ -194,6 +226,19 @@ class Updater
             $message = "Remote $type metadata version \"$$remoteVersion\" " .
                 "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
+        }
+        if ($type === 'timestamp' || $type === 'snapshot') {
+            $localMetaFileInfos = $localMetadata->getSigned()['meta'];
+            $remoteMetaFileInfos = $remoteMetadata->getSigned()['meta'];
+            foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
+                if (isset($remoteMetaFileInfos[$fileName])) {
+                    if ($remoteMetaFileInfos[$fileName]['version'] < $localFileInfo['version']) {
+                        $message = "Remote $type metadata file '$fileName' version \"${$remoteMetaFileInfos[$fileName]['version']}\" " .
+                          "is less than previously seen  version \"${$localFileInfo['version']}\"";
+                        throw new RollbackAttackException($message);
+                    }
+                }
+            }
         }
     }
 

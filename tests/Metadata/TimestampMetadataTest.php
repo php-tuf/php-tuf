@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 
 class TimestampMetadataTest extends MetaDataBaseTest
@@ -20,9 +21,9 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : void
+    protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        TimestampMetadata::createFromJson($json);
+        return TimestampMetadata::createFromJson($json);
     }
 
     /**

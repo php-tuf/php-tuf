@@ -31,10 +31,7 @@ class UpdaterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo();
+
     }
 
     /**
@@ -72,18 +69,32 @@ class UpdaterTest extends TestCase
      * Tests refreshing the repository.
      *
      * @return void
+     *
+     * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository() : void
+    public function testRefreshRepository(string $fixturesSet, int $expectedStartRootVersion, int $expectedUpdatedRootVersion) : void
     {
-        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $this->assertSame($expectedStartRootVersion, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
         $this->assertSame(
-            5,
+            $expectedUpdatedRootVersion,
             RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
         );
+    }
+
+    public function providerRefreshRepository()
+    {
+        return $this->getKeyedArray([
+          ['delegated', 3, 5],
+          ['simple', 2, 3],
+        ]);
     }
 
     /**
@@ -103,6 +114,10 @@ class UpdaterTest extends TestCase
      */
     public function testSignatureError(string $fileToFail, int $expectedRootVersion, string $expectionMessage) : void
     {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('delegated');
         $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
         $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();

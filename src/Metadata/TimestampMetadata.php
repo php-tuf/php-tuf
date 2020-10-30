@@ -36,4 +36,9 @@ class TimestampMetadata extends MetadataBase
         ]);
         return $options;
     }
+
+    public function getMetaValue($key) {
+        $signed = $this->getSigned();
+        return $signed['meta'][$key] ?? null;
+    }
 }

@@ -27,13 +27,13 @@ trait MemoryStorageLoaderTrait
      * @throws \RuntimeException
      *     Thrown if the relative path is invalid.
      */
-    public function memoryStorageFromFixture(string $path) : MemoryStorage
+    public function memoryStorageFromFixture(string $fixturesSet, string $path) : MemoryStorage
     {
         $storage = new MemoryStorage();
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
-            static::getFixturesRealPath($path),
+            static::getFixturesRealPath($path, true, $fixturesSet),
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
         foreach ($fsIterator as $filename => $info) {

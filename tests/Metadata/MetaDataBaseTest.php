@@ -39,7 +39,7 @@ abstract class MetaDataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
     }
 
     /**

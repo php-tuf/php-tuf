@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
 class SnapshotMetadataTest extends MetaDataBaseTest
@@ -20,9 +21,9 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : void
+    protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        SnapshotMetadata::createFromJson($json);
+        return SnapshotMetadata::createFromJson($json);
     }
     /**
      * {@inheritdoc}

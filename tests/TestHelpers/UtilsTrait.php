@@ -21,9 +21,9 @@ trait UtilsTrait
      * @return string
      *   The path.
      */
-    public static function getFixturesRealPath(string $path, bool $isDir = true)
+    public static function getFixturesRealPath(string $path, bool $isDir = true, string $fixturesSet = 'delegated')
     {
-        $realpath = realpath(__DIR__ . "/../../fixtures/$path");
+        $realpath = realpath(__DIR__ . "/../../fixtures/$fixturesSet/$path");
         if ($realpath === false || ($isDir && !is_dir($realpath))) {
             throw new \RuntimeException("Repository fixtures directory not found at $path");
         }
@@ -52,7 +52,7 @@ trait UtilsTrait
                 $key = (string) $arguments[$useArgumentNumber];
             } else {
                 foreach ($arguments as $argument) {
-                    $key .= (string) $argument;
+                    $key .= '-' . (string) $argument;
                 }
             }
 
