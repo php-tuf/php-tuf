@@ -26,15 +26,6 @@ class UpdaterTest extends TestCase
     protected $testRepo;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-    }
-
-    /**
      * Returns a memory-based updater populated with the test fixtures.
      *
      * @return Updater
@@ -54,7 +45,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath('tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir($this->getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -68,8 +59,17 @@ class UpdaterTest extends TestCase
     /**
      * Tests refreshing the repository.
      *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     * @param integer $expectedStartRootVersion
+     *   The expected root start version.
+     * @param integer $expectedUpdatedRootVersion
+     *   The expected root updated version.
+     *
      * @return void
      *
+     * @throws \Tuf\Exception\MetadataException
+     *   If there is metadata validation error.
      * @dataProvider providerRefreshRepository
      */
     public function testRefreshRepository(string $fixturesSet, int $expectedStartRootVersion, int $expectedUpdatedRootVersion) : void
@@ -89,11 +89,17 @@ class UpdaterTest extends TestCase
         );
     }
 
+    /**
+     * Dataprovider for testRefreshRepository().
+     *
+     * @return mixed[]
+     *   The data set for testRefreshRepository().
+     */
     public function providerRefreshRepository()
     {
         return $this->getKeyedArray([
-          ['delegated', 3, 5],
-          ['simple', 2, 3],
+            ['delegated', 3, 5],
+            ['simple', 2, 3],
         ]);
     }
 

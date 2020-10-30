@@ -17,6 +17,8 @@ trait MemoryStorageLoaderTrait
     /**
      * Uses test fixtures at a given path to populate a memory storage backend.
      *
+     * @param string $fixturesSet
+     *     The fixtures set to use.
      * @param string $path
      *     The relative path (within the fixtures directory) for the client
      *     data.
@@ -24,8 +26,6 @@ trait MemoryStorageLoaderTrait
      * @return MemoryStorage
      *     Memory storage containing the test client data.
      *
-     * @throws \RuntimeException
-     *     Thrown if the relative path is invalid.
      */
     public function memoryStorageFromFixture(string $fixturesSet, string $path) : MemoryStorage
     {
@@ -33,7 +33,7 @@ trait MemoryStorageLoaderTrait
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
-            static::getFixturesRealPath($path, true, $fixturesSet),
+            static::getFixturesRealPath($fixturesSet, $path, true),
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
         foreach ($fsIterator as $filename => $info) {

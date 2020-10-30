@@ -37,7 +37,17 @@ class TimestampMetadata extends MetadataBase
         return $options;
     }
 
-    public function getMetaValue($key) {
+    /**
+     * Gets file information value under the 'meta' key.
+     *
+     * @param string $key
+     *   The array key under 'meta'.
+     *
+     * @return mixed[]|null
+     *   The file information if available or null if not set.
+     */
+    public function getMetaValue(string $key)
+    {
         $signed = $this->getSigned();
         return $signed['meta'][$key] ?? null;
     }

@@ -28,12 +28,11 @@ class SnapshotMetadata extends MetadataBase
             new Count(['min' => 1]),
             new All([
                 new Collection(
-                  static::getVersionConstraints() +
-                  [
-                    'length' => new Optional([
-                      new Type('integer')
-                      ]),
-                  ]),
+                    static::getVersionConstraints() +
+                    [
+                        'length' => new Optional([new Type('integer')]),
+                    ]
+                ),
             ]),
         ]);
         return $options;

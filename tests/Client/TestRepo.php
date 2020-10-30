@@ -28,6 +28,9 @@ class TestRepo implements RepoFileFetcherInterface
 
     /**
      * TestRepo constructor.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
      */
     public function __construct(string $fixturesSet)
     {

@@ -80,7 +80,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerValidMetaData() : array
     {
-        $fixturesDir = static::getFixturesRealPath('tufclient/tufrepo/metadata/current');
+        $fixturesDir = static::getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -370,7 +370,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
     {
-        $realPath = static::getFixturesRealPath("tufclient/tufrepo/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturesRealPath('delegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];

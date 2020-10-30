@@ -131,7 +131,7 @@ class Updater
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
-            // *TUF-SPEC-v1.0.9 Section 5.2.2.1
+            // *TUF-SPEC-v1.0.9 Section 5.2.2.1 and 5.2.2.2
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             $this->checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
@@ -147,16 +147,16 @@ class Updater
 
         if ($rootData->supportsConsistentSnapshots()) {
             $newSnapshotContents = $this->repoFileFetcher->fetchFile(
-              "$snapShotVersion.snapshot.json",
-              static::MAXIMUM_DOWNLOAD_BYTES);
+                "$snapShotVersion.snapshot.json",
+                static::MAXIMUM_DOWNLOAD_BYTES
+            );
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-        }
-        else {
+        } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
         // TUF-SPEC-v1.0.9 Section 5.3.1
         if ($snapShotVersion !== $newSnapshotData->getVersion()) {
-           throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
+            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
         }
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
