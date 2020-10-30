@@ -104,16 +104,21 @@ class RootMetadataTest extends MetaDataBaseTest
     }
 
     /**
-     * Tests that an optional 'mirror' role is allowed.
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    public function testOptionalMirrorRole()
+    public function providerOptionalFields()
     {
-        $this->expectNotToPerformAssertions();
-        $data = json_decode($this->localRepo[$this->validJson], true);
-        $data['signed']['roles']['mirror'] = $data['signed']['roles']['root'];
-        static::callCreateFromJson(json_encode($data));
+        $data = parent::providerOptionalFields();
+        $data[] = [
+            'signed:roles:mirror',
+            [
+              'keyids' => [
+                '76b9ae56adaeebe44ebfd4e73c57bb68e920ee046ff03c6f7e1424a9078af785',
+              ],
+              'threshold' => 1,
+            ]
+        ];
+        return static::getKeyedArray($data, 0);
     }
 
     /**

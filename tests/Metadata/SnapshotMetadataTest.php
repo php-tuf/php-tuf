@@ -48,4 +48,19 @@ class SnapshotMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:meta:targets.json:version', 'int'];
         return $data;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerOptionalFields()
+    {
+        $data = parent::providerOptionalFields();
+        $data[] = [
+          'signed:meta:targets.json:length',
+            789,
+        ];
+        return static::getKeyedArray($data);
+    }
+
+
 }

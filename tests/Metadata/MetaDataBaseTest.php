@@ -193,6 +193,31 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
+     * Tests allowed optional fields.
+     *
+     * @param string $optionalField
+     *   The name of the field. Nested fields indicated with ":".
+     * @param mixed $value
+     *   The value to set.
+     *
+     * @dataProvider providerOptionalFields
+     */
+    public function testOptionalFields($optionalField, $value) : void
+    {
+        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $this->nestedChange(explode(':', $optionalField), $metadata, $value);
+        $json = json_encode($metadata);
+        static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
+    }
+
+    public function providerOptionalFields()
+    {
+        return static::getKeyedArray([
+          ['signed:ignored_value', 1],
+        ]);
+    }
+
+    /**
      * Unset a nested array element.
      *
      * @param array $keys
@@ -256,7 +281,7 @@ abstract class MetaDataBaseTest extends TestCase
      * Change a nested array element.
      *
      * @param array $keys
-     *   Ordered keys to the value to unset.
+     *   Ordered keys to the value to set.
      * @param array $data
      *   The array to modify.
      * @param mixed $newValue
