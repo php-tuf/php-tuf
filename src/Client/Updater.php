@@ -154,13 +154,12 @@ class Updater
         // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
 
-        $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
-        $snapShotVersion = $snapshotInfo['version'];
+        $timestampSnapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
 
         // TUF-SPEC-v1.0.9 Section 5.3
         if ($rootData->supportsConsistentSnapshots()) {
             $newSnapshotContents = $this->repoFileFetcher->fetchFile(
-                "$snapShotVersion.snapshot.json",
+                "{$timestampSnapshotInfo['version']}.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
@@ -168,8 +167,8 @@ class Updater
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
         // TUF-SPEC-v1.0.9 Section 5.3.1
-        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
-            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
+        if ($timestampSnapshotInfo['version'] !== $newSnapshotData->getVersion()) {
+            throw new MetadataException("Expected snapshot version {$timestampSnapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
         }
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);

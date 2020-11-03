@@ -5,7 +5,10 @@ namespace Tuf\Tests\Client;
 use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\MetadataException;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\Exception\TufException;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
@@ -144,11 +147,15 @@ class UpdaterTest extends TestCase
             TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
             ->getVersion()
         );
-        $this->assertSame(
-            $expectedVersions['snapshot'],
-            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
-            ->getVersion()
-        );
+        if (!empty($expectedVersions['snapshot'])) {
+            $this->assertSame(
+                $expectedVersions['snapshot'],
+                SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
+                ->getVersion()
+            );
+        } else {
+            $this->assertNull($this->localRepo['snapshot.json']);
+        }
     }
 
     /**
@@ -217,19 +224,62 @@ class UpdaterTest extends TestCase
         ], 0);
     }
 
-    public function testRootRollback() {
+    /**
+     * Tests refresh exceptions for attacks.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     * @param string $exceptionClass
+     *   The expected exception class.
+     * @param string $expectedMessage
+     *   The expected exception message.
+     * @param array $expectedUpdatedVersions
+     *   The expected updated versions.
+     *
+     * @return void
+     *
+     * @dataProvider providerRefreshExceptions
+     */
+    public function testRefreshExceptions(string $fixturesSet, string $exceptionClass, string $expectedMessage, array $expectedUpdatedVersions)
+    {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('rollback_attack', 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo('rollback_attack');
-        $this->assertRepoVersions(['root' => 2, 'timestamp' => 2, 'snapshot' => 2]);
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $this->assertRepoVersions(['root' => 3, 'timestamp' => 3, 'snapshot' => 3]);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
-        } catch (SignatureThresholdExpception $exception) {
-            $this->assertSame('df', $exception->getMessage());
+        } catch (TufException $exception) {
+            $this->assertInstanceOf($exceptionClass, $exception);
+            $this->assertSame($expectedMessage, $exception->getMessage());
+            $this->assertRepoVersions($expectedUpdatedVersions);
             return;
         }
-        $this->fail('No SignatureThresholdExpception thrown');
+        $this->fail('No RollbackAttackException thrown');
+    }
+
+    /**
+     * Data provider for testRefreshExceptions().
+     *
+     * @return array
+     *   The test cases for testRefreshExceptions().
+     */
+    public function providerRefreshExceptions(): array
+    {
+        return static::getKeyedArray([
+            [
+                'rollback_attack_timestamp',
+                RollbackAttackException::class,
+                'Remote timestamp metadata version "$2" is less than previously seen timestamp version "$3"',
+                ['root' => 3, 'timestamp' => 3, 'snapshot' => 3],
+            ],
+            [
+                'rollback_timestamp_snapshot_mismatch',
+                MetadataException::class,
+                'Expected snapshot version 5 does not match actual version 4',
+                ['root' => 5, 'timestamp' => 5],
+            ],
+        ], 0);
     }
 }
