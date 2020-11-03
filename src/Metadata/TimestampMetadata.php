@@ -11,6 +11,8 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TimestampMetadata extends MetadataBase
 {
+    use MetaFileInfoTrait;
+
     /**
      * {@inheritdoc}
      */

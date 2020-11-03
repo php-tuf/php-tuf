@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TargetsMetadata;
 
 class TargetsMetadataTest extends MetaDataBaseTest
@@ -21,9 +22,9 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : void
+    protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        TargetsMetadata::createFromJson($json);
+        return TargetsMetadata::createFromJson($json);
     }
 
 

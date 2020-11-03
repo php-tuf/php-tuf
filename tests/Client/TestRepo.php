@@ -13,6 +13,13 @@ class TestRepo implements RepoFileFetcherInterface
 {
 
     /**
+     * The fixtures set to use.
+     *
+     * @var string
+     */
+    protected $fixturesSet;
+
+    /**
      * File names for files that should fail signature checks.
      *
      * @var string[]
@@ -20,12 +27,23 @@ class TestRepo implements RepoFileFetcherInterface
     protected $failSignatureFiles = [];
 
     /**
+     * TestRepo constructor.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     */
+    public function __construct(string $fixturesSet)
+    {
+        $this->fixturesSet = $fixturesSet;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function fetchFile(string $fileName, int $maxBytes)
     {
         try {
-            $contents = file_get_contents(__DIR__ .  "/../../fixtures/tufrepo/metadata/$fileName");
+            $contents = file_get_contents(__DIR__ .  "/../../fixtures/{$this->fixturesSet}/tufrepo/metadata/$fileName");
             if ($contents === false) {
                 throw new RepoFileNotFound("File $fileName not found.");
             }

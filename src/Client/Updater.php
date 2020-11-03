@@ -4,6 +4,7 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -11,6 +12,7 @@ use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 
@@ -93,6 +95,22 @@ class Updater
     }
 
     /**
+     * Gets the type for the file name.
+     *
+     * @param string $fileName
+     *   The file name.
+     *
+     * @return string
+     *   The type.
+     */
+    private static function getFileNameType(string $fileName)
+    {
+        $parts = explode('.', $fileName);
+        array_pop($parts);
+        return array_pop($parts);
+    }
+
+    /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
      * @todo The Python implementation has an optional flag to "unsafely update
@@ -126,14 +144,48 @@ class Updater
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
-            // *TUF-SPEC-v1.0.9 Section 5.2.2.1
+            // *TUF-SPEC-v1.0.9 Section 5.2.2.1 and 5.2.2.2
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-            $this->checkRollbackAttack($currentStateTimestampData, $newTimestampData);
+            static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
 
         // *TUF-SPEC-v1.0.9 Section 5.2.3
-        $this->checkFreezeAttack($newTimestampData, $nowDate);
+        static::checkFreezeAttack($newTimestampData, $nowDate);
+        // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
+
+        $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
+        $snapShotVersion = $snapshotInfo['version'];
+
+        // TUF-SPEC-v1.0.9 Section 5.3
+        if ($rootData->supportsConsistentSnapshots()) {
+            $newSnapshotContents = $this->repoFileFetcher->fetchFile(
+                "$snapShotVersion.snapshot.json",
+                static::MAXIMUM_DOWNLOAD_BYTES
+            );
+            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        } else {
+            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+        }
+        // TUF-SPEC-v1.0.9 Section 5.3.1
+        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
+            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
+        }
+        // TUF-SPEC-v1.0.9 Section 5.3.2
+        $this->checkSignatures($newSnapshotData);
+
+        if (isset($this->durableStorage['snapshot.json'])) {
+            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+            // TUF-SPEC-v1.0.9 Section 5.3.3
+            static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
+        }
+
+        // TUF-SPEC-v1.0.9 Section 5.3.4
+        static::checkFreezeAttack($newSnapshotData, $nowDate);
+
+        // TUF-SPEC-v1.0.9 Section 5.3.5
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+
         return true;
     }
 
@@ -149,7 +201,7 @@ class Updater
      * @throws FormatException
      *     Thrown if the timestamp string format is not valid.
      */
-    protected function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
+    protected static function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
@@ -176,7 +228,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
-    protected function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
+    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -193,6 +245,24 @@ class Updater
             $message = "Remote $type metadata version \"$$remoteVersion\" " .
                 "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
+        }
+        if ($type === 'timestamp' || $type === 'snapshot') {
+            $localMetaFileInfos = $localMetadata->getSigned()['meta'];
+            foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
+                /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
+                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName)) {
+                    if ($remoteFileInfo['version'] < $localFileInfo['version']) {
+                        $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
+                          "is less than previously seen  version \"${$localFileInfo['version']}\"";
+                        throw new RollbackAttackException($message);
+                    }
+                } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
+                    // TUF-SPEC-v1.0.9 Section 5.3.3
+                    // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
+                    // continue to be listed in the new snapshot metadata file.
+                    throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
+                }
+            }
         }
     }
 
@@ -212,9 +282,9 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) :void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) :void
     {
-        $metadataExpiration = $this->metadataTimestampToDatetime($metadata->getExpires());
+        $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
             $format = "Remote %s metadata expired on %s";
             throw new FreezeAttackException(sprintf($format, $metadata->getType(), $metadataExpiration->format('c')));
@@ -322,7 +392,7 @@ class Updater
      *
      * @return void
      */
-    private function updateRoot(RootMetadata $rootData)
+    private function updateRoot(RootMetadata &$rootData)
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
@@ -341,7 +411,7 @@ class Updater
             $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
             $this->checkSignatures($nextRoot);
             // *TUF-SPEC-v1.0.9 Section 5.1.4
-            $this->checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -354,13 +424,13 @@ class Updater
             // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
         }
         // *TUF-SPEC-v1.0.9 Section 5.1.9
-        $this->checkFreezeAttack($rootData, $this->getCurrentTime());
+        static::checkFreezeAttack($rootData, $this->getCurrentTime());
 
         // *TUF-SPEC-v1.0.9 Section 5.1.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
         if ($rootsDownloaded &&
-           ($this->hasRotatedKeys($originalRootData, $rootData, 'timestamp')
-           || $this->hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
+           (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
+           || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
             unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
         }
     }
@@ -376,7 +446,7 @@ class Updater
     private function getCurrentTime(): \DateTimeImmutable
     {
         $fakeNow = '2020-08-04T02:58:56Z';
-        $nowDate = $this->metadataTimestampToDateTime($fakeNow);
+        $nowDate = static::metadataTimestampToDateTime($fakeNow);
         return $nowDate;
     }
 
@@ -393,7 +463,7 @@ class Updater
      * @return boolean
      *   True if the keys for the role have been rotated, otherwise false.
      */
-    private function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
+    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;

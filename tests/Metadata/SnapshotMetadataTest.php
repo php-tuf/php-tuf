@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
 class SnapshotMetadataTest extends MetaDataBaseTest
@@ -20,9 +21,9 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : void
+    protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        SnapshotMetadata::createFromJson($json);
+        return SnapshotMetadata::createFromJson($json);
     }
     /**
      * {@inheritdoc}
@@ -46,5 +47,18 @@ class SnapshotMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:meta:targets.json', 'array'];
         $data[] = ['signed:meta:targets.json:version', 'int'];
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerOptionalFields()
+    {
+        $data = parent::providerOptionalFields();
+        $data[] = [
+            'signed:meta:targets.json:length',
+            789,
+        ];
+        return static::getKeyedArray($data);
     }
 }

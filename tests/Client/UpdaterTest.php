@@ -7,6 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -24,18 +26,6 @@ class UpdaterTest extends TestCase
      * @var \Tuf\Tests\Client\TestRepo
      */
     protected $testRepo;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo();
-    }
 
     /**
      * Returns a memory-based updater populated with the test fixtures.
@@ -57,7 +47,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath('tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir($this->getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -71,18 +61,93 @@ class UpdaterTest extends TestCase
     /**
      * Tests refreshing the repository.
      *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     * @param array $expectedStartVersions
+     *   The expected start versions.
+     * @param array $expectedUpdatedVersions
+     *   The expected updated versions.
+     *
      * @return void
+     *
+     * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository() : void
+    public function testRefreshRepository(string $fixturesSet, array $expectedStartVersions, array $expectedUpdatedVersions) : void
     {
-        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $this->assertRepoVersions($expectedStartVersions);
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
+        $this->assertRepoVersions($expectedUpdatedVersions);
+    }
+
+    /**
+     * Dataprovider for testRefreshRepository().
+     *
+     * @return mixed[]
+     *   The data set for testRefreshRepository().
+     */
+    public function providerRefreshRepository()
+    {
+        return $this->getKeyedArray([
+            [
+                'delegated',
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                ],
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                ],
+            ],
+            [
+                'simple',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                ],
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                ],
+            ],
+        ], 0);
+    }
+
+    /**
+     * Asserts that files in the repo are at expected versions.
+     *
+     * @param array $expectedVersions
+     *   The expected versions.
+     *
+     * @return void
+     */
+    protected function assertRepoVersions(array $expectedVersions): void
+    {
         $this->assertSame(
-            5,
-            RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
+            $expectedVersions['root'],
+            RootMetadata::createFromJson($this->localRepo['root.json'])
+            ->getVersion()
+        );
+        $this->assertSame(
+            $expectedVersions['timestamp'],
+            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
+            ->getVersion()
+        );
+        $this->assertSame(
+            $expectedVersions['snapshot'],
+            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
+            ->getVersion()
         );
     }
 
@@ -103,6 +168,10 @@ class UpdaterTest extends TestCase
      */
     public function testSignatureError(string $fileToFail, int $expectedRootVersion, string $expectionMessage) : void
     {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('delegated');
         $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
         $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();

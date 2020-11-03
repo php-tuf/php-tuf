@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Metadata;
 
 use Tuf\Exception\MetadataException;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 
 class RootMetadataTest extends MetaDataBaseTest
@@ -21,9 +22,9 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : void
+    protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        RootMetadata::createFromJson($json);
+        return RootMetadata::createFromJson($json);
     }
 
     /**
@@ -42,7 +43,8 @@ class RootMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:roles'];
         $data[] = ['signed:roles:targets:keyids'];
         $data[] = ['signed:roles:targets:threshold'];
-        return $data;
+        $data[] = ['signed:consistent_snapshot'];
+        return $this->getKeyedArray($data);
     }
 
     /**
@@ -60,7 +62,8 @@ class RootMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:roles', 'array'];
         $data[] = ['signed:roles:targets:keyids', 'array'];
         $data[] = ['signed:roles:targets:threshold', 'int'];
-        return $data;
+        $data[] = ['signed:consistent_snapshot', 'boolean'];
+        return $this->getKeyedArray($data);
     }
 
     /**
@@ -101,16 +104,19 @@ class RootMetadataTest extends MetaDataBaseTest
     }
 
     /**
-     * Tests that an optional 'mirror' role is allowed.
-     *
-     * @return void
+     * {@inheritdoc}
      */
-    public function testOptionalMirrorRole()
+    public function providerOptionalFields()
     {
-        $this->expectNotToPerformAssertions();
-        $data = json_decode($this->localRepo[$this->validJson], true);
-        $data['signed']['roles']['mirror'] = $data['signed']['roles']['root'];
-        static::callCreateFromJson(json_encode($data));
+        $data = parent::providerOptionalFields();
+        $data[] = [
+            'signed:roles:mirror',
+            [
+                'keyids' => ['76b9ae56adaeebe44ebfd4e73c57bb68e920ee046ff03c6f7e1424a9078af785'],
+                'threshold' => 1,
+            ],
+        ];
+        return static::getKeyedArray($data, 0);
     }
 
     /**
@@ -127,5 +133,21 @@ class RootMetadataTest extends MetaDataBaseTest
         $data = json_decode($this->localRepo[$this->validJson], true);
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
         static::callCreateFromJson(json_encode($data));
+    }
+
+    /**
+     * @covers ::supportsConsistentSnapshots
+     *
+     * @return void
+     */
+    public function testSupportsConsistentSnapshots() : void
+    {
+        $data = json_decode($this->localRepo[$this->validJson], true);
+        foreach ([true, false] as $value) {
+            $data['signed']['consistent_snapshot'] = $value;
+            /** @var \Tuf\Metadata\RootMetadata $metaData */
+            $metaData = static::callCreateFromJson(json_encode($data));
+            $this->assertSame($value, $metaData->supportsConsistentSnapshots());
+        }
     }
 }

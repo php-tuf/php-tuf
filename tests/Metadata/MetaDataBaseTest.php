@@ -4,6 +4,7 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
@@ -38,7 +39,7 @@ abstract class MetaDataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
     }
 
     /**
@@ -52,7 +53,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    abstract protected static function callCreateFromJson(string $json) : void;
+    abstract protected static function callCreateFromJson(string $json) : MetadataBase;
 
     /**
      * Tests for valid metadata.
@@ -79,7 +80,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerValidMetaData() : array
     {
-        $fixturesDir = static::getFixturesRealPath('tufclient/tufrepo/metadata/current');
+        $fixturesDir = static::getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -192,6 +193,39 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
+     * Tests allowed optional fields.
+     *
+     * @param string $optionalField
+     *   The name of the field. Nested fields indicated with ":".
+     * @param mixed $value
+     *   The value to set.
+     *
+     * @return void
+     *
+     * @dataProvider providerOptionalFields
+     */
+    public function testOptionalFields(string $optionalField, $value) : void
+    {
+        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $this->nestedChange(explode(':', $optionalField), $metadata, $value);
+        $json = json_encode($metadata);
+        static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
+    }
+
+    /**
+     * Dataprovider for testOptionalFields().
+     *
+     * @return mixed[]
+     *   The test cases for testOptionalFields().
+     */
+    public function providerOptionalFields()
+    {
+        return static::getKeyedArray([
+            ['signed:ignored_value', 1],
+        ]);
+    }
+
+    /**
      * Unset a nested array element.
      *
      * @param array $keys
@@ -239,6 +273,9 @@ abstract class MetaDataBaseTest extends TestCase
             case 'array':
                 $newValue = 3060;
                 break;
+            case 'boolean':
+                $newValue = 'this is a string';
+                break;
         }
 
         $this->nestedChange($keys, $metadata, $newValue);
@@ -252,7 +289,7 @@ abstract class MetaDataBaseTest extends TestCase
      * Change a nested array element.
      *
      * @param array $keys
-     *   Ordered keys to the value to unset.
+     *   Ordered keys to the value to set.
      * @param array $data
      *   The array to modify.
      * @param mixed $newValue
@@ -366,7 +403,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
     {
-        $realPath = static::getFixturesRealPath("tufclient/tufrepo/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturesRealPath('delegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
