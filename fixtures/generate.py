@@ -1,6 +1,8 @@
 from tuf.repository_tool import *
 import os
 import shutil
+from pprint import pprint
+from datetime import datetime, timedelta
 import json
 import subprocess
 
@@ -111,8 +113,8 @@ def create_directory(feature_set):
 
 
 # Create 2 fixture sets to test different scenarios.
-create_repo_fixtures('delegated')
-create_repo_fixtures('simple')
+#create_repo_fixtures('delegated')
+# create_repo_fixtures('simple')
 
 
 def create_repo_rollback_fixtures():
@@ -134,18 +136,21 @@ def create_repo_rollback_fixtures():
     repository.snapshot.load_signing_key(private_snapshots_key)
     repository.timestamp.add_verification_key(public_timestamps_key)
     repository.timestamp.load_signing_key(private_timestamps_key)
-    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'], create_client=True)
-    shutil.copytree('tufrepo/', 'tufrepo_backup')
+    
 
     # Write a test target
     with open('tufrepo/targets/testtarget.txt', 'w') as targetfile:
         targetfile.write("Test File")
     list_of_targets = ['testtarget.txt']
     repository.targets.add_targets(list_of_targets)
-    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'], create_client=True)
-    del_directory('tufrepo')
-    shutil.copytree('tufrepo_backup/', 'tufrepo')
-    del_directory('tufrepo_backup')
+    repository.root.version = 1
+    pprint(repository.root.version)
+    repository.status()
+    pprint(repository.root.version)
+    repository.root.expiration = datetime(2030, 1, 1, 0, 0)
+    repository.root.version = 1
+    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'])
+    repository.write()
 
 create_repo_rollback_fixtures()
 
