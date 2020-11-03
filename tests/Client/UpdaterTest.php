@@ -216,4 +216,20 @@ class UpdaterTest extends TestCase
             ],
         ], 0);
     }
+
+    public function testRootRollback() {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture('rollback_attack', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('rollback_attack');
+        $this->assertRepoVersions(['root' => 2, 'timestamp' => 2, 'snapshot' => 2]);
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (SignatureThresholdExpception $exception) {
+            $this->assertSame('df', $exception->getMessage());
+            return;
+        }
+        $this->fail('No SignatureThresholdExpception thrown');
+    }
 }

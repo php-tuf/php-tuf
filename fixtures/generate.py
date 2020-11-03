@@ -20,7 +20,7 @@ def write_and_import_keypair(filename):
 def del_directory(directory):
     if os.path.isdir(directory): shutil.rmtree(directory + '/')
 
-def write_dirty_repo(repository, roles, create_client = True):
+def write_dirty_repo(repository, roles, expires = '', create_client = False):
     repository.status()
     # Mark everything below the root as dirty.
     repository.mark_dirty(roles)
@@ -52,7 +52,7 @@ def create_repo_fixtures(feature_set):
     repository.snapshot.load_signing_key(private_snapshots_key)
     repository.timestamp.add_verification_key(public_timestamps_key)
     repository.timestamp.load_signing_key(private_timestamps_key)
-    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'], False)
+    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'])
 
     # Write a test target
     with open('tufrepo/targets/testtarget.txt', 'w') as targetfile:
@@ -60,7 +60,7 @@ def create_repo_fixtures(feature_set):
     list_of_targets = ['testtarget.txt']
     repository.targets.add_targets(list_of_targets)
     # Mark everything below the root as dirty.
-    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'], False)
+    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'])
 
     if feature_set == 'simple':
         # Generate client metadata
@@ -73,7 +73,7 @@ def create_repo_fixtures(feature_set):
         targetfile.write("Test Delegated File")
     repository.targets("unclaimed").add_target("testunclaimedtarget.txt")
     repository.targets("unclaimed").load_signing_key(private_unclaimed_key)
-    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp', 'unclaimed'], False)
+    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp', 'unclaimed'])
 
     if feature_set == 'simple':
         # Move back to original directory.
@@ -94,12 +94,12 @@ def create_repo_fixtures(feature_set):
     repository.targets.load_signing_key(private_targets_key_2)
     repository.snapshot.add_verification_key(public_snapshots_key_2)
     repository.snapshot.load_signing_key(private_snapshots_key_2)
-    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'], False)
+    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'])
 
     # Revoke the older keys.
     repository.targets.remove_verification_key(public_targets_key)
     repository.snapshot.remove_verification_key(public_snapshots_key)
-    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'], False)
+    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'])
     os.chdir('..')
 
 
@@ -134,7 +134,7 @@ def create_repo_rollback_fixtures():
     repository.snapshot.load_signing_key(private_snapshots_key)
     repository.timestamp.add_verification_key(public_timestamps_key)
     repository.timestamp.load_signing_key(private_timestamps_key)
-    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'])
+    write_dirty_repo(repository, ['root', 'snapshot', 'targets', 'timestamp'], create_client=True)
     shutil.copytree('tufrepo/', 'tufrepo_backup')
 
     # Write a test target
@@ -142,7 +142,7 @@ def create_repo_rollback_fixtures():
         targetfile.write("Test File")
     list_of_targets = ['testtarget.txt']
     repository.targets.add_targets(list_of_targets)
-    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'])
+    write_dirty_repo(repository, ['snapshot', 'targets', 'timestamp'], create_client=True)
     del_directory('tufrepo')
     shutil.copytree('tufrepo_backup/', 'tufrepo')
     del_directory('tufrepo_backup')
