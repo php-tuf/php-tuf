@@ -150,7 +150,7 @@ class UpdaterTest extends TestCase
             $this->assertSame(
                 $expectedVersions[$type],
                 $actualVersion,
-              "Actual verison of $type, '$actualVersion' does not match expected version '$version'"
+                "Actual verison of $type, '$actualVersion' does not match expected version '$version'"
             );
         }
     }
@@ -162,7 +162,7 @@ class UpdaterTest extends TestCase
      *   The file to change.
      * @param array $keys
      *   The nested keys of the element to change.
-     * @param $newValue
+     * @param mixed $newValue
      *   The new value to set.
      * @param \Exception $expectionException
      *   The excpected exception.
@@ -173,7 +173,8 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerRefreshException
      */
-    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectionException, array $expectedVersions): void {
+    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectionException, array $expectedVersions): void
+    {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
@@ -202,63 +203,63 @@ class UpdaterTest extends TestCase
     public function providerRefreshException()
     {
         return static::getKeyedArray([
-          [
-            '4.root.json',
-            ['signed', 'newkey'],
-            'new value',
-            new SignatureThresholdExpception('Signature threshold not met on root'),
-            ['root' => 3],
-          ],
-          [
-            '5.root.json',
-            ['signed', 'newkey'],
-            'new value',
-            new SignatureThresholdExpception('Signature threshold not met on root'),
-            ['root' => 4],
-          ],
-          [
-            'timestamp.json',
-            ['signed', 'newkey'],
-            'new value',
-            new SignatureThresholdExpception('Signature threshold not met on timestamp'),
-            ['root' => 5],
-          ],
-          [
-            '5.snapshot.json',
-            ['signed', 'newkey'],
-          'new value',
-              new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
             [
-              'root' => 5,
-              'timestamp' => 5,
-              'snapshot' => NULL,
-                'targets' => 3,
+                '4.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdExpception('Signature threshold not met on root'),
+                ['root' => 3],
             ],
-          ],
-          [
-            '5.snapshot.json',
-            ['signed', 'version'],
-            6,
-            new MetadataException("Expected snapshot version 5 does not match actual version 6."),
             [
-              'root' => 5,
-              'timestamp' => 5,
-              'snapshot' => NULL,
-              'targets' => 3,
+                '5.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdExpception('Signature threshold not met on root'),
+                ['root' => 4],
             ],
-          ],
-          [
-            '5.targets.json',
-            ['signed', 'version'],
-            6,
-            new MetadataException("Expected targets version 5 does not match actual version 6."),
             [
-              'root' => 5,
-              'timestamp' => 5,
-              'snapshot' => 5,
-              'targets' => 3,
+                'timestamp.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdExpception('Signature threshold not met on timestamp'),
+                ['root' => 5],
             ],
-          ],
+            [
+                '5.snapshot.json',
+                ['signed', 'newkey'],
+                'new value',
+                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => null,
+                    'targets' => 3,
+                ],
+            ],
+            [
+                '5.snapshot.json',
+                ['signed', 'version'],
+                6,
+                new MetadataException("Expected snapshot version 5 does not match actual version 6."),
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => null,
+                    'targets' => 3,
+                ],
+            ],
+            [
+                '5.targets.json',
+                ['signed', 'version'],
+                6,
+                new MetadataException("Expected targets version 5 does not match actual version 6."),
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 3,
+                ],
+            ],
         ]);
     }
 }

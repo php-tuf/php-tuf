@@ -54,7 +54,7 @@ class TestRepo implements RepoFileFetcherInterface
             // @see \Tuf\Client\Updater::checkSignatures()
             if (array_key_exists($fileName, $this->fileChanges)) {
                 $json = json_decode($contents, true);
-                static::nestedChange($this->fileChanges[$fileName]['keys'], $json, $this->fileChanges[$fileName]['value']);
+                static::nestedChange($this->fileChanges[$fileName]['keys'], $json, $this->fileChanges[$fileName]['new_value']);
                 $contents = JsonNormalizer::asNormalizedJson($json);
             }
             return $contents;
@@ -64,18 +64,19 @@ class TestRepo implements RepoFileFetcherInterface
     }
 
     /**
-     * Sets the file for which a signature fail should be triggered.
+     * Sets a value in a file to be changed in ::fetchFile().
      *
      * @param string $fileName
      *   The file name to change.
      * @param array $keys
-     *
-     * @param string $value
+     *   The keys of the nested item.
+     * @param mixed $newValue
+     *   The new value.
      *
      * @return void
      */
-    public function setFileChange(string $fileName, array $keys = ['signed', 'extra_test_value'], $value = 'new value')
+    public function setFileChange(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value')
     {
-        $this->fileChanges[$fileName] = ['keys' => $keys, 'value' => $value];
+        $this->fileChanges[$fileName] = ['keys' => $keys, 'new_value' => $newValue];
     }
 }
