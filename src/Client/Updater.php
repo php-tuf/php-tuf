@@ -13,6 +13,7 @@ use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 
@@ -185,6 +186,20 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3.5
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+
+        // TUF-SPEC-v1.0.9 Section 5.4
+        if ($rootData->supportsConsistentSnapshots()) {
+            $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
+            $newTargetsContent = $this->repoFileFetcher->fetchFile(
+              "$targetsVersion.targets.json",
+              static::MAXIMUM_DOWNLOAD_BYTES,
+            );
+            $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+        }
+        else {
+            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+        }
+
 
         return true;
     }
