@@ -32,14 +32,14 @@ We recommend using the [default CLI
 implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
 (a Python application) to generate keys and signatures as a part of your
 project's release creation process. This will require:
-- Python 3.8+
+- Python 3.9+
 - PIP 19+
 
 @todo More detailed instructions.
 
 ### Server environment setup for the Python TUF CLI
 
-1. Install Python 3.9 and related dependencies.
+1. Install OS-level dependencies:
    - On Fedora 33:
 
          sudo dnf install pipenv python3-devel libffi-devel
