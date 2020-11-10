@@ -80,6 +80,11 @@ code documentation and array formatting.
 
 1. Fixtures should appear in `fixtures/`.
 
+### Running the PHP-TUF tests
+
+1. Ensure you have all required dependencies by running `composer install`.
+2. Run `composer test` at the project's root.
+
 ### Leveraging test fixtures directly
 
 1. From `fixtures/*/tufrepo`:
@@ -92,11 +97,6 @@ code documentation and array formatting.
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
        client.py --repo http://localhost:8001 testtarget.txt
        # A 404 is expected for N.root.json unless a key has been rotated.
-
-### Running the PHP-TUF tests
-
-1. Ensure you have all required dependencies by running `composer install`.
-2. Run `composer test` at the project's root.
 
 ## Dependency policies and information
 
