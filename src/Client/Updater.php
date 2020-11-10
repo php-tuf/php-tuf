@@ -193,7 +193,7 @@ class Updater
             $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
             $newTargetsContent = $this->repoFileFetcher->fetchFile(
                 "$targetsVersion.targets.json",
-                static::MAXIMUM_DOWNLOAD_BYTES,
+                static::MAXIMUM_DOWNLOAD_BYTES
             );
             // TUF-SPEC-v1.0.9 Section 5.4.1
             $this->confirmFileMetadata($newSnapshotData, $newTargetsContent);
