@@ -6,6 +6,7 @@ use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
@@ -155,76 +156,24 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that an exception is thrown when attempting to refresh the repository with file that has an invalid valid
-     * signature.
+     * Tests that exceptions are thrown when metadata files are not valid.
      *
-     * @param string $fileToFail
-     *   The repo fail that should fail the signature check.
-     * @param integer $expectedRootVersion
-     *   The expected root version after the refresh attempt.
-     * @param string $expectionMessage
-     *   The expected exception message.
+     * @param string $fileToChange
+     *   The file to change.
+     * @param array $keys
+     *   The nested keys of the element to change.
+     * @param $newValue
+     *   The new value to set.
+     * @param \Exception $expectionException
+     *   The excpected exception.
+     * @param array $expectedVersions
+     *   The expected repo file version after refresh attempt.
      *
      * @return void
      *
-     * @dataProvider providerSignatureError
+     * @dataProvider providerRefreshException
      */
-    public function testSignatureError(string $fileToFail, int $expectedRootVersion, string $expectionMessage) : void
-    {
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo('delegated');
-        $this->assertRepoVersions(['root' => 3]);
-        $this->testRepo->setFileChange($fileToFail);
-        $updater = $this->getSystemInTest();
-        try {
-            $updater->refresh();
-        } catch (SignatureThresholdExpception $exception) {
-            // Confirm the root was updated to version 4 but not to 5 because
-            // 5.root.json should throw an exception.
-            $this->assertRepoVersions(['root' => $expectedRootVersion]);
-            $this->assertSame($expectionMessage, $exception->getMessage());
-            return;
-        }
-        $this->fail('No SignatureThresholdExpception thrown');
-    }
-
-    /**
-     * Dataprovider for testSignatureError().
-     *
-     * @return array[]
-     *   The test cases for testSignatureError().
-     */
-    public function providerSignatureError()
-    {
-        return $this->getKeyedArray([
-            [
-                '4.root.json',
-                3,
-                'Signature threshold not met on root',
-            ],
-            [
-                '5.root.json',
-                4,
-                'Signature threshold not met on root',
-            ],
-            [
-                'timestamp.json',
-                5,
-                'Signature threshold not met on timestamp',
-            ],
-        ], 0);
-    }
-
-    /**
-     * @param string $fileToChange
-     * @param array $keys
-     * @param $newValue
-     *
-     * @dataProvider providerFileMetaDataException
-     */
-    public function testFileMetaDataException(string $fileToChange, array $keys, $newValue, string $expectedMessage, array $expectedVersions): void {
+    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectionException, array $expectedVersions): void {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
@@ -234,10 +183,10 @@ class UpdaterTest extends TestCase
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
-        } catch (MetadataException $exception) {
+        } catch (\Exception $expection) {
             // Confirm the root was updated to version 4 but not to 5 because
             // 5.root.json should throw an exception.
-            $this->assertSame($expectedMessage, $exception->getMessage());
+            $this->assertEquals($expection, $expectionException);
             $this->assertRepoVersions($expectedVersions);
             return;
         }
@@ -245,18 +194,40 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Data provider for testFileMetaDataException().
+     * Data provider for testRefreshException().
      *
      * @return mixed[]
+     *   The test cases for testRefreshException().
      */
-    public function providerFileMetaDataException()
+    public function providerRefreshException()
     {
         return static::getKeyedArray([
+          [
+            '4.root.json',
+            ['signed', 'newkey'],
+            'new value',
+            new SignatureThresholdExpception('Signature threshold not met on root'),
+            ['root' => 3],
+          ],
+          [
+            '5.root.json',
+            ['signed', 'newkey'],
+            'new value',
+            new SignatureThresholdExpception('Signature threshold not met on root'),
+            ['root' => 4],
+          ],
+          [
+            'timestamp.json',
+            ['signed', 'newkey'],
+            'new value',
+            new SignatureThresholdExpception('Signature threshold not met on timestamp'),
+            ['root' => 5],
+          ],
           [
             '5.snapshot.json',
             ['signed', 'newkey'],
           'new value',
-              "The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata.",
+              new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
             [
               'root' => 5,
               'timestamp' => 5,
@@ -268,7 +239,7 @@ class UpdaterTest extends TestCase
             '5.snapshot.json',
             ['signed', 'version'],
             6,
-            "Expected snapshot version 5 does not match actual version 6.",
+            new MetadataException("Expected snapshot version 5 does not match actual version 6."),
             [
               'root' => 5,
               'timestamp' => 5,
@@ -280,7 +251,7 @@ class UpdaterTest extends TestCase
             '5.targets.json',
             ['signed', 'version'],
             6,
-            "Expected targets version 5 does not match actual version 6.",
+            new MetadataException("Expected targets version 5 does not match actual version 6."),
             [
               'root' => 5,
               'timestamp' => 5,
