@@ -47,5 +47,9 @@ jobs:
         pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Generate fixtures
       run: |
-        cd fixtures/
-        pipenv run python generate.py
+        pipenv run python generate_fixtures.py
+    - name: Store fixtures as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: fixtures
+        path: fixtures/
