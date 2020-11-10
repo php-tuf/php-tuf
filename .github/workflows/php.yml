@@ -58,6 +58,8 @@ jobs:
         retention-days: 5
 
   build:
+    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
+    needs: fixtures
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
@@ -70,7 +72,6 @@ jobs:
           - operating-system: ubuntu-latest
             php: 8.0
             experimental: true
-    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
     continue-on-error: ${{ matrix.experimental }}
 
     steps:
@@ -119,6 +120,7 @@ jobs:
 
   build-lowest-version:
     name: Build lowest version
+    needs: fixtures
     runs-on: ubuntu-latest
 
     steps:
