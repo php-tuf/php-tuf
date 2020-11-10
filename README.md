@@ -39,7 +39,15 @@ project's release creation process. This will require:
 
 ### Server environment setup for the Python TUF CLI
 
-1. Install Python 3.8+ and [Pipenv](https://pipenv.pypa.io/en/latest/#install-pipenv-today). Fedora 33+ should have a fresh version of `pipenv`, but Fedora 32 should use the build from COPR: `sudo dnf copr enable @python/pipenv`
+1. Install Python 3.9 and related dependencies.
+   - On Fedora 33:
+
+         sudo dnf install pipenv python3-devel libffi-devel
+         
+   - On Ubuntu 20.10:
+   
+         sudo apt-get install pipenv python3-dev libffi-dev
+
 1. Configure the virtual environment:
 
        pipenv --three install
