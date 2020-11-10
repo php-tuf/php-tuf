@@ -3,6 +3,10 @@
 namespace Tuf\Client;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
+use Tuf\Exception\DownloadSizeException;
+use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
 
 /**
@@ -13,23 +17,38 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * The HTTP client.
      *
-     * @var \GuzzleHttp\Client
+     * @var \GuzzleHttp\ClientInterface
      */
     private $client;
 
     /**
      * GuzzleFileFetcher constructor.
      *
-     * @param string $baseUrl
-     *   The base URL from which files will be read.
+     * @param \GuzzleHttp\ClientInterface $client
+     *   The HTTP client.
      */
-    public function __construct(string $baseUrl)
+    public function __construct(ClientInterface $client)
     {
-        $scheme = parse_url($baseUrl, PHP_URL_SCHEME);
+        $this->client = $client;
+    }
+
+    /**
+     * Creates an instance of this class with a specific base URI.
+     *
+     * @param string $baseUri
+     *   The base URI from which to fetch files.
+     *
+     * @return static
+     *   A new instance of this class.
+     */
+    public static function createFromUri(string $baseUri) : self
+    {
+        $scheme = parse_url($baseUri, PHP_URL_SCHEME);
         if ($scheme === 'https') {
-            $this->client = new Client(['base_uri' => $baseUrl]);
+            $client = new Client(['base_uri' => $baseUri]);
+            return new static($client);
         } else {
-            throw new \InvalidArgumentException("Repo base URL must be HTTPS: $baseUrl");
+            throw new \InvalidArgumentException("Repo base URI must be HTTPS: $baseUri");
         }
     }
 
@@ -38,11 +57,28 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchFile(string $fileName, int $maxBytes)
     {
-        $contents = $this->client->request('GET', $fileName)
-            ->getBody()
-            ->read($maxBytes);
+        try {
+            $response = $this->client->request('GET', $fileName);
+        } catch (RequestException $e) {
+            if ($e->getCode() === 404) {
+                throw new RepoFileNotFound("$fileName not found", 0, $e);
+            } else {
+                // Re-throwing the original exception will blow away the
+                // backtrace, so wrap the exception in a more generic one to aid
+                // in debugging.
+                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            }
+        }
 
-        $json = json_decode($contents, true);
-        return JsonNormalizer::asNormalizedJson($json);
+        $body = $response->getBody();
+        $contents = $body->read($maxBytes);
+        // If we reached the end of the stream, we didn't exceed the maximum
+        // number of bytes.
+        if ($body->eof() === true) {
+            $json = json_decode($contents, true);
+            return JsonNormalizer::asNormalizedJson($json);
+        } else {
+            throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+        }
     }
 }
