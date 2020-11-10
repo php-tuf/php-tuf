@@ -24,12 +24,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Install dependencies
-      if: steps.pipenvcache2.outputs.cache-hit != 'true'
+    - name: Install pipenv
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade pipenv
-        which pipenv
+    - name: Install dependencies via pipenv
+      if: steps.pipenvcache.outputs.cache-hit != 'true'
+      run: |
         if [ -f Pipfile.lock ]; then pipenv --three install; fi
     - name: Lint with flake8
       run: |
