@@ -1,3 +1,5 @@
+# For instructions on using this script, please see the README.
+
 from tuf.repository_tool import *
 import os
 import shutil

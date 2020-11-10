@@ -80,8 +80,9 @@ code documentation and array formatting.
 
 1. Initialize the repository and add/sign a target:
 
-       cd fixtures/
-       python generate.py
+       python generate_fixtures.py
+
+1. Fixtures should appear in `fixtures/`.
 
 ### Using test fixtures
 
