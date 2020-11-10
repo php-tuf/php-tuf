@@ -6,6 +6,7 @@ use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
@@ -101,11 +102,13 @@ class UpdaterTest extends TestCase
                     'root' => 3,
                     'timestamp' => 3,
                     'snapshot' => 3,
+                    'targets' => 3,
                 ],
                 [
                     'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
+                    'targets' => 5,
                 ],
             ],
             [
@@ -114,11 +117,13 @@ class UpdaterTest extends TestCase
                     'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
+                    'targets' => 2,
                 ],
                 [
                     'root' => 3,
                     'timestamp' => 3,
                     'snapshot' => 3,
+                    'targets' => 3,
                 ],
             ],
         ], 0);
@@ -134,21 +139,13 @@ class UpdaterTest extends TestCase
      */
     protected function assertRepoVersions(array $expectedVersions): void
     {
-        $this->assertSame(
-            $expectedVersions['root'],
-            RootMetadata::createFromJson($this->localRepo['root.json'])
-            ->getVersion()
-        );
-        $this->assertSame(
-            $expectedVersions['timestamp'],
-            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
-            ->getVersion()
-        );
-        $this->assertSame(
-            $expectedVersions['snapshot'],
-            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
-            ->getVersion()
-        );
+        foreach ($expectedVersions as $type => $version) {
+            $this->assertSame(
+              $expectedVersions[$type],
+              MetadataBase::createFromJson($this->localRepo["$type.json"])
+                ->getVersion()
+            );
+        }
     }
 
     /**
