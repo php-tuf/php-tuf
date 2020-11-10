@@ -17,5 +17,4 @@ interface MetaFileInfoInterface
      *   The file information if available or null if not set.
      */
     public function getFileMetaInfo(string $key);
-
 }

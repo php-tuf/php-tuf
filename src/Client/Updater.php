@@ -192,8 +192,8 @@ class Updater
         if ($rootData->supportsConsistentSnapshots()) {
             $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
             $newTargetsContent = $this->repoFileFetcher->fetchFile(
-              "$targetsVersion.targets.json",
-              static::MAXIMUM_DOWNLOAD_BYTES,
+                "$targetsVersion.targets.json",
+                static::MAXIMUM_DOWNLOAD_BYTES,
             );
             // TUF-SPEC-v1.0.9 Section 5.4.1
             $this->confirmFileMetadata($newSnapshotData, $newTargetsContent);
@@ -204,8 +204,7 @@ class Updater
             static::checkFreezeAttack($newTargetsData, $nowDate);
             // TUF-SPEC-v1.0.9 Section 5.4.4
             $this->durableStorage['targets.json'] = $newSnapshotContents;
-        }
-        else {
+        } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
         return true;

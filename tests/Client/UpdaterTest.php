@@ -141,8 +141,8 @@ class UpdaterTest extends TestCase
     {
         foreach ($expectedVersions as $type => $version) {
             $this->assertSame(
-              $expectedVersions[$type],
-              MetadataBase::createFromJson($this->localRepo["$type.json"])
+                $expectedVersions[$type],
+                MetadataBase::createFromJson($this->localRepo["$type.json"])
                 ->getVersion()
             );
         }
