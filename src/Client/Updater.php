@@ -511,13 +511,13 @@ class Updater
         $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $newMetadata->getVersion()) {
-            throw new MetadataException("Expected {$newMetadata->getType()} version {$expectedVersion} does not match actual version " . $newMetadata->getVersion());
+            throw new MetadataException("Expected {$newMetadata->getType()} version {$expectedVersion} does not match actual version {$newMetadata->getVersion()}.");
         }
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $newFileContents)) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException($newMetadata->getType() . " does match hash '$algo' specified in the {$authorityMetadata->getType()} metadata");
+                    throw new MetadataException("The '{$newMetadata->getType()}' contents does not match hash '$algo' specified in the '{$authorityMetadata->getType()}' metadata.");
                 }
             }
         }

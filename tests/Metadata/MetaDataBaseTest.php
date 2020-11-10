@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
@@ -283,28 +284,6 @@ abstract class MetaDataBaseTest extends TestCase
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
         static::callCreateFromJson($json);
-    }
-
-    /**
-     * Change a nested array element.
-     *
-     * @param array $keys
-     *   Ordered keys to the value to set.
-     * @param array $data
-     *   The array to modify.
-     * @param mixed $newValue
-     *   The new value to set.
-     *
-     * @return void
-     */
-    protected function nestedChange(array $keys, array &$data, $newValue) : void
-    {
-        $key = array_shift($keys);
-        if ($keys) {
-            $this->nestedChange($keys, $data[$key], $newValue);
-        } else {
-            $data[$key] = $newValue;
-        }
     }
 
     /**

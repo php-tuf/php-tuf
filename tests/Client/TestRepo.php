@@ -5,12 +5,14 @@ namespace Tuf\Tests\Client;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
  */
 class TestRepo implements RepoFileFetcherInterface
 {
+    use UtilsTrait;
 
     /**
      * The fixtures set to use.
@@ -22,9 +24,9 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * File names for files that should fail signature checks.
      *
-     * @var string[]
+     * @var mixed
      */
-    protected $failSignatureFiles = [];
+    protected $fileChanges = [];
 
     /**
      * TestRepo constructor.
@@ -50,9 +52,9 @@ class TestRepo implements RepoFileFetcherInterface
             // Alter the signed portion of the json contents to trigger an
             // exception.
             // @see \Tuf\Client\Updater::checkSignatures()
-            if (in_array($fileName, $this->failSignatureFiles)) {
+            if (array_key_exists($fileName, $this->fileChanges)) {
                 $json = json_decode($contents, true);
-                $json['signed']['extra_test_value'] = 'value';
+                static::nestedChange($this->fileChanges[$fileName]['keys'], $json, $this->fileChanges[$fileName]['value']);
                 $contents = JsonNormalizer::asNormalizedJson($json);
             }
             return $contents;
@@ -64,13 +66,16 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * Sets the file for which a signature fail should be triggered.
      *
-     * @param array $fileNames
-     *   The file names for which a signature fail should be triggered.
+     * @param string $fileName
+     *   The file name to change.
+     * @param array $keys
+     *
+     * @param string $value
      *
      * @return void
      */
-    public function setFilesToFailSignature(array $fileNames)
+    public function setFileChange(string $fileName, array $keys = ['signed', 'extra_test_value'], $value = 'new value')
     {
-        $this->failSignatureFiles = $fileNames;
+        $this->fileChanges[$fileName] = ['keys' => $keys, 'value' => $value];
     }
 }

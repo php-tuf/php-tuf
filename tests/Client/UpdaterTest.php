@@ -5,6 +5,7 @@ namespace Tuf\Tests\Client;
 use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
@@ -140,10 +141,15 @@ class UpdaterTest extends TestCase
     protected function assertRepoVersions(array $expectedVersions): void
     {
         foreach ($expectedVersions as $type => $version) {
+            if (is_null($version)) {
+                $this->assertNull($this->localRepo["$type.json"]);
+                return;
+            }
+            $actualVersion = MetadataBase::createFromJson($this->localRepo["$type.json"])->getVersion();
             $this->assertSame(
                 $expectedVersions[$type],
-                MetadataBase::createFromJson($this->localRepo["$type.json"])
-                ->getVersion()
+                $actualVersion,
+              "Actual verison of $type, '$actualVersion' does not match expected version '$version'"
             );
         }
     }
@@ -169,18 +175,15 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('delegated');
-        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
-        $this->testRepo->setFilesToFailSignature([$fileToFail]);
+        $this->assertRepoVersions(['root' => 3]);
+        $this->testRepo->setFileChange($fileToFail);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
         } catch (SignatureThresholdExpception $exception) {
             // Confirm the root was updated to version 4 but not to 5 because
             // 5.root.json should throw an exception.
-            $this->assertSame(
-                $expectedRootVersion,
-                RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
-            );
+            $this->assertRepoVersions(['root' => $expectedRootVersion]);
             $this->assertSame($expectionMessage, $exception->getMessage());
             return;
         }
@@ -212,5 +215,79 @@ class UpdaterTest extends TestCase
                 'Signature threshold not met on timestamp',
             ],
         ], 0);
+    }
+
+    /**
+     * @param string $fileToChange
+     * @param array $keys
+     * @param $newValue
+     *
+     * @dataProvider providerFileMetaDataException
+     */
+    public function testFileMetaDataException(string $fileToChange, array $keys, $newValue, string $expectedMessage, array $expectedVersions): void {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('delegated');
+        $this->assertRepoVersions(['root' => 3]);
+        $this->testRepo->setFileChange($fileToChange, $keys, $newValue);
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (MetadataException $exception) {
+            // Confirm the root was updated to version 4 but not to 5 because
+            // 5.root.json should throw an exception.
+            $this->assertSame($expectedMessage, $exception->getMessage());
+            $this->assertRepoVersions($expectedVersions);
+            return;
+        }
+        $this->fail('No MetadataException thrown');
+    }
+
+    /**
+     * Data provider for testFileMetaDataException().
+     *
+     * @return mixed[]
+     */
+    public function providerFileMetaDataException()
+    {
+        return static::getKeyedArray([
+          [
+            '5.snapshot.json',
+            ['signed', 'newkey'],
+          'new value',
+              "The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata.",
+            [
+              'root' => 5,
+              'timestamp' => 5,
+              'snapshot' => NULL,
+                'targets' => 3,
+            ],
+          ],
+          [
+            '5.snapshot.json',
+            ['signed', 'version'],
+            6,
+            "Expected snapshot version 5 does not match actual version 6.",
+            [
+              'root' => 5,
+              'timestamp' => 5,
+              'snapshot' => NULL,
+              'targets' => 3,
+            ],
+          ],
+          [
+            '5.targets.json',
+            ['signed', 'version'],
+            6,
+            "Expected targets version 5 does not match actual version 6.",
+            [
+              'root' => 5,
+              'timestamp' => 5,
+              'snapshot' => 5,
+              'targets' => 3,
+            ],
+          ],
+        ]);
     }
 }
