@@ -16,7 +16,7 @@ use Tuf\Exception\MetadataException;
 /**
  * Base class for metadata.
  */
-abstract class MetadataBase
+class MetadataBase
 {
     use ConstraintsTrait;
 
@@ -135,26 +135,28 @@ abstract class MetadataBase
         // is "YYYY-MM-DDTHH:MM:SSZ".
         $dataPattern = '2[0-9]{3}-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])';
         $timePattern = '(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])';
+        $fields = [
+            'expires' => [
+              new NotBlank(),
+              new Type(['type' => 'string']),
+              new Regex(['pattern' => "/^{$dataPattern}T{$timePattern}Z$/"]),
+            ],
+              // We only expect to work with major version 1.
+            'spec_version' => [
+              new NotBlank(),
+              new Type(['type' => 'string']),
+              new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
+            ],
+          ] + static::getVersionConstraints();
+        if (static::TYPE) {
+            $fields['_type'] = [
+              new EqualTo(['value' => static::TYPE]),
+              new Type(['type' => 'string']),
+            ];
+         }
         return [
-            'fields' => [
-                '_type' => [
-                    new EqualTo(['value' => static::TYPE]),
-                    new Type(['type' => 'string']),
-                ],
-
-                'expires' => [
-                    new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => "/^{$dataPattern}T{$timePattern}Z$/"]),
-                ],
-                // We only expect to work with major version 1.
-                'spec_version' => [
-                    new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
-                ],
-            ] + static::getVersionConstraints(),
-            'allowExtraFields' => true,
+          'fields' => $fields,
+          'allowExtraFields' => true,
         ];
     }
 
