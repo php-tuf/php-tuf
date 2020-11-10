@@ -142,5 +142,11 @@ jobs:
       - name: Download dependencies
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
+      - name: Download fixtures
+        uses: actions/download-artifact@v2
+        with:
+          name: fixtures
+          path: fixtures
+
       - name: Run test suite
         run: composer test
