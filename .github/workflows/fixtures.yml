@@ -13,13 +13,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      id: pipenvcache
+    - id: cache-pip
+      uses: actions/cache@v2
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+    - id: cache-pipenv
+      uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
@@ -29,7 +36,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade pipenv
     - name: Install dependencies via pipenv
-      # if: steps.pipenvcache.outputs.cache-hit != 'true'
+      if: steps.cache-pipenv.outputs.cache-hit != 'true'
       run: |
         if [ -f Pipfile.lock ]; then pipenv --three install; fi
     - name: Lint with flake8
