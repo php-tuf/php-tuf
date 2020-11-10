@@ -165,12 +165,13 @@ class Updater
                 "$snapShotVersion.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
+            // TUF-SPEC-v1.0.9 Section 5.3.1
+            $this->confirmFileMetadata($newTimestampData, $newSnapshotContents);
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
-        // TUF-SPEC-v1.0.9 Section 5.3.1
-        $this->confirmFileMetadata($newTimestampData, $newSnapshotContents);
+
 
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
@@ -194,13 +195,19 @@ class Updater
               "$targetsVersion.targets.json",
               static::MAXIMUM_DOWNLOAD_BYTES,
             );
+            // TUF-SPEC-v1.0.9 Section 5.4.1
+            $this->confirmFileMetadata($newSnapshotData, $newTargetsContent);
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+            // TUF-SPEC-v1.0.9 Section 5.4.2
+            $this->checkSignatures($newTargetsData);
+            // TUF-SPEC-v1.0.9 Section 5.4.2
+            static::checkFreezeAttack($newTargetsData, $nowDate);
+            // TUF-SPEC-v1.0.9 Section 5.4.4
+            $this->durableStorage['targets.json'] = $newSnapshotContents;
         }
         else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
-
-
         return true;
     }
 
@@ -499,7 +506,7 @@ class Updater
      *   Thrown if the new file contents does not match the existing metadata.
      *
      */
-    private function confirmFileMetadata(MetaFileInfoInterface $authorityMetadata, string $newFileContents): void
+    private static function confirmFileMetadata(MetaFileInfoInterface $authorityMetadata, string $newFileContents): void
     {
         $newMetadata = MetadataBase::createFromJson($newFileContents);
         $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
