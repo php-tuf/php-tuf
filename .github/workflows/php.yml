@@ -61,6 +61,11 @@ jobs:
         if: matrix.php != '8.0'
         run: composer phpcs-ci
 
+      - name: Download fixtures
+        uses: actions/download-artifact@v2
+        with:
+          name: fixtures
+
       - name: Run test suite
         run: composer test
 
