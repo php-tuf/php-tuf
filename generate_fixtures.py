@@ -16,7 +16,9 @@ def write_and_import_keypair(filename):
 
 def create_repo_fixtures(feature_set):
     # Set working directory to $reporoot/fixtures/
-    os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fixtures'))
+    fixtures_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fixtures')
+    os.mkdir(fixtures_dir)
+    os.chdir(fixtures_dir)
 
     # Clean up previously created repo
     if os.path.isdir(feature_set): shutil.rmtree(feature_set + '/')
