@@ -3,7 +3,10 @@
 namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
+use Tuf\Metadata\MetadataBase;
+
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
@@ -11,7 +14,6 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
  */
 class UpdaterTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
 
     /**
      * Creates a test Updater using memory storage of client fixture data.
@@ -21,8 +23,9 @@ class UpdaterTest extends TestCase
      */
     protected function getSystemInTest() : Updater
     {
-        $localRepo = $this->memoryStorageFromFixture('tufclient/tufrepo/metadata/current');
-        return new Updater('repo', [], $localRepo);
+        $localRepo = $this->getMockBuilder(\ArrayAccess::class)->getMock();
+        $repoFetcher = $this->getMockBuilder(RepoFileFetcherInterface::class)->getMock();
+        return new Updater($repoFetcher, [], $localRepo);
     }
 
     /**
@@ -37,24 +40,21 @@ class UpdaterTest extends TestCase
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
 
-        $sut = $this->getSystemInTest();
-
         // The incoming version is newer than the local version, so no
         // rollback attack is present.
-        $localMetadata = [
-            '_type' => 'any',
-            'version' => 1,
-        ];
-        $incomingMetadata = [
-            '_type' => 'any',
-            'version' => 2,
-        ];
+        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $localMetadata->expects(self::any())->method('getVersion')->willReturn(1);
+        $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $sut = $this->getSystemInTest();
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
 
         // Incoming at same version as local.
-        $incomingMetadata['version'] = $localMetadata['version'];
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
     }
 
@@ -68,22 +68,48 @@ class UpdaterTest extends TestCase
     public function testCheckRollbackAttackAttack() : void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
 
         $sut = $this->getSystemInTest();
 
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
-        $localMetadata = [
-            '_type' => 'any',
-            'version' => 2,
-        ];
-        $incomingMetadata = [
-            '_type' => 'any',
-            'version' => 1,
-        ];
+        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata);
+    }
+
+    /**
+     * Tests that the correct exception is thrown in case of a rollback attack
+     * where the incoming metadata does not match the expected version.
+     *
+     * @covers ::checkRollbackAttack
+     *
+     * @return void
+     */
+    public function testCheckRollbackAttackAttackExpectedVersion() : void
+    {
+        $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectExceptionMessage('Remote any metadata version "$2" does not the expected version "$3"');
+
+        $sut = $this->getSystemInTest();
+
+        // The incoming version is lower than the local version, so this should
+        // be identified as a rollback attack.
+        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
+        $method->setAccessible(true);
+        $method->invoke($sut, $localMetadata, $incomingMetadata, 3);
     }
 
     /**
@@ -99,11 +125,9 @@ class UpdaterTest extends TestCase
         $this->expectNotToPerformAssertions();
 
         $sut = $this->getSystemInTest();
-        $signedMetadata = [
-            '_type' => 'any',
-            'expires' => '1970-01-01T00:00:01Z',
-        ];
-        // 1 second earlier.
+        $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:01Z');
         $nowString = '1970-01-01T00:00:00Z';
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $nowString);
 
@@ -115,7 +139,7 @@ class UpdaterTest extends TestCase
         $method->invoke($sut, $signedMetadata, $now);
 
         // No exception should be thrown exactly at expiration time.
-        $signedMetadata['expires'] = $nowString;
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn($nowString);
         $method->invoke($sut, $signedMetadata, $now);
     }
 
@@ -131,10 +155,9 @@ class UpdaterTest extends TestCase
         $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
 
         $sut = $this->getSystemInTest();
-        $signedMetadata = [
-            '_type' => 'any',
-            'expires' => '1970-01-01T00:00:00Z',
-        ];
+        $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
+        $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:00Z');
         // 1 second later.
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", '1970-01-01T00:00:01Z');
 

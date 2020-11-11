@@ -2,6 +2,8 @@
 
 namespace Tuf;
 
+use Tuf\Metadata\RootMetadata;
+
 /**
  * Represent a collection of roles and their organization.
  *
@@ -19,9 +21,8 @@ class RoleDB
     /**
      *  Creates a role database from all of the unique roles in the metadata.
      *
-     * @param array[] $rootMetadata
-     *    An associative array as one would obtain by decoding JSON conformant
-     *    to section 4.3 of the TUF specification.
+     * @param \Tuf\Metadata\RootMetadata $rootMetadata
+     *    The root metadata.
      *
      * @return \Tuf\RoleDB
      *    The created RoleDB.
@@ -31,16 +32,14 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public static function createRoleDBFromRootMetadata(array $rootMetadata)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
-
-        foreach ($rootMetadata['roles'] as $roleName => $roleInfo) {
+        foreach ($rootMetadata->getRoles() as $roleName => $roleInfo) {
             if ($roleName == 'root') {
-                $roleInfo['version'] = $rootMetadata['version'];
-                $roleInfo['expires'] = $rootMetadata['expires'];
+                $roleInfo['version'] = $rootMetadata->getVersion();
+                $roleInfo['expires'] = $rootMetadata->getExpires();
             }
-
             /*
             Stuff Python TUF initializes that we aren't currently using.
             $roleInfo['signatures'] = array();
@@ -61,10 +60,6 @@ class RoleDB
                 $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
             }
             $roleInfo['paths'] = [];
-
-            if ($roleInfo['threshold'] + 0 <= 0) {
-                throw new \Exception("Role $roleName threshold must be an integer greater than 0");
-            }
 
             $db->addRole($roleName, $roleInfo);
         }

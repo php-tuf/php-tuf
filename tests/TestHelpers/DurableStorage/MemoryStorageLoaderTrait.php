@@ -3,6 +3,8 @@
 
 namespace Tuf\Tests\TestHelpers\DurableStorage;
 
+use Tuf\Tests\TestHelpers\UtilsTrait;
+
 /**
  * Provides a helper method to load MemoryStorage instance from a path.
  *
@@ -10,9 +12,13 @@ namespace Tuf\Tests\TestHelpers\DurableStorage;
  */
 trait MemoryStorageLoaderTrait
 {
+    use UtilsTrait;
+
     /**
      * Uses test fixtures at a given path to populate a memory storage backend.
      *
+     * @param string $fixturesSet
+     *     The fixtures set to use.
      * @param string $path
      *     The relative path (within the fixtures directory) for the client
      *     data.
@@ -20,21 +26,14 @@ trait MemoryStorageLoaderTrait
      * @return MemoryStorage
      *     Memory storage containing the test client data.
      *
-     * @throws \RuntimeException
-     *     Thrown if the relative path is invalid.
      */
-    public function memoryStorageFromFixture(string $path) : MemoryStorage
+    public function memoryStorageFromFixture(string $fixturesSet, string $path) : MemoryStorage
     {
-        $realpath = realpath(__DIR__ . "/../../../fixtures/$path");
-        if ($realpath === false || !is_dir($realpath)) {
-            throw new \RuntimeException("Client repository fixtures directory not found at $path");
-        }
-
         $storage = new MemoryStorage();
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
-            $realpath,
+            static::getFixturesRealPath($fixturesSet, $path, true),
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
         foreach ($fsIterator as $filename => $info) {
