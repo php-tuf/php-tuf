@@ -167,7 +167,7 @@ class Updater
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
             // TUF-SPEC-v1.0.9 Section 5.3.1
-            $this->confirmFileMetadata($newTimestampData, $newSnapshotContents);
+            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotContents);
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
@@ -197,7 +197,7 @@ class Updater
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
             // TUF-SPEC-v1.0.9 Section 5.4.1
-            $this->confirmFileMetadata($newSnapshotData, $newTargetsContent);
+            $this->confirmFileFromExistingMetadata($newSnapshotData, $newTargetsContent);
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
             // TUF-SPEC-v1.0.9 Section 5.4.2
             $this->checkSignatures($newTargetsData);
@@ -511,7 +511,7 @@ class Updater
      *   Thrown if the new file contents does not match the existing metadata.
      *
      */
-    private static function confirmFileMetadata(MetaFileInfoInterface $authorityMetadata, string $newFileContents): void
+    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, string $newFileContents): void
     {
         $newMetadata = MetadataBase::createFromJson($newFileContents);
         $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
