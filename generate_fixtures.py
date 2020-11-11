@@ -121,16 +121,12 @@ class TUFTestFixtureBase:
 class TUFTestFixtureSimple(TUFTestFixtureBase):
     def __init__(self):
         super().__init__()
-        return
         self.write_and_add_target('testtarget.txt')
         self.write_and_publish_repository()
 
-class TUFTestFixtureDelegated(TUFTestFixtureBase):
+class TUFTestFixtureDelegated(TUFTestFixtureSimple):
      def __init__(self):
         super().__init__()
-        return
-        #self.write_and_add_target('testtarget2.txt')
-        #self.write_and_publish_repository()
 
         # Delegate to an unclaimed target-signing key
         (public_unclaimed_key, private_unclaimed_key) = self.write_and_import_keypair('targets_delegated')
