@@ -73,4 +73,18 @@ class GuzzleFileFetcherTest extends TestCase
         $data = $fetcher->fetchFile('test.json', $maxBytes);
         $this->assertSame($content, $data);
     }
+
+    /**
+     * Tests creating a file fetcher with a repo base URI.
+     *
+     * @covers ::createFromUri
+     */
+    public function testCreateFromUri(): void
+    {
+        GuzzleFileFetcher::createFromUri('https://example.com');
+
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage('Repo base URI must be HTTPS: http://example.com');
+        GuzzleFileFetcher::createFromUri('http://example.com');
+    }
 }
