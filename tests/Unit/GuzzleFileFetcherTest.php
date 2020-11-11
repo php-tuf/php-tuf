@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Tuf\Tests\Unit;
-
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -28,24 +26,26 @@ class GuzzleFileFetcherTest extends TestCase
     public function dataProvider(): array
     {
         return [
-          [404, 256, RepoFileNotFound::class],
-          [403, 256, 'RuntimeException'],
-          [500, 256, 'RuntimeException'],
-          [200, 4, DownloadSizeException::class],
-          [200, 256, NULL],
+            [404, 256, RepoFileNotFound::class],
+            [403, 256, 'RuntimeException'],
+            [500, 256, 'RuntimeException'],
+            [200, 4, DownloadSizeException::class],
+            [200, 256, null],
         ];
     }
 
     /**
      * Tests various conditions when fetching a file.
      *
-     * @param int $statusCode
+     * @param integer $statusCode
      *   The response status code.
-     * @param int $maxBytes
+     * @param integer $maxBytes
      *   The maximum number of bytes to read from the response.
      * @param string|null $exceptionClass
      *   The expected exception class that will be thrown, if we expect the file
      *   fetcher to throw an exception.
+     *
+     * @return void
      *
      * @dataProvider dataProvider
      *
@@ -53,9 +53,7 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testFetchFile(int $statusCode, int $maxBytes, ?string $exceptionClass): void
     {
-        $content = json_encode([
-           ['oolong', 'assam', 'matcha', 'herbal'],
-        ]);
+        $content = json_encode(['oolong', 'assam', 'matcha', 'herbal']);
         $mockHandler = new MockHandler();
         $mockHandler->append(new Response($statusCode, [], $content));
         $handlerStack = HandlerStack::create($mockHandler);
@@ -76,6 +74,8 @@ class GuzzleFileFetcherTest extends TestCase
 
     /**
      * Tests creating a file fetcher with a repo base URI.
+     *
+     * @return void
      *
      * @covers ::createFromUri
      */
