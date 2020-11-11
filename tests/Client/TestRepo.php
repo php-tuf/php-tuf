@@ -60,10 +60,23 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @return void
      */
-    public function setRepoFileNestedValue(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value')
+    public function setRepoFileNestedValue(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value'): void
     {
         $json = json_decode($this->repoFilesContents[$fileName], true);
         static::nestedChange($keys, $json, $newValue);
         $this->repoFilesContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
+    }
+
+    /**
+     * Removes a file from the repo.
+     *
+     * @param string $fileName
+     *   The name of the file to remove.
+     *
+     * @return void
+     */
+    public function removeRepoFile(string $fileName):void
+    {
+        unset($this->repoFilesContents[$fileName]);
     }
 }
