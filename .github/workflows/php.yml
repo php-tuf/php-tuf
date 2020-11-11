@@ -10,7 +10,56 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
 
 jobs:
+  fixtures:
+    name: Generate test fixtures
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - id: cache-pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - id: cache-pipenv
+      uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pipenv-
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install pip/pipenv
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade pipenv
+    - name: Install dependencies via pipenv
+      if: steps.cache-pipenv.outputs.cache-hit != 'true'
+      run: |
+        if [ -f Pipfile.lock ]; then pipenv --three install; fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Generate fixtures
+      run: |
+        pipenv run python generate_fixtures.py
+    - name: Store fixtures as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: fixtures
+        path: fixtures/
+        retention-days: 5
+
   build:
+    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
+    needs: fixtures
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
@@ -23,7 +72,6 @@ jobs:
           - operating-system: ubuntu-latest
             php: 8.0
             experimental: true
-    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
     continue-on-error: ${{ matrix.experimental }}
 
     steps:
@@ -58,14 +106,20 @@ jobs:
         run: composer lint
 
       - name: Run PHPCS
-        if: matrix.php != '8.0'
         run: composer phpcs-ci
+
+      - name: Download fixtures
+        uses: actions/download-artifact@v2
+        with:
+          name: fixtures
+          path: fixtures
 
       - name: Run test suite
         run: composer test
 
   build-lowest-version:
     name: Build lowest version
+    needs: fixtures
     runs-on: ubuntu-latest
 
     steps:
@@ -86,6 +140,12 @@ jobs:
 
       - name: Download dependencies
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
+
+      - name: Download fixtures
+        uses: actions/download-artifact@v2
+        with:
+          name: fixtures
+          path: fixtures
 
       - name: Run test suite
         run: composer test

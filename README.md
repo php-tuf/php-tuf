@@ -32,14 +32,22 @@ We recommend using the [default CLI
 implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
 (a Python application) to generate keys and signatures as a part of your
 project's release creation process. This will require:
-- Python 3.8+
+- Python 3.9+
 - PIP 19+
 
 @todo More detailed instructions.
 
 ### Server environment setup for the Python TUF CLI
 
-1. Install Python 3.8+ and [Pipenv](https://pipenv.pypa.io/en/latest/#install-pipenv-today). Fedora 33+ should have a fresh version of `pipenv`, but Fedora 32 should use the build from COPR: `sudo dnf copr enable @python/pipenv`
+1. Install OS-level dependencies:
+   - On Fedora 33:
+
+         sudo dnf install pipenv python3-devel libffi-devel
+         
+   - On Ubuntu 20.10:
+   
+         sudo apt-get install pipenv python3-dev libffi-dev
+
 1. Configure the virtual environment:
 
        pipenv --three install
@@ -59,11 +67,7 @@ code documentation and array formatting.
 
 ## Testing
 
-### Running the tests
-1. Ensure you have all required dependencies by running `composer install`.
-2. Run `composer test` at the project's root.
-
-### Test fixtures setup
+### Test fixtures generation
 
 1. Install the Python TUF implementation and enable the pipenv:
 
@@ -72,16 +76,22 @@ code documentation and array formatting.
 
 1. Initialize the repository and add/sign a target:
 
-       cd fixtures/
-       python generate.py
+       python generate_fixtures.py
 
-### Using test fixtures
+1. Fixtures should appear in `fixtures/`.
 
-1. From `fixtures/tufrepo`:
+### Running the PHP-TUF tests
+
+1. Ensure you have all required dependencies by running `composer install`.
+2. Run `composer test` at the project's root.
+
+### Leveraging test fixtures directly
+
+1. From `fixtures/*/tufrepo`:
 
        python3 -m http.server 8001
 
-1. From `fixtures/tufclient`:
+1. From `fixtures/*/tufclient`:
 
        mkdir -p tuftargets
        curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
@@ -89,7 +99,6 @@ code documentation and array formatting.
        # A 404 is expected for N.root.json unless a key has been rotated.
 
 ## Dependency policies and information
-
 
 To provide a lightweight, reliable, and secure client, external dependencies
 are carefully limited. Any proposed dependency additions (and those
@@ -101,6 +110,7 @@ dependency information](DEPENDENCIES.md).
 
 ## Resources
 
+* [PHP-TUF wiki](https://github.com/php-tuf/php-tuf/wiki)
 * Python TUF
   * [Code Documentation: Main Index](https://github.com/theupdateframework/tuf/blob/develop/tuf/README.md)
   * [CLI](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
