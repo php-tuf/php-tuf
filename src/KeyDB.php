@@ -40,7 +40,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public static function createKeyDBFromRootMetadata(RootMetadata $rootMetadata)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
 
