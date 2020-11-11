@@ -42,25 +42,21 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function fetchFile(string $fileName, int $maxBytes)
     {
-        try {
-            if (empty($this->repoFilesContents[$fileName])) {
-                throw new RepoFileNotFound("File $fileName not found.");
-            }
-            return $this->repoFilesContents[$fileName];
-        } catch (\Exception $exception) {
-            return false;
+        if (empty($this->repoFilesContents[$fileName])) {
+            throw new RepoFileNotFound("File $fileName not found.");
         }
+        return $this->repoFilesContents[$fileName];
     }
 
     /**
      * Sets a nested value in a repo file.
      *
      * @param string $fileName
-     *   The file name to change.
+     *   The name of the file to change.
      * @param array $keys
-     *   The keys of the nested item.
+     *   The nested array keys of the item.
      * @param mixed $newValue
-     *   The new value.
+     *   The new value to set.
      *
      * @return void
      */

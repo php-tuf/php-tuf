@@ -8,6 +8,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetaFileInfoInterface;
@@ -419,31 +420,36 @@ class Updater
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
-            $rootsDownloaded++;
-            if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
-                throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
-            }
-            $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            // *TUF-SPEC-v1.0.9 Section 5.1.3
-            $this->checkSignatures($nextRoot);
-            // Update Role and Key databases to use the new root information.
-            $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
-            $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
-            $this->checkSignatures($nextRoot);
-            // *TUF-SPEC-v1.0.9 Section 5.1.4
-            static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
-            $rootData = $nextRoot;
-            // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
-            // Note that the expiration of the new (intermediate) root metadata
-            // file does not matter yet, because we will check for it in step
-            // 1.8.
+        try {
+            while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+                $rootsDownloaded++;
+                if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
+                    throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
+                }
+                $nextRoot = RootMetadata::createFromJson($nextRootContents);
+                // *TUF-SPEC-v1.0.9 Section 5.1.3
+                $this->checkSignatures($nextRoot);
+                // Update Role and Key databases to use the new root information.
+                $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
+                $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
+                $this->checkSignatures($nextRoot);
+                // *TUF-SPEC-v1.0.9 Section 5.1.4
+                static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+                $rootData = $nextRoot;
+                // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
+                // Note that the expiration of the new (intermediate) root metadata
+                // file does not matter yet, because we will check for it in step
+                // 1.8.
 
-            // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
-            $this->durableStorage['root.json'] = $nextRootContents;
-            $nextVersion = $rootData->getVersion() + 1;
-            // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
+                // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
+                $this->durableStorage['root.json'] = $nextRootContents;
+                $nextVersion = $rootData->getVersion() + 1;
+                // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
+            }
+        } catch (RepoFileNotFound $exception) {
+            // This exception is expected when the newest root file has already been downloaded.
         }
+
         // *TUF-SPEC-v1.0.9 Section 5.1.9
         static::checkFreezeAttack($rootData, $this->getCurrentTime());
 
