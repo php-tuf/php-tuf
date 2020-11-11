@@ -15,18 +15,11 @@ class TestRepo implements RepoFileFetcherInterface
     use UtilsTrait;
 
     /**
-     * The fixtures set to use.
+     * An array of repo file contents keyed by file name.
      *
-     * @var string
+     * @var string[]
      */
-    protected $fixturesSet;
-
-    /**
-     * File names for files that should fail signature checks.
-     *
-     * @var mixed
-     */
-    protected $fileChanges = [];
+    private $repoFilesContents = [];
 
     /**
      * TestRepo constructor.
@@ -36,7 +29,12 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function __construct(string $fixturesSet)
     {
-        $this->fixturesSet = $fixturesSet;
+        // Store all the repo files locally so they can be easily altered.
+        // @see self::setRepoFileNestedValue()
+        $repoFiles = glob(static::getFixturesRealPath($fixturesSet, '/tufrepo/metadata') . '/*.json');
+        foreach ($repoFiles as $repoFile) {
+            $this->repoFilesContents[basename($repoFile)] = file_get_contents($repoFile);
+        }
     }
 
     /**
@@ -45,26 +43,17 @@ class TestRepo implements RepoFileFetcherInterface
     public function fetchFile(string $fileName, int $maxBytes)
     {
         try {
-            $contents = file_get_contents(__DIR__ .  "/../../fixtures/{$this->fixturesSet}/tufrepo/metadata/$fileName");
-            if ($contents === false) {
+            if (empty($this->repoFilesContents[$fileName])) {
                 throw new RepoFileNotFound("File $fileName not found.");
             }
-            // Alter the signed portion of the json contents to trigger an
-            // exception.
-            // @see \Tuf\Client\Updater::checkSignatures()
-            if (array_key_exists($fileName, $this->fileChanges)) {
-                $json = json_decode($contents, true);
-                static::nestedChange($this->fileChanges[$fileName]['keys'], $json, $this->fileChanges[$fileName]['new_value']);
-                $contents = JsonNormalizer::asNormalizedJson($json);
-            }
-            return $contents;
+            return $this->repoFilesContents[$fileName];
         } catch (\Exception $exception) {
             return false;
         }
     }
 
     /**
-     * Sets a value in a file to be changed in ::fetchFile().
+     * Sets a nested value in a repo file.
      *
      * @param string $fileName
      *   The file name to change.
@@ -75,8 +64,10 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @return void
      */
-    public function setFileChange(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value')
+    public function setRepoFileNestedValue(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value')
     {
-        $this->fileChanges[$fileName] = ['keys' => $keys, 'new_value' => $newValue];
+        $json = json_decode($this->repoFilesContents[$fileName], true);
+        static::nestedChange($keys, $json, $newValue);
+        $this->repoFilesContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
     }
 }

@@ -180,7 +180,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('delegated');
         $this->assertRepoVersions(['root' => 3]);
-        $this->testRepo->setFileChange($fileToChange, $keys, $newValue);
+        $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
