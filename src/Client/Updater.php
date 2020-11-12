@@ -128,8 +128,8 @@ class Updater
     {
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
-        $this->roleDB = RoleDB::createRoleDBFromRootMetadata($rootData);
-        $this->keyDB = KeyDB::createKeyDBFromRootMetadata($rootData);
+        $this->roleDB = RoleDB::createFromRootMetadata($rootData);
+        $this->keyDB = KeyDB::createFromRootMetadata($rootData);
 
         $this->updateRoot($rootData);
 
@@ -430,8 +430,8 @@ class Updater
                 // *TUF-SPEC-v1.0.9 Section 5.1.3
                 $this->checkSignatures($nextRoot);
                 // Update Role and Key databases to use the new root information.
-                $this->roleDB = RoleDB::createRoleDBFromRootMetadata($nextRoot);
-                $this->keyDB = KeyDB::createKeyDBFromRootMetadata($nextRoot);
+                $this->roleDB = RoleDB::createFromRootMetadata($nextRoot);
+                $this->keyDB = KeyDB::createFromRootMetadata($nextRoot);
                 $this->checkSignatures($nextRoot);
                 // *TUF-SPEC-v1.0.9 Section 5.1.4
                 static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
