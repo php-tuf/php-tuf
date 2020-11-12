@@ -47,7 +47,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir($this->getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -96,7 +96,7 @@ class UpdaterTest extends TestCase
     {
         return $this->getKeyedArray([
             [
-                'delegated',
+                'TUFTestFixtureDelegated',
                 [
                     'root' => 3,
                     'timestamp' => 3,
@@ -109,16 +109,16 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'simple',
+                'TUFTestFixtureSimple',
                 [
                     'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                 ],
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
                 ],
             ],
         ], 0);
@@ -170,8 +170,8 @@ class UpdaterTest extends TestCase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo('delegated');
+        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
         $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
         $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();

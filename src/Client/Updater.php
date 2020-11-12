@@ -445,7 +445,7 @@ class Updater
      */
     private function getCurrentTime(): \DateTimeImmutable
     {
-        $fakeNow = '2020-08-04T02:58:56Z';
+        $fakeNow = '2020-01-01T00:00:00Z';
         $nowDate = static::metadataTimestampToDateTime($fakeNow);
         return $nowDate;
     }
