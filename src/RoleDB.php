@@ -16,7 +16,7 @@ class RoleDB
      *
      * @var \array[]
      */
-    protected $roles;
+    protected $roles = [];
 
     /**
      *  Creates a role database from all of the unique roles in the metadata.
@@ -61,65 +61,10 @@ class RoleDB
             }
             $roleInfo['paths'] = [];
 
-            $db->addRole($roleName, $roleInfo);
+            $db->roles[$roleName] = $roleInfo;
         }
 
         return $db;
-    }
-
-    /**
-     * Constructs a new RoleDB object.
-     */
-    public function __construct()
-    {
-        $this->roles = [];
-    }
-
-    /**
-     * Adds role metadata to the database.
-     *
-     * @param string $roleName
-     *     The role name.
-     * @param array $roleInfo
-     *     An associative array of role metadata, including:
-     *     - keyids: An array of authorized public key signatures for the role.
-     *     - threshold: An integer for the threshold of signatures required for
-     *       this role.
-     *     - paths: An array of the path patterns that this role may sign.
-     *
-     * @return void
-     *
-     * @throws \InvalidArgumentException
-     *     Thrown if the role already exists.
-     *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
-     *
-     * @todo Provide more complete documentation of the structure once
-     *     delgation is implemented and fixtures are regenerated. Issues:
-     *     - https://github.com/php-tuf/php-tuf/issues/50
-     *     - https://github.com/php-tuf/php-tuf/issues/52
-     */
-    public function addRole(string $roleName, array $roleInfo)
-    {
-        if ($this->roleExists($roleName)) {
-            throw new \InvalidArgumentException('Role already exists: ' . $roleName);
-        }
-
-        $this->roles[$roleName] = $roleInfo;
-    }
-
-    /**
-     * Verifies whether a given role name is stored in the role database.
-     *
-     * @param string $roleName
-     *     The role name.
-     *
-     * @return boolean
-     *     True if the role is found in the role database; false otherwise.
-     */
-    public function roleExists(string $roleName)
-    {
-        return !empty($this->roles[$roleName]);
     }
 
     /**
@@ -139,7 +84,7 @@ class RoleDB
      */
     public function getRoleInfo(string $roleName)
     {
-        if (! $this->roleExists($roleName)) {
+        if (empty($this->roles[$roleName])) {
             throw new \InvalidArgumentException("Role does not exist: $roleName");
         }
 
@@ -162,26 +107,5 @@ class RoleDB
     {
         $roleInfo = $this->getRoleInfo($roleName);
         return $roleInfo['keyids'];
-    }
-
-    /**
-     * Gets the threshold required for a given role.
-     *
-     * @param string $roleName
-     *    The role name.
-     *
-     * @return integer
-     *     The threshold number of signatures required for the role.
-     *
-     * @throws \InvalidArgumentException
-     *     Thrown if the role does not exist.
-     */
-    public function getRoleThreshold(string $roleName)
-    {
-        if (! $this->roleExists($roleName)) {
-            throw new \InvalidArgumentException("Role does not exist: $roleName");
-        }
-
-        return $this->roles[$roleName]['threshold'];
     }
 }
