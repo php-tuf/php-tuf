@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class TargetsMetadata extends MetadataBase
+class TargetsMetadata extends MetadataBase implements \ArrayAccess
 {
 
     /**
@@ -64,5 +64,15 @@ class TargetsMetadata extends MetadataBase
 
         ]);
         return $options;
+    }
+
+    public function getTargets(): array
+    {
+        return $this->getSigned()['targets'];
+    }
+
+    public function getDelegations(): ?array
+    {
+        return $this->getSigned()['delegations'];
     }
 }
