@@ -51,8 +51,6 @@ class GuzzleFileFetcherTest extends TestCase
         // The httpErrors() middleware will throw an exception if the status
         // code is not 200.
         $handlerStack->push(Middleware::httpErrors());
-        $history = [];
-        $handlerStack->push(Middleware::history($history));
         $this->client = new Client(['handler' => $handlerStack]);
     }
 
@@ -73,7 +71,7 @@ class GuzzleFileFetcherTest extends TestCase
     }
 
     /**
-     * Tests various conditions when fetching a file.
+     * Tests various error conditions when fetching a file.
      *
      * @param integer $statusCode
      *   The response status code.
