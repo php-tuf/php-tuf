@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Unit;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -18,19 +19,56 @@ use Tuf\Exception\RepoFileNotFound;
 class GuzzleFileFetcherTest extends TestCase
 {
     /**
-     * Data provider for testFetchFile().
+     * The mocked request handler.
+     *
+     * @var \GuzzleHttp\Handler\MockHandler
+     */
+    private $mockHandler;
+
+    /**
+     * The mocked HTTP client.
+     *
+     * @var \GuzzleHttp\Client
+     */
+    private $client;
+
+    /**
+     * The JSON content of the mocked response(s).
+     *
+     * @var string
+     */
+    private $testContent = '["oolong","assam","matcha","herbal"]';
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mockHandler = new MockHandler();
+
+        $handlerStack = HandlerStack::create($this->mockHandler);
+        // The httpErrors() middleware will throw an exception if the status
+        // code is not 200.
+        $handlerStack->push(Middleware::httpErrors());
+        $history = [];
+        $handlerStack->push(Middleware::history($history));
+        $this->client = new Client(['handler' => $handlerStack]);
+    }
+
+    /**
+     * Data provider for testError().
      *
      * @return array[]
      *   Sets of arguments to pass to the test method.
      */
-    public function dataProvider(): array
+    public function errorProvider(): array
     {
         return [
-            [404, 256, RepoFileNotFound::class],
-            [403, 256, 'RuntimeException'],
-            [500, 256, 'RuntimeException'],
-            [200, 4, DownloadSizeException::class],
-            [200, 256, null],
+            [404, RepoFileNotFound::class, 0],
+            [403, 'RuntimeException'],
+            [500, BadResponseException::class],
+            [200, DownloadSizeException::class, 0, 4],
         ];
     }
 
@@ -39,37 +77,41 @@ class GuzzleFileFetcherTest extends TestCase
      *
      * @param integer $statusCode
      *   The response status code.
-     * @param integer $maxBytes
-     *   The maximum number of bytes to read from the response.
-     * @param string|null $exceptionClass
-     *   The expected exception class that will be thrown, if we expect the file
-     *   fetcher to throw an exception.
+     * @param string $exceptionClass
+     *   The expected exception class that will be thrown.
+     * @param integer|null $exceptionCode
+     *   (optional) The expected exception code. Defaults to the status code.
+     * @param integer|null $maxBytes
+     *   (optional) The maximum number of bytes to read from the response.
+     *   Defaults to the length of $this->testContent.
      *
      * @return void
      *
-     * @dataProvider dataProvider
+     * @dataProvider errorProvider
      *
      * @covers ::fetchFile
      */
-    public function testFetchFile(int $statusCode, int $maxBytes, ?string $exceptionClass): void
+    public function testError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
-        $content = json_encode(['oolong', 'assam', 'matcha', 'herbal']);
-        $mockHandler = new MockHandler();
-        $mockHandler->append(new Response($statusCode, [], $content));
-        $handlerStack = HandlerStack::create($mockHandler);
-        // The httpErrors() middleware will throw an exception if the status
-        // code is not 200.
-        $handlerStack->push(Middleware::httpErrors());
-        $history = [];
-        $handlerStack->push(Middleware::history($history));
-        $client = new Client(['handler' => $handlerStack]);
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
 
-        $fetcher = new GuzzleFileFetcher($client);
-        if ($exceptionClass) {
-            $this->expectException($exceptionClass);
-        }
-        $data = $fetcher->fetchFile('test.json', $maxBytes);
-        $this->assertSame($content, $data);
+        $fetcher = new GuzzleFileFetcher($this->client);
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent));
+    }
+
+    /**
+     * Tests fetching a file without any errors.
+     *
+     * @return void
+     */
+    public function testSuccessfulFetch(): void
+    {
+        $this->mockHandler->append(new Response(200, [], $this->testContent));
+
+        $fetcher = new GuzzleFileFetcher($this->client);
+        $this->assertSame($fetcher->fetchFile('test.json', 256), $this->testContent);
     }
 
     /**
@@ -81,7 +123,7 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testCreateFromUri(): void
     {
-        GuzzleFileFetcher::createFromUri('https://example.com');
+        $this->assertInstanceOf(GuzzleFileFetcher::class, GuzzleFileFetcher::createFromUri('https://example.com'));
 
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Repo base URI must be HTTPS: http://example.com');

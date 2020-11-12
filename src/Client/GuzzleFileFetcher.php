@@ -4,7 +4,7 @@ namespace Tuf\Client;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
@@ -59,7 +59,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     {
         try {
             $response = $this->client->request('GET', $fileName);
-        } catch (RequestException $e) {
+        } catch (ClientException $e) {
             if ($e->getCode() === 404) {
                 throw new RepoFileNotFound("$fileName not found", 0, $e);
             } else {
