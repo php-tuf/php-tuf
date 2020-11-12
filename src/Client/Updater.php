@@ -8,7 +8,6 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
-use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetaFileInfoInterface;
