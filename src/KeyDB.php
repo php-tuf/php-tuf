@@ -3,6 +3,7 @@
 
 namespace Tuf;
 
+use Tuf\Exception\FormatException;
 use Tuf\Metadata\RootMetadata;
 
 /**
@@ -47,7 +48,7 @@ class KeyDB
         foreach ($rootMetadata->getKeys() as $keyMeta) {
             if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
                 // @todo Convert this to a log line as per Python.
-                throw new \UnexpectedValueException("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+                throw new FormatException($keyMeta['keytype'], "Root metadata file contains an unsupported key type");
             }
             // One key ID for each $keyMeta['keyid_hash_algorithms'].
             $computedKeyIds = self::computeKeyIds($keyMeta);
