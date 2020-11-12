@@ -47,7 +47,7 @@ class KeyDB
         foreach ($rootMetadata->getKeys() as $keyMeta) {
             if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
                 // @todo Convert this to a log line as per Python.
-                throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+                throw new \UnexpectedValueException("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
             }
             // One key ID for each $keyMeta['keyid_hash_algorithms'].
             $computedKeyIds = self::computeKeyIds($keyMeta);
@@ -151,7 +151,7 @@ class KeyDB
      *     The key metadata matching $keyId. See self::addKey() and the TUF
      *     specification for the array structure.
      *
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      *     Thrown if the key ID is not found in the keydb database.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
@@ -159,7 +159,7 @@ class KeyDB
     public function getKey(string $keyId)
     {
         if (empty($this->keys[$keyId])) {
-            throw new \Exception("Unknown key ID: $keyId");
+            throw new \InvalidArgumentException("Unknown key ID: $keyId");
         }
         return $this->keys[$keyId];
     }

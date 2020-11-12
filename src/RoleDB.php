@@ -89,7 +89,7 @@ class RoleDB
      *
      * @return void
      *
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      *     Thrown if the role already exists.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
@@ -102,7 +102,7 @@ class RoleDB
     public function addRole(string $roleName, array $roleInfo)
     {
         if ($this->roleExists($roleName)) {
-            throw new \Exception('Role already exists: ' . $roleName);
+            throw new \InvalidArgumentException('Role already exists: ' . $roleName);
         }
 
         $this->roles[$roleName] = $roleInfo;
@@ -132,7 +132,7 @@ class RoleDB
      *    The role information. See self::addRole() and the TUF specification
      *    for the array the structure.
      *
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      *     Thrown if the role does not exist.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
@@ -140,7 +140,7 @@ class RoleDB
     public function getRoleInfo(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
-            throw new \Exception("Role does not exist: $roleName");
+            throw new \InvalidArgumentException("Role does not exist: $roleName");
         }
 
         return $this->roles[$roleName];
@@ -173,13 +173,13 @@ class RoleDB
      * @return integer
      *     The threshold number of signatures required for the role.
      *
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      *     Thrown if the role does not exist.
      */
     public function getRoleThreshold(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
-            throw new \Exception("Role does not exist: $roleName");
+            throw new \InvalidArgumentException("Role does not exist: $roleName");
         }
 
         return $this->roles[$roleName]['threshold'];

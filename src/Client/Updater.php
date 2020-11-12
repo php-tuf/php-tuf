@@ -401,7 +401,7 @@ class Updater
         while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
-                throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
+                throw new \OverflowException("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             // *TUF-SPEC-v1.0.9 Section 5.1.3

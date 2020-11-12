@@ -33,7 +33,7 @@ class JsonNormalizer
      * @param mixed[] $structure
      *     The array of JSON to sort, passed by reference.
      *
-     * @throws \Exception
+     * @throws \RuntimeException
      *     Thrown if sorting the array fails.
      *
      * @return void
@@ -41,7 +41,7 @@ class JsonNormalizer
     private static function rKeySort(array &$structure) : void
     {
         if (!ksort($structure, SORT_STRING)) {
-            throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
+            throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
         }
 
         foreach ($structure as $item => $value) {
