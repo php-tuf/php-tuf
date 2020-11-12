@@ -42,5 +42,4 @@ interface RepoFileFetcherInterface
      *   The contents of the file or null if it does not exist.
      */
     public function fetchFileIfExists(string $fileName, int $maxBytes):?string;
-
 }
