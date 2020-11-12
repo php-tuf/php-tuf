@@ -26,7 +26,7 @@ for target signatures.
   cryptography library; however, installing `ext-sodium` is recommended for
   better performance and security.
   
-## PHP-TUF server requirements
+## PHP-TUF development requirements
 
 We recommend using the [default CLI 
 implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
