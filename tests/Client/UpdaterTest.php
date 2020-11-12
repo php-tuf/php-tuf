@@ -116,9 +116,9 @@ class UpdaterTest extends TestCase
                     'snapshot' => 2,
                 ],
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
                 ],
             ],
         ], 0);
