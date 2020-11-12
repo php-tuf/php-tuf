@@ -71,15 +71,14 @@ class TUFTestFixtureBase:
         # Copy the keys where we would normally generate them in-place.
         # This is designed to mock this functionality:
         # rt.generate_and_write_ed25519_keypair(pathpriv_dst, password='pw')
-        pathpriv_dst = os.path.join(self.tufrepo_dir, '{}_key'.format(name_dst))
-
-        pathpub_dst = '{}.pub'.format(pathpriv_dst)
-        shutil.copyfile(pathpriv_src, pathpriv_dst)
-        shutil.copyfile(pathpub_src, pathpub_dst)
+        #pathpriv_dst = os.path.join(self.tufrepo_dir, '{}_key'.format(name_dst))
+        #pathpub_dst = '{}.pub'.format(pathpriv_dst)
+        #shutil.copyfile(pathpriv_src, pathpriv_dst)
+        #shutil.copyfile(pathpub_src, pathpub_dst)
 
         # Load the keys into TUF.
-        public_key = rt.import_ed25519_publickey_from_file(pathpub_dst)
-        private_key = rt.import_ed25519_privatekey_from_file(pathpriv_dst, password='pw')
+        public_key = rt.import_ed25519_publickey_from_file(pathpub_src)
+        private_key = rt.import_ed25519_privatekey_from_file(pathpriv_src, password='pw')
         return (public_key, private_key)
 
     def _initialize_basic_roles(self):
@@ -102,17 +101,17 @@ class TUFTestFixtureBase:
         self.repository.timestamp.load_signing_key(private_timestamps_key)
         self.repository.status()
         # Make it so (consistently)
-        #self.repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
-        #self.repository.writeall(consistent_snapshot=True)
+        self.repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
+        self.repository.writeall(consistent_snapshot=True)
 
-    def write_and_publish_repository(self, regenerate_client=True):
+    def write_and_publish_repository(self, export_client=False):
         self.repository.writeall(consistent_snapshot=True)
         # Publish the metadata
         staging_dir = os.path.join(self.tufrepo_dir, 'metadata.staged')
         live_dir = os.path.join(self.tufrepo_dir, 'metadata')
         shutil.copytree(staging_dir, live_dir, dirs_exist_ok=True)
 
-        if regenerate_client:
+        if export_client:
             client_tufrepo_dir = os.path.join(self.my_fixtures_dir, 'tufclient', 'tufrepo')
             if os.path.exists(client_tufrepo_dir):
                 shutil.rmtree(client_tufrepo_dir + '/')
@@ -122,7 +121,7 @@ class TUFTestFixtureSimple(TUFTestFixtureBase):
     def __init__(self):
         super().__init__()
         self.write_and_add_target('testtarget.txt')
-        self.write_and_publish_repository()
+        self.write_and_publish_repository(export_client=True)
 
 class TUFTestFixtureDelegated(TUFTestFixtureSimple):
      def __init__(self):
@@ -133,7 +132,7 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         self.repository.targets.delegate('unclaimed', [public_unclaimed_key], ['testunclaimed*.txt'])
         self.write_and_add_target('testunclaimedtarget.txt', 'unclaimed')
         self.repository.targets('unclaimed').load_signing_key(private_unclaimed_key)
-        self.write_and_publish_repository()
+        self.write_and_publish_repository(export_client=True)
 
         # === Point of No Return ===
         # Past this point, we don't re-export the client. This supports testing the
@@ -149,16 +148,16 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         self.repository.status()
         # Write the updated repository data.
         self.repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
-        self.write_and_publish_repository(regenerate_client=False)
+        self.write_and_publish_repository()
         # Revoke the older keys.
         self.repository.targets.remove_verification_key(self.public_targets_key)
         self.repository.snapshot.remove_verification_key(self.public_snapshots_key)
         self.repository.status()
         # Write the updated repository data.
         self.repository.mark_dirty(['root', 'snapshot', 'targets', 'timestamp'])
-        self.write_and_publish_repository(regenerate_client=False)
+        self.write_and_publish_repository()
 
-@mock.patch('time.time', mock.MagicMock(return_value=1984))
+@mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
     a = TUFTestFixtureSimple()
     print('===================')
