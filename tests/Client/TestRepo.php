@@ -40,12 +40,24 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes)
+    public function fetchFile(string $fileName, int $maxBytes):string
     {
         if (empty($this->repoFilesContents[$fileName])) {
             throw new RepoFileNotFound("File $fileName not found.");
         }
         return $this->repoFilesContents[$fileName];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchFileIfExists(string $fileName, int $maxBytes):?string
+    {
+        try {
+            return $this->fetchFile($fileName, $maxBytes);
+        } catch (RepoFileNotFound $exception) {
+            return null;
+        }
     }
 
     /**

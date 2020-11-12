@@ -420,34 +420,30 @@ class Updater
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        try {
-            while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
-                $rootsDownloaded++;
-                if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
-                    throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
-                }
-                $nextRoot = RootMetadata::createFromJson($nextRootContents);
-                // *TUF-SPEC-v1.0.9 Section 5.1.3
-                $this->checkSignatures($nextRoot);
-                // Update Role and Key databases to use the new root information.
-                $this->roleDB = RoleDB::createFromRootMetadata($nextRoot);
-                $this->keyDB = KeyDB::createFromRootMetadata($nextRoot);
-                $this->checkSignatures($nextRoot);
-                // *TUF-SPEC-v1.0.9 Section 5.1.4
-                static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
-                $rootData = $nextRoot;
-                // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
-                // Note that the expiration of the new (intermediate) root metadata
-                // file does not matter yet, because we will check for it in step
-                // 1.8.
-
-                // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
-                $this->durableStorage['root.json'] = $nextRootContents;
-                $nextVersion = $rootData->getVersion() + 1;
-                // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
+        while ($nextRootContents = $this->fetchFileIfExists("$nextVersion.root.json")) {
+            $rootsDownloaded++;
+            if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
+                throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
             }
-        } catch (RepoFileNotFound $exception) {
-            // This exception is expected when the newest root file has already been downloaded.
+            $nextRoot = RootMetadata::createFromJson($nextRootContents);
+            // *TUF-SPEC-v1.0.9 Section 5.1.3
+            $this->checkSignatures($nextRoot);
+            // Update Role and Key databases to use the new root information.
+            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot);
+            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot);
+            $this->checkSignatures($nextRoot);
+            // *TUF-SPEC-v1.0.9 Section 5.1.4
+            static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $rootData = $nextRoot;
+            // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
+            // Note that the expiration of the new (intermediate) root metadata
+            // file does not matter yet, because we will check for it in step
+            // 1.8.
+
+            // *TUF-SPEC-v1.0.9 Section 5.1.6 and 5.1.7
+            $this->durableStorage['root.json'] = $nextRootContents;
+            $nextVersion = $rootData->getVersion() + 1;
+            // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
         }
 
         // *TUF-SPEC-v1.0.9 Section 5.1.9
@@ -526,6 +522,24 @@ class Updater
                     throw new MetadataException("The '{$newMetadata->getType()}' contents does not match hash '$algo' specified in the '{$authorityMetadata->getType()}' metadata.");
                 }
             }
+        }
+    }
+
+    /**
+     * Gets a file if it exists if it exists in the remote repo.
+     *
+     * @param string $fileName
+     *   The file name to fetch.
+     *
+     * @return string|null
+     *   The contents of the file or null if it does not exist.
+     */
+    private function fetchFileIfExists(string $fileName):?string
+    {
+        try {
+            return $this->repoFileFetcher->fetchFile($fileName, static::MAXIMUM_DOWNLOAD_BYTES);
+        } catch (RepoFileNotFound $exception) {
+            return null;
         }
     }
 }
