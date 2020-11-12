@@ -71,14 +71,6 @@ class TUFTestFixtureBase:
 
         print('Using key {} for {}'.format(pathpriv_src, name_dst))
 
-        # Copy the keys where we would normally generate them in-place.
-        # This is designed to mock this functionality:
-        # rt.generate_and_write_ed25519_keypair(pathpriv_dst, password='pw')
-        #pathpriv_dst = os.path.join(self.tufrepo_dir, '{}_key'.format(name_dst))
-        #pathpub_dst = '{}.pub'.format(pathpriv_dst)
-        #shutil.copyfile(pathpriv_src, pathpriv_dst)
-        #shutil.copyfile(pathpub_src, pathpub_dst)
-
         # Load the keys into TUF.
         public_key = rt.import_ed25519_publickey_from_file(pathpub_src)
         private_key = rt.import_ed25519_privatekey_from_file(
@@ -183,9 +175,8 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
 
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
-    a = TUFTestFixtureSimple()
-    print('===================')
-    b = TUFTestFixtureDelegated()
+    TUFTestFixtureSimple()
+    TUFTestFixtureDelegated()
 
 
 generate_fixtures()
