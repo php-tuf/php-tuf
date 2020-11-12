@@ -5,6 +5,7 @@ namespace Tuf\Metadata;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
@@ -130,23 +131,13 @@ abstract class MetadataBase
      */
     protected static function getSignedCollectionOptions(): array
     {
-        // Metadata date-time data follows the ISO 8601 standard.
-        // The expected format of the combined date and time string
-        // is "YYYY-MM-DDTHH:MM:SSZ".
-        $dataPattern = '2[0-9]{3}-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])';
-        $timePattern = '(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])';
         return [
             'fields' => [
                 '_type' => [
                     new EqualTo(['value' => static::TYPE]),
                     new Type(['type' => 'string']),
                 ],
-
-                'expires' => [
-                    new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => "/^{$dataPattern}T{$timePattern}Z$/"]),
-                ],
+                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
                 // We only expect to work with major version 1.
                 'spec_version' => [
                     new NotBlank(),
