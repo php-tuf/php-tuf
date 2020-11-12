@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class TargetsMetadata extends MetadataBase implements \ArrayAccess
+class TargetsMetadata extends MetadataBase
 {
 
     /**
