@@ -4,6 +4,7 @@
 namespace Tuf;
 
 use Tuf\Exception\FormatException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
 
 /**
@@ -152,7 +153,7 @@ class KeyDB
      *     The key metadata matching $keyId. See self::addKey() and the TUF
      *     specification for the array structure.
      *
-     * @throws \InvalidArgumentException
+     * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the key ID is not found in the keydb database.
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
@@ -160,7 +161,7 @@ class KeyDB
     public function getKey(string $keyId)
     {
         if (empty($this->keys[$keyId])) {
-            throw new \InvalidArgumentException("Unknown key ID: $keyId");
+            throw new NotFoundException($keyId, 'key');
         }
         return $this->keys[$keyId];
     }
