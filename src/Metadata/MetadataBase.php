@@ -44,6 +44,8 @@ class MetadataBase
      *
      * @param array $metadata
      *   The data.
+     * @param array $normalized
+     *   The normalized data.
      */
     public function __construct(array $metadata, array $normalized)
     {
@@ -167,6 +169,12 @@ class MetadataBase
         return $this->metaData['signed'];
     }
 
+    /**
+     * Gets the signed portion in normalized JSON string.
+     *
+     * @return string
+     *   The normalized JSON string.
+     */
     public function getNormalizedSigned():string
     {
         return JsonCanonicalNormalizer::encode($this->normalizedSigned);

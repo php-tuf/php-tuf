@@ -27,13 +27,31 @@ class JsonCanonicalNormalizer
         return json_encode($structure);
     }
 
-    public static function decode(string $json):array {
+    /**
+     * Decode.
+     *
+     * @param string $json
+     *   The JSON.
+     *
+     * @return array
+     *   The decoded data.
+     */
+    public static function decode(string $json):array
+    {
         $mixedDecoded = json_decode($json);
         $arrayDecoded = json_decode($json, true);
         static::copyObjects($arrayDecoded, $mixedDecoded);
         return $arrayDecoded;
     }
 
+    /**
+     * Copy the objects
+     *
+     * @param $arrayVersion
+     *   Array version.
+     * @param $mixedVersion
+     *   Mixed version.
+     */
     private static function copyObjects(&$arrayVersion, $mixedVersion)
     {
         foreach ($mixedVersion as $key => $value) {
@@ -46,7 +64,6 @@ class JsonCanonicalNormalizer
                 }
             }
         }
-
     }
 
 /**
