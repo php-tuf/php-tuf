@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonCanonicalNormalizer;
 
 /**
  * Base class for metadata.
@@ -61,7 +62,7 @@ class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = json_decode($json, true);
+        $data = JsonCanonicalNormalizer::decode($json);
         static::validateMetaData($data);
         return new static($data);
     }

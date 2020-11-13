@@ -7,7 +7,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\JsonNormalizer;
+use Tuf\JsonCanonicalNormalizer;
 
 /**
  * Defines a file fetcher that uses Guzzle to read a file over HTTPS.
@@ -76,7 +76,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         // number of bytes.
         if ($body->eof() === true) {
             $json = json_decode($contents, true);
-            return JsonNormalizer::asNormalizedJson($json);
+            return JsonCanonicalNormalizer::encode($json);
         } else {
             throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         }

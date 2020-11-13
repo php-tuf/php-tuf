@@ -5,7 +5,7 @@ namespace Tuf;
 /**
  * Provdes normalization to convert an array to a canonical JSON string.
  */
-class JsonNormalizer
+class JsonCanonicalNormalizer
 {
     /**
      * Encodes an associative array into a string of canonical JSON.
@@ -20,14 +20,36 @@ class JsonNormalizer
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
      */
-    public static function asNormalizedJson(array $structure) : string
+    public static function encode(array $structure) : string
     {
         self::rKeySort($structure);
 
         return json_encode($structure);
     }
 
-    /**
+    public static function decode(string $json):array {
+        $mixedDecoded = json_decode($json);
+        $arrayDecoded = json_decode($json, true);
+        static::copyObjects($arrayDecoded, $mixedDecoded);
+        return $arrayDecoded;
+    }
+
+    private static function copyObjects(&$arrayVersion, $mixedVersion)
+    {
+        foreach ($mixedVersion as $key => $value) {
+            if (is_object($value) && count((array)$value) === 0) {
+                $arrayVersion[$key] = $value;
+            } else {
+                if (is_array($arrayVersion[$key])) {
+                    static::copyObjects($arrayVersion[$key], $value);
+                    //$arrayVersion[$key] = $value;
+                }
+            }
+        }
+
+    }
+
+/**
      * Sorts the JSON data array into a canonical order.
      *
      * @param mixed[] $structure
