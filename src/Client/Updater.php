@@ -331,7 +331,7 @@ class Updater
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonicalBytes = JsonCanonicalNormalizer::encode($metaData->getSigned());
+        $canonicalBytes = $metaData->getNormalizedSigned();
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getType())) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);

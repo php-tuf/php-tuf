@@ -135,10 +135,10 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureSimple',
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
         ], 0);
@@ -350,7 +350,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 'timestamp.json',
                 [
-                    'root' => 3,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -358,21 +358,21 @@ class UpdaterTest extends TestCase
             ],
             [
                 'TUFTestFixtureSimple',
-                '3.snapshot.json',
+                '2.snapshot.json',
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
-                '3.targets.json',
+                '2.targets.json',
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
                     'targets' => 2,
                 ],
             ],

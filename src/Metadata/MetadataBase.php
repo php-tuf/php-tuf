@@ -36,6 +36,8 @@ class MetadataBase
      */
     protected const TYPE = '';
 
+    protected $normalizedSigned;
+
 
     /**
      * MetaDataBase constructor.
@@ -43,9 +45,10 @@ class MetadataBase
      * @param array $metadata
      *   The data.
      */
-    public function __construct(array $metadata)
+    public function __construct(array $metadata, array $normalized)
     {
         $this->metaData = $metadata;
+        $this->normalizedSigned = $normalized['signed'];
     }
 
     /**
@@ -62,9 +65,9 @@ class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = JsonCanonicalNormalizer::decode($json);
+        $data = json_decode($json, true);
         static::validateMetaData($data);
-        return new static($data);
+        return new static($data, JsonCanonicalNormalizer::decode($json));
     }
 
     /**
@@ -162,6 +165,11 @@ class MetadataBase
     public function getSigned() : array
     {
         return $this->metaData['signed'];
+    }
+
+    public function getNormalizedSigned():string
+    {
+        return JsonCanonicalNormalizer::encode($this->normalizedSigned);
     }
 
     /**
