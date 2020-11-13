@@ -38,13 +38,13 @@ class UpdaterTest extends TestCase
     private static function getFixtureClientStartVersions(string $fixturesSet): array
     {
         $startVersions = [
-            'delegated' => [
+            'TUFTestFixtureDelegated' => [
                 'root' => 3,
                 'timestamp' => 3,
                 'snapshot' => 3,
                 'targets' => 3,
             ],
-            'simple' => [
+            'TUFTestFixtureSimple' => [
                 'root' => 2,
                 'timestamp' => 2,
                 'snapshot' => 2,
@@ -77,7 +77,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir($this->getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -124,7 +124,7 @@ class UpdaterTest extends TestCase
     {
         return $this->getKeyedArray([
             [
-                'delegated',
+                'TUFTestFixtureDelegated',
                 [
                     'root' => 5,
                     'timestamp' => 5,
@@ -133,7 +133,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'simple',
+                'TUFTestFixtureSimple',
                 [
                     'root' => 3,
                     'timestamp' => 3,
@@ -190,9 +190,9 @@ class UpdaterTest extends TestCase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo('delegated');
-        $this->assertClientRepoVersions($this->getFixtureClientStartVersions('delegated'));
+        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
+        $this->assertClientRepoVersions($this->getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         $updater = $this->getSystemInTest();
         try {
@@ -317,7 +317,7 @@ class UpdaterTest extends TestCase
     {
         return $this->getKeyedArray([
             [
-                'delegated',
+                'TUFTestFixtureDelegated',
                 'timestamp.json',
                 [
                     'root' => 5,
@@ -327,7 +327,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'delegated',
+                'TUFTestFixtureDelegated',
                 '5.snapshot.json',
                 [
                     'root' => 5,
@@ -337,7 +337,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'delegated',
+                'TUFTestFixtureDelegated',
                 '5.targets.json',
                 [
                     'root' => 5,
@@ -347,7 +347,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'simple',
+                'TUFTestFixtureSimple',
                 'timestamp.json',
                 [
                     'root' => 3,
@@ -357,7 +357,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'simple',
+                'TUFTestFixtureSimple',
                 '3.snapshot.json',
                 [
                     'root' => 3,
@@ -367,7 +367,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'simple',
+                'TUFTestFixtureSimple',
                 '3.targets.json',
                 [
                     'root' => 3,

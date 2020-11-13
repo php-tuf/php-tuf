@@ -39,7 +39,7 @@ abstract class MetaDataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
     }
 
     /**
@@ -80,7 +80,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerValidMetaData() : array
     {
-        $fixturesDir = static::getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current');
+        $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -126,7 +126,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][expires]', '/');
-            $expectedMessage .= '.*This value is not valid.';
+            $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         } else {
@@ -293,19 +293,19 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerExpires() : array
     {
-        return [
+        return static::getKeyedArray([
             ['1970', false],
-            ['1970-01-01T00:00:00Z', false],
+            ['1970-01-01T00:00:00Z', true],
             ['2000-01-01', false],
             ['2000-01-01T00:00:00', false],
-            ['3000-01-01T00:00:00Z', false],
+            ['3000-01-01T00:00:00Z', true],
             ['2000-01-01T00:00:61Z', false],
             ['2000-01-01T24:00:01Z', false],
             ['2000-01-01T00:00:00Z', true],
             ['2030-01-01T20:50:10Z', true],
             ['2030-11-01T20:50:10Z', true],
             ['2330-12-21T20:50:10Z', true],
-        ];
+        ]);
     }
 
     /**
@@ -381,7 +381,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
     {
-        $realPath = static::getFixturesRealPath('delegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturesRealPath('TUFTestFixtureDelegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
