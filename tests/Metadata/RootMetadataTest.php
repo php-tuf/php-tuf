@@ -5,7 +5,6 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
-use Tuf\JsonCanonicalNormalizer;
 
 class RootMetadataTest extends MetaDataBaseTest
 {
@@ -143,7 +142,7 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     public function testSupportsConsistentSnapshots() : void
     {
-        $data = JsonCanonicalNormalizer::decode($this->localRepo[$this->validJson]);
+        $data = json_decode($this->localRepo[$this->validJson], true);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metaData */

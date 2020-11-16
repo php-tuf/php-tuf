@@ -13,7 +13,6 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
-use Tuf\JsonCanonicalNormalizer;
 
 /**
  * Base class for metadata.
@@ -36,21 +35,16 @@ class MetadataBase
      */
     protected const TYPE = '';
 
-    protected $normalizedSigned;
-
 
     /**
      * MetaDataBase constructor.
      *
      * @param array $metadata
      *   The data.
-     * @param array $normalized
-     *   The normalized data.
      */
-    public function __construct(array $metadata, array $normalized)
+    public function __construct(array $metadata)
     {
         $this->metaData = $metadata;
-        $this->normalizedSigned = $normalized['signed'];
     }
 
     /**
@@ -69,7 +63,7 @@ class MetadataBase
     {
         $data = json_decode($json, true);
         static::validateMetaData($data);
-        return new static($data, JsonCanonicalNormalizer::decode($json));
+        return new static($data);
     }
 
     /**
@@ -167,17 +161,6 @@ class MetadataBase
     public function getSigned() : array
     {
         return $this->metaData['signed'];
-    }
-
-    /**
-     * Gets the signed portion in normalized JSON string.
-     *
-     * @return string
-     *   The normalized JSON string.
-     */
-    public function getNormalizedSigned():string
-    {
-        return JsonCanonicalNormalizer::encode($this->normalizedSigned);
     }
 
     /**

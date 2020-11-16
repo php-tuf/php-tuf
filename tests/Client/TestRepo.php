@@ -4,7 +4,7 @@ namespace Tuf\Tests\Client;
 
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\JsonCanonicalNormalizer;
+use Tuf\JsonNormalizer;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -76,7 +76,7 @@ class TestRepo implements RepoFileFetcherInterface
     {
         $json = json_decode($this->repoFilesContents[$fileName], true);
         static::nestedChange($keys, $json, $newValue);
-        $this->repoFilesContents[$fileName] = JsonCanonicalNormalizer::encode($json);
+        $this->repoFilesContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
     }
 
     /**

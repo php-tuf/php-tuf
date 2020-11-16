@@ -102,7 +102,7 @@ class KeyDB
             'keyid_hash_algorithms' => $keyMeta['keyid_hash_algorithms'],
             'keyval' => ['public' => $keyMeta['keyval']['public']],
         ];
-        $keyCanonicalForm = JsonCanonicalNormalizer::encode($keyCanonicalStruct);
+        $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
 
         // Generate a hash of the key and its metadata for each of the listed
         // keyid_hash_algorithms.

@@ -8,7 +8,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
-use Tuf\JsonCanonicalNormalizer;
+use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetaFileInfoInterface;
 use Tuf\Metadata\MetadataBase;
@@ -331,7 +331,7 @@ class Updater
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonicalBytes = $metaData->getNormalizedSigned();
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getType())) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
