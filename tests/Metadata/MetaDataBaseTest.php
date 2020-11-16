@@ -4,6 +4,7 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -388,5 +389,23 @@ abstract class MetaDataBaseTest extends TestCase
         }
         $keys = array_keys($data);
         return array_shift($keys);
+    }
+
+    /**
+     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     *
+     * @param string $validJson
+     *   The valid json key from $localRepo.
+     *
+     * @return void
+     *
+     * @dataProvider providerValidMetaData
+     */
+    public function testNormalization(string $validJson) : void
+    {
+        $contents = $this->localRepo[$validJson];
+        $json = json_decode($contents);
+        $metaData = static::callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
     }
 }
