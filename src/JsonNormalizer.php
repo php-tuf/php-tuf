@@ -2,8 +2,6 @@
 
 namespace Tuf;
 
-use Tuf\Metadata\ValidatableClass;
-
 /**
  * Provdes normalization to convert an array to a canonical JSON string.
  */
@@ -12,7 +10,7 @@ class JsonNormalizer
     /**
      * Encodes an associative array into a string of canonical JSON.
      *
-     * @param mixed[] $structure
+     * @param mixed[]|\stdClass $structure
      *     The associative array of JSON data.
      *
      * @return string
@@ -32,7 +30,7 @@ class JsonNormalizer
     /**
      * Sorts the JSON data array into a canonical order.
      *
-     * @param mixed[] $structure
+     * @param mixed[]|\stdClass $structure
      *     The array of JSON to sort, passed by reference.
      *
      * @throws \Exception
@@ -46,22 +44,45 @@ class JsonNormalizer
             if (!ksort($structure, SORT_STRING)) {
                 throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
             }
-        } elseif ($structure instanceof ValidatableClass) {
-            $sorted = [];
-            foreach ($structure as $key => $value) {
-                $sorted[$key] = $value;
+        } elseif (is_object($structure)) {
+            $sorted = new \stdClass();
+            foreach (static::getSortedPublicProperties($structure) as $property) {
+                $sorted->{$property} = $structure->{$property};
             }
-            if (!ksort($sorted, SORT_STRING)) {
-                throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
-            }
-            $structure = new ValidatableClass((object) $sorted);
+            $structure = $sorted;
         }
-
 
         foreach ($structure as $item => $value) {
             if (is_array($value)) {
-                self::rKeySort($structure[$item]);
+                if (is_array($structure)) {
+                    self::rKeySort($structure[$item]);
+                } else {
+                    self::rKeySort($structure->{$item});
+                }
             }
         }
+    }
+
+    /**
+     * Gets the sorted public properties of an object.
+     *
+     * @param object $instance
+     *   The object instance.
+     *
+     * @return string[]
+     *   The sorted public properties.
+     * @throws \Exception
+     *   Thrown if sorting is not possible.
+     */
+    private static function getSortedPublicProperties(object $instance):array
+    {
+        $keys = [];
+        foreach ($instance as $key => $value) {
+            $keys[] = $key;
+        }
+        if (!sort($keys)) {
+            throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
+        }
+        return $keys;
     }
 }
