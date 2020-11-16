@@ -150,6 +150,10 @@ abstract class MetadataBase
         ];
     }
 
+    /**
+     *
+     * @param array|\stdClass|\ArrayAccess $data
+     */
     private static function convertToValidable(&$data)
     {
         if ($data instanceof \stdClass) {
