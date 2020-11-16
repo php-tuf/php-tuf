@@ -359,7 +359,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, array $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta)
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);

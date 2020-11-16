@@ -17,7 +17,7 @@ use Tuf\Exception\MetadataException;
 /**
  * Base class for metadata.
  */
-abstract class MetadataBase
+class MetadataBase
 {
     use ConstraintsTrait;
 
@@ -42,7 +42,7 @@ abstract class MetadataBase
      * @param array $metadata
      *   The data.
      */
-    public function __construct(array $metadata)
+    public function __construct(object $metadata)
     {
         $this->metaData = $metadata;
     }
@@ -61,7 +61,8 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = json_decode($json, true);
+        $data = json_decode($json);
+        static::convertToValidable($data);
         static::validateMetaData($data);
         return new static($data);
     }
@@ -77,7 +78,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    protected static function validateMetaData(array $metadata) : void
+    protected static function validateMetaData(object $metadata) : void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -131,22 +132,41 @@ abstract class MetadataBase
      */
     protected static function getSignedCollectionOptions(): array
     {
+        $fields = [
+            'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
+              // We only expect to work with major version 1.
+            'spec_version' => [
+                new NotBlank(),
+                new Type(['type' => 'string']),
+                new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
+            ],
+        ] + static::getVersionConstraints();
+        if (static::TYPE) {
+            $fields['_type'] = [
+                new EqualTo(['value' => static::TYPE]),
+                new Type(['type' => 'string']),
+            ];
+        }
         return [
-            'fields' => [
-                '_type' => [
-                    new EqualTo(['value' => static::TYPE]),
-                    new Type(['type' => 'string']),
-                ],
-                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
-                // We only expect to work with major version 1.
-                'spec_version' => [
-                    new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
-                ],
-            ] + static::getVersionConstraints(),
+            'fields' => $fields,
             'allowExtraFields' => true,
         ];
+    }
+
+    private static function convertToValidable(&$data)
+    {
+        if ($data instanceof \stdClass) {
+            $data = new ValidatableClass($data);
+        }
+        foreach ($data as $key => $datum) {
+            if ($datum instanceof \stdClass) {
+                $datum = new ValidatableClass($datum);
+            }
+            if (is_array($datum) || $datum instanceof ValidatableClass) {
+                static::convertToValidable($datum);
+            }
+            $data[$key] = $datum;
+        }
     }
 
     /**
@@ -155,7 +175,7 @@ abstract class MetadataBase
      * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned() : array
+    public function getSigned() : object
     {
         return $this->metaData['signed'];
     }

@@ -80,7 +80,7 @@ class RoleDB
      *
      * @param string $roleName
      *     The role name.
-     * @param array $roleInfo
+     * @param \ArrayAccess $roleInfo
      *     An associative array of role metadata, including:
      *     - keyids: An array of authorized public key signatures for the role.
      *     - threshold: An integer for the threshold of signatures required for
@@ -99,7 +99,7 @@ class RoleDB
      *     - https://github.com/php-tuf/php-tuf/issues/50
      *     - https://github.com/php-tuf/php-tuf/issues/52
      */
-    public function addRole(string $roleName, array $roleInfo)
+    public function addRole(string $roleName, \ArrayAccess $roleInfo)
     {
         if ($this->roleExists($roleName)) {
             throw new \Exception('Role already exists: ' . $roleName);

@@ -24,7 +24,7 @@ class RootMetadata extends MetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['keys'] = new Required([
-            new Type('array'),
+            new Type('object'),
             new Count(['min' => 1]),
             new All([
                 static::getKeyConstraints(),

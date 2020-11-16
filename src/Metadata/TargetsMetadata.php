@@ -26,13 +26,13 @@ class TargetsMetadata extends MetadataBase
         $options['fields']['delegations'] = new Required([
             new Collection([
                 'keys' => new Required([
-                    new Type('array'),
+                    new Type('object'),
                     new All([
                         static::getKeyConstraints(),
                     ]),
                 ]),
                 'roles' => new All([
-                    new Type(['type' => 'array']),
+                    new Type(['type' => 'object']),
                     new Collection([
                         'name' => [
                             new NotBlank(),

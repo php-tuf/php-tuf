@@ -27,7 +27,7 @@ trait ConstraintsTrait
         return [
             'hashes' => [
                 new Count(['min' => 1]),
-                new Type(['type' => 'array']),
+                new Type(['type' => 'object']),
               // The keys for 'hashes is not know but they all must be strings.
                 new All([
                     new Type(['type' => 'string']),

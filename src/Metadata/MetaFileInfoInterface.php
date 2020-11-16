@@ -3,11 +3,10 @@
 namespace Tuf\Metadata;
 
 /**
- * A trait that implements MetaFileInterface.
+ * Defines an interface for metadata class that contain other metadata file info.
  */
-trait MetaFileInfoTrait
+interface MetaFileInfoInterface
 {
-
     /**
      * Gets file information value under the 'meta' key.
      *
@@ -17,9 +16,5 @@ trait MetaFileInfoTrait
      * @return mixed[]|null
      *   The file information if available or null if not set.
      */
-    public function getFileMetaInfo(string $key)
-    {
-        $signed = $this->getSigned();
-        return $signed['meta'][$key] ?? null;
-    }
+    public function getFileMetaInfo(string $key);
 }

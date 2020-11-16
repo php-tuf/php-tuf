@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class TimestampMetadata extends MetadataBase
+class TimestampMetadata extends MetadataBase implements MetaFileInfoInterface
 {
     use MetaFileInfoTrait;
 
@@ -25,7 +25,7 @@ class TimestampMetadata extends MetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['meta'] = new Required([
-            new Type('array'),
+            new Type('object'),
             new Count(['min' => 1]),
             new All([
                 new Collection([

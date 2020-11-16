@@ -101,7 +101,7 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Array[signed][_type]", '/');
+        $expectedMessage = preg_quote("Object(Tuf\Metadata\ValidatableClass)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -125,7 +125,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][expires]', '/');
+            $expectedMessage = preg_quote('Object(Tuf\Metadata\ValidatableClass)[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -152,7 +152,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Object(Tuf\Metadata\ValidatableClass)[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -180,14 +180,14 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Object(Tuf\Metadata\ValidatableClass)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
         } else {
-            $this->expectExceptionMessageMatches("/Array$fieldName.*This field is missing./s");
+            $this->expectExceptionMessageMatches("/$fieldName.*This field is missing./s");
         }
         static::callCreateFromJson($json);
     }
@@ -283,28 +283,6 @@ abstract class MetaDataBaseTest extends TestCase
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
         static::callCreateFromJson($json);
-    }
-
-    /**
-     * Change a nested array element.
-     *
-     * @param array $keys
-     *   Ordered keys to the value to set.
-     * @param array $data
-     *   The array to modify.
-     * @param mixed $newValue
-     *   The new value to set.
-     *
-     * @return void
-     */
-    protected function nestedChange(array $keys, array &$data, $newValue) : void
-    {
-        $key = array_shift($keys);
-        if ($keys) {
-            $this->nestedChange($keys, $data[$key], $newValue);
-        } else {
-            $data[$key] = $newValue;
-        }
     }
 
     /**
