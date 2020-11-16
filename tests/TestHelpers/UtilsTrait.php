@@ -53,9 +53,7 @@ trait UtilsTrait
                 $key = (string) $arguments[$useArgumentNumber];
             } else {
                 foreach ($arguments as $argument) {
-                    if (is_numeric($argument) || is_string($argument)) {
-                        $key .= '-' . (string) $argument;
-                    }
+                    $key .= '-' . (string) $argument;
                 }
             }
 
