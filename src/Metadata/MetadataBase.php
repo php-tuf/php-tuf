@@ -17,7 +17,7 @@ use Tuf\Exception\MetadataException;
 /**
  * Base class for metadata.
  */
-class MetadataBase
+abstract class MetadataBase
 {
     use ConstraintsTrait;
 
@@ -132,23 +132,20 @@ class MetadataBase
      */
     protected static function getSignedCollectionOptions(): array
     {
-        $fields = [
-            'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
-              // We only expect to work with major version 1.
-            'spec_version' => [
-                new NotBlank(),
-                new Type(['type' => 'string']),
-                new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
-            ],
-        ] + static::getVersionConstraints();
-        if (static::TYPE) {
-            $fields['_type'] = [
-                new EqualTo(['value' => static::TYPE]),
-                new Type(['type' => 'string']),
-            ];
-        }
         return [
-            'fields' => $fields,
+            'fields' => [
+                '_type' => [
+                    new EqualTo(['value' => static::TYPE]),
+                    new Type(['type' => 'string']),
+                ],
+                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
+                // We only expect to work with major version 1.
+                'spec_version' => [
+                    new NotBlank(),
+                    new Type(['type' => 'string']),
+                    new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
+                ],
+            ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
     }
