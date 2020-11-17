@@ -8,6 +8,8 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Exception\MetadataException;
+use Tuf\SignatureVerifier;
 
 class RootMetadata extends MetadataBase
 {
@@ -16,6 +18,22 @@ class RootMetadata extends MetadataBase
      * {@inheritdoc}
      */
     protected const TYPE = 'root';
+
+    public static function createFromJsonUsingSelfVerfication(string $json)
+    {
+        // ☹️ This is why I don't think this method is better. For root you have to
+        // validate before anys to be able to get the roles and keys to check
+        // the signature. This would be true even if we didn't have the SignatureVerifier
+        // class.
+        $data = json_decode($json, true);
+        static::validateMetaData($data);
+        $rootMetadata = new static($data);
+        $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
+        return parent::createFromJson($json, $verifier);
+    }
+
+
+
 
     /**
      * {@inheritdoc}

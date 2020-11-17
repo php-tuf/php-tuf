@@ -4,11 +4,13 @@ namespace Tuf\Tests\Client;
 
 use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
+use Tuf\SignatureVerifier;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -26,6 +28,20 @@ class UpdaterTest extends TestCase
      * @var \Tuf\Tests\Client\TestRepo
      */
     protected $testRepo;
+
+    /**
+     * @var SignatureVerifier
+     */
+    protected $verifier;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $verifier = $this->getMockBuilder(SignatureVerifier::class)->disableOriginalConstructor()->getMock();
+        $verifier->method('checkSignatures')->withAnyParameters();
+        $this->verifier = $verifier;
+    }
+
 
     /**
      * Returns a memory-based updater populated with the test fixtures.
@@ -134,19 +150,20 @@ class UpdaterTest extends TestCase
      */
     protected function assertRepoVersions(array $expectedVersions): void
     {
+
         $this->assertSame(
             $expectedVersions['root'],
-            RootMetadata::createFromJson($this->localRepo['root.json'])
+            RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])
             ->getVersion()
         );
         $this->assertSame(
             $expectedVersions['timestamp'],
-            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
+            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'], $this->verifier)
             ->getVersion()
         );
         $this->assertSame(
             $expectedVersions['snapshot'],
-            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
+            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'], $this->verifier)
             ->getVersion()
         );
     }
@@ -172,7 +189,7 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
-        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        $this->assertSame(3, RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])->getVersion());
         $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();
         try {
@@ -182,7 +199,7 @@ class UpdaterTest extends TestCase
             // 5.root.json should throw an exception.
             $this->assertSame(
                 $expectedRootVersion,
-                RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
+                RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])->getVersion()
             );
             $this->assertSame($expectionMessage, $exception->getMessage());
             return;

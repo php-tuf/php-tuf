@@ -115,7 +115,7 @@ class Updater
      */
     public function refresh() : bool
     {
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $rootData = RootMetadata::createFromJsonUsingSelfVerfication($this->durableStorage['root.json']);
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
@@ -128,15 +128,14 @@ class Updater
 
         // *TUF-SPEC-v1.0.9 Section 5.2
         $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
-        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
         // *TUF-SPEC-v1.0.9 Section 5.2.1
-        $this->signatureVerifier->checkSignatures($newTimestampData);
+        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents, $this->signatureVerifier);
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
             // *TUF-SPEC-v1.0.9 Section 5.2.2.1 and 5.2.2.2
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json'], $this->signatureVerifier);
             static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
 
@@ -154,7 +153,8 @@ class Updater
                 "$snapShotVersion.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+            // TUF-SPEC-v1.0.9 Section 5.3.2
+            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents, $this->signatureVerifier);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -162,11 +162,9 @@ class Updater
         if ($snapShotVersion !== $newSnapshotData->getVersion()) {
             throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
         }
-        // TUF-SPEC-v1.0.9 Section 5.3.2
-        $this->signatureVerifier->checkSignatures($newSnapshotData);
 
         if (isset($this->durableStorage['snapshot.json'])) {
-            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json'], $this->signatureVerifier);
             // TUF-SPEC-v1.0.9 Section 5.3.3
             static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
         }
@@ -311,12 +309,11 @@ class Updater
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new \Exception("The maximum number root files have already been dowloaded:" . static::MAX_ROOT_DOWNLOADS);
             }
-            $nextRoot = RootMetadata::createFromJson($nextRootContents);
             // *TUF-SPEC-v1.0.9 Section 5.1.3
-            $this->signatureVerifier->checkSignatures($nextRoot);
+            $nextRoot = RootMetadata::createFromJson($nextRootContents, $this->signatureVerifier);
             // Signature verifier to use the new root information.
-            $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
-            $this->signatureVerifier->checkSignatures($nextRoot);
+            $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($nextRoot);
+            $nextRoot = RootMetadata::createFromJson($nextRootContents, $this->signatureVerifier);
             // *TUF-SPEC-v1.0.9 Section 5.1.4
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $rootData = $nextRoot;

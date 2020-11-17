@@ -24,7 +24,7 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     protected static function callCreateFromJson(string $json) : MetadataBase
     {
-        return RootMetadata::createFromJson($json);
+        return RootMetadata::createFromJsonUsingSelfVerfication($json);
     }
 
     /**
@@ -82,7 +82,7 @@ class RootMetadataTest extends MetaDataBaseTest
         $expectedMessage = preg_quote("Array[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->localRepo[$this->validJson]);
         unset($data['signed']['roles'][$missingRole]);
         static::callCreateFromJson(json_encode($data));
     }
@@ -130,7 +130,7 @@ class RootMetadataTest extends MetaDataBaseTest
         $expectedMessage = preg_quote("Array[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->localRepo[$this->validJson]);
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
         static::callCreateFromJson(json_encode($data));
     }
@@ -142,7 +142,7 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     public function testSupportsConsistentSnapshots() : void
     {
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->localRepo[$this->validJson]);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metaData */

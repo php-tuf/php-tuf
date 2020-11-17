@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
+use Tuf\SignatureVerifier;
 
 /**
  * Base class for metadata.
@@ -59,9 +60,14 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json)
+    public static function createFromJson(string $json, SignatureVerifier $signatureVerifier)
     {
-        $data = json_decode($json, true);
+        $data = json_decode($json);
+        if (!isset($data->signed) || !is_object($data->signed)) {
+            throw new MetadataException("No signed property found in metadata.");
+        }
+        $signatureVerifier->checkSignatures($data);
+        static::convertToArrays($data);
         static::validateMetaData($data);
         return new static($data);
     }
@@ -147,6 +153,19 @@ abstract class MetadataBase
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
+    }
+
+    protected static function convertToArrays(&$data)
+    {
+        if (is_object($data)) {
+            $data = (array) $data;
+        }
+        if (is_array($data)) {
+            foreach ($data as &$datum) {
+                static::convertToArrays($datum);
+            }
+        }
+        return $data;
     }
 
     /**

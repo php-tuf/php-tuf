@@ -99,7 +99,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testInvalidType() : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['_type'] = 'invalid_type_value';
         $expectedMessage = preg_quote("Array[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
@@ -122,7 +122,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testExpires(string $expires, bool $valid) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][expires]', '/');
@@ -149,7 +149,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testSpecVersion(string $version, bool $valid) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
@@ -178,7 +178,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testMissingField(string $expectedField, string $exception = null) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $keys = explode(':', $expectedField);
         $fieldName = preg_quote('[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
@@ -206,7 +206,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testOptionalFields(string $optionalField, $value) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $this->nestedChange(explode(':', $optionalField), $metadata, $value);
         $json = json_encode($metadata);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
@@ -260,7 +260,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testInvalidField(string $expectedField, string $expectedType) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->localRepo[$this->validJson]);
         $keys = explode(':', $expectedField);
 
         switch ($expectedType) {
