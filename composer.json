@@ -15,7 +15,7 @@
         "paragonie/sodium_compat": "^1.13",
         "symfony/validator": "^5.1",
         "guzzlehttp/guzzle": "^7.2",
-        "myclabs/deep-copy": "^1.10"
+        "myclabs/deep-copy": "^1.10.2"
     },
     "suggest": {
         "ext-libsodium": "Provides faster verification of updates"
