@@ -68,7 +68,7 @@ class JsonNormalizer
         } elseif ($structure instanceof ValidatableClass) {
             $structure->ksort();
         } elseif (is_object($structure)) {
-            throw new Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \Tuf\Metadata\ValidatableClass found: ' . get_class($structure));
+            throw new \Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \Tuf\Metadata\ValidatableClass found: ' . get_class($structure));
         }
 
         foreach ($structure as $key => $value) {
