@@ -16,10 +16,12 @@ final class ValidatableClass extends \ArrayObject
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($index)
+    public function offsetGet($index, $getOrignal = false)
     {
-        return deep_copy(parent::offsetGet($index));
+        $value = parent::offsetGet($index);
+        return $getOrignal ? parent::offsetGet($index) : deep_copy($value);
     }
+
 
 
 }

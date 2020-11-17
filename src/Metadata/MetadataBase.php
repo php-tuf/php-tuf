@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 
 /**
  * Base class for metadata.
@@ -61,8 +62,8 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = json_decode($json);
-        static::convertToValidable($data);
+
+        $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
         return new static($data);
     }
@@ -148,26 +149,6 @@ abstract class MetadataBase
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
-    }
-
-    /**
-     *
-     * @param array|\stdClass|\ArrayAccess $data
-     */
-    private static function convertToValidable(&$data)
-    {
-        if ($data instanceof \stdClass) {
-            $data = new ValidatableClass($data);
-        }
-        foreach ($data as $key => $datum) {
-            if ($datum instanceof \stdClass) {
-                $datum = new ValidatableClass($datum);
-            }
-            if (is_array($datum) || $datum instanceof ValidatableClass) {
-                static::convertToValidable($datum);
-            }
-            $data[$key] = $datum;
-        }
     }
 
     /**
