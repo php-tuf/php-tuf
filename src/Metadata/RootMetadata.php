@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use function DeepCopy\deep_copy;
 
 class RootMetadata extends MetadataBase
 {
@@ -59,7 +60,7 @@ class RootMetadata extends MetadataBase
      */
     public function getRoles()
     {
-        return $this->getSigned()['roles'];
+        return deep_copy($this->getSigned()['roles']);
     }
 
     /**
@@ -76,7 +77,7 @@ class RootMetadata extends MetadataBase
      */
     public function getKeys()
     {
-        return $this->getSigned()['keys'];
+        return deep_copy($this->getSigned()['keys']);
     }
 
     /**

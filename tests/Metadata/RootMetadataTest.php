@@ -79,7 +79,7 @@ class RootMetadataTest extends MetaDataBaseTest
     public function testRequiredRoles(string $missingRole)
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(Tuf\Metadata\ValidatableClass)[signed][roles][$missingRole]:", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         $data = json_decode($this->localRepo[$this->validJson], true);
@@ -127,7 +127,7 @@ class RootMetadataTest extends MetaDataBaseTest
     public function testInvalidRoleName()
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(Tuf\Metadata\ValidatableClass)[signed][roles][super_root]:", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         $data = json_decode($this->localRepo[$this->validJson], true);

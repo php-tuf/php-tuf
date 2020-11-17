@@ -2,8 +2,6 @@
 
 namespace Tuf;
 
-use Tuf\Metadata\ValidatableClass;
-
 /**
  * Provides normalization to convert an array to a canonical JSON string.
  *
@@ -65,19 +63,16 @@ class JsonNormalizer
             if (!ksort($structure, SORT_STRING)) {
                 throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
             }
-        } elseif ($structure instanceof ValidatableClass) {
+        } elseif ($structure instanceof \ArrayObject) {
             $structure->ksort();
         } elseif (is_object($structure)) {
-            throw new \Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \Tuf\Metadata\ValidatableClass found: ' . get_class($structure));
+            throw new \Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \ArrayObject found: ' . get_class($structure));
         }
 
         foreach ($structure as $key => $value) {
-            if (is_array($value) || $value instanceof ValidatableClass) {
-                if (is_array($structure)) {
+            if (is_array($value) || $value instanceof \ArrayObject) {
+                if (is_array($structure) || $structure instanceof \ArrayObject) {
                     self::rKeySort($structure[$key]);
-                } elseif ($structure instanceof ValidatableClass) {
-                    $original = $structure->offsetGet($key, true);
-                    self::rKeySort($original);
                 }
             }
         }
@@ -95,7 +90,7 @@ class JsonNormalizer
     private static function convertToSortableAndValidatable(&$data):void
     {
         if ($data instanceof \stdClass) {
-            $data = new ValidatableClass($data);
+            $data = new \ArrayObject($data);
         } elseif (!is_array($data)) {
             throw new \RuntimeException('Cannot convert type: ' . get_class($data));
         }

@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
+use function DeepCopy\deep_copy;
 
 /**
  * Base class for metadata.
@@ -40,10 +41,10 @@ abstract class MetadataBase
     /**
      * MetaDataBase constructor.
      *
-     * @param \Tuf\Metadata\ValidatableClass $metadata
+     * @param \ArrayObject $metadata
      *   The data.
      */
-    public function __construct(ValidatableClass $metadata)
+    public function __construct(\ArrayObject $metadata)
     {
         $this->metaData = $metadata;
     }
@@ -71,15 +72,15 @@ abstract class MetadataBase
     /**
      * Validates the structure of the metadata.
      *
-     * @param \Tuf\Metadata\ValidatableClass $metadata
+     * @param \ArrayObject $metadata
      *   The data to validate.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
-     *   Thrown if validation fails.
+     *    Thrown if validation fails.
      */
-    protected static function validateMetaData(ValidatableClass $metadata) : void
+    protected static function validateMetaData(\ArrayObject $metadata) : void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -157,9 +158,9 @@ abstract class MetadataBase
      * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned() : object
+    public function getSigned():object
     {
-        return $this->metaData['signed'];
+        return deep_copy($this->metaData['signed']);
     }
 
     /**
@@ -192,7 +193,7 @@ abstract class MetadataBase
      */
     public function getSignatures() : array
     {
-        return $this->metaData['signatures'];
+        return deep_copy($this->metaData['signatures']);
     }
 
     /**
