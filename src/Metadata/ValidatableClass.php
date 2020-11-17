@@ -12,11 +12,10 @@ use function DeepCopy\deep_copy;
  */
 final class ValidatableClass extends \ArrayObject
 {
-    public function createFromClass(\stdClass $class)
-    {
-        return new static((array) $class);
-    }
 
+    /**
+     * {@inheritdoc}
+     */
     public function offsetGet($index)
     {
         return deep_copy(parent::offsetGet($index));
