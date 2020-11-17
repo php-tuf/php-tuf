@@ -44,8 +44,12 @@ class JsonNormalizer
             if (!ksort($structure, SORT_STRING)) {
                 throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
             }
-        } elseif ($structure instanceof \ArrayObject) {
-            $structure->ksort();
+        } elseif ($structure instanceof \ArrayAccess) {
+            $sorted = new \stdClass();
+            foreach (static::getSortedPublicProperties($structure) as $property) {
+                $sorted->{$property} = $structure[$property];
+            }
+            $structure = $sorted;
         }
 
         foreach ($structure as $item => $value) {
@@ -57,5 +61,28 @@ class JsonNormalizer
                 }
             }
         }
+    }
+
+    /**
+     * Gets the sorted public properties of an object.
+     *
+     * @param object $instance
+     *   The object instance.
+     *
+     * @return string[]
+     *   The sorted public properties.
+     * @throws \Exception
+     *   Thrown if sorting is not possible.
+     */
+    private static function getSortedPublicProperties(object $instance):array
+    {
+        $keys = [];
+        foreach ($instance as $key => $value) {
+            $keys[] = $key;
+        }
+        if (!sort($keys)) {
+            throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
+        }
+        return $keys;
     }
 }
