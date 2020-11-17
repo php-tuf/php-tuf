@@ -44,10 +44,10 @@ class JsonNormalizer
             if (!ksort($structure, SORT_STRING)) {
                 throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
             }
-        } elseif (is_object($structure)) {
+        } elseif ($structure instanceof \ArrayAccess) {
             $sorted = new \stdClass();
             foreach (static::getSortedPublicProperties($structure) as $property) {
-                $sorted->{$property} = $structure->{$property};
+                $sorted->{$property} = $structure[$property];
             }
             $structure = $sorted;
         }
