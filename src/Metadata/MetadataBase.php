@@ -40,10 +40,10 @@ abstract class MetadataBase
     /**
      * MetaDataBase constructor.
      *
-     * @param array $metadata
+     * @param \Tuf\Metadata\ValidatableClass $metadata
      *   The data.
      */
-    public function __construct(object $metadata)
+    public function __construct(ValidatableClass $metadata)
     {
         $this->metaData = $metadata;
     }
@@ -71,7 +71,7 @@ abstract class MetadataBase
     /**
      * Validates the structure of the metadata.
      *
-     * @param array $metadata
+     * @param \Tuf\Metadata\ValidatableClass $metadata
      *   The data to validate.
      *
      * @return void
@@ -79,7 +79,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    protected static function validateMetaData(object $metadata) : void
+    protected static function validateMetaData(ValidatableClass $metadata) : void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());

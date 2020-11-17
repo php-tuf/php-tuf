@@ -2,11 +2,14 @@
 
 namespace Tuf;
 
-use mysql_xdevapi\Exception;
 use Tuf\Metadata\ValidatableClass;
 
 /**
- * Provdes normalization to convert an array to a canonical JSON string.
+ * Provides normalization to convert an array to a canonical JSON string.
+ *
+ * @internal
+ *   This is not a generic normalizer but intended to be used PHP-TUF metadata
+ *   classes.
  */
 class JsonNormalizer
 {
@@ -26,14 +29,22 @@ class JsonNormalizer
     public static function asNormalizedJson($structure) : string
     {
         self::rKeySort($structure);
-
         return json_encode($structure);
     }
 
-    public static function decode(string $string)
+    /**
+     * Decodes a string to data that can be used with ::asNormalizedJson().
+     *
+     * @param string $json
+     *   The JSON string.
+     *
+     * @return mixed
+     *   The decoded data.
+     */
+    public static function decode(string $json)
     {
-        $data = json_decode($string);
-        static::convertToSortableAndValidable($data);
+        $data = json_decode($json);
+        static::convertToSortableAndValidatable($data);
         return $data;
     }
 
@@ -56,8 +67,7 @@ class JsonNormalizer
             }
         } elseif ($structure instanceof ValidatableClass) {
             $structure->ksort();
-        }
-        elseif (is_object($structure)) {
+        } elseif (is_object($structure)) {
             throw new Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \Tuf\Metadata\ValidatableClass found: ' . get_class($structure));
         }
 
@@ -65,8 +75,7 @@ class JsonNormalizer
             if (is_array($value) || $value instanceof ValidatableClass) {
                 if (is_array($structure)) {
                     self::rKeySort($structure[$key]);
-                }
-                elseif ($structure instanceof ValidatableClass) {
+                } elseif ($structure instanceof ValidatableClass) {
                     $original = $structure->offsetGet($key, true);
                     self::rKeySort($original);
                 }
@@ -75,20 +84,24 @@ class JsonNormalizer
     }
 
     /**
+     * Converts an data structure to validate by Symfony Validator library.
      *
-     * @param array|\stdClass|\ArrayAccess $data
+     * @param array|\stdClass $data
+     *   The data to convert.
+     *
+     *
+     * @return void
      */
-    private static function convertToSortableAndValidable(&$data)
+    private static function convertToSortableAndValidatable(&$data):void
     {
         if ($data instanceof \stdClass) {
             $data = new ValidatableClass($data);
+        } elseif (!is_array($data)) {
+            throw new \RuntimeException('Cannot convert type: ' . get_class($data));
         }
         foreach ($data as $key => $datum) {
-            if ($datum instanceof \stdClass) {
-                $datum = new ValidatableClass($datum);
-            }
-            if (is_array($datum) || $datum instanceof ValidatableClass) {
-                static::convertToSortableAndValidable($datum);
+            if (is_array($datum) || is_object($datum)) {
+                static::convertToSortableAndValidatable($datum);
             }
             $data[$key] = $datum;
         }

@@ -349,7 +349,7 @@ class Updater
     /**
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param string[] $signatureMeta
+     * @param \ArrayAccess $signatureMeta
      *     The associative metadata array for the signature. Each signature
      *     metadata array contains two elements:
      *     - keyid: The identifier of the key signing the role data.
