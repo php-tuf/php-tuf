@@ -42,18 +42,25 @@ class JsonNormalizer
     public static function decode(string $json)
     {
         $data = json_decode($json);
-        static::convertToSortableAndValidatable($data);
+        static::replaceStdClassWithArrayObject($data);
         return $data;
     }
 
     /**
      * Sorts the JSON data array into a canonical order.
      *
-     * @param mixed[]|\stdClass $structure
+     * This method should be used to sort data structures that were passed
+     * through \Tuf\JsonNormalizer::replaceStdClassWithArrayObject().
+     *
+     * @see \Tuf\JsonNormalizer::replaceStdClassWithArrayObject()
+     *
+     * @param mixed[]|\ArrayObject $structure
      *     The array of JSON to sort, passed by reference.
      *
      * @throws \Exception
      *     Thrown if sorting the array fails.
+     * @throws \RuntimeException
+     *     Thrown if an object other than \ArrayObject is found.
      *
      * @return void
      */
@@ -66,7 +73,7 @@ class JsonNormalizer
         } elseif ($structure instanceof \ArrayObject) {
             $structure->ksort();
         } elseif (is_object($structure)) {
-            throw new \Exception('\Tuf\JsonNormalizer::rKeySort() not intended to sort objects except \ArrayObject found: ' . get_class($structure));
+            throw new \RuntimeException('\Tuf\JsonNormalizer::rKeySort() is not intended to sort objects except \ArrayObject. Found: ' . get_class($structure));
         }
 
         foreach ($structure as $key => $value) {
@@ -79,15 +86,23 @@ class JsonNormalizer
     }
 
     /**
-     * Converts an data structure to validate by Symfony Validator library.
+     * Replaces all instance of \stdClass in the data structure with \ArrayObject.
+     *
+     * Symfony Validator library's built-in constraints cannot validate
+     * \stdClass objects. This method should only be used with the return value
+     * of json_decode therefore should not contain any objects except instances
+     * of \stdClass.
      *
      * @param array|\stdClass $data
-     *   The data to convert.
-     *
+     *   The data to convert. The data structure should contain no objects
+     *   except \stdClass instances.
      *
      * @return void
+     *
+     * @throws \RuntimeException
+     *   Thrown if the an object other than \stdClass is found.
      */
-    private static function convertToSortableAndValidatable(&$data):void
+    private static function replaceStdClassWithArrayObject(&$data):void
     {
         if ($data instanceof \stdClass) {
             $data = new \ArrayObject($data);
@@ -96,7 +111,7 @@ class JsonNormalizer
         }
         foreach ($data as $key => $datum) {
             if (is_array($datum) || is_object($datum)) {
-                static::convertToSortableAndValidatable($datum);
+                static::replaceStdClassWithArrayObject($datum);
             }
             $data[$key] = $datum;
         }

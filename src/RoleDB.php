@@ -81,11 +81,11 @@ class RoleDB
      * @param string $roleName
      *     The role name.
      * @param \ArrayAccess $roleInfo
-     *     An associative array of role metadata, including:
-     *     - keyids: An array of authorized public key signatures for the role.
+     *     An ArrayAccess object of role metadata, including:
+     *     - keyids: An ArrayAccess object of authorized public key signatures for the role.
      *     - threshold: An integer for the threshold of signatures required for
      *       this role.
-     *     - paths: An array of the path patterns that this role may sign.
+     *     - paths: An ArrayAccess object of the path patterns that this role may sign.
      *
      * @return void
      *

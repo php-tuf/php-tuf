@@ -63,7 +63,6 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-
         $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
         return new static($data);

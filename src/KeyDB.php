@@ -80,8 +80,8 @@ class KeyDB
     /**
      * Computes the hashed keys IDs for the given key metadata.
      *
-     * @param array|\ArrayAccess $keyMeta
-     *     An associative array of key metadata. See self::addKey() and the TUF
+     * @param \ArrayAccess $keyMeta
+     *     An ArrayAccess object of key metadata. See self::addKey() and the TUF
      *     specification for the array structure.
      *
      * @return string[]
@@ -94,7 +94,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public static function computeKeyIds($keyMeta)
+    public static function computeKeyIds(\ArrayAccess $keyMeta)
     {
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],

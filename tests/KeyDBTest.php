@@ -24,7 +24,7 @@ class KeyDBTest extends TestCase
      */
     public function testComputeKeyId(array $metadata, array $expected) : void
     {
-        $actual = KeyDB::computeKeyIds($metadata);
+        $actual = KeyDB::computeKeyIds(new \ArrayObject($metadata));
         $this->assertEquals($expected, $actual);
     }
 
