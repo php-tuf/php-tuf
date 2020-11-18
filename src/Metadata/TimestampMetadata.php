@@ -25,7 +25,7 @@ class TimestampMetadata extends MetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['meta'] = new Required([
-            new Type('object'),
+            new Type('\ArrayObject'),
             new Count(['min' => 1]),
             new All([
                 new Collection([
