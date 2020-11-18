@@ -3,7 +3,11 @@
 namespace Tuf;
 
 /**
- * Provdes normalization to convert an array to a canonical JSON string.
+ * Provides normalization to convert an array to a canonical JSON string.
+ *
+ * @internal
+ *   This is not a generic normalizer but intended to be used PHP-TUF metadata
+ *   classes.
  */
 class JsonNormalizer
 {
@@ -23,18 +27,40 @@ class JsonNormalizer
     public static function asNormalizedJson($structure) : string
     {
         self::rKeySort($structure);
-
         return json_encode($structure);
+    }
+
+    /**
+     * Decodes a string to data that can be used with ::asNormalizedJson().
+     *
+     * @param string $json
+     *   The JSON string.
+     *
+     * @return mixed
+     *   The decoded data.
+     */
+    public static function decode(string $json)
+    {
+        $data = json_decode($json);
+        static::replaceStdClassWithArrayObject($data);
+        return $data;
     }
 
     /**
      * Sorts the JSON data array into a canonical order.
      *
-     * @param mixed[]|\stdClass $structure
+     * This method should be used to sort data structures that were passed
+     * through \Tuf\JsonNormalizer::replaceStdClassWithArrayObject().
+     *
+     * @see \Tuf\JsonNormalizer::replaceStdClassWithArrayObject()
+     *
+     * @param mixed[]|\ArrayObject $structure
      *     The array of JSON to sort, passed by reference.
      *
      * @throws \Exception
      *     Thrown if sorting the array fails.
+     * @throws \RuntimeException
+     *     Thrown if an object other than \ArrayObject is found.
      *
      * @return void
      */
@@ -44,45 +70,50 @@ class JsonNormalizer
             if (!ksort($structure, SORT_STRING)) {
                 throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
             }
+        } elseif ($structure instanceof \ArrayObject) {
+            $structure->ksort();
         } elseif (is_object($structure)) {
-            $sorted = new \stdClass();
-            foreach (static::getSortedPublicProperties($structure) as $property) {
-                $sorted->{$property} = $structure->{$property};
-            }
-            $structure = $sorted;
+            throw new \RuntimeException('\Tuf\JsonNormalizer::rKeySort() is not intended to sort objects except \ArrayObject. Found: ' . get_class($structure));
         }
 
-        foreach ($structure as $item => $value) {
-            if (is_array($value)) {
-                if (is_array($structure)) {
-                    self::rKeySort($structure[$item]);
-                } else {
-                    self::rKeySort($structure->{$item});
+        foreach ($structure as $key => $value) {
+            if (is_array($value) || $value instanceof \ArrayObject) {
+                if (is_array($structure) || $structure instanceof \ArrayObject) {
+                    self::rKeySort($structure[$key]);
                 }
             }
         }
     }
 
     /**
-     * Gets the sorted public properties of an object.
+     * Replaces all instance of \stdClass in the data structure with \ArrayObject.
      *
-     * @param object $instance
-     *   The object instance.
+     * Symfony Validator library's built-in constraints cannot validate
+     * \stdClass objects. This method should only be used with the return value
+     * of json_decode therefore should not contain any objects except instances
+     * of \stdClass.
      *
-     * @return string[]
-     *   The sorted public properties.
-     * @throws \Exception
-     *   Thrown if sorting is not possible.
+     * @param array|\stdClass $data
+     *   The data to convert. The data structure should contain no objects
+     *   except \stdClass instances.
+     *
+     * @return void
+     *
+     * @throws \RuntimeException
+     *   Thrown if the an object other than \stdClass is found.
      */
-    private static function getSortedPublicProperties(object $instance):array
+    private static function replaceStdClassWithArrayObject(&$data):void
     {
-        $keys = [];
-        foreach ($instance as $key => $value) {
-            $keys[] = $key;
+        if ($data instanceof \stdClass) {
+            $data = new \ArrayObject($data);
+        } elseif (!is_array($data)) {
+            throw new \RuntimeException('Cannot convert type: ' . get_class($data));
         }
-        if (!sort($keys)) {
-            throw new \Exception("Failure sorting keys. Canonicalization is not possible.");
+        foreach ($data as $key => $datum) {
+            if (is_array($datum) || is_object($datum)) {
+                static::replaceStdClassWithArrayObject($datum);
+            }
+            $data[$key] = $datum;
         }
-        return $keys;
     }
 }

@@ -4,7 +4,9 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
+use Tuf\SignatureVerifier;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
@@ -32,6 +34,11 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected $expectedType;
 
+    /**
+     * @var SignatureVerifier
+     */
+    protected $verifier;
+
 
     /**
      * {@inheritdoc}
@@ -40,6 +47,9 @@ abstract class MetaDataBaseTest extends TestCase
     {
         parent::setUp();
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
+        $verifier = $this->getMockBuilder(SignatureVerifier::class)->disableOriginalConstructor()->getMock();
+        $verifier->method('checkSignatures')->withAnyParameters();
+        $this->verifier = $verifier;
     }
 
     /**
@@ -53,7 +63,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    abstract protected static function callCreateFromJson(string $json) : MetadataBase;
+    abstract protected function callCreateFromJson(string $json) : MetadataBase;
 
     /**
      * Tests for valid metadata.
@@ -68,7 +78,7 @@ abstract class MetaDataBaseTest extends TestCase
     public function testValidMetaData(string $validJson) : void
     {
         $this->expectNotToPerformAssertions();
-        static::callCreateFromJson($this->localRepo[$validJson]);
+        $this->callCreateFromJson($this->localRepo[$validJson]);
     }
 
     /**
@@ -101,11 +111,11 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Array[signed][_type]", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($metadata));
+        $this->callCreateFromJson(json_encode($metadata));
     }
 
     /**
@@ -125,14 +135,14 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][expires]', '/');
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         } else {
             $this->expectNotToPerformAssertions();
         }
-        static::callCreateFromJson(json_encode($metadata));
+        $this->callCreateFromJson(json_encode($metadata));
     }
 
     /**
@@ -152,14 +162,14 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson]);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         } else {
             $this->expectNotToPerformAssertions();
         }
-        static::callCreateFromJson(json_encode($metadata));
+        $this->callCreateFromJson(json_encode($metadata));
     }
 
     /**
@@ -180,16 +190,16 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson]);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
         } else {
-            $this->expectExceptionMessageMatches("/Array$fieldName.*This field is missing./s");
+            $this->expectExceptionMessageMatches("/$fieldName.*This field is missing./s");
         }
-        static::callCreateFromJson($json);
+        $this->callCreateFromJson($json);
     }
 
     /**
@@ -209,7 +219,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson]);
         $this->nestedChange(explode(':', $optionalField), $metadata, $value);
         $json = json_encode($metadata);
-        static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
+        static::assertInstanceOf(MetadataBase::class, $this->callCreateFromJson($json));
     }
 
     /**
@@ -282,7 +292,7 @@ abstract class MetaDataBaseTest extends TestCase
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
-        static::callCreateFromJson($json);
+        $this->callCreateFromJson($json);
     }
 
     /**
@@ -410,5 +420,23 @@ abstract class MetaDataBaseTest extends TestCase
         }
         $keys = array_keys($data);
         return array_shift($keys);
+    }
+
+    /**
+     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     *
+     * @param string $validJson
+     *   The valid json key from $localRepo.
+     *
+     * @return void
+     *
+     * @dataProvider providerValidMetaData
+     */
+    public function testNormalization(string $validJson) : void
+    {
+        $contents = $this->localRepo[$validJson];
+        $json = json_decode($contents);
+        $metaData = $this->callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
     }
 }

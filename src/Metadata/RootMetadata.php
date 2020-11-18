@@ -9,7 +9,9 @@ use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\SignatureVerifier;
+use function DeepCopy\deep_copy;
 
 class RootMetadata extends MetadataBase
 {
@@ -25,7 +27,7 @@ class RootMetadata extends MetadataBase
         // validate before anys to be able to get the roles and keys to check
         // the signature. This would be true even if we didn't have the SignatureVerifier
         // class.
-        $data = json_decode($json, true);
+        $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
         $rootMetadata = new static($data);
         $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
@@ -42,7 +44,7 @@ class RootMetadata extends MetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['keys'] = new Required([
-            new Type('array'),
+            new Type('\ArrayObject'),
             new Count(['min' => 1]),
             new All([
                 static::getKeyConstraints(),
@@ -77,7 +79,7 @@ class RootMetadata extends MetadataBase
      */
     public function getRoles()
     {
-        return $this->getSigned()['roles'];
+        return deep_copy($this->getSigned()['roles']);
     }
 
     /**
@@ -94,7 +96,7 @@ class RootMetadata extends MetadataBase
      */
     public function getKeys()
     {
-        return $this->getSigned()['keys'];
+        return deep_copy($this->getSigned()['keys']);
     }
 
     /**

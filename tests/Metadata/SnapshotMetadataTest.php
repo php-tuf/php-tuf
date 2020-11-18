@@ -21,9 +21,9 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return SnapshotMetadata::createFromJson($json);
+        return SnapshotMetadata::createFromJson($json, $this->verifier);
     }
     /**
      * {@inheritdoc}

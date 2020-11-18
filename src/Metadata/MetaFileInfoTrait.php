@@ -2,6 +2,8 @@
 
 namespace Tuf\Metadata;
 
+use function DeepCopy\deep_copy;
+
 trait MetaFileInfoTrait
 {
 
@@ -17,6 +19,6 @@ trait MetaFileInfoTrait
     public function getFileMetaInfo(string $key)
     {
         $signed = $this->getSigned();
-        return $signed['meta'][$key] ?? null;
+        return $signed['meta'][$key] ? deep_copy($signed['meta'][$key]) : null;
     }
 }

@@ -280,7 +280,6 @@ class Updater
         }
     }
 
-
     /**
      * Updates the root metadata if needed.
      *

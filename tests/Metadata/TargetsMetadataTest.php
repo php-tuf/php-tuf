@@ -22,9 +22,9 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return TargetsMetadata::createFromJson($json);
+        return TargetsMetadata::createFromJson($json, $this->verifier);
     }
 
 

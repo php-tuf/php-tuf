@@ -21,9 +21,9 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return TimestampMetadata::createFromJson($json);
+        return TimestampMetadata::createFromJson($json, $this->verifier);
     }
 
     /**

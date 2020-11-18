@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Metadata;
 
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 
@@ -22,9 +23,9 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return RootMetadata::createFromJsonUsingSelfVerfication($json);
+        return RootMetadata::createFromJson($json);
     }
 
     /**
@@ -79,12 +80,13 @@ class RootMetadataTest extends MetaDataBaseTest
     public function testRequiredRoles(string $missingRole)
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Array[signed][roles][$missingRole]:", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson]);
+
+        $data = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         unset($data['signed']['roles'][$missingRole]);
-        static::callCreateFromJson(json_encode($data));
+        $this->callCreateFromJson(json_encode($data));
     }
 
     /**
@@ -127,12 +129,12 @@ class RootMetadataTest extends MetaDataBaseTest
     public function testInvalidRoleName()
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Array[signed][roles][super_root]:", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson]);
+        $data = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
-        static::callCreateFromJson(json_encode($data));
+        $this->callCreateFromJson(json_encode($data));
     }
 
     /**
@@ -142,11 +144,11 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     public function testSupportsConsistentSnapshots() : void
     {
-        $data = json_decode($this->localRepo[$this->validJson]);
+        $data = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metaData */
-            $metaData = static::callCreateFromJson(json_encode($data));
+            $metaData = $this->callCreateFromJson(json_encode($data));
             $this->assertSame($value, $metaData->supportsConsistentSnapshots());
         }
     }

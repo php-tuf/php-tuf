@@ -14,6 +14,8 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
 use Tuf\SignatureVerifier;
+use Tuf\JsonNormalizer;
+use function DeepCopy\deep_copy;
 
 /**
  * Base class for metadata.
@@ -40,10 +42,10 @@ abstract class MetadataBase
     /**
      * MetaDataBase constructor.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data.
      */
-    public function __construct(array $metadata)
+    public function __construct(\ArrayObject $metadata)
     {
         $this->metaData = $metadata;
     }
@@ -62,12 +64,11 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json, SignatureVerifier $signatureVerifier)
     {
-        $data = json_decode($json);
-        if (!isset($data->signed) || !is_object($data->signed)) {
-            throw new MetadataException("No signed property found in metadata.");
-        }
+        $data = JsonNormalizer::decode($json);
+        // To should be get the new static object first and pass it to checkSignatures()
+        // Then we could use the getters but still no other code could use the getters until
+        // this method returned.
         $signatureVerifier->checkSignatures($data);
-        static::convertToArrays($data);
         static::validateMetaData($data);
         return new static($data);
     }
@@ -75,15 +76,15 @@ abstract class MetadataBase
     /**
      * Validates the structure of the metadata.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data to validate.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
-     *   Thrown if validation fails.
+     *    Thrown if validation fails.
      */
-    protected static function validateMetaData(array $metadata) : void
+    protected static function validateMetaData(\ArrayObject $metadata) : void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -174,9 +175,9 @@ abstract class MetadataBase
      * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned() : array
+    public function getSigned():object
     {
-        return $this->metaData['signed'];
+        return deep_copy($this->metaData['signed']);
     }
 
     /**
@@ -209,7 +210,7 @@ abstract class MetadataBase
      */
     public function getSignatures() : array
     {
-        return $this->metaData['signatures'];
+        return deep_copy($this->metaData['signatures']);
     }
 
     /**

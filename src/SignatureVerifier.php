@@ -49,23 +49,23 @@ class SignatureVerifier
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    public function checkSignatures(\stdClass $metaData) : void
+    public function checkSignatures(\ArrayObject $metaData) : void
     {
         // ☹️ we have to assume a lot about the signed data. We could write more
         // validation logic to make sure object version is correct but since
         // we are reading it anyways it seems to take away alot of the benefit
         // doing the signature verfication first. Because we have to read it aways
         // to do the signature verification.
-        $signatures = $metaData->signatures;
+        $signatures = $metaData['signatures'];
 
-        $type = $metaData->signed->_type;
-        $roleInfo = $this->roleDB->getRoleInfo($metaData->signed->_type);
+        $type = $metaData['signed']['_type'];
+        $roleInfo = $this->roleDB->getRoleInfo($type);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->signed);
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData['signed']);
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature->keyid, $type)) {
+            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
@@ -112,16 +112,16 @@ class SignatureVerifier
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, \stdClass $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayObject $signatureMeta)
     {
         // Get the pubkey from the key database.
-        $keyMeta = $this->keyDB->getKey($signatureMeta->keyid);
+        $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
         $pubkey = $keyMeta['keyval']['public'];
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
         $pubkeyBytes = hex2bin($pubkey);
-        $sigBytes = hex2bin($signatureMeta->sig);
+        $sigBytes = hex2bin($signatureMeta['sig']);
         // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
