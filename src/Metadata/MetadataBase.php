@@ -79,7 +79,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *    Thrown if validation fails.
      */
-    protected static function validateMetaData(\ArrayObject $metadata) : void
+    protected static function validateMetaData(\ArrayObject $metadata): void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -154,10 +154,10 @@ abstract class MetadataBase
     /**
      * Get signed.
      *
-     * @return array
+     * @return \ArrayObject
      *   The "signed" section of the data.
      */
-    public function getSigned():object
+    public function getSigned():\ArrayObject
     {
         return deep_copy($this->metaData['signed']);
     }

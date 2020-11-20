@@ -43,7 +43,6 @@ class JsonNormalizer
     {
         $data = json_decode($json);
         return static::replaceStdClassWithArrayObject($data);
-        //return $data;
     }
 
     /**
@@ -54,8 +53,8 @@ class JsonNormalizer
      *
      * @see \Tuf\JsonNormalizer::replaceStdClassWithArrayObject()
      *
-     * @param mixed[]|\ArrayObject $structure
-     *     The array of JSON to sort, passed by reference.
+     * @param iterable $structure
+     *     The JSON data to sort, passed by reference.
      *
      * @throws \Exception
      *     Thrown if sorting the array fails.
@@ -64,7 +63,7 @@ class JsonNormalizer
      *
      * @return void
      */
-    private static function rKeySort(&$structure) : void
+    private static function rKeySort(iterable &$structure): void
     {
         if (is_array($structure)) {
             if (!ksort($structure, SORT_STRING)) {
@@ -97,7 +96,8 @@ class JsonNormalizer
      *   The data to convert. The data structure should contain no objects
      *   except \stdClass instances.
      *
-     * @return void
+     * @return iterable
+     *   The data with all stdClass instances replaced with ArrayObject.
      *
      * @throws \RuntimeException
      *   Thrown if the an object other than \stdClass is found.
