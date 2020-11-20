@@ -65,7 +65,7 @@ abstract class MetadataBase
     public static function createFromJson(string $json, SignatureVerifier $signatureVerifier)
     {
         $data = JsonNormalizer::decode($json);
-        // To should be get the new static object first and pass it to checkSignatures()
+        // @todo should we get the new static object first and pass it to checkSignatures()
         // Then we could use the getters but still no other code could use the getters until
         // this method returned.
         $signatureVerifier->checkSignatures($data);
