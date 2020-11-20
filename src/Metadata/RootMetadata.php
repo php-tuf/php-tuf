@@ -15,6 +15,7 @@ use function DeepCopy\deep_copy;
 
 class RootMetadata extends MetadataBase
 {
+    private static $flag = FALSE;
 
     /**
      * {@inheritdoc}
@@ -23,6 +24,12 @@ class RootMetadata extends MetadataBase
 
     public static function createFromJsonUsingSelfVerfication(string $json)
     {
+        /**
+         * change this to override createFromJson but make $verifier optional
+         * use a static flage so that you can only call the method once without
+         * the verifier
+         */
+
         // ☹️ This is why I don't think this method is better. For root you have to
         // validate before anys to be able to get the roles and keys to check
         // the signature. This would be true even if we didn't have the SignatureVerifier

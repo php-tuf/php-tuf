@@ -49,7 +49,7 @@ class SignatureVerifier
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    public function checkSignatures(\ArrayObject $metaData) : void
+    public function checkSignatures(MetadataBase $metaData) : void
     {
         // ☹️ we have to assume a lot about the signed data. We could write more
         // validation logic to make sure object version is correct but since
@@ -58,7 +58,7 @@ class SignatureVerifier
         // to do the signature verification.
         $signatures = $metaData['signatures'];
 
-        $type = $metaData['signed']['_type'];
+        $type = $metaData->getType();
         $roleInfo = $this->roleDB->getRoleInfo($type);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;

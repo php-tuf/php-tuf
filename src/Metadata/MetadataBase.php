@@ -68,9 +68,11 @@ abstract class MetadataBase
         // @todo should we get the new static object first and pass it to checkSignatures()
         // Then we could use the getters but still no other code could use the getters until
         // this method returned.
-        $signatureVerifier->checkSignatures($data);
         static::validateMetaData($data);
-        return new static($data);
+        $metaData =  new static($data);
+        $signatureVerifier->checkSignatures($metaData);
+        return $metaData;
+
     }
 
     /**
