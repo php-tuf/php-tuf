@@ -42,8 +42,8 @@ class JsonNormalizer
     public static function decode(string $json)
     {
         $data = json_decode($json);
-        static::replaceStdClassWithArrayObject($data);
-        return $data;
+        return static::replaceStdClassWithArrayObject($data);
+        //return $data;
     }
 
     /**
@@ -102,7 +102,7 @@ class JsonNormalizer
      * @throws \RuntimeException
      *   Thrown if the an object other than \stdClass is found.
      */
-    private static function replaceStdClassWithArrayObject(&$data):void
+    private static function replaceStdClassWithArrayObject($data):iterable
     {
         if ($data instanceof \stdClass) {
             $data = new \ArrayObject($data);
@@ -111,9 +111,9 @@ class JsonNormalizer
         }
         foreach ($data as $key => $datum) {
             if (is_array($datum) || is_object($datum)) {
-                static::replaceStdClassWithArrayObject($datum);
+                $data[$key] = static::replaceStdClassWithArrayObject($datum);
             }
-            $data[$key] = $datum;
         }
+        return $data;
     }
 }
