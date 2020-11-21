@@ -24,7 +24,7 @@ class JsonNormalizer
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
      */
-    public static function asNormalizedJson($structure) : string
+    public static function asNormalizedJson(iterable $structure) : string
     {
         self::rKeySort($structure);
         return json_encode($structure);
@@ -77,9 +77,7 @@ class JsonNormalizer
 
         foreach ($structure as $key => $value) {
             if (is_array($value) || $value instanceof \ArrayObject) {
-                if (is_array($structure) || $structure instanceof \ArrayObject) {
-                    self::rKeySort($structure[$key]);
-                }
+                self::rKeySort($structure[$key]);
             }
         }
     }

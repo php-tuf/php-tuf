@@ -22,8 +22,8 @@ class JsonNormalizerTest extends TestCase
         $fixturesDirectory = __DIR__ . '/../../non_repo_fixtures';
         $sortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/sorted.json"));
         $unsortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/unsorted.json"));
-        // asNormalizedJson()
-        $this->assertSame(JsonNormalizer::asNormalizedJson($sortedData), JsonNormalizer::asNormalizedJson($unsortedData));
-        $this->assertSame(json_encode($sortedData), JsonNormalizer::asNormalizedJson($unsortedData));
+        $normalizedFromUnsorted = JsonNormalizer::asNormalizedJson($unsortedData);
+        $this->assertSame(JsonNormalizer::asNormalizedJson($sortedData), $normalizedFromUnsorted);
+        $this->assertSame(json_encode($sortedData), $normalizedFromUnsorted);
     }
 }
