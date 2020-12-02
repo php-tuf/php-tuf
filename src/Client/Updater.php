@@ -9,12 +9,10 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\JsonNormalizer;
-use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\RoleDB;
 use Tuf\SignatureVerifier;
 
 /**
@@ -53,6 +51,8 @@ class Updater
     protected $repoFileFetcher;
 
     /**
+     * The signature verifier.
+     *
      * @var \Tuf\SignatureVerifier
      */
     protected $signatureVerifier;
