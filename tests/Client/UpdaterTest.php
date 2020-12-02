@@ -4,13 +4,11 @@ namespace Tuf\Tests\Client;
 
 use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\SignatureVerifier;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -30,19 +28,12 @@ class UpdaterTest extends TestCase
     protected $testRepo;
 
     /**
-     * @var SignatureVerifier
-     */
-    protected $verifier;
-
-    /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
         parent::setUp();
-        $verifier = $this->getMockBuilder(SignatureVerifier::class)->disableOriginalConstructor()->getMock();
-        $verifier->method('checkSignatures')->withAnyParameters();
-        $this->verifier = $verifier;
+        $this->setMockVerifier();
     }
 
 
@@ -161,12 +152,12 @@ class UpdaterTest extends TestCase
         );
         $this->assertSame(
             $expectedVersions['timestamp'],
-            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'], $this->verifier)
+            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'], $this->mockVerifier)
             ->getVersion()
         );
         $this->assertSame(
             $expectedVersions['snapshot'],
-            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'], $this->verifier)
+            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'], $this->mockVerifier)
             ->getVersion()
         );
     }

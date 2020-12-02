@@ -24,7 +24,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
      */
     protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return TargetsMetadata::createFromJson($json, $this->verifier);
+        return TargetsMetadata::createFromJson($json, $this->mockVerifier);
     }
 
 

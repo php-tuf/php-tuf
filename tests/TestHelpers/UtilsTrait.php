@@ -3,11 +3,19 @@
 
 namespace Tuf\Tests\TestHelpers;
 
+use Tuf\SignatureVerifier;
+
 /**
  * General test utility helper trait.
  */
 trait UtilsTrait
 {
+    /**
+     * The mock verifier.
+     *
+     * @var SignatureVerifier
+     */
+    protected $mockVerifier;
 
     /**
      * Gets the real path of repository fixtures.
@@ -63,5 +71,19 @@ trait UtilsTrait
             $newData[$key] = $arguments;
         }
         return $newData;
+    }
+
+    /**
+     * Sets the mock verifier for tests.
+     *
+     * @return void
+     */
+    protected function setMockVerifier(): void
+    {
+        $verifier = $this->getMockBuilder(SignatureVerifier::class)
+          ->disableOriginalConstructor()
+          ->getMock();
+        $verifier->method('checkSignatures')->withAnyParameters();
+        $this->mockVerifier = $verifier;
     }
 }

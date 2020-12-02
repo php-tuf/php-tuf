@@ -23,7 +23,7 @@ class TimestampMetadataTest extends MetaDataBaseTest
      */
     protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return TimestampMetadata::createFromJson($json, $this->verifier);
+        return TimestampMetadata::createFromJson($json, $this->mockVerifier);
     }
 
     /**

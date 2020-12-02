@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
-use Tuf\SignatureVerifier;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 /**
@@ -34,11 +33,6 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected $expectedType;
 
-    /**
-     * @var SignatureVerifier
-     */
-    protected $verifier;
-
 
     /**
      * {@inheritdoc}
@@ -47,9 +41,7 @@ abstract class MetaDataBaseTest extends TestCase
     {
         parent::setUp();
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
-        $verifier = $this->getMockBuilder(SignatureVerifier::class)->disableOriginalConstructor()->getMock();
-        $verifier->method('checkSignatures')->withAnyParameters();
-        $this->verifier = $verifier;
+        $this->setMockVerifier();
     }
 
     /**
