@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf;
 
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -65,11 +64,6 @@ class SignatureVerifier
      */
     public function checkSignatures(MetadataBase $metaData) : void
     {
-        // ☹️ we have to assume a lot about the signed data. We could write more
-        // validation logic to make sure object version is correct but since
-        // we are reading it anyways it seems to take away alot of the benefit
-        // doing the signature verfication first. Because we have to read it aways
-        // to do the signature verification.
         $signatures = $metaData->getSignatures();
 
         $type = $metaData->getType();
