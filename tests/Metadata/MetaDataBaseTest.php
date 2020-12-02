@@ -436,7 +436,7 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $contents = $this->localRepo[$validJson];
         $json = json_decode($contents);
-        $metaData = $this->callCreateFromJson($contents);
+        $metaData = static::callCreateFromJson($contents);
         $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
     }
 }

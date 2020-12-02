@@ -24,7 +24,7 @@ class JsonNormalizer
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
      */
-    public static function asNormalizedJson($structure) : string
+    public static function asNormalizedJson(iterable $structure) : string
     {
         self::rKeySort($structure);
         return json_encode($structure);
@@ -42,8 +42,7 @@ class JsonNormalizer
     public static function decode(string $json)
     {
         $data = json_decode($json);
-        static::replaceStdClassWithArrayObject($data);
-        return $data;
+        return static::replaceStdClassWithArrayObject($data);
     }
 
     /**
@@ -54,8 +53,8 @@ class JsonNormalizer
      *
      * @see \Tuf\JsonNormalizer::replaceStdClassWithArrayObject()
      *
-     * @param mixed[]|\ArrayObject $structure
-     *     The array of JSON to sort, passed by reference.
+     * @param iterable $structure
+     *     The JSON data to sort, passed by reference.
      *
      * @throws \Exception
      *     Thrown if sorting the array fails.
@@ -64,7 +63,7 @@ class JsonNormalizer
      *
      * @return void
      */
-    private static function rKeySort(&$structure) : void
+    private static function rKeySort(iterable &$structure): void
     {
         if (is_array($structure)) {
             if (!ksort($structure, SORT_STRING)) {
@@ -75,16 +74,13 @@ class JsonNormalizer
         } elseif (is_object($structure)) {
             throw new \RuntimeException('\Tuf\JsonNormalizer::rKeySort() is not intended to sort objects except \ArrayObject. Found: ' . get_class($structure));
         }
-
         foreach ($structure as $key => $value) {
             if (is_array($value) || $value instanceof \ArrayObject) {
-                if (is_array($structure) || $structure instanceof \ArrayObject) {
-                    self::rKeySort($structure[$key]);
-                }
+                self::rKeySort($structure[$key]);
             }
         }
-    }
 
+    }
     /**
      * Replaces all instance of \stdClass in the data structure with \ArrayObject.
      *
@@ -97,12 +93,13 @@ class JsonNormalizer
      *   The data to convert. The data structure should contain no objects
      *   except \stdClass instances.
      *
-     * @return void
+     * @return iterable
+     *   The data with all stdClass instances replaced with ArrayObject.
      *
      * @throws \RuntimeException
      *   Thrown if the an object other than \stdClass is found.
      */
-    private static function replaceStdClassWithArrayObject(&$data):void
+    private static function replaceStdClassWithArrayObject($data):iterable
     {
         if ($data instanceof \stdClass) {
             $data = new \ArrayObject($data);
@@ -111,9 +108,9 @@ class JsonNormalizer
         }
         foreach ($data as $key => $datum) {
             if (is_array($datum) || is_object($datum)) {
-                static::replaceStdClassWithArrayObject($datum);
+                $data[$key] = static::replaceStdClassWithArrayObject($datum);
             }
-            $data[$key] = $datum;
         }
+        return $data;
     }
 }

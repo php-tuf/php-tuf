@@ -77,14 +77,14 @@ class RootMetadata extends MetadataBase
     /**
      * Gets the roles from the metadata.
      *
-     * @return mixed[]
-     *   An array where the keys are role names and the values arrays with the
+     * @return \ArrayObject
+     *   An ArrayObject where the keys are role names and the values arrays with the
      *   following keys:
      *   - keyids (string[]): The key ids.
      *   - threshold (int): Determines how many how may keys are need from
      *     this role for signing.
      */
-    public function getRoles()
+    public function getRoles():\ArrayObject
     {
         return deep_copy($this->getSigned()['roles']);
     }
@@ -92,8 +92,8 @@ class RootMetadata extends MetadataBase
     /**
      * Gets the keys for the root metadata.
      *
-     * @return mixed[]
-     *   An array of keys information where the array keys are the key ids and
+     * @return \ArrayObject
+     *   An ArrayObject of keys information where the array keys are the key ids and
      *   the values are arrays with the following values:
      *   - keyid_hash_algorithms (string[]): The key id algorithms used.
      *   - keytype (string): The key type.
@@ -101,7 +101,7 @@ class RootMetadata extends MetadataBase
      *     and the value is the public key.
      *   - scheme (string): The key scheme.
      */
-    public function getKeys()
+    public function getKeys():\ArrayObject
     {
         return deep_copy($this->getSigned()['keys']);
     }
