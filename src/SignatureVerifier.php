@@ -56,14 +56,14 @@ class SignatureVerifier
         // we are reading it anyways it seems to take away alot of the benefit
         // doing the signature verfication first. Because we have to read it aways
         // to do the signature verification.
-        $signatures = $metaData['signatures'];
+        $signatures = $metaData->getSignatures();
 
         $type = $metaData->getType();
         $roleInfo = $this->roleDB->getRoleInfo($type);
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData['signed']);
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
         foreach ($signatures as $signature) {
             if ($this->isKeyIdAcceptableForRole($signature['keyid'], $type)) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);

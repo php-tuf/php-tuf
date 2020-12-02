@@ -25,7 +25,7 @@ class RootMetadataTest extends MetaDataBaseTest
      */
     protected function callCreateFromJson(string $json) : MetadataBase
     {
-        return RootMetadata::createFromJson($json);
+        return RootMetadata::createFromJson($json, $this->verifier);
     }
 
     /**

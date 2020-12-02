@@ -110,7 +110,7 @@ abstract class MetaDataBaseTest extends TestCase
     public function testInvalidType() : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson]);
-        $metadata['signed']['_type'] = 'invalid_type_value';
+        $metadata->signed->_type = 'invalid_type_value';
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
@@ -133,7 +133,7 @@ abstract class MetaDataBaseTest extends TestCase
     public function testExpires(string $expires, bool $valid) : void
     {
         $metadata = json_decode($this->localRepo[$this->validJson]);
-        $metadata['signed']['expires'] = $expires;
+        $metadata->signed->expires = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
@@ -159,7 +159,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testSpecVersion(string $version, bool $valid) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson]);
+        $metadata = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
             $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
@@ -188,11 +188,11 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testMissingField(string $expectedField, string $exception = null) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson]);
+        $metadata = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         $keys = explode(':', $expectedField);
         $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
-        $json = json_encode($metadata);
+        $json = JsonNormalizer::asNormalizedJson($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
@@ -216,9 +216,9 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testOptionalFields(string $optionalField, $value) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson]);
+        $metadata = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         $this->nestedChange(explode(':', $optionalField), $metadata, $value);
-        $json = json_encode($metadata);
+        $json = JsonNormalizer::asNormalizedJson($metadata);
         static::assertInstanceOf(MetadataBase::class, $this->callCreateFromJson($json));
     }
 
@@ -245,7 +245,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      */
-    protected function nestedUnset(array $keys, array &$data) : void
+    protected function nestedUnset(array $keys, &$data) : void
     {
         $key = array_shift($keys);
         if ($keys) {
@@ -270,7 +270,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function testInvalidField(string $expectedField, string $expectedType) : void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson]);
+        $metadata = JsonNormalizer::decode($this->localRepo[$this->validJson]);
         $keys = explode(':', $expectedField);
 
         switch ($expectedType) {
@@ -289,7 +289,7 @@ abstract class MetaDataBaseTest extends TestCase
         }
 
         $this->nestedChange($keys, $metadata, $newValue);
-        $json = json_encode($metadata);
+        $json = JsonNormalizer::asNormalizedJson($metadata);
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
         $this->callCreateFromJson($json);
@@ -307,7 +307,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      */
-    protected function nestedChange(array $keys, array &$data, $newValue) : void
+    protected function nestedChange(array $keys, &$data, $newValue) : void
     {
         $key = array_shift($keys);
         if ($keys) {
