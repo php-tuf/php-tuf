@@ -11,10 +11,10 @@ trait MetaFileInfoTrait
      * @param string $key
      *   The array key under 'meta'.
      *
-     * @return mixed[]|null
+     * @return \ArrayObject|null
      *   The file information if available or null if not set.
      */
-    public function getFileMetaInfo(string $key)
+    public function getFileMetaInfo(string $key):?\ArrayObject
     {
         $signed = $this->getSigned();
         return $signed['meta'][$key] ?? null;

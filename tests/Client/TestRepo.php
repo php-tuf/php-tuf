@@ -51,9 +51,9 @@ class TestRepo implements RepoFileFetcherInterface
             // exception.
             // @see \Tuf\Client\Updater::checkSignatures()
             if (in_array($fileName, $this->failSignatureFiles)) {
-                $json = json_decode($contents, true);
-                $json['signed']['extra_test_value'] = 'value';
-                $contents = JsonNormalizer::asNormalizedJson($json);
+                $json = json_decode($contents);
+                $json->signed->extra_test_value = 'value';
+                $contents = json_encode($json);
             }
             return $contents;
         } catch (\Exception $exception) {
