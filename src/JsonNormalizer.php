@@ -79,7 +79,6 @@ class JsonNormalizer
                 self::rKeySort($structure[$key]);
             }
         }
-
     }
     /**
      * Replaces all instance of \stdClass in the data structure with \ArrayObject.

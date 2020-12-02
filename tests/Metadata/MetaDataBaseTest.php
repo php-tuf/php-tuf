@@ -240,7 +240,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @param array $keys
      *   Ordered keys to the value to unset.
-     * @param array $data
+     * @param array|\ArrayObject $data
      *   The array to modify.
      *
      * @return void
@@ -300,7 +300,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @param array $keys
      *   Ordered keys to the value to set.
-     * @param array $data
+     * @param array|\ArrayObject $data
      *   The array to modify.
      * @param mixed $newValue
      *   The new value to set.

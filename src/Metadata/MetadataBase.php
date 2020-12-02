@@ -56,11 +56,11 @@ abstract class MetadataBase
      * @param string $json
      *   A JSON string representing TUF metadata.
      *
+     * @param \Tuf\SignatureVerifier $signatureVerifier
+     *   The signature verifier.
+     *
      * @return static
      *   The new instance.
-     *
-     * @throws \Tuf\Exception\MetadataException
-     *   Thrown if validation fails.
      */
     public static function createFromJson(string $json, SignatureVerifier $signatureVerifier)
     {
@@ -72,7 +72,6 @@ abstract class MetadataBase
         $metaData =  new static($data);
         $signatureVerifier->checkSignatures($metaData);
         return $metaData;
-
     }
 
     /**
@@ -156,19 +155,6 @@ abstract class MetadataBase
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
-    }
-
-    protected static function convertToArrays(&$data)
-    {
-        if (is_object($data)) {
-            $data = (array) $data;
-        }
-        if (is_array($data)) {
-            foreach ($data as &$datum) {
-                static::convertToArrays($datum);
-            }
-        }
-        return $data;
     }
 
     /**

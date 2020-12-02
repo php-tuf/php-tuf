@@ -115,7 +115,7 @@ class Updater
      */
     public function refresh() : bool
     {
-        $rootData = RootMetadata::createFromJsonUsingSelfVerfication($this->durableStorage['root.json']);
+        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 

@@ -3,7 +3,6 @@
 
 namespace Tuf;
 
-
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
@@ -27,6 +26,11 @@ class SignatureVerifier
 
     /**
      * SignatureVerifier constructor.
+     *
+     * @param \Tuf\RoleDB $roleDB
+     *    The role DB.
+     * @param \Tuf\KeyDB $keyDB
+     *    The key DB.
      */
     private function __construct(RoleDB $roleDB, KeyDB $keyDB)
     {
@@ -34,14 +38,24 @@ class SignatureVerifier
         $this->keyDB = $keyDB;
     }
 
-    public static function createFromRootMetadata(RootMetadata $rootMetadata) {
+    /**
+     * Creates a signature verifier from root metadata.
+     *
+     * @param \Tuf\Metadata\RootMetadata $rootMetadata
+     *   The root metadata.
+     *
+     * @return static
+     *   The new signature verifier instance.
+     */
+    public static function createFromRootMetadata(RootMetadata $rootMetadata)
+    {
         return new static(RoleDB::createFromRootMetadata($rootMetadata), KeyDB::createFromRootMetadata($rootMetadata));
     }
 
     /**
      * Checks signatures on a verifiable structure.
      *
-     * @param array $metaData
+     * @param MetadataBase $metaData
      *     The metadata to check signatures on.
      *
      * @return void
@@ -102,7 +116,7 @@ class SignatureVerifier
     /**
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param string[] $signatureMeta
+     * @param \ArrayObject $signatureMeta
      *     The associative metadata array for the signature. Each signature
      *     metadata array contains two elements:
      *     - keyid: The identifier of the key signing the role data.
@@ -126,6 +140,4 @@ class SignatureVerifier
         //     false if not.
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
-
-
 }

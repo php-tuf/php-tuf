@@ -3,7 +3,6 @@
 
 namespace Tuf\Metadata;
 
-
 use Tuf\Exception\MetadataException;
 use Tuf\SignatureVerifier;
 

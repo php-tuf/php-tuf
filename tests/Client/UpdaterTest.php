@@ -34,6 +34,9 @@ class UpdaterTest extends TestCase
      */
     protected $verifier;
 
+    /**
+     * {@inheritdoc}
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -96,6 +99,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertRepoVersions($expectedStartVersions);
         $updater = $this->getSystemInTest();
+        static::resetCreatedUsingSelfSigning();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
@@ -153,7 +157,7 @@ class UpdaterTest extends TestCase
 
         $this->assertSame(
             $expectedVersions['root'],
-            RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])
+            RootMetadata::createFromJson($this->localRepo['root.json'], $this->verifier)
             ->getVersion()
         );
         $this->assertSame(
@@ -189,17 +193,18 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
-        $this->assertSame(3, RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])->getVersion());
+        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'], $this->verifier)->getVersion());
         $this->testRepo->setFilesToFailSignature([$fileToFail]);
         $updater = $this->getSystemInTest();
         try {
+            static::resetCreatedUsingSelfSigning();
             $updater->refresh();
         } catch (SignatureThresholdExpception $exception) {
             // Confirm the root was updated to version 4 but not to 5 because
             // 5.root.json should throw an exception.
             $this->assertSame(
                 $expectedRootVersion,
-                RootMetadata::createFromJsonUsingSelfVerfication($this->localRepo['root.json'])->getVersion()
+                RootMetadata::createFromJson($this->localRepo['root.json'], $this->verifier)->getVersion()
             );
             $this->assertSame($expectionMessage, $exception->getMessage());
             return;
@@ -232,5 +237,23 @@ class UpdaterTest extends TestCase
                 'Signature threshold not met on timestamp',
             ],
         ], 0);
+    }
+
+    /**
+     * Resets the static flag RootMetadata::createdUsingSelfSigning.
+     *
+     * This is necessary because the data provider functions will call \Tuf\Client\Updater::refresh()
+     * multiple times.
+     *
+     * @todo Question: will clients need to call \Tuf\Client\Updater::refresh() multiple times also?
+     *
+     * @return void
+     */
+    private static function resetCreatedUsingSelfSigning(): void
+    {
+        $class = new \ReflectionClass(RootMetadata::class);
+        $property = $class->getProperty('createdUsingSelfSigning');
+        $property->setAccessible(true);
+        $property->setValue(false);
     }
 }

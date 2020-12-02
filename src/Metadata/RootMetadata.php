@@ -15,29 +15,33 @@ use function DeepCopy\deep_copy;
 
 class RootMetadata extends MetadataBase
 {
-    private static $flag = FALSE;
+    private static $createdUsingSelfSigning = false;
 
     /**
      * {@inheritdoc}
      */
     protected const TYPE = 'root';
 
-    public static function createFromJsonUsingSelfVerfication(string $json)
+    /**
+     * {@inheritdoc}
+     */
+    public static function createFromJson(string $json, SignatureVerifier $verifier = null)
     {
-        /**
-         * change this to override createFromJson but make $verifier optional
-         * use a static flage so that you can only call the method once without
-         * the verifier
-         */
-
-        // ☹️ This is why I don't think this method is better. For root you have to
-        // validate before anys to be able to get the roles and keys to check
-        // the signature. This would be true even if we didn't have the SignatureVerifier
-        // class.
-        $data = JsonNormalizer::decode($json);
-        static::validateMetaData($data);
-        $rootMetadata = new static($data);
-        $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
+        if ($verifier === null) {
+            if (static::$createdUsingSelfSigning) {
+                throw new \RuntimeException('Can only create once using without a signature verifier');
+            } else {
+                // ☹️ This is why I don't think this method is better. For root you have to
+                // validate before anys to be able to get the roles and keys to check
+                // the signature. This would be true even if we didn't have the SignatureVerifier
+                // class.
+                static::$createdUsingSelfSigning = true;
+                $data = JsonNormalizer::decode($json);
+                static::validateMetaData($data);
+                $rootMetadata = new static($data);
+                $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
+            }
+        }
         return parent::createFromJson($json, $verifier);
     }
 
