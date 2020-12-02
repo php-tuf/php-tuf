@@ -115,7 +115,7 @@ class Updater
      */
     public function refresh() : bool
     {
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $rootData = RootMetadata::createFromJsonUsingSelfVerification($this->durableStorage['root.json']);
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
@@ -365,7 +365,6 @@ class Updater
 
 
     /**
->>>>>>> main
      * Updates the root metadata if needed.
      *
      * @param \Tuf\Metadata\RootMetadata $rootData

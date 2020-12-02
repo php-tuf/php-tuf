@@ -61,13 +61,13 @@ abstract class MetadataBase
      *
      * @return static
      *   The new instance.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json, SignatureVerifier $signatureVerifier)
+    public static function createFromJson(string $json, SignatureVerifier $signatureVerifier):MetadataBase
     {
         $data = JsonNormalizer::decode($json);
-        // @todo should we get the new static object first and pass it to checkSignatures()
-        // Then we could use the getters but still no other code could use the getters until
-        // this method returned.
         static::validateMetaData($data);
         $metaData =  new static($data);
         $signatureVerifier->checkSignatures($metaData);

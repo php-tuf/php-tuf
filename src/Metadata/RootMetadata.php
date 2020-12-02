@@ -8,14 +8,11 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 use Tuf\SignatureVerifier;
-use function DeepCopy\deep_copy;
 
 class RootMetadata extends MetadataBase
 {
-    private static $createdUsingSelfSigning = false;
 
     /**
      * {@inheritdoc}
@@ -23,30 +20,25 @@ class RootMetadata extends MetadataBase
     protected const TYPE = 'root';
 
     /**
-     * {@inheritdoc}
+     * Creates an instance and validates the decoded JSON using the roles and keys within the metadata for verification.
+     *
+     * This method should only be used when first loading the local root metadata. When updating root metadata it should
+     * always first be verified by the signature verifier created from the currently trusted root.
+     *
+     * @param string $json
+     *   A JSON string representing TUF metadata.
+     *
+     * @return static
+     *   The RootMetadata instance.
      */
-    public static function createFromJson(string $json, SignatureVerifier $verifier = null)
+    public static function createFromJsonUsingSelfVerification(string $json):RootMetadata
     {
-        if ($verifier === null) {
-            if (static::$createdUsingSelfSigning) {
-                throw new \RuntimeException('Can only create once using without a signature verifier');
-            } else {
-                // ☹️ This is why I don't think this method is better. For root you have to
-                // validate before anys to be able to get the roles and keys to check
-                // the signature. This would be true even if we didn't have the SignatureVerifier
-                // class.
-                static::$createdUsingSelfSigning = true;
-                $data = JsonNormalizer::decode($json);
-                static::validateMetaData($data);
-                $rootMetadata = new static($data);
-                $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
-            }
-        }
+        $data = JsonNormalizer::decode($json);
+        static::validateMetaData($data);
+        $rootMetadata = new static($data);
+        $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
         return parent::createFromJson($json, $verifier);
     }
-
-
-
 
     /**
      * {@inheritdoc}
@@ -90,7 +82,7 @@ class RootMetadata extends MetadataBase
      */
     public function getRoles():\ArrayObject
     {
-        return deep_copy($this->getSigned()['roles']);
+        return $this->getSigned()['roles'];
     }
 
     /**
@@ -107,7 +99,7 @@ class RootMetadata extends MetadataBase
      */
     public function getKeys():\ArrayObject
     {
-        return deep_copy($this->getSigned()['keys']);
+        return $this->getSigned()['keys'];
     }
 
     /**
