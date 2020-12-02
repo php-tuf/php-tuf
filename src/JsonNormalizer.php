@@ -74,12 +74,14 @@ class JsonNormalizer
         } elseif (is_object($structure)) {
             throw new \RuntimeException('\Tuf\JsonNormalizer::rKeySort() is not intended to sort objects except \ArrayObject. Found: ' . get_class($structure));
         }
+
         foreach ($structure as $key => $value) {
             if (is_array($value) || $value instanceof \ArrayObject) {
                 self::rKeySort($structure[$key]);
             }
         }
     }
+
     /**
      * Replaces all instance of \stdClass in the data structure with \ArrayObject.
      *
