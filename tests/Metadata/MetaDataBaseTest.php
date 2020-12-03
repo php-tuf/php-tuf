@@ -4,6 +4,7 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -101,7 +102,7 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Array[signed][_type]", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -125,7 +126,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][expires]', '/');
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -152,7 +153,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -180,14 +181,14 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
         } else {
-            $this->expectExceptionMessageMatches("/Array$fieldName.*This field is missing./s");
+            $this->expectExceptionMessageMatches("/$fieldName.*This field is missing./s");
         }
         static::callCreateFromJson($json);
     }
@@ -388,5 +389,23 @@ abstract class MetaDataBaseTest extends TestCase
         }
         $keys = array_keys($data);
         return array_shift($keys);
+    }
+
+    /**
+     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     *
+     * @param string $validJson
+     *   The valid json key from $localRepo.
+     *
+     * @return void
+     *
+     * @dataProvider providerValidMetaData
+     */
+    public function testNormalization(string $validJson) : void
+    {
+        $contents = $this->localRepo[$validJson];
+        $json = json_decode($contents);
+        $metaData = static::callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
     }
 }

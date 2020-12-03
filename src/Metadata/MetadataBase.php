@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
+use function DeepCopy\deep_copy;
 
 /**
  * Base class for metadata.
@@ -39,10 +41,10 @@ class MetadataBase
     /**
      * MetaDataBase constructor.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data.
      */
-    public function __construct(array $metadata)
+    public function __construct(\ArrayObject $metadata)
     {
         $this->metaData = $metadata;
     }
@@ -61,7 +63,7 @@ class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = json_decode($json, true);
+        $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
         return new static($data);
     }
@@ -69,15 +71,15 @@ class MetadataBase
     /**
      * Validates the structure of the metadata.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data to validate.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
-     *   Thrown if validation fails.
+     *    Thrown if validation fails.
      */
-    protected static function validateMetaData(array $metadata) : void
+    protected static function validateMetaData(\ArrayObject $metadata): void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -155,12 +157,12 @@ class MetadataBase
     /**
      * Get signed.
      *
-     * @return array
+     * @return \ArrayObject
      *   The "signed" section of the data.
      */
-    public function getSigned() : array
+    public function getSigned():\ArrayObject
     {
-        return $this->metaData['signed'];
+        return deep_copy($this->metaData['signed']);
     }
 
     /**
@@ -193,7 +195,7 @@ class MetadataBase
      */
     public function getSignatures() : array
     {
-        return $this->metaData['signatures'];
+        return deep_copy($this->metaData['signatures']);
     }
 
     /**

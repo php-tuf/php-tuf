@@ -370,9 +370,9 @@ class Updater
     /**
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param string[] $signatureMeta
-     *     The associative metadata array for the signature. Each signature
-     *     metadata array contains two elements:
+     * @param \ArrayAccess $signatureMeta
+     *     The ArrayAccess object of metadata for the signature. Each signature
+     *     metadata contains two elements:
      *     - keyid: The identifier of the key signing the role data.
      *     - sig: The hex-encoded signature of the canonical form of the
      *       metadata for the role.
@@ -380,7 +380,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, array $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta)
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
