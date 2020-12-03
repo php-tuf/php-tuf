@@ -444,7 +444,6 @@ class Updater
             $nextVersion = $rootData->getVersion() + 1;
             // *TUF-SPEC-v1.0.9 Section 5.1.8 Repeat the above steps.
         }
-
         // *TUF-SPEC-v1.0.9 Section 5.1.9
         static::checkFreezeAttack($rootData, $this->getCurrentTime());
 
