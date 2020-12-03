@@ -104,9 +104,12 @@ class GuzzleFileFetcherTest extends TestCase
      *
      * @covers ::fetchFile
      */
-    public function testfetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
+    public function testFetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
-        $fetcher = $this->getFetcherWithError($statusCode, $exceptionClass, $exceptionCode);
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
         $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
@@ -131,7 +134,10 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testFetchFileIfExistsError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
-        $fetcher = $this->getFetcherWithError($statusCode, $exceptionClass, $exceptionCode);
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
         $fetcher->fetchFileIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
@@ -165,26 +171,5 @@ class GuzzleFileFetcherTest extends TestCase
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Repo base URI must be HTTPS: http://example.com');
         GuzzleFileFetcher::createFromUri('http://example.com');
-    }
-
-    /**
-     * Gets a fetcher instance that will throw a specified exceptoin.
-     *
-     * @param integer $statusCode
-     *   The response status code.
-     * @param string $exceptionClass
-     *   The expected exception class that will be thrown.
-     * @param integer|null $exceptionCode
-     *   (optional) The expected exception code. Defaults to the status code.
-     *
-     * @return GuzzleFileFetcher
-     *   The fetcher that wll producer an exception.
-     */
-    protected function getFetcherWithError(int $statusCode, string $exceptionClass, ?int $exceptionCode): GuzzleFileFetcher
-    {
-        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
-        $this->expectException($exceptionClass);
-        $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        return new GuzzleFileFetcher($this->client);
     }
 }

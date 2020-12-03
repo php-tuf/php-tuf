@@ -31,7 +31,7 @@ interface RepoFileFetcherInterface
     public function fetchFile(string $fileName, int $maxBytes):string;
 
     /**
-     * Gets a file if it exists if it exists in the remote repo.
+     * Gets a file if it exists in the remote repo.
      *
      * @param string $fileName
      *   The file name to fetch.
