@@ -104,9 +104,12 @@ class GuzzleFileFetcherTest extends TestCase
      *
      * @covers ::fetchFile
      */
-    public function testfetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
+    public function testFetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
-        $fetcher = $this->getFetcherWithError($statusCode, $exceptionClass, $exceptionCode);
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
         $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
@@ -131,7 +134,10 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testFetchFileIfExistsError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
-        $fetcher = $this->getFetcherWithError($statusCode, $exceptionClass, $exceptionCode);
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
         $fetcher->fetchFileIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
@@ -148,7 +154,7 @@ class GuzzleFileFetcherTest extends TestCase
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchFileIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));
-        $this->assertSame($fetcher->fetchFileIfExists('test.json', 256), null);
+        $this->assertNull($fetcher->fetchFileIfExists('test.json', 256));
     }
 
     /**
