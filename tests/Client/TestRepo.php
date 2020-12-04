@@ -57,7 +57,7 @@ class TestRepo implements RepoFileFetcherInterface
             }
             return $contents;
         } catch (\Exception $exception) {
-            throw new RepoFileNotFound("File $fileName not found.", 0 , $exception);
+            throw new RepoFileNotFound("File $fileName not found.", 0, $exception);
         }
     }
 
