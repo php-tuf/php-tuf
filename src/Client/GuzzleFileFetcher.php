@@ -55,7 +55,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes)
+    public function fetchFile(string $fileName, int $maxBytes):string
     {
         try {
             $response = $this->client->request('GET', $fileName);
@@ -79,6 +79,18 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
             return JsonNormalizer::asNormalizedJson($json);
         } else {
             throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchFileIfExists(string $fileName, int $maxBytes):?string
+    {
+        try {
+            return $this->fetchFile($fileName, $maxBytes);
+        } catch (RepoFileNotFound $exception) {
+            return null;
         }
     }
 }

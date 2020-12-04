@@ -40,7 +40,7 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes)
+    public function fetchFile(string $fileName, int $maxBytes):string
     {
         try {
             $contents = file_get_contents(__DIR__ .  "/../../fixtures/{$this->fixturesSet}/tufrepo/metadata/$fileName");
@@ -57,7 +57,19 @@ class TestRepo implements RepoFileFetcherInterface
             }
             return $contents;
         } catch (\Exception $exception) {
-            return false;
+            throw new RepoFileNotFound("File $fileName not found.", 0, $exception);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchFileIfExists(string $fileName, int $maxBytes):?string
+    {
+        try {
+            return $this->fetchFile($fileName, $maxBytes);
+        } catch (RepoFileNotFound $exception) {
+            return null;
         }
     }
 
