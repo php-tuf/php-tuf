@@ -6,8 +6,11 @@ use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\Exception\RepoFileNotFound;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -78,12 +81,12 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertRepoVersions($expectedStartVersions);
+        $this->assertClientRepoVersions($expectedStartVersions);
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
-        $this->assertRepoVersions($expectedUpdatedVersions);
+        $this->assertClientRepoVersions($expectedUpdatedVersions);
     }
 
     /**
@@ -125,31 +128,45 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Asserts that files in the repo are at expected versions.
+     * Asserts that files in the client repo are at expected versions.
      *
      * @param array $expectedVersions
      *   The expected versions.
      *
      * @return void
      */
-    protected function assertRepoVersions(array $expectedVersions): void
+    protected function assertClientRepoVersions(array $expectedVersions): void
     {
-        $this->assertSame(
-            $expectedVersions['root'],
-            RootMetadata::createFromJson($this->localRepo['root.json'])
-            ->getVersion()
-        );
-        $this->assertSame(
-            $expectedVersions['timestamp'],
-            TimestampMetadata::createFromJson($this->localRepo['timestamp.json'])
-            ->getVersion()
-        );
-        $this->assertSame(
-            $expectedVersions['snapshot'],
-            SnapshotMetadata::createFromJson($this->localRepo['snapshot.json'])
-            ->getVersion()
-        );
+        foreach ($expectedVersions as $type => $version) {
+            if (is_null($version)) {
+                $this->assertNull($this->localRepo["$type.json"]);
+                return;
+            }
+            switch ($type) {
+                case 'root':
+                    $metaData = RootMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'timestamp':
+                    $metaData = TimestampMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'snapshot':
+                    $metaData = SnapshotMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'targets':
+                    $metaData = TargetsMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                default:
+                    $this->fail("Unexpected type: $type");
+            }
+            $actualVersion = $metaData->getVersion();
+            $this->assertSame(
+                $expectedVersions[$type],
+                $actualVersion,
+                "Actual version of $type, '$actualVersion' does not match expected version '$version'"
+            );
+        }
     }
+
 
     /**
      * Tests that an exception is thrown when attempting to refresh the repository with file that has an invalid valid
@@ -173,7 +190,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
         $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
-        $this->testRepo->setFilesToFailSignature([$fileToFail]);
+        $this->testRepo->setRepoFileNestedValue($fileToFail);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
@@ -215,5 +232,89 @@ class UpdaterTest extends TestCase
                 'Signature threshold not met on timestamp',
             ],
         ], 0);
+    }
+
+    /**
+     * Tests that if a file is missing from the repo an exception is thrown.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     * @param string $fileName
+     *   The name of the file to remove from the repo.
+     * @param array $expectedUpdatedVersions
+     *   The expected updated versions.
+     *
+     * @return void
+     *
+     * @dataProvider providerFileNotFoundExceptions
+     */
+    public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions):void
+    {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $this->testRepo->removeRepoFile($fileName);
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (RepoFileNotFound $exception) {
+            $this->assertSame("File $fileName not found.", $exception->getMessage());
+            $this->assertClientRepoVersions($expectedUpdatedVersions);
+            return;
+        }
+        $this->fail('No RepoFileNotFound exception thrown');
+    }
+
+    /**
+     * Data provider for testFileNotFoundExceptions().
+     *
+     * @return mixed[]
+     *   The test cases for testFileNotFoundExceptions().
+     */
+    public function providerFileNotFoundExceptions():array
+    {
+        return $this->getKeyedArray([
+            [
+                'TUFTestFixtureDelegated',
+                'timestamp.json',
+                [
+                    'root' => 5,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 5,
+                ],
+            ],
+            [
+                'TUFTestFixtureDelegated',
+                '5.snapshot.json',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => null,
+                    'targets' => 5,
+                ],
+            ],
+            [
+                'TUFTestFixtureSimple',
+                'timestamp.json',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            [
+                'TUFTestFixtureSimple',
+                '2.snapshot.json',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+        ]);
     }
 }
