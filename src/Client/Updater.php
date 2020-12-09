@@ -166,8 +166,8 @@ class Updater
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
             // TUF-SPEC-v1.0.9 Section 5.3.1
-            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotContents);
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotData, $newSnapshotContents);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -196,8 +196,8 @@ class Updater
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
             // TUF-SPEC-v1.0.9 Section 5.4.1
-            $this->confirmFileFromExistingMetadata($newSnapshotData, $newTargetsContent);
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+            $this->confirmFileFromExistingMetadata($newSnapshotData, $newTargetsData, $newTargetsContent);
             // TUF-SPEC-v1.0.9 Section 5.4.2
             $this->checkSignatures($newTargetsData);
             // TUF-SPEC-v1.0.9 Section 5.4.2
@@ -496,18 +496,17 @@ class Updater
      *
      * @param \Tuf\Metadata\MetaFileInfoInterface $authorityMetadata
      *   The metadata instance that contains the metadata about the new file.
+     * @param \Tuf\Metadata\MetadataBase $newMetadata
+     *   The metadata.
      * @param string $newFileContents
-     *   The contents of the new metadata file.
+     *   The undecoded JSON string of the new metadata file.
      *
      * @return void
      *
-     * @throws \Tuf\Exception\MetadataException
-     *   Thrown if the new file contents does not match the existing metadata.
-     *
+     * @throws \Tuf\Exception\MetadataException Thrown if the new file contents does not match the existing metadata.
      */
-    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, string $newFileContents): void
+    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, MetadataBase $newMetadata, string $newFileContents): void
     {
-        $newMetadata = MetadataBase::createFromJson($newFileContents);
         $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $newMetadata->getVersion()) {
