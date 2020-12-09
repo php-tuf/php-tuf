@@ -8,6 +8,11 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
+use Tuf\Metadata\TimestampMetadata;
+
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
 class UpdaterTest extends TestCase
@@ -159,7 +164,23 @@ class UpdaterTest extends TestCase
                 $this->assertNull($this->localRepo["$type.json"]);
                 return;
             }
-            $actualVersion = MetadataBase::createFromJson($this->localRepo["$type.json"])->getVersion();
+            switch ($type) {
+                case 'root':
+                    $metaData = RootMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'timestamp':
+                    $metaData = TimestampMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'snapshot':
+                    $metaData = SnapshotMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                case 'targets':
+                    $metaData = TargetsMetadata::createFromJson($this->localRepo["$type.json"]);
+                    break;
+                default:
+                    $this->fail("Unexpected type: $type");
+            }
+            $actualVersion = $metaData->getVersion();
             $this->assertSame(
                 $expectedVersions[$type],
                 $actualVersion,
@@ -167,6 +188,7 @@ class UpdaterTest extends TestCase
             );
         }
     }
+
 
     /**
      * Tests that exceptions are thrown when metadata files are not valid.

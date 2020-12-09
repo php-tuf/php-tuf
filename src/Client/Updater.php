@@ -203,7 +203,7 @@ class Updater
             // TUF-SPEC-v1.0.9 Section 5.4.2
             static::checkFreezeAttack($newTargetsData, $nowDate);
             // TUF-SPEC-v1.0.9 Section 5.4.4
-            $this->durableStorage['targets.json'] = $newSnapshotContents;
+            $this->durableStorage['targets.json'] = $newTargetsContent;
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
