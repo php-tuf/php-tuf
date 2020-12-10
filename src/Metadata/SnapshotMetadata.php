@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class SnapshotMetadata extends MetadataBase
+class SnapshotMetadata extends MetadataBase implements MetaFileInfoInterface
 {
     use MetaFileInfoTrait;
 

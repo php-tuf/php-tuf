@@ -2,6 +2,9 @@
 
 namespace Tuf\Metadata;
 
+/**
+ * A trait that implements MetaFileInterface.
+ */
 trait MetaFileInfoTrait
 {
 
