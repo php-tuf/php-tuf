@@ -37,16 +37,35 @@ abstract class MetadataBase
      */
     protected const TYPE = '';
 
+    /**
+     * @var string
+     */
+    private $sourceJson;
+
 
     /**
      * MetaDataBase constructor.
      *
      * @param \ArrayObject $metadata
      *   The data.
+     * @param string $sourceJson
+     *   The source JSON.
      */
-    public function __construct(\ArrayObject $metadata)
+    public function __construct(\ArrayObject $metadata, string $sourceJson)
     {
         $this->metaData = $metadata;
+        $this->sourceJson = $sourceJson;
+    }
+
+    /**
+     * Gets the original JSON source.
+     *
+     * @return string
+     *   The JSON source.
+     */
+    public function getSource():string
+    {
+        return $this->sourceJson;
     }
 
     /**
@@ -65,7 +84,7 @@ abstract class MetadataBase
     {
         $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
-        return new static($data);
+        return new static($data, $json);
     }
 
     /**

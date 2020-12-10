@@ -72,7 +72,7 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @return void
      */
-    public function setRepoFileNestedValue(string $fileName, array $keys = ['signed', 'extra_test_value'], $newValue = 'new value'): void
+    public function setRepoFileNestedValue(string $fileName, array $keys, $newValue): void
     {
         $json = json_decode($this->repoFilesContents[$fileName], true);
         static::nestedChange($keys, $json, $newValue);
