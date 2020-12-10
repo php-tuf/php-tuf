@@ -167,10 +167,7 @@ class Updater
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
-        // TUF-SPEC-v1.0.9 Section 5.3.1
-        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
-            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
-        }
+
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
 
