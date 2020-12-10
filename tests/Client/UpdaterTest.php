@@ -273,7 +273,7 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions($this->getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
         $updater = $this->getSystemInTest();
         try {
