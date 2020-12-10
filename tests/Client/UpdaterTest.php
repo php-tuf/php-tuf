@@ -31,6 +31,37 @@ class UpdaterTest extends TestCase
     protected $testRepo;
 
     /**
+     * Gets the metadata start versions for a fixture set.
+     *
+     * @param string $fixturesSet
+     *   The fixture set name.
+     *
+     * @return int[]
+     *   The expected metadata start versions for the fixture set.
+     */
+    private static function getFixtureClientStartVersions(string $fixturesSet): array
+    {
+        $startVersions = [
+            'TUFTestFixtureDelegated' => [
+                'root' => 3,
+                'timestamp' => 3,
+                'snapshot' => 3,
+                'targets' => 3,
+            ],
+            'TUFTestFixtureSimple' => [
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
+            ],
+        ];
+        if (!isset($startVersions[$fixturesSet])) {
+            throw new \UnexpectedValueException("Unknown fixture set: $fixturesSet");
+        }
+        return $startVersions[$fixturesSet];
+    }
+
+    /**
      * Returns a memory-based updater populated with the test fixtures.
      *
      * @return Updater
@@ -66,8 +97,6 @@ class UpdaterTest extends TestCase
      *
      * @param string $fixturesSet
      *   The fixtures set to use.
-     * @param array $expectedStartVersions
-     *   The expected start versions.
      * @param array $expectedUpdatedVersions
      *   The expected updated versions.
      *
@@ -75,13 +104,13 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository(string $fixturesSet, array $expectedStartVersions, array $expectedUpdatedVersions) : void
+    public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions) : void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions($expectedStartVersions);
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
@@ -101,11 +130,6 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureDelegated',
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                ],
-                [
                     'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
@@ -113,11 +137,6 @@ class UpdaterTest extends TestCase
             ],
             [
                 'TUFTestFixtureSimple',
-                [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                ],
                 [
                     'root' => 2,
                     'timestamp' => 2,
@@ -189,7 +208,7 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
-        $this->assertSame(3, RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion());
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToFail);
         $updater = $this->getSystemInTest();
         try {
@@ -254,6 +273,7 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
         $updater = $this->getSystemInTest();
         try {
