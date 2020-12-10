@@ -141,7 +141,6 @@ class UpdaterTest extends TestCase
                     'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
-                    'targets' => 2,
                 ],
             ],
         ], 0);
