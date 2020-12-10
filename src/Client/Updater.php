@@ -476,7 +476,7 @@ class Updater
      * @param \Tuf\Metadata\MetaFileInfoInterface $authorityMetadata
      *   The metadata instance that contains the metadata about the new file.
      * @param \Tuf\Metadata\MetadataBase $newMetadata
-     *   The metadata.
+     *   The new metadata to check.
      * @param string $newFileContents
      *   The undecoded JSON string of the new metadata file.
      *
