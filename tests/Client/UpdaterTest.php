@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Client;
 
+use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
