@@ -5,13 +5,19 @@ namespace Tuf\Metadata;
 use Tuf\Exception\MetadataException;
 
 /**
- * A trait that implements MetaFileInterface.
+ * Common methods for metadata that contain information about other metadata objects.
  */
 trait MetaFileInfoTrait
 {
 
     /**
-     * {@inheritdoc}
+     * Gets file information value under the 'meta' key.
+     *
+     * @param string $key
+     *   The array key under 'meta'.
+     *
+     * @return mixed[]|null
+     *   The file information if available or null if not set.
      */
     public function getFileMetaInfo(string $key):?\ArrayObject
     {
@@ -20,7 +26,15 @@ trait MetaFileInfoTrait
     }
 
     /**
-     * {@inheritdoc}
+     * Verifies a new metadata object from information in the current object.
+     *
+     * @param \Tuf\Metadata\MetadataBase $newMetadata
+     *   The new metadata object.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Thrown if the new metadata object cannot be verified.
+     *
+     * @return void
      */
     public function verifyNewMetaData(MetadataBase $newMetadata):void
     {
