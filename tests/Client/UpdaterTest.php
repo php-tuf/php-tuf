@@ -31,13 +31,13 @@ class UpdaterTest extends TestCase
     protected $testRepo;
 
     /**
-     * Gets the start version for a fixture set.
+     * Gets the metadata start versions for a fixture set.
      *
      * @param string $fixturesSet
      *   The fixture set name.
      *
      * @return int[]
-     *   The expected start version for the fixture set.
+     *   The expected metadata start versions for the fixture set.
      */
     private static function getFixtureClientStartVersions(string $fixturesSet): array
     {
