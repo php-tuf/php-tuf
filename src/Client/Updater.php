@@ -4,7 +4,6 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
-use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -193,12 +192,12 @@ class Updater
                 "$targetsVersion.targets.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
-            // TUF-SPEC-v1.0.9 Section 5.4.1
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+            // TUF-SPEC-v1.0.9 Section 5.4.1
             $newSnapshotData->verifyNewMetaData($newTargetsData);
             // TUF-SPEC-v1.0.9 Section 5.4.2
             $this->checkSignatures($newTargetsData);
-            // TUF-SPEC-v1.0.9 Section 5.4.2
+            // TUF-SPEC-v1.0.9 Section 5.4.3
             static::checkFreezeAttack($newTargetsData, $nowDate);
             // TUF-SPEC-v1.0.9 Section 5.4.4
             $this->durableStorage['targets.json'] = $newTargetsContent;
