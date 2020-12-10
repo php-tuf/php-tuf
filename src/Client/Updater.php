@@ -185,6 +185,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3.5
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+
         return true;
     }
 

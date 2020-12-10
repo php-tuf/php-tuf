@@ -134,7 +134,6 @@ class UpdaterTest extends TestCase
                     'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
-                    'targets' => 3,
                 ],
             ],
             [
@@ -223,7 +222,7 @@ class UpdaterTest extends TestCase
             $this->assertClientRepoVersions($expectedUpdatedVersions);
             return;
         }
-        $this->fail('No MetadataException thrown');
+        $this->fail('No exception thrown. Expected: ' . get_class($expectionException));
     }
 
     /**
@@ -240,21 +239,36 @@ class UpdaterTest extends TestCase
                 ['signed', 'newkey'],
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on root'),
-                ['root' => 3],
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                    'targets' => 3,
+                ],
             ],
             [
                 '5.root.json',
                 ['signed', 'newkey'],
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on root'),
-                ['root' => 4],
+                [
+                    'root' => 4,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                    'targets' => 3,
+                ],
             ],
             [
                 'timestamp.json',
                 ['signed', 'newkey'],
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on timestamp'),
-                ['root' => 5],
+                [
+                    'root' => 5,
+                    'timestamp' => null,
+                    'snapshot' => 3,
+                    'targets' => 3,
+                ],
             ],
             [
                 '5.snapshot.json',
