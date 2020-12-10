@@ -166,7 +166,7 @@ class Updater
             );
             // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotData, $newSnapshotContents);
+            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotData);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -477,15 +477,13 @@ class Updater
      *   The metadata instance that contains the metadata about the new file.
      * @param \Tuf\Metadata\MetadataBase $newMetadata
      *   The new metadata to check.
-     * @param string $newFileContents
-     *   The undecoded JSON string of the new metadata file.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if the new file contents does not match the existing metadata.
      */
-    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, MetadataBase $newMetadata, string $newFileContents): void
+    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, MetadataBase $newMetadata): void
     {
         $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
         $expectedVersion = $fileInfo['version'];
@@ -494,7 +492,7 @@ class Updater
         }
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
-                if ($hash !== hash($algo, $newFileContents)) {
+                if ($hash !== hash($algo, $newMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
                     throw new MetadataException("The '{$newMetadata->getType()}' contents does not match hash '$algo' specified in the '{$authorityMetadata->getType()}' metadata.");
                 }
