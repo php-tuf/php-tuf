@@ -14,7 +14,6 @@ use Tuf\Metadata\MetaFileInfoInterface;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 

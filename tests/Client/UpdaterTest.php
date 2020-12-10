@@ -5,6 +5,7 @@ namespace Tuf\Tests\Client;
 use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Metadata\MetadataBase;
