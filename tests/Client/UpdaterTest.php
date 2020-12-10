@@ -8,6 +8,7 @@ use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Exception\RepoFileNotFound;
+use Tuf\Exception\TufException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -197,7 +198,7 @@ class UpdaterTest extends TestCase
      *   The nested keys of the element to change.
      * @param mixed $newValue
      *   The new value to set.
-     * @param \Exception $expectionException
+     * @param \Exception $expectedException
      *   The excpected exception.
      * @param array $expectedUpdatedVersions
      *   The expected repo file version after refresh attempt.
@@ -206,23 +207,23 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerRefreshException
      */
-    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectionException, array $expectedUpdatedVersions): void
+    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
-        $this->assertClientRepoVersions($this->getFixtureClientStartVersions('TUFTestFixtureDelegated'));
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
-        } catch (\Exception $exception) {
-            $this->assertEquals($exception, $expectionException);
+        } catch (TufException $exception) {
+            $this->assertEquals($exception, $expectedException);
             $this->assertClientRepoVersions($expectedUpdatedVersions);
             return;
         }
-        $this->fail('No exception thrown. Expected: ' . get_class($expectionException));
+        $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
     }
 
     /**
