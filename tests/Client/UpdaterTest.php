@@ -133,7 +133,6 @@ class UpdaterTest extends TestCase
                     'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
-                    'targets' => 3,
                 ],
             ],
             [
@@ -190,97 +189,69 @@ class UpdaterTest extends TestCase
 
 
     /**
-     * Tests that exceptions are thrown when metadata files are not valid.
+     * Tests that an exception is thrown when attempting to refresh the repository with file that has an invalid valid
+     * signature.
      *
-     * @param string $fileToChange
-     *   The file to change.
-     * @param array $keys
-     *   The nested keys of the element to change.
-     * @param mixed $newValue
-     *   The new value to set.
-     * @param \Exception $expectionException
-     *   The excpected exception.
-     * @param array $expectedUpdatedVersions
-     *   The expected repo file version after refresh attempt.
+     * @param string $fileToFail
+     *   The repo fail that should fail the signature check.
+     * @param integer $expectedRootVersion
+     *   The expected root version after the refresh attempt.
+     * @param string $expectionMessage
+     *   The expected exception message.
      *
      * @return void
      *
-     * @dataProvider providerRefreshException
+     * @dataProvider providerSignatureError
      */
-    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectionException, array $expectedUpdatedVersions): void
+    public function testSignatureError(string $fileToFail, int $expectedRootVersion, string $expectionMessage) : void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
-        $this->assertClientRepoVersions($this->getFixtureClientStartVersions('TUFTestFixtureDelegated'));
-        $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
+        $this->testRepo->setRepoFileNestedValue($fileToFail);
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
-        } catch (\Exception $exception) {
-            $this->assertEquals($exception, $expectionException);
-            $this->assertClientRepoVersions($expectedUpdatedVersions);
+        } catch (SignatureThresholdExpception $exception) {
+            // Confirm the root was updated to version 4 but not to 5 because
+            // 5.root.json should throw an exception.
+            $this->assertSame(
+                $expectedRootVersion,
+                RootMetadata::createFromJson($this->localRepo['root.json'])->getVersion()
+            );
+            $this->assertSame($expectionMessage, $exception->getMessage());
             return;
         }
-        $this->fail('No MetadataException thrown');
+        $this->fail('No SignatureThresholdExpception thrown');
     }
 
     /**
-     * Data provider for testRefreshException().
+     * Dataprovider for testSignatureError().
      *
-     * @return mixed[]
-     *   The test cases for testRefreshException().
+     * @return array[]
+     *   The test cases for testSignatureError().
      */
-    public function providerRefreshException()
+    public function providerSignatureError()
     {
-        return static::getKeyedArray([
+        return $this->getKeyedArray([
             [
                 '4.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
-                ['root' => 3],
+                3,
+                'Signature threshold not met on root',
             ],
             [
                 '5.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
-                ['root' => 4],
+                4,
+                'Signature threshold not met on root',
             ],
             [
                 'timestamp.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdExpception('Signature threshold not met on timestamp'),
-                ['root' => 5],
+                5,
+                'Signature threshold not met on timestamp',
             ],
-            [
-                '5.snapshot.json',
-                ['signed', 'newkey'],
-                'new value',
-                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => null,
-                    'targets' => 3,
-                ],
-            ],
-            [
-                '5.snapshot.json',
-                ['signed', 'version'],
-                6,
-                new MetadataException("Expected snapshot version 5 does not match actual version 6."),
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => null,
-                    'targets' => 3,
-                ],
-            ],
-        ]);
+        ], 0);
     }
 
     /**

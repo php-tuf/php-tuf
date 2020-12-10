@@ -10,11 +10,9 @@ use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
-use Tuf\Metadata\MetaFileInfoInterface;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 
@@ -165,14 +163,14 @@ class Updater
                 "$snapShotVersion.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
-            // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->confirmFileFromExistingMetadata($newTimestampData, $newSnapshotData, $newSnapshotContents);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
-
-
+        // TUF-SPEC-v1.0.9 Section 5.3.1
+        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
+            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
+        }
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
 
@@ -187,6 +185,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3.5
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+
         return true;
     }
 
@@ -469,37 +468,5 @@ class Updater
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
         return $previousRole !== $newRole;
-    }
-
-    /**
-     * Confirms the a new metadata file contents against existing metadata.
-     *
-     * @param \Tuf\Metadata\MetaFileInfoInterface $authorityMetadata
-     *   The metadata instance that contains the metadata about the new file.
-     * @param \Tuf\Metadata\MetadataBase $newMetadata
-     *   The metadata.
-     * @param string $newFileContents
-     *   The undecoded JSON string of the new metadata file.
-     *
-     * @return void
-     *
-     * @throws \Tuf\Exception\MetadataException
-     *   Thrown if the new file contents does not match the existing metadata.
-     */
-    private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, MetadataBase $newMetadata, string $newFileContents): void
-    {
-        $fileInfo = $authorityMetadata->getFileMetaInfo($newMetadata->getType() . '.json');
-        $expectedVersion = $fileInfo['version'];
-        if ($expectedVersion !== $newMetadata->getVersion()) {
-            throw new MetadataException("Expected {$newMetadata->getType()} version {$expectedVersion} does not match actual version {$newMetadata->getVersion()}.");
-        }
-        if (isset($fileInfo['hashes'])) {
-            foreach ($fileInfo['hashes'] as $algo => $hash) {
-                if ($hash !== hash($algo, $newFileContents)) {
-                    /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$newMetadata->getType()}' contents does not match hash '$algo' specified in the '{$authorityMetadata->getType()}' metadata.");
-                }
-            }
-        }
     }
 }
