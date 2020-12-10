@@ -503,7 +503,8 @@ class Updater
      *
      * @return void
      *
-     * @throws \Tuf\Exception\MetadataException Thrown if the new file contents does not match the existing metadata.
+     * @throws \Tuf\Exception\MetadataException
+     *   Thrown if the new file contents does not match the existing metadata.
      */
     private static function confirmFileFromExistingMetadata(MetaFileInfoInterface $authorityMetadata, MetadataBase $newMetadata, string $newFileContents): void
     {
