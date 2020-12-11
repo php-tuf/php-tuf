@@ -45,8 +45,7 @@ class KeyDBTest extends TestCase
         $key512 = $keyDb->getKey($keyId512);
         self::assertEquals($expectedKeyDataObject, $key256);
         self::assertEquals($expectedKeyDataObject, $key512);
-        // Ensure that changing a value in the key does not affect the internal
-        // state of the KeyDB object.
+        // Ensure that changing a value in the key does not affect the internal state of the KeyDB object.
         $key256['keyval']['new_key'] = 'new_value';
         $key512['keyval']['new_key'] = 'new_value';
         self::assertEquals($expectedKeyDataObject, $keyDb->getKey($keyId256));
