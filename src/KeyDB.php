@@ -46,15 +46,8 @@ class KeyDB
         $db = new self();
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
-            if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
-                // @todo Convert this to a log line as per Python.
-                throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
-            }
-            // One key ID for each $keyMeta['keyid_hash_algorithms'].
-            $computedKeyIds = self::computeKeyIds($keyMeta);
-            foreach ($computedKeyIds as $keyId) {
-                $db->addKey($keyId, $keyMeta);
-            }
+            $db->addKey($keyMeta);
+
         }
 
         return $db;
@@ -138,9 +131,17 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private function addKey(string $keyId, \ArrayAccess $keyMeta)
+    private function addKey(\ArrayAccess $keyMeta)
     {
-        $this->keys[$keyId] = $keyMeta;
+        if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
+            // @todo Convert this to a log line as per Python.
+            throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+        }
+        // One key ID for each $keyMeta['keyid_hash_algorithms'].
+        $computedKeyIds = self::computeKeyIds($keyMeta);
+        foreach ($computedKeyIds as $keyId) {
+            $this->keys[$keyId] = $keyMeta;
+        }
     }
 
     /**
