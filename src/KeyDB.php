@@ -46,7 +46,7 @@ class KeyDB
         $db = new self();
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
-            $db->addKey($keyMeta);
+            $db->addKeyMetadata($keyMeta);
 
         }
 
@@ -115,8 +115,6 @@ class KeyDB
     /**
      * Adds key metadata to the key database while avoiding duplicates.
      *
-     * @param string $keyId
-     *     The key id.
      * @param \ArrayAccess $keyMeta
      *     An associative array of key metadata, including:
      *     - keytype: The public key signature system, e.g. 'ed25519'.
@@ -131,7 +129,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private function addKey(\ArrayAccess $keyMeta)
+    private function addKeyMetadata(\ArrayAccess $keyMeta)
     {
         if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.
