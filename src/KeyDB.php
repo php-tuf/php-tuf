@@ -47,7 +47,6 @@ class KeyDB
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
             $db->addKeyMetadata($keyMeta);
-
         }
 
         return $db;
