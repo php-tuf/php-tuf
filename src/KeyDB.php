@@ -4,6 +4,7 @@
 namespace Tuf;
 
 use Tuf\Metadata\RootMetadata;
+use function DeepCopy\deep_copy;
 
 /**
  * Represent a collection of keys and their organization.
@@ -45,16 +46,7 @@ class KeyDB
         $db = new self();
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
-            if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
-                // @todo Convert this to a log line as per Python.
-                throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
-            }
-            // One key ID for each $keyMeta['keyid_hash_algorithms'].
-            $computedKeyIds = self::computeKeyIds($keyMeta);
-            foreach ($computedKeyIds as $keyId) {
-                $keyMeta['keyid'] = $keyId;
-                $db->addKey($keyMeta);
-            }
+            $db->addKey($keyMeta);
         }
 
         return $db;
@@ -94,7 +86,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public static function computeKeyIds(\ArrayAccess $keyMeta)
+    private static function computeKeyIds(\ArrayAccess $keyMeta)
     {
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],
@@ -136,9 +128,17 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public function addKey(\ArrayAccess $keyMeta)
+    private function addKey(\ArrayAccess $keyMeta)
     {
-        $this->keys[$keyMeta['keyid']] = $keyMeta;
+        if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
+            // @todo Convert this to a log line as per Python.
+            throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+        }
+        // One key ID for each $keyMeta['keyid_hash_algorithms'].
+        $computedKeyIds = self::computeKeyIds($keyMeta);
+        foreach ($computedKeyIds as $keyId) {
+            $this->keys[$keyId] = $keyMeta;
+        }
     }
 
     /**
@@ -147,7 +147,7 @@ class KeyDB
      * @param string $keyId
      *     The key ID.
      *
-     * @return array
+     * @return \ArrayObject
      *     The key metadata matching $keyId. See self::addKey() and the TUF
      *     specification for the array structure.
      *
@@ -156,11 +156,11 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
      */
-    public function getKey(string $keyId)
+    public function getKey(string $keyId):\ArrayObject
     {
         if (empty($this->keys[$keyId])) {
             throw new \Exception("Unknown key ID: $keyId");
         }
-        return $this->keys[$keyId];
+        return deep_copy($this->keys[$keyId]);
     }
 }

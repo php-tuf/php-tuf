@@ -3,54 +3,47 @@
 namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
- * Tests KeyDB functionality.
+ * @coversDefaultClass \Tuf\KeyDB
  */
 class KeyDBTest extends TestCase
 {
+    use UtilsTrait;
     /**
-     * Tests that computed key IDs match expected values in the repository.
-     *
-     * @dataProvider computeKeyIdProvider
-     *
-     * @param mixed[] $metadata
-     *     The metadata for which to compute keys.
-     * @param string[] $expected
-     *     The expected key values.
+     * @covers ::createFromRootMetadata
      *
      * @return void
      */
-    public function testComputeKeyId(array $metadata, array $expected) : void
+    public function testCreateFromRootMetadata():void
     {
-        $actual = KeyDB::computeKeyIds(new \ArrayObject($metadata));
-        $this->assertEquals($expected, $actual);
-    }
+        $rootJsonPath = static::getFixturesRealPath(
+            'TUFTestFixtureDelegated',
+            'tufclient/tufrepo/metadata/current/3.root.json',
+            false
+        );
+        $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath));
+        self::assertInstanceOf(RootMetadata::class, $rootMetadata);
+        $keyDb = KeyDB::createFromRootMetadata($rootMetadata);
+        self::assertInstanceOf(KeyDB::class, $keyDb);
+        // Get the first key for comparison.
+        $key = $rootMetadata->getKeys()->getIterator()->current();
+        $jsonEncodedKey = json_encode($key);
+        // Create the 2 hashed versions of the key id which can be used by getKey().
+        $keyNormalized = JsonNormalizer::asNormalizedJson($key);
+        $keyId256 = hash('sha256', $keyNormalized);
+        $keyId512 = hash('sha512', $keyNormalized);
+        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId256)));
+        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId512)));
 
-    /**
-     * Data provider for testComputeKeyId().
-     *
-     * @return array[][]
-     *     An associative array of test cases, each containing:
-     *     - metadata: The key metadata to check.
-     *     - expected: The expected keys from the repository.
-     */
-    public function computeKeyIdProvider() : array
-    {
-        return [
-            'case 1' => [
-                'metadata' => [
-                    'keyid_hash_algorithms' => ['sha256', 'sha512'],
-                    'keytype' => 'ed25519',
-                    'keyval' => ['public' => 'edcd0a32a07dce33f7c7873aaffbff36d20ea30787574ead335eefd337e4dacd'],
-                    'scheme' => 'ed25519',
-                ],
-                'expected' => [
-                    '59a4df8af818e9ed7abe0764c0b47b4240952aa0d179b5b78346c470ac30278d',
-                    '594e8b4bdafc33fd87e9d03a95be13a6dc93a836086614fd421116d829af68d8f0110ae93e3dde9a246897fd85171455ea53191bb96cf9e589ba047d057dbd66',
-                ],
-            ],
-        ];
+        // Ensure that changing a value in the key does not affect the internal state of the KeyDB object.
+        $key256['keyval']['new_key'] = 'new_value';
+        $key512['keyval']['new_key'] = 'new_value';
+        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId256)));
+        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId512)));
     }
 }
