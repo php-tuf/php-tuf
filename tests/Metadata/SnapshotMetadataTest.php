@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
@@ -50,15 +51,17 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     }
 
     /**
-     * {@inheritdoc}
+     * @throws \Tuf\Exception\MetadataException
+     *
+     * @todo Change this more generic `testUnsupportedfields()` in base class.
      */
-    public function providerOptionalFields()
-    {
-        $data = parent::providerOptionalFields();
-        $data[] = [
-            'signed:meta:targets.json:length',
-            789,
-        ];
-        return static::getKeyedArray($data);
+    public function testUnsupportedLength() {
+        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata['signed']['meta']['targets.json']['length'] = 1;
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][meta][targets.json][length]", '/');
+        $expectedMessage .= ".*This field was not expected.";
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessageMatches("/$expectedMessage/s");
+        static::callCreateFromJson(json_encode($metadata));
     }
 }
