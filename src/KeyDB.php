@@ -46,7 +46,7 @@ class KeyDB
         $db = new self();
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
-            $db->addKeyMetadata($keyMeta);
+            $db->addKey($keyMeta);
         }
 
         return $db;
@@ -128,7 +128,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private function addKeyMetadata(\ArrayAccess $keyMeta)
+    private function addKey(\ArrayAccess $keyMeta)
     {
         if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.
