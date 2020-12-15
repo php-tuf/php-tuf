@@ -31,26 +31,12 @@ class SnapshotMetadata extends MetadataBase
             new All([
                 new Collection(
                     [
-                      'fields' => static::getVersionConstraints(),
+                        'fields' => static::getVersionConstraints(),
                         'allowExtraFields' => false,
                     ]
-
                 ),
             ]),
         ]);
         return $options;
-    }
-    protected static function validateMetaData(\ArrayObject $metadata): void
-    {
-        parent::validateMetaData($metadata);
-        /** @var \ArrayAccess $signed */
-        $signed = $metadata['signed'];
-        if (isset($signed['meta'])) {
-            foreach ($signed['meta'] as $fileName => $fileInfo) {
-                if (isset($fileInfo['length'])) {
-                    throw new MetadataException("The length attribute is not supported for ['meta']['$fileName'] in snapshot metadata");
-                }
-            }
-        }
     }
 }

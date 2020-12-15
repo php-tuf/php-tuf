@@ -55,7 +55,8 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      *
      * @todo Change this more generic `testUnsupportedfields()` in base class.
      */
-    public function testUnsupportedLength() {
+    public function testUnsupportedLength()
+    {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['meta']['targets.json']['length'] = 1;
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][meta][targets.json][length]", '/');
