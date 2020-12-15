@@ -39,7 +39,7 @@ class KeyDB
      * @throws \Exception
      *   Thrown if an unsupported key type exists in the metadata.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
@@ -82,7 +82,7 @@ class KeyDB
      *     There is one entry for each hashing algorithm specified in the
      *     'keyid_hash_algorithms' child array.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
@@ -124,7 +124,7 @@ class KeyDB
      *
      * @return void
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
@@ -154,7 +154,7 @@ class KeyDB
      * @throws \Exception
      *     Thrown if the key ID is not found in the keydb database.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public function getKey(string $keyId):\ArrayObject
     {
