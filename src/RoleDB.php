@@ -30,7 +30,7 @@ class RoleDB
      * @throws \Exception
      *     Thrown if a threshold value in the metadata is not valid.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
@@ -56,7 +56,7 @@ class RoleDB
                 //     versa and are in a separate part of the document. Review
                 //     this once https://github.com/php-tuf/php-tuf/issues/52
                 //     is resolved.
-                // @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+                // @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
                 $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
             }
             $roleInfo['paths'] = [];
@@ -92,7 +92,7 @@ class RoleDB
      * @throws \Exception
      *     Thrown if the role already exists.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo Provide more complete documentation of the structure once
      *     delgation is implemented and fixtures are regenerated. Issues:
@@ -135,7 +135,7 @@ class RoleDB
      * @throws \Exception
      *     Thrown if the role does not exist.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public function getRoleInfo(string $roleName)
     {
