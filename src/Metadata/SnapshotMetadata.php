@@ -28,11 +28,11 @@ class SnapshotMetadata extends MetadataBase
             new Count(['min' => 1]),
             new All([
                 new Collection(
-                  [
-                    'fields' => static::getVersionConstraints(),
-                      'excludedFields' => ['length', 'hashes'],
-                      'allowExtraFields' => true,
-                   ],
+                    [
+                        'fields' => static::getVersionConstraints(),
+                        'unsupportedFields' => ['length', 'hashes'],
+                        'allowExtraFields' => true,
+                    ]
                 ),
             ]),
         ]);

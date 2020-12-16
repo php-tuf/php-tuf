@@ -59,6 +59,8 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      *   The field value to set.
      *
      * @dataProvider providerUnsupportedFields
+     *
+     * @return void
      */
     public function testUnsupportedFields(array $unsupportedField, $fieldValue):void
     {
@@ -76,12 +78,13 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      * Data provider for testUnsupportedFields().
      *
      * @return array[]
+     *  The test cases.
      */
     public function providerUnsupportedFields():array
     {
         return [
-          'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
-         'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
+            'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
+            'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
         ];
     }
 }
