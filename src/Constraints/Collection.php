@@ -14,15 +14,4 @@ class Collection extends SymfonyCollection
      * @var array
      */
     public $unsupportedFields = [];
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($options = null)
-    {
-        if (isset($options['excludedFields']) && !isset($options['fields'])) {
-            throw new \InvalidArgumentException('If "excludedFields" is set "fields" must also be set.');
-        }
-        parent::__construct($options);
-    }
 }
