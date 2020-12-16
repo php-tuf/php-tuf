@@ -31,7 +31,7 @@ class SnapshotMetadata extends MetadataBase
                     [
                         'fields' => static::getVersionConstraints(),
                         // These fields are mentioned in the specification as optional but the Python library does not
-                        // adding these fields. Since we use the Python library for our fixtures we cannot create test
+                        // add these fields. Since we use the Python library for our fixtures we cannot create test
                         // fixtures that have these fields specified.
                         'unsupportedFields' => ['length', 'hashes'],
                         'allowExtraFields' => true,

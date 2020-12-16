@@ -14,20 +14,17 @@ class CollectionValidator extends SymfonyCollectionValidator
      */
     public function validate($value, Constraint $constraint)
     {
-        if (!empty($constraint->unsupportedFields)) {
-            foreach ($constraint->unsupportedFields as $unsupportedField) {
-                $existsInArray = \is_array($value) && \array_key_exists($unsupportedField, $value);
-                $existsInArrayAccess = $value instanceof \ArrayAccess && $value->offsetExists($unsupportedField);
-                if ($existsInArray || $existsInArrayAccess) {
-                    $this->context->buildViolation('This field is not supported.')
-                      ->atPath('['.$unsupportedField.']')
-                      ->setInvalidValue(null)
-                      ->setCode(Collection::MISSING_FIELD_ERROR)
-                      ->addViolation();
-                }
+        foreach ($constraint->unsupportedFields as $unsupportedField) {
+            $existsInArray = \is_array($value) && \array_key_exists($unsupportedField, $value);
+            $existsInArrayAccess = $value instanceof \ArrayAccess && $value->offsetExists($unsupportedField);
+            if ($existsInArray || $existsInArrayAccess) {
+                $this->context->buildViolation('This field is not supported.')
+                  ->atPath("[$unsupportedField]")
+                  ->setInvalidValue(null)
+                  ->setCode(Collection::MISSING_FIELD_ERROR)
+                  ->addViolation();
             }
         }
-
         parent::validate($value, $constraint);
     }
 }
