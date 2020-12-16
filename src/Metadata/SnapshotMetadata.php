@@ -3,12 +3,10 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
-use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
-use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\Exception\MetadataException;
+use Tuf\Constraints\Collection;
 
 class SnapshotMetadata extends MetadataBase
 {
@@ -30,10 +28,11 @@ class SnapshotMetadata extends MetadataBase
             new Count(['min' => 1]),
             new All([
                 new Collection(
-                    [
-                        'fields' => static::getVersionConstraints(),
-                        'allowExtraFields' => false,
-                    ]
+                  [
+                    'fields' => static::getVersionConstraints(),
+                      'excludedFields' => ['length', 'hashes'],
+                      'allowExtraFields' => true,
+                   ],
                 ),
             ]),
         ]);

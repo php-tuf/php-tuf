@@ -51,18 +51,37 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     }
 
     /**
-     * @throws \Tuf\Exception\MetadataException
+     * Tests that unsupported fields throw an exception.
      *
-     * @todo Change this more generic `testUnsupportedfields()` in base class.
+     * @param array $unsupportedField
+     *   The array of nested keys for the unsupported field.
+     * @param mixed $fieldValue
+     *   The field value to set.
+     *
+     * @dataProvider providerUnsupportedFields
      */
-    public function testUnsupportedLength()
+    public function testUnsupportedFields(array $unsupportedField, $fieldValue):void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
-        $metadata['signed']['meta']['targets.json']['length'] = 1;
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][meta][targets.json][length]", '/');
-        $expectedMessage .= ".*This field was not expected.";
+        $this->nestedChange($unsupportedField, $metadata, $fieldValue);
+        $fieldName = array_pop($unsupportedField);
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][meta][targets.json][$fieldName]", '/');
+        $expectedMessage .= ".*This field is not supported.";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($metadata));
+    }
+
+    /**
+     * Data provider for testUnsupportedFields().
+     *
+     * @return array[]
+     */
+    public function providerUnsupportedFields():array
+    {
+        return [
+          'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
+         'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
+        ];
     }
 }
