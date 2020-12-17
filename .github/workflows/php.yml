@@ -38,7 +38,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade pipenv
     - name: Install dependencies via pipenv
-      if: steps.cache-pipenv.outputs.cache-hit != 'true'
       run: |
         if [ -f Pipfile.lock ]; then pipenv --three install; fi
     - name: Lint with flake8
