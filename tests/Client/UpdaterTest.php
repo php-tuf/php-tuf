@@ -413,6 +413,8 @@ class UpdaterTest extends TestCase
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest();
         try {
+            // No changes should be made to client repo.
+            $this->localRepo->setExceptionOnChange();
             $updater->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($exception, $expectedException);
