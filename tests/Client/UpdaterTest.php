@@ -6,6 +6,7 @@ use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
@@ -55,6 +56,12 @@ class UpdaterTest extends TestCase
                 'timestamp' => 2,
                 'snapshot' => 2,
                 'targets' => 2,
+            ],
+            'TUFTestFixtureAttackRollback' => [
+                'root' => 3,
+                'timestamp' => 3,
+                'snapshot' => 3,
+                'targets' => 3,
             ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
@@ -381,5 +388,58 @@ class UpdaterTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Tests that exceptions are thrown when a repo is in a rollback attack state.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set.
+     * @param \Exception $expectedException
+     *   The expected exception.
+     * @param array $expectedUpdatedVersions
+     *   The expected repo file version after refresh attempt.
+     *
+     * @return void
+     *
+     * @dataProvider providerAttackRepoException
+     */
+    public function testAttackRepoException(string $fixturesSet, \Exception $expectedException, array $expectedUpdatedVersions): void
+    {
+        // Use the memory storage used so tests can write without permanent
+        // side-effects.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (TufException $exception) {
+            $this->assertEquals($exception, $expectedException);
+            $this->assertClientRepoVersions($expectedUpdatedVersions);
+            return;
+        }
+        $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
+    }
+
+    /**
+     * Data provider for testAttackRepoException().
+     * @return array[]
+     *   The test cases.
+     */
+    public function providerAttackRepoException():array
+    {
+        return [
+            [
+                'TUFTestFixtureAttackRollback',
+                new RollbackAttackException('Remote timestamp metadata version "$2" is less than previously seen timestamp version "$3"'),
+                [
+                    'root' => 3,
+                    'timestamp' => 3,
+                    'snapshot' => 3,
+                    'targets' => 3,
+                ],
+            ],
+        ];
     }
 }
