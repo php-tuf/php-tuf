@@ -56,7 +56,7 @@ class JsonNormalizer
      * @param iterable $structure
      *     The JSON data to sort, passed by reference.
      *
-     * @throws \RuntimeException
+     * @throws \Exception
      *     Thrown if sorting the array fails.
      * @throws \RuntimeException
      *     Thrown if an object other than \ArrayObject is found.

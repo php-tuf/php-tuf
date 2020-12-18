@@ -164,4 +164,25 @@ class RoleDB
         $roleInfo = $this->getRoleInfo($roleName);
         return $roleInfo['keyids'];
     }
+
+    /**
+     * Gets the threshold required for a given role.
+     *
+     * @param string $roleName
+     *    The role name.
+     *
+     * @return integer
+     *     The threshold number of signatures required for the role.
+     *
+     * @throws \Exception
+     *     Thrown if the role does not exist.
+     */
+    public function getRoleThreshold(string $roleName)
+    {
+        if (! $this->roleExists($roleName)) {
+            throw new \Exception("Role does not exist: $roleName");
+        }
+
+        return $this->roles[$roleName]['threshold'];
+    }
 }
