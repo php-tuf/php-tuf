@@ -62,7 +62,7 @@ class RoleDB
             }
             $roleInfo['paths'] = [];
 
-            $this->addRole($roleName, $roleInfo);
+            $db->addRole($roleName, $roleInfo);
         }
 
         return $db;
@@ -140,7 +140,7 @@ class RoleDB
      */
     public function getRoleInfo(string $roleName)
     {
-        if (empty($this->roles[$roleName])) {
+        if (! $this->roleExists($roleName)) {
             throw new NotFoundException($roleName, 'role');
         }
 
