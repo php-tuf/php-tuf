@@ -2,6 +2,7 @@
 
 namespace Tuf;
 
+use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
 
 /**
@@ -132,7 +133,7 @@ class RoleDB
      *    The role information. See self::addRole() and the TUF specification
      *    for the array the structure.
      *
-     * @throws \Exception
+     * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the role does not exist.
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
@@ -140,7 +141,7 @@ class RoleDB
     public function getRoleInfo(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
-            throw new \Exception("Role does not exist: $roleName");
+            throw new NotFoundException($roleName, 'role');
         }
 
         return $this->roles[$roleName];
