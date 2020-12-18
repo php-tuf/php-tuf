@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\DurableStorage\FileStorage;
 
 /**
- * @covers \Tuf\Client\DurableStorage\FileStorage
+ * @coversDefaultClass \Tuf\Client\DurableStorage\FileStorage
  */
 class FileStorageTest extends TestCase
 {
@@ -14,6 +14,8 @@ class FileStorageTest extends TestCase
      * Tests creating a FileStorage object with an invalid directory.
      *
      * @return void
+     *
+     * @covers ::pathWithBasePath
      */
     public function testCreateWithInvalidDirectory(): void
     {
@@ -27,6 +29,11 @@ class FileStorageTest extends TestCase
      * Tests creating and interacting with files via a FileStorage object.
      *
      * @return void
+     *
+     * @covers ::offsetGet
+     * @covers ::offsetSet
+     * @covers ::offsetExists
+     * @covers ::offsetUnset
      */
     public function testStorage(): void
     {
