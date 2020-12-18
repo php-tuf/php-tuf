@@ -5,26 +5,21 @@ namespace Tuf\Tests\Client;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
  */
 class TestRepo implements RepoFileFetcherInterface
 {
+    use UtilsTrait;
 
     /**
-     * The fixtures set to use.
-     *
-     * @var string
-     */
-    protected $fixturesSet;
-
-    /**
-     * File names for files that should fail signature checks.
+     * An array of repo file contents keyed by file name.
      *
      * @var string[]
      */
-    protected $failSignatureFiles = [];
+    private $repoFilesContents = [];
 
     /**
      * TestRepo constructor.
@@ -34,43 +29,66 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function __construct(string $fixturesSet)
     {
-        $this->fixturesSet = $fixturesSet;
+        // Store all the repo files locally so they can be easily altered.
+        // @see self::setRepoFileNestedValue()
+        $repoFiles = glob(static::getFixturesRealPath($fixturesSet, '/tufrepo/metadata') . '/*.json');
+        foreach ($repoFiles as $repoFile) {
+            $this->repoFilesContents[basename($repoFile)] = file_get_contents($repoFile);
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes)
+    public function fetchFile(string $fileName, int $maxBytes):string
+    {
+        if (empty($this->repoFilesContents[$fileName])) {
+            throw new RepoFileNotFound("File $fileName not found.");
+        }
+        return $this->repoFilesContents[$fileName];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchFileIfExists(string $fileName, int $maxBytes):?string
     {
         try {
-            $contents = file_get_contents(__DIR__ .  "/../../fixtures/{$this->fixturesSet}/tufrepo/metadata/$fileName");
-            if ($contents === false) {
-                throw new RepoFileNotFound("File $fileName not found.");
-            }
-            // Alter the signed portion of the json contents to trigger an
-            // exception.
-            // @see \Tuf\Client\Updater::checkSignatures()
-            if (in_array($fileName, $this->failSignatureFiles)) {
-                $json = json_decode($contents, true);
-                $json['signed']['extra_test_value'] = 'value';
-                $contents = JsonNormalizer::asNormalizedJson($json);
-            }
-            return $contents;
-        } catch (\Exception $exception) {
-            return false;
+            return $this->fetchFile($fileName, $maxBytes);
+        } catch (RepoFileNotFound $exception) {
+            return null;
         }
     }
 
     /**
-     * Sets the file for which a signature fail should be triggered.
+     * Sets a nested value in a repo file.
      *
-     * @param array $fileNames
-     *   The file names for which a signature fail should be triggered.
+     * @param string $fileName
+     *   The name of the file to change.
+     * @param array $keys
+     *   The nested array keys of the item.
+     * @param mixed $newValue
+     *   The new value to set.
      *
      * @return void
      */
-    public function setFilesToFailSignature(array $fileNames)
+    public function setRepoFileNestedValue(string $fileName, array $keys, $newValue): void
     {
-        $this->failSignatureFiles = $fileNames;
+        $json = json_decode($this->repoFilesContents[$fileName], true);
+        static::nestedChange($keys, $json, $newValue);
+        $this->repoFilesContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
+    }
+
+    /**
+     * Removes a file from the repo.
+     *
+     * @param string $fileName
+     *   The name of the file to remove.
+     *
+     * @return void
+     */
+    public function removeRepoFile(string $fileName):void
+    {
+        unset($this->repoFilesContents[$fileName]);
     }
 }

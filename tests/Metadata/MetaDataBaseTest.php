@@ -4,6 +4,7 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 
@@ -39,7 +40,7 @@ abstract class MetaDataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('delegated', 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
     }
 
     /**
@@ -80,7 +81,7 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerValidMetaData() : array
     {
-        $fixturesDir = static::getFixturesRealPath('delegated', 'tufclient/tufrepo/metadata/current');
+        $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -101,7 +102,7 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Array[signed][_type]", '/');
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -125,8 +126,8 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][expires]', '/');
-            $expectedMessage .= '.*This value is not valid.';
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
+            $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         } else {
@@ -152,7 +153,7 @@ abstract class MetaDataBaseTest extends TestCase
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -180,14 +181,14 @@ abstract class MetaDataBaseTest extends TestCase
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
         } else {
-            $this->expectExceptionMessageMatches("/Array$fieldName.*This field is missing./s");
+            $this->expectExceptionMessageMatches("/$fieldName.*This field is missing./s");
         }
         static::callCreateFromJson($json);
     }
@@ -286,28 +287,6 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
-     * Change a nested array element.
-     *
-     * @param array $keys
-     *   Ordered keys to the value to set.
-     * @param array $data
-     *   The array to modify.
-     * @param mixed $newValue
-     *   The new value to set.
-     *
-     * @return void
-     */
-    protected function nestedChange(array $keys, array &$data, $newValue) : void
-    {
-        $key = array_shift($keys);
-        if ($keys) {
-            $this->nestedChange($keys, $data[$key], $newValue);
-        } else {
-            $data[$key] = $newValue;
-        }
-    }
-
-    /**
      * Dataprovider for testExpires().
      *
      * @return array
@@ -315,19 +294,19 @@ abstract class MetaDataBaseTest extends TestCase
      */
     public function providerExpires() : array
     {
-        return [
+        return static::getKeyedArray([
             ['1970', false],
-            ['1970-01-01T00:00:00Z', false],
+            ['1970-01-01T00:00:00Z', true],
             ['2000-01-01', false],
             ['2000-01-01T00:00:00', false],
-            ['3000-01-01T00:00:00Z', false],
+            ['3000-01-01T00:00:00Z', true],
             ['2000-01-01T00:00:61Z', false],
             ['2000-01-01T24:00:01Z', false],
             ['2000-01-01T00:00:00Z', true],
             ['2030-01-01T20:50:10Z', true],
             ['2030-11-01T20:50:10Z', true],
             ['2330-12-21T20:50:10Z', true],
-        ];
+        ]);
     }
 
     /**
@@ -403,12 +382,30 @@ abstract class MetaDataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
     {
-        $realPath = static::getFixturesRealPath('delegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturesRealPath('TUFTestFixtureDelegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
         }
         $keys = array_keys($data);
         return array_shift($keys);
+    }
+
+    /**
+     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     *
+     * @param string $validJson
+     *   The valid json key from $localRepo.
+     *
+     * @return void
+     *
+     * @dataProvider providerValidMetaData
+     */
+    public function testNormalization(string $validJson) : void
+    {
+        $contents = $this->localRepo[$validJson];
+        $json = json_decode($contents);
+        $metaData = static::callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
     }
 }

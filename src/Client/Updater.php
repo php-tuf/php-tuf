@@ -164,14 +164,13 @@ class Updater
                 "$snapShotVersion.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
             );
+            // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+            $newTimestampData->verifyNewMetaData($newSnapshotData);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
-        // TUF-SPEC-v1.0.9 Section 5.3.1
-        if ($snapShotVersion !== $newSnapshotData->getVersion()) {
-            throw new MetadataException("Expected snapshot version {$snapshotInfo['version']} does not match actual version " . $newSnapshotData->getVersion());
-        }
+
         // TUF-SPEC-v1.0.9 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
 
@@ -350,9 +349,9 @@ class Updater
     /**
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param string[] $signatureMeta
-     *     The associative metadata array for the signature. Each signature
-     *     metadata array contains two elements:
+     * @param \ArrayAccess $signatureMeta
+     *     The ArrayAccess object of metadata for the signature. Each signature
+     *     metadata contains two elements:
      *     - keyid: The identifier of the key signing the role data.
      *     - sig: The hex-encoded signature of the canonical form of the
      *       metadata for the role.
@@ -360,7 +359,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, array $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta)
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
@@ -399,7 +398,7 @@ class Updater
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchFile("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+        while ($nextRootContents = $this->repoFileFetcher->fetchFileIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
@@ -446,7 +445,7 @@ class Updater
      */
     private function getCurrentTime(): \DateTimeImmutable
     {
-        $fakeNow = '2020-08-04T02:58:56Z';
+        $fakeNow = '2020-01-01T00:00:00Z';
         $nowDate = static::metadataTimestampToDateTime($fakeNow);
         return $nowDate;
     }

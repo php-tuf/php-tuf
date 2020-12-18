@@ -31,7 +31,7 @@ class RoleDB
      * @throws \Exception
      *     Thrown if a threshold value in the metadata is not valid.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
@@ -57,7 +57,7 @@ class RoleDB
                 //     versa and are in a separate part of the document. Review
                 //     this once https://github.com/php-tuf/php-tuf/issues/52
                 //     is resolved.
-                // @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+                // @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
                 $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
             }
             $roleInfo['paths'] = [];
@@ -66,6 +66,61 @@ class RoleDB
         }
 
         return $db;
+    }
+
+    /**
+     * Constructs a new RoleDB object.
+     */
+    public function __construct()
+    {
+        $this->roles = [];
+    }
+
+    /**
+     * Adds role metadata to the database.
+     *
+     * @param string $roleName
+     *     The role name.
+     * @param \ArrayAccess $roleInfo
+     *     An ArrayAccess object of role metadata, including:
+     *     - keyids: An ArrayAccess object of authorized public key signatures for the role.
+     *     - threshold: An integer for the threshold of signatures required for
+     *       this role.
+     *     - paths: An ArrayAccess object of the path patterns that this role may sign.
+     *
+     * @return void
+     *
+     * @throws \Exception
+     *     Thrown if the role already exists.
+     *
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
+     *
+     * @todo Provide more complete documentation of the structure once
+     *     delgation is implemented and fixtures are regenerated. Issues:
+     *     - https://github.com/php-tuf/php-tuf/issues/50
+     *     - https://github.com/php-tuf/php-tuf/issues/52
+     */
+    public function addRole(string $roleName, \ArrayAccess $roleInfo)
+    {
+        if ($this->roleExists($roleName)) {
+            throw new \Exception('Role already exists: ' . $roleName);
+        }
+
+        $this->roles[$roleName] = $roleInfo;
+    }
+
+    /**
+     * Verifies whether a given role name is stored in the role database.
+     *
+     * @param string $roleName
+     *     The role name.
+     *
+     * @return boolean
+     *     True if the role is found in the role database; false otherwise.
+     */
+    public function roleExists(string $roleName)
+    {
+        return !empty($this->roles[$roleName]);
     }
 
     /**
@@ -81,7 +136,7 @@ class RoleDB
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the role does not exist.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public function getRoleInfo(string $roleName)
     {

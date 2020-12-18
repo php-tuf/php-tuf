@@ -55,12 +55,12 @@ class GuzzleFileFetcherTest extends TestCase
     }
 
     /**
-     * Data provider for testError().
+     * Data provider for testfetchFileError().
      *
      * @return array[]
      *   Sets of arguments to pass to the test method.
      */
-    public function errorProvider(): array
+    public function providerFetchFileError(): array
     {
         return [
             [404, RepoFileNotFound::class, 0],
@@ -71,7 +71,22 @@ class GuzzleFileFetcherTest extends TestCase
     }
 
     /**
-     * Tests various error conditions when fetching a file.
+     * Data provider for testFetchFileIfExistsError().
+     *
+     * @return array[]
+     *   Sets of arguments to pass to the test method.
+     */
+    public function providerFileIfExistsError(): array
+    {
+        return [
+            [403, 'RuntimeException'],
+            [500, BadResponseException::class],
+            [200, DownloadSizeException::class, 0, 4],
+        ];
+    }
+
+    /**
+     * Tests various error conditions when fetching a file with fetchFile().
      *
      * @param integer $statusCode
      *   The response status code.
@@ -85,18 +100,45 @@ class GuzzleFileFetcherTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider errorProvider
+     * @dataProvider providerFetchFileError
      *
      * @covers ::fetchFile
      */
-    public function testError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
+    public function testFetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
-
-        $fetcher = new GuzzleFileFetcher($this->client);
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
         $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent));
+    }
+
+    /**
+     * Tests various error conditions when fetching a file with fetchFileIfExists().
+     *
+     * @param integer $statusCode
+     *   The response status code.
+     * @param string $exceptionClass
+     *   The expected exception class that will be thrown.
+     * @param integer|null $exceptionCode
+     *   (optional) The expected exception code. Defaults to the status code.
+     * @param integer|null $maxBytes
+     *   (optional) The maximum number of bytes to read from the response.
+     *   Defaults to the length of $this->testContent.
+     *
+     * @return void
+     *
+     * @dataProvider providerFileIfExistsError
+     *
+     * @covers ::providerFileIfExists
+     */
+    public function testFetchFileIfExistsError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
+    {
+        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
+        $this->expectException($exceptionClass);
+        $this->expectExceptionCode($exceptionCode ?? $statusCode);
+        $fetcher = new GuzzleFileFetcher($this->client);
+        $fetcher->fetchFileIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
     /**
@@ -106,10 +148,13 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testSuccessfulFetch(): void
     {
-        $this->mockHandler->append(new Response(200, [], $this->testContent));
-
         $fetcher = new GuzzleFileFetcher($this->client);
+        $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchFile('test.json', 256), $this->testContent);
+        $this->mockHandler->append(new Response(200, [], $this->testContent));
+        $this->assertSame($fetcher->fetchFileIfExists('test.json', 256), $this->testContent);
+        $this->mockHandler->append(new Response(404, []));
+        $this->assertNull($fetcher->fetchFileIfExists('test.json', 256));
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Tuf;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
+use function DeepCopy\deep_copy;
 
 /**
  * Represent a collection of keys and their organization.
@@ -40,23 +41,14 @@ class KeyDB
      * @throws \Exception
      *   Thrown if an unsupported key type exists in the metadata.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata)
     {
         $db = new self();
 
         foreach ($rootMetadata->getKeys() as $keyMeta) {
-            if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
-                // @todo Convert this to a log line as per Python.
-                throw new FormatException($keyMeta['keytype'], "Root metadata file contains an unsupported key type");
-            }
-            // One key ID for each $keyMeta['keyid_hash_algorithms'].
-            $computedKeyIds = self::computeKeyIds($keyMeta);
-            foreach ($computedKeyIds as $keyId) {
-                $keyMeta['keyid'] = $keyId;
-                $db->addKey($keyMeta);
-            }
+            $db->addKey($keyMeta);
         }
 
         return $db;
@@ -82,8 +74,8 @@ class KeyDB
     /**
      * Computes the hashed keys IDs for the given key metadata.
      *
-     * @param array $keyMeta
-     *     An associative array of key metadata. See self::addKey() and the TUF
+     * @param \ArrayAccess $keyMeta
+     *     An ArrayAccess object of key metadata. See self::addKey() and the TUF
      *     specification for the array structure.
      *
      * @return string[]
@@ -92,11 +84,11 @@ class KeyDB
      *     There is one entry for each hashing algorithm specified in the
      *     'keyid_hash_algorithms' child array.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public static function computeKeyIds(array $keyMeta)
+    private static function computeKeyIds(\ArrayAccess $keyMeta)
     {
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],
@@ -124,7 +116,7 @@ class KeyDB
     /**
      * Adds key metadata to the key database while avoiding duplicates.
      *
-     * @param array $keyMeta
+     * @param \ArrayAccess $keyMeta
      *     An associative array of key metadata, including:
      *     - keytype: The public key signature system, e.g. 'ed25519'.
      *     - scheme: The corresponding signature scheme, e.g. 'ed25519'.
@@ -134,13 +126,21 @@ class KeyDB
      *
      * @return void
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public function addKey(array $keyMeta)
+    private function addKey(\ArrayAccess $keyMeta)
     {
-        $this->keys[$keyMeta['keyid']] = $keyMeta;
+        if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
+            // @todo Convert this to a log line as per Python.
+            throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+        }
+        // One key ID for each $keyMeta['keyid_hash_algorithms'].
+        $computedKeyIds = self::computeKeyIds($keyMeta);
+        foreach ($computedKeyIds as $keyId) {
+            $this->keys[$keyId] = $keyMeta;
+        }
     }
 
     /**
@@ -149,20 +149,20 @@ class KeyDB
      * @param string $keyId
      *     The key ID.
      *
-     * @return array
+     * @return \ArrayObject
      *     The key metadata matching $keyId. See self::addKey() and the TUF
      *     specification for the array structure.
      *
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the key ID is not found in the keydb database.
      *
-     * @see https://github.com/theupdateframework/specification/blob/master/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public function getKey(string $keyId)
+    public function getKey(string $keyId):\ArrayObject
     {
         if (empty($this->keys[$keyId])) {
             throw new NotFoundException($keyId, 'key');
         }
-        return $this->keys[$keyId];
+        return deep_copy($this->keys[$keyId]);
     }
 }

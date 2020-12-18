@@ -5,6 +5,7 @@ namespace Tuf\Metadata;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
@@ -12,6 +13,8 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
+use Tuf\JsonNormalizer;
+use function DeepCopy\deep_copy;
 
 /**
  * Base class for metadata.
@@ -34,16 +37,35 @@ abstract class MetadataBase
      */
     protected const TYPE = '';
 
+    /**
+     * @var string
+     */
+    private $sourceJson;
+
 
     /**
      * MetaDataBase constructor.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data.
+     * @param string $sourceJson
+     *   The source JSON.
      */
-    public function __construct(array $metadata)
+    public function __construct(\ArrayObject $metadata, string $sourceJson)
     {
         $this->metaData = $metadata;
+        $this->sourceJson = $sourceJson;
+    }
+
+    /**
+     * Gets the original JSON source.
+     *
+     * @return string
+     *   The JSON source.
+     */
+    public function getSource():string
+    {
+        return $this->sourceJson;
     }
 
     /**
@@ -60,23 +82,23 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json)
     {
-        $data = json_decode($json, true);
+        $data = JsonNormalizer::decode($json);
         static::validateMetaData($data);
-        return new static($data);
+        return new static($data, $json);
     }
 
     /**
      * Validates the structure of the metadata.
      *
-     * @param array $metadata
+     * @param \ArrayObject $metadata
      *   The data to validate.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
-     *   Thrown if validation fails.
+     *    Thrown if validation fails.
      */
-    protected static function validateMetaData(array $metadata) : void
+    protected static function validateMetaData(\ArrayObject $metadata): void
     {
         $validator = Validation::createValidator();
         $collection = new Collection(static::getConstraints());
@@ -130,23 +152,13 @@ abstract class MetadataBase
      */
     protected static function getSignedCollectionOptions(): array
     {
-        // Metadata date-time data follows the ISO 8601 standard.
-        // The expected format of the combined date and time string
-        // is "YYYY-MM-DDTHH:MM:SSZ".
-        $dataPattern = '2[0-9]{3}-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])';
-        $timePattern = '(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])';
         return [
             'fields' => [
                 '_type' => [
                     new EqualTo(['value' => static::TYPE]),
                     new Type(['type' => 'string']),
                 ],
-
-                'expires' => [
-                    new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => "/^{$dataPattern}T{$timePattern}Z$/"]),
-                ],
+                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
                 // We only expect to work with major version 1.
                 'spec_version' => [
                     new NotBlank(),
@@ -161,12 +173,12 @@ abstract class MetadataBase
     /**
      * Get signed.
      *
-     * @return array
+     * @return \ArrayObject
      *   The "signed" section of the data.
      */
-    public function getSigned() : array
+    public function getSigned():\ArrayObject
     {
-        return $this->metaData['signed'];
+        return deep_copy($this->metaData['signed']);
     }
 
     /**
@@ -199,7 +211,7 @@ abstract class MetadataBase
      */
     public function getSignatures() : array
     {
-        return $this->metaData['signatures'];
+        return deep_copy($this->metaData['signatures']);
     }
 
     /**
