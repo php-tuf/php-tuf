@@ -17,7 +17,7 @@ class RoleDB
      *
      * @var \array[]
      */
-    protected $roles = [];
+    protected $roles;
 
     /**
      *  Creates a role database from all of the unique roles in the metadata.
@@ -62,7 +62,7 @@ class RoleDB
             }
             $roleInfo['paths'] = [];
 
-            $db->roles[$roleName] = $roleInfo;
+            $this->addRole($roleName, $roleInfo);
         }
 
         return $db;
