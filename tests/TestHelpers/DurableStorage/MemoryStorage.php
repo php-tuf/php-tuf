@@ -14,6 +14,21 @@ class MemoryStorage implements \ArrayAccess
 {
     private $container = [];
 
+    private $exceptionOnChange = false;
+
+    /**
+     * Sets whether an exception should be thrown if an call to change storage is made.
+     *
+     * @param boolean $exceptionOnChange
+     *   Whether an exception should be thrown on call to change values.
+     *
+     * @return void
+     */
+    public function setExceptionOnChange(bool $exceptionOnChange = true): void
+    {
+        $this->exceptionOnChange = $exceptionOnChange;
+    }
+
     /**
      * Constructs a new MemoryStorage instance.
      */
@@ -27,6 +42,9 @@ class MemoryStorage implements \ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
+        if ($this->exceptionOnChange) {
+            throw new \LogicException("Unexpected attempt to change client storage.");
+        }
         if (is_null($offset)) {
             $this->container[] = $value;
         } else {
@@ -47,6 +65,9 @@ class MemoryStorage implements \ArrayAccess
      */
     public function offsetUnset($offset)
     {
+        if ($this->exceptionOnChange) {
+            throw new \LogicException("Unexpected attempt to change client storage.");
+        }
         unset($this->container[$offset]);
     }
 

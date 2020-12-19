@@ -129,6 +129,19 @@ class TUFTestFixtureSimple(TUFTestFixtureBase):
         self.write_and_publish_repository(export_client=True)
 
 
+class TUFTestFixtureAttackRollback(TUFTestFixtureSimple):
+    def __init__(self):
+        super().__init__()
+        backup_dir = self.tufrepo_dir + "_backup"
+        shutil.copytree(self.tufrepo_dir, backup_dir, dirs_exist_ok=True)
+        self.write_and_add_target('testtarget2.txt')
+        self.write_and_publish_repository(export_client=True)
+        shutil.rmtree(self.tufrepo_dir + '/')
+        # Reset the client to previous state to simulate a rollback attack.
+        shutil.copytree(backup_dir, self.tufrepo_dir, dirs_exist_ok=True)
+        shutil.rmtree(backup_dir + '/')
+
+
 class TUFTestFixtureDelegated(TUFTestFixtureSimple):
     def __init__(self):
         super().__init__()
@@ -177,6 +190,7 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
 def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
+    TUFTestFixtureAttackRollback()
 
 
 generate_fixtures()
