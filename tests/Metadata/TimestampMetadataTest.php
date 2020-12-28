@@ -7,6 +7,7 @@ use Tuf\Metadata\TimestampMetadata;
 
 class TimestampMetadataTest extends MetaDataBaseTest
 {
+    use UntrustedExceptionTrait;
 
     /**
      * {@inheritdoc}
@@ -54,5 +55,19 @@ class TimestampMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:meta:snapshot.json:hashes:sha256', 'string'];
         $data[] = ['signed:meta:snapshot.json:hashes:sha512', 'string'];
         return $data;
+    }
+
+    /**
+     * Data provider for testUntrustedException().
+     *
+     * @return string[]
+     *   The test cases for testUntrustedException().
+     */
+    public function providerUntrustedException():array
+    {
+        return self::getKeyedArray([
+            ['getFileMetaInfo', ['any-key']],
+            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+        ]);
     }
 }

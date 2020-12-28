@@ -34,6 +34,8 @@ class KeyDB
      *
      * @param \Tuf\Metadata\RootMetadata $rootMetadata
      *    The root metadata.
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
      *
      * @return \Tuf\KeyDB
      *     The constructed key database object.
@@ -43,11 +45,11 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false)
     {
         $db = new self();
 
-        foreach ($rootMetadata->getKeys() as $keyMeta) {
+        foreach ($rootMetadata->getKeys($allowUntrustedAccess) as $keyMeta) {
             $db->addKey($keyMeta);
         }
 

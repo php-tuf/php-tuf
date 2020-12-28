@@ -125,6 +125,7 @@ class Updater
     public function refresh() : bool
     {
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $rootData->setIsTrusted(true);
 
         $this->roleDB = RoleDB::createFromRootMetadata($rootData);
         $this->keyDB = KeyDB::createFromRootMetadata($rootData);
@@ -154,6 +155,7 @@ class Updater
         static::checkFreezeAttack($newTimestampData, $nowDate);
         // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $newTimestampData->setIsTrusted(true);
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
@@ -185,6 +187,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3.5
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+        $newSnapshotData->setIsTrusted(true);
 
         // TUF-SPEC-v1.0.9 Section 5.4
         if ($rootData->supportsConsistentSnapshots()) {
@@ -200,6 +203,7 @@ class Updater
             $this->checkSignatures($newTargetsData);
             // TUF-SPEC-v1.0.9 Section 5.4.3
             static::checkFreezeAttack($newTargetsData, $nowDate);
+            $newTargetsData->setIsTrusted(true);
             // TUF-SPEC-v1.0.9 Section 5.4.4
             $this->durableStorage['targets.json'] = $newTargetsContent;
         } else {
@@ -269,7 +273,7 @@ class Updater
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
                 /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
-                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName)) {
+                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true)) {
                     if ($remoteFileInfo['version'] < $localFileInfo['version']) {
                         $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
                           "is less than previously seen  version \"${$localFileInfo['version']}\"";
@@ -426,11 +430,12 @@ class Updater
             // *TUF-SPEC-v1.0.9 Section 5.1.3
             $this->checkSignatures($nextRoot);
             // Update Role and Key databases to use the new root information.
-            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot);
-            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot);
+            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot, true);
+            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot, true);
             $this->checkSignatures($nextRoot);
             // *TUF-SPEC-v1.0.9 Section 5.1.4
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
