@@ -4,7 +4,6 @@ namespace Tuf\Client;
 
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
-use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
@@ -14,6 +13,7 @@ use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\RoleDB;
 
@@ -125,6 +125,7 @@ class Updater
     public function refresh() : bool
     {
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
+        $rootData->setIsTrusted(true);
 
         $this->roleDB = RoleDB::createFromRootMetadata($rootData);
         $this->keyDB = KeyDB::createFromRootMetadata($rootData);
@@ -154,6 +155,7 @@ class Updater
         static::checkFreezeAttack($newTimestampData, $nowDate);
         // TUF-SPEC-v1.0.9 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $newTimestampData->setIsTrusted(true);
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
@@ -185,7 +187,28 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3.5
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+        $newSnapshotData->setIsTrusted(true);
 
+        // TUF-SPEC-v1.0.9 Section 5.4
+        if ($rootData->supportsConsistentSnapshots()) {
+            $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
+            $newTargetsContent = $this->repoFileFetcher->fetchFile(
+                "$targetsVersion.targets.json",
+                static::MAXIMUM_DOWNLOAD_BYTES
+            );
+            $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+            // TUF-SPEC-v1.0.9 Section 5.4.1
+            $newSnapshotData->verifyNewMetaData($newTargetsData);
+            // TUF-SPEC-v1.0.9 Section 5.4.2
+            $this->checkSignatures($newTargetsData);
+            // TUF-SPEC-v1.0.9 Section 5.4.3
+            static::checkFreezeAttack($newTargetsData, $nowDate);
+            $newTargetsData->setIsTrusted(true);
+            // TUF-SPEC-v1.0.9 Section 5.4.4
+            $this->durableStorage['targets.json'] = $newTargetsContent;
+        } else {
+            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+        }
         return true;
     }
 
@@ -250,7 +273,7 @@ class Updater
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
                 /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
-                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName)) {
+                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true)) {
                     if ($remoteFileInfo['version'] < $localFileInfo['version']) {
                         $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
                           "is less than previously seen  version \"${$localFileInfo['version']}\"";
@@ -407,11 +430,12 @@ class Updater
             // *TUF-SPEC-v1.0.9 Section 5.1.3
             $this->checkSignatures($nextRoot);
             // Update Role and Key databases to use the new root information.
-            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot);
-            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot);
+            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot, true);
+            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot, true);
             $this->checkSignatures($nextRoot);
             // *TUF-SPEC-v1.0.9 Section 5.1.4
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.9 Section 5.1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata

@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests\Client;
 
-use phpDocumentor\Reflection\Types\Integer;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
@@ -142,6 +141,7 @@ class UpdaterTest extends TestCase
                     'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
+                    'targets' => 5,
                 ],
             ],
             [
@@ -150,6 +150,7 @@ class UpdaterTest extends TestCase
                     'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
         ], 0);
@@ -206,7 +207,7 @@ class UpdaterTest extends TestCase
      * @param mixed $newValue
      *   The new value to set.
      * @param \Exception $expectedException
-     *   The excpected exception.
+     *   The expected exception.
      * @param array $expectedUpdatedVersions
      *   The expected repo file version after refresh attempt.
      *
@@ -302,6 +303,18 @@ class UpdaterTest extends TestCase
                     'targets' => 3,
                 ],
             ],
+            [
+                '5.targets.json',
+                ['signed', 'version'],
+                6,
+                new MetadataException("Expected targets version 5 does not match actual version 6."),
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 3,
+                ],
+            ],
         ]);
     }
 
@@ -368,6 +381,16 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
+                'TUFTestFixtureDelegated',
+                '5.targets.json',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 3,
+                ],
+            ],
+            [
                 'TUFTestFixtureSimple',
                 'timestamp.json',
                 [
@@ -380,6 +403,16 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureSimple',
                 '2.snapshot.json',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            [
+                'TUFTestFixtureSimple',
+                '2.targets.json',
                 [
                     'root' => 2,
                     'timestamp' => 2,

@@ -42,6 +42,13 @@ abstract class MetadataBase
      */
     private $sourceJson;
 
+    /**
+     * Whether the metadata has been verified and should be considered trusted.
+     *
+     * @var bool
+     */
+    private $isTrusted = false;
+
 
     /**
      * MetaDataBase constructor.
@@ -223,5 +230,40 @@ abstract class MetadataBase
     public function getType() : string
     {
         return $this->getSigned()['_type'];
+    }
+
+    /**
+     * @return boolean
+     *    Whether the metadata is trusted.
+     */
+    public function isTrusted(): bool
+    {
+        return $this->isTrusted;
+    }
+
+    /**
+     * @param boolean $isTrusted
+     *   Whether the metadata should be trusted.
+     *
+     * @return void
+     */
+    public function setIsTrusted(bool $isTrusted): void
+    {
+        $this->isTrusted = $isTrusted;
+    }
+
+    /**
+     * Ensures that the metadata is trusted or the caller explicitly expects untrusted metadata.
+     *
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
+     *
+     * @return void
+     */
+    protected function ensureIsTrusted(bool $allowUntrustedAccess = false): void
+    {
+        if (!$allowUntrustedAccess && !$this->isTrusted()) {
+            throw new \RuntimeException("Cannot use untrusted '{$this->getType()}'. metadata.");
+        }
     }
 }

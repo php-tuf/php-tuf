@@ -15,12 +15,15 @@ trait MetaFileInfoTrait
      *
      * @param string $key
      *   The array key under 'meta'.
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
      *
      * @return \ArrayObject|null
      *   The file information if available or null if not set.
      */
-    public function getFileMetaInfo(string $key):?\ArrayObject
+    public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false):?\ArrayObject
     {
+        $this->ensureIsTrusted($allowUntrustedAccess);
         $signed = $this->getSigned();
         return $signed['meta'][$key] ?? null;
     }
@@ -38,6 +41,7 @@ trait MetaFileInfoTrait
      */
     public function verifyNewMetaData(MetadataBase $newMetadata):void
     {
+        $this->ensureIsTrusted();
         $fileInfo = $this->getFileMetaInfo($newMetadata->getType() . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $newMetadata->getVersion()) {

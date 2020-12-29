@@ -9,6 +9,7 @@ use Tuf\Metadata\RootMetadata;
 class RootMetadataTest extends MetaDataBaseTest
 {
 
+    use UntrustedExceptionTrait;
     /**
      * {@inheritdoc}
      */
@@ -147,7 +148,23 @@ class RootMetadataTest extends MetaDataBaseTest
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metaData */
             $metaData = static::callCreateFromJson(json_encode($data));
+            $metaData->setIsTrusted(true);
             $this->assertSame($value, $metaData->supportsConsistentSnapshots());
         }
+    }
+
+    /**
+     * Data provider for testUntrustedException().
+     *
+     * @return string[]
+     *   The test cases for testUntrustedException().
+     */
+    public function providerUntrustedException():array
+    {
+        return self::getKeyedArray([
+            ['supportsConsistentSnapshots'],
+            ['getKeys'],
+            ['getRoles'],
+        ]);
     }
 }

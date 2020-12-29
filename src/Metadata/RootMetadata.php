@@ -50,6 +50,9 @@ class RootMetadata extends MetadataBase
     /**
      * Gets the roles from the metadata.
      *
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
+     *
      * @return \ArrayObject
      *   An ArrayObject where the keys are role names and the values arrays with the
      *   following keys:
@@ -57,13 +60,17 @@ class RootMetadata extends MetadataBase
      *   - threshold (int): Determines how many how may keys are need from
      *     this role for signing.
      */
-    public function getRoles():\ArrayObject
+    public function getRoles(bool $allowUntrustedAccess = false):\ArrayObject
     {
+        $this->ensureIsTrusted($allowUntrustedAccess);
         return $this->getSigned()['roles'];
     }
 
     /**
      * Gets the keys for the root metadata.
+     *
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
      *
      * @return \ArrayObject
      *   An ArrayObject of keys information where the array keys are the key ids and
@@ -74,8 +81,9 @@ class RootMetadata extends MetadataBase
      *     and the value is the public key.
      *   - scheme (string): The key scheme.
      */
-    public function getKeys():\ArrayObject
+    public function getKeys(bool $allowUntrustedAccess = false):\ArrayObject
     {
+        $this->ensureIsTrusted($allowUntrustedAccess);
         return $this->getSigned()['keys'];
     }
 
@@ -87,6 +95,7 @@ class RootMetadata extends MetadataBase
      */
     public function supportsConsistentSnapshots() : bool
     {
+        $this->ensureIsTrusted();
         return $this->getSigned()['consistent_snapshot'];
     }
 }

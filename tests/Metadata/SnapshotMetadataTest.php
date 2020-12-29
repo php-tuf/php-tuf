@@ -8,6 +8,7 @@ use Tuf\Metadata\SnapshotMetadata;
 
 class SnapshotMetadataTest extends MetaDataBaseTest
 {
+    use UntrustedExceptionTrait;
 
     /**
      * {@inheritdoc}
@@ -86,5 +87,19 @@ class SnapshotMetadataTest extends MetaDataBaseTest
             'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
             'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
         ];
+    }
+
+    /**
+     * Data provider for testUntrustedException().
+     *
+     * @return string[]
+     *   The test cases for testUntrustedException().
+     */
+    public function providerUntrustedException():array
+    {
+        return self::getKeyedArray([
+            ['getFileMetaInfo', ['any-key']],
+            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+        ]);
     }
 }

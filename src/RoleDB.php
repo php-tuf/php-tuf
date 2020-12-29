@@ -24,6 +24,8 @@ class RoleDB
      *
      * @param \Tuf\Metadata\RootMetadata $rootMetadata
      *    The root metadata.
+     * @param boolean $allowUntrustedAccess
+     *   Whether this method should access even if the metadata is not trusted.
      *
      * @return \Tuf\RoleDB
      *    The created RoleDB.
@@ -33,10 +35,10 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false)
     {
         $db = new self();
-        foreach ($rootMetadata->getRoles() as $roleName => $roleInfo) {
+        foreach ($rootMetadata->getRoles($allowUntrustedAccess) as $roleName => $roleInfo) {
             if ($roleName == 'root') {
                 $roleInfo['version'] = $rootMetadata->getVersion();
                 $roleInfo['expires'] = $rootMetadata->getExpires();
