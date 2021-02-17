@@ -66,6 +66,11 @@ jobs:
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
         php: ['7.4', '7.3', '7.2']
+        dependencies:
+          - 'symfony/validator:^4.4'
+          - 'symfony/validator:^5'
+          - 'guzzlehttp/guzzle:^6.5'
+          - 'guzzlehttp/guzzle:^7.2'
         experimental: [false]
         include:
           - operating-system: ubuntu-latest
@@ -91,6 +96,9 @@ jobs:
 
       - name: Validate composer.json and composer.lock
         run: composer validate
+
+      - name: Require dependencies
+        run: 'composer require ${{ matrix.dependencies }}'
 
       - name: Install dependencies
         if: matrix.php != '8.0'
