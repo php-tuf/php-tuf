@@ -57,7 +57,7 @@ jobs:
         retention-days: 5
 
   build:
-    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
+    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
     needs: fixtures
     runs-on: ${{ matrix.operating-system }}
     strategy:
