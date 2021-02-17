@@ -98,7 +98,7 @@ jobs:
         run: composer validate
 
       - name: Require dependencies
-        run: 'composer require ${{ matrix.dependencies }}'
+        run: 'composer require --no-update ${{ matrix.dependencies }}'
 
       - name: Install dependencies
         if: matrix.php != '8.0'
