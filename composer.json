@@ -14,7 +14,7 @@
         "ext-json": "*",
         "paragonie/sodium_compat": "^1.13",
         "symfony/validator": "^3.4 || ^4.4 || ^5.1",
-        "guzzlehttp/guzzle": "^6.5 || ^7.2",
+        "guzzlehttp/guzzle": "^5.3 || ^6.5 || ^7.2",
         "myclabs/deep-copy": "^1.10.2"
     },
     "suggest": {
