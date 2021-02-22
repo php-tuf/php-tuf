@@ -26,4 +26,13 @@ class JsonNormalizerTest extends TestCase
         $this->assertSame(JsonNormalizer::asNormalizedJson($sortedData), $normalizedFromUnsorted);
         $this->assertSame(json_encode($sortedData), $normalizedFromUnsorted);
     }
+
+    /**
+     * @covers ::asNormalizedJson
+     */
+    public function testSlashEscaping(): void
+    {
+        $json = JsonNormalizer::asNormalizedJson(['here/there' => 'everywhere']);
+        $this->assertSame('{"here/there":"everywhere"}', $json);
+    }
 }
