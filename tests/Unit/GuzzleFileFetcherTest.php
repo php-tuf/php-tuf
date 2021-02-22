@@ -35,9 +35,17 @@ class GuzzleFileFetcherTest extends TestCase
     /**
      * The JSON content of the mocked response(s).
      *
+     * Deliberately includes whitespace in order to prove that the fetcher does
+     * not alter the JSON in any way.
+     *
      * @var string
      */
-    private $testContent = '["oolong","assam","matcha","herbal"]';
+    private $testContent = <<<END
+["oolong",
+  "assam",
+"matcha",
+"herbal"]
+END;
 
     /**
      * {@inheritdoc}
