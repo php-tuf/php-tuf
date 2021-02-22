@@ -27,7 +27,7 @@ class JsonNormalizer
     public static function asNormalizedJson(iterable $structure) : string
     {
         self::rKeySort($structure);
-        return json_encode($structure);
+        return json_encode($structure, JSON_UNESCAPED_SLASHES);
     }
 
     /**
