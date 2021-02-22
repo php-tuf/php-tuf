@@ -41,10 +41,13 @@ class GuzzleFileFetcherTest extends TestCase
      * @var string
      */
     private $testContent = <<<END
-["oolong",
-  "assam",
-"matcha",
-"herbal"]
+{
+  "tea": ["oolong",
+     "assam",   "matcha",
+"herbal"],
+  "coffee" ["Arabica", "Catuai",
+     "Geisha"
+ ]}
 END;
 
     /**
