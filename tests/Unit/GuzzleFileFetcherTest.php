@@ -33,11 +33,15 @@ class GuzzleFileFetcherTest extends TestCase
     private $client;
 
     /**
-     * The JSON content of the mocked response(s).
+     * The content of the mocked response(s).
+     *
+     * This is deliberately not readable by json_decode(), in order to prove
+     * that the fetcher does not try to parse or process the response content
+     * in any way.
      *
      * @var string
      */
-    private $testContent = '["oolong","assam","matcha","herbal"]';
+    private $testContent = 'Zombie ipsum reversus ab viral inferno, nam rick grimes malum cerebro.';
 
     /**
      * {@inheritdoc}
