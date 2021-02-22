@@ -29,6 +29,8 @@ class JsonNormalizerTest extends TestCase
 
     /**
      * @covers ::asNormalizedJson
+     *
+     * @return void
      */
     public function testSlashEscaping(): void
     {
