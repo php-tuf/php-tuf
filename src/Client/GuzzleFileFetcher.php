@@ -5,8 +5,8 @@ namespace Tuf\Client;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\ResponseInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
@@ -58,28 +58,35 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchFile(string $fileName, int $maxBytes): PromiseInterface
     {
-        try {
-            $response = $this->client->request('GET', $fileName);
-        } catch (ClientException $e) {
-            if ($e->getCode() === 404) {
-                throw new RepoFileNotFound("$fileName not found", 0, $e);
-            } else {
-                // Re-throwing the original exception will blow away the
-                // backtrace, so wrap the exception in a more generic one to aid
-                // in debugging.
-                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-            }
-        }
+        $onFulfilled = function (ResponseInterface $response) use ($fileName, $maxBytes) {
+            $body = $response->getBody();
+            $contents = $body->read($maxBytes);
 
-        $body = $response->getBody();
-        $contents = $body->read($maxBytes);
-        // If we reached the end of the stream, we didn't exceed the maximum
-        // number of bytes.
-        if ($body->eof() === true) {
-            return new FulfilledPromise($contents);
-        } else {
-            throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
-        }
+            // If we reached the end of the stream, we didn't exceed the maximum
+            // number of bytes.
+            if ($body->eof() === true) {
+                return $contents;
+            } else {
+                throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+            }
+        };
+
+        $onRejected = function (\Throwable $e) use ($fileName) {
+            if ($e instanceof ClientException) {
+                if ($e->getCode() === 404) {
+                    throw new RepoFileNotFound("$fileName not found", 0, $e);
+                } else {
+                    // Re-throwing the original exception will blow away the
+                    // backtrace, so wrap the exception in a more generic one to aid
+                    // in debugging.
+                    throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+                }
+            } else {
+                throw $e;
+            }
+        };
+        return $this->client->requestAsync('GET', $fileName)
+            ->then($onFulfilled, $onRejected);
     }
 
     /**

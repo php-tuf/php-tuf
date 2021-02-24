@@ -114,7 +114,7 @@ class GuzzleFileFetcherTest extends TestCase
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
         $fetcher = new GuzzleFileFetcher($this->client);
-        $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent));
+        $fetcher->fetchFile('test.json', $maxBytes ?? strlen($this->testContent))->wait();
     }
 
     /**
