@@ -138,7 +138,7 @@ class Updater
         //$consistent = $rootData['consistent'];
 
         // *TUF-SPEC-v1.0.9 Section 5.2
-        $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES);
+        $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
         // *TUF-SPEC-v1.0.9 Section 5.2.1
         $this->checkSignatures($newTimestampData);
@@ -165,7 +165,7 @@ class Updater
             $newSnapshotContents = $this->repoFileFetcher->fetchFile(
                 "$snapShotVersion.snapshot.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
-            );
+            )->wait();
             // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $newTimestampData->verifyNewMetaData($newSnapshotData);
@@ -195,7 +195,7 @@ class Updater
             $newTargetsContent = $this->repoFileFetcher->fetchFile(
                 "$targetsVersion.targets.json",
                 static::MAXIMUM_DOWNLOAD_BYTES
-            );
+            )->wait();
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
             // TUF-SPEC-v1.0.9 Section 5.4.1
             $newSnapshotData->verifyNewMetaData($newTargetsData);

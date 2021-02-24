@@ -46,6 +46,6 @@ class FileStorageTest extends TestCase
         $this->assertTrue(isset($storage[$filename]));
         $this->assertSame("From hell's heart, I refactor thee!", $storage[$filename]);
         unset($storage[$filename]);
-        $this->assertFileNotExists("$dir/$filename");
+        $this->assertFileDoesNotExist("$dir/$filename");
     }
 }

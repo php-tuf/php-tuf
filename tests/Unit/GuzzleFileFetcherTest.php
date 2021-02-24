@@ -154,7 +154,7 @@ class GuzzleFileFetcherTest extends TestCase
     {
         $fetcher = new GuzzleFileFetcher($this->client);
         $this->mockHandler->append(new Response(200, [], $this->testContent));
-        $this->assertSame($fetcher->fetchFile('test.json', 256), $this->testContent);
+        $this->assertSame($fetcher->fetchFile('test.json', 256)->wait(), $this->testContent);
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchFileIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));

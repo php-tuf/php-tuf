@@ -2,6 +2,7 @@
 
 namespace Tuf\Client;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Tuf\Exception\RepoFileNotFound;
 
 /**
@@ -28,7 +29,7 @@ interface RepoFileFetcherInterface
      * @throws \Tuf\Exception\DownloadSizeException
      *   Thrown if the file exceeds $maxBytes in size.
      */
-    public function fetchFile(string $fileName, int $maxBytes):string;
+    public function fetchFile(string $fileName, int $maxBytes): PromiseInterface;
 
     /**
      * Gets a file if it exists in the remote repo.

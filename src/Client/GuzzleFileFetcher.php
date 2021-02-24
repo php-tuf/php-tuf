@@ -5,6 +5,8 @@ namespace Tuf\Client;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
@@ -54,7 +56,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes):string
+    public function fetchFile(string $fileName, int $maxBytes): PromiseInterface
     {
         try {
             $response = $this->client->request('GET', $fileName);
@@ -74,7 +76,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         // If we reached the end of the stream, we didn't exceed the maximum
         // number of bytes.
         if ($body->eof() === true) {
-            return $contents;
+            return new FulfilledPromise($contents);
         } else {
             throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         }
@@ -86,7 +88,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     public function fetchFileIfExists(string $fileName, int $maxBytes):?string
     {
         try {
-            return $this->fetchFile($fileName, $maxBytes);
+            return $this->fetchFile($fileName, $maxBytes)->wait();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
