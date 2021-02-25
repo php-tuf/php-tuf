@@ -3,7 +3,6 @@
 namespace Tuf\Client;
 
 use GuzzleHttp\Promise\PromiseInterface;
-use Tuf\Exception\RepoFileNotFound;
 
 /**
  * Defines an interface for fetching repo files.
