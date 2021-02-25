@@ -76,7 +76,8 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      * @return \Closure
      *   The callback function.
      */
-    private function onFulfilled(string $fileName, int $maxBytes) : \Closure {
+    private function onFulfilled(string $fileName, int $maxBytes): \Closure
+    {
         return function (ResponseInterface $response) use ($fileName, $maxBytes) {
             $body = $response->getBody();
             $contents = $body->read($maxBytes);
@@ -99,7 +100,8 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      * @return \Closure
      *   The callback function.
      */
-    private function onRejected(string $fileName): \ Closure {
+    private function onRejected(string $fileName): \ Closure
+    {
         return function (\Throwable $e) use ($fileName) {
             if ($e instanceof ClientException) {
                 if ($e->getCode() === 404) {
