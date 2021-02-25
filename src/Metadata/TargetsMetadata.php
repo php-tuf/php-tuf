@@ -65,4 +65,40 @@ class TargetsMetadata extends MetadataBase
         ]);
         return $options;
     }
+
+    /**
+     * Returns the known hashes for a specific target.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return \ArrayObject
+     *   The known hashes for the object. The keys are the hash algorithm (e.g.
+s     *   'sha256') and the values are the hash digest.
+     */
+    public function getHashes(string $target): \ArrayObject
+    {
+        return $this->getInfo($target)['hashes'];
+    }
+
+    /**
+     * Gets info about a specific target.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return \ArrayObject
+     *   The target's info.
+     *
+     * @throws \InvalidArgumentException
+     *   Thrown if the target is not mentioned in this metadata.
+     */
+    protected function getInfo(string $target): \ArrayObject
+    {
+        $signed = $this->getSigned();
+        if (isset($signed['targets'][$target])) {
+            return $signed['targets'][$target];
+        }
+        throw new \InvalidArgumentException("Unknown target: '$target'");
+    }
 }
