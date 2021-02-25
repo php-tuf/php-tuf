@@ -100,7 +100,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      * @return \Closure
      *   The callback function.
      */
-    private function onRejected(string $fileName): \ Closure
+    private function onRejected(string $fileName): \Closure
     {
         return function (\Throwable $e) use ($fileName) {
             if ($e instanceof ClientException) {
