@@ -58,7 +58,26 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchFile(string $fileName, int $maxBytes): PromiseInterface
     {
-        $onFulfilled = function (ResponseInterface $response) use ($fileName, $maxBytes) {
+        return $this->client->requestAsync('GET', $fileName)
+            ->then(
+                $this->onFulfilled($fileName, $maxBytes),
+                $this->onRejected($fileName)
+            );
+    }
+
+    /**
+     * Creates a callback function for when the promise is fulfilled.
+     *
+     * @param string $fileName
+     *   The file name being fetched from the remote repo.
+     * @param integer $maxBytes
+     *   The maximum number of bytes to download.
+     *
+     * @return \Closure
+     *   The callback function.
+     */
+    private function onFulfilled(string $fileName, int $maxBytes) : \Closure {
+        return function (ResponseInterface $response) use ($fileName, $maxBytes) {
             $body = $response->getBody();
             $contents = $body->read($maxBytes);
 
@@ -66,12 +85,22 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
             // number of bytes.
             if ($body->eof() === true) {
                 return $contents;
-            } else {
-                throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
             }
+            throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         };
+    }
 
-        $onRejected = function (\Throwable $e) use ($fileName) {
+    /**
+     * Creates a callback function for when the promise is rejected.
+     *
+     * @param string $fileName
+     *   The file name being fetched from the remote repo.
+     *
+     * @return \Closure
+     *   The callback function.
+     */
+    private function onRejected(string $fileName): \ Closure {
+        return function (\Throwable $e) use ($fileName) {
             if ($e instanceof ClientException) {
                 if ($e->getCode() === 404) {
                     throw new RepoFileNotFound("$fileName not found", 0, $e);
@@ -81,12 +110,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
                     // in debugging.
                     throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
                 }
-            } else {
-                throw $e;
             }
+            throw $e;
         };
-        return $this->client->requestAsync('GET', $fileName)
-            ->then($onFulfilled, $onRejected);
     }
 
     /**

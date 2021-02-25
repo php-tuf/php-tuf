@@ -19,8 +19,8 @@ interface RepoFileFetcherInterface
      * @param integer $maxBytes
      *   The maximum number of bytes to download.
      *
-     * @return string
-     *   The file contents.
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     *   A promise representing the eventual result of the operation.
      *
      * @throws \Tuf\Exception\RepoFileNotFound
      *   Thrown if the file is not found.
