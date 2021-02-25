@@ -138,7 +138,7 @@ class Updater
         //$consistent = $rootData['consistent'];
 
         // *TUF-SPEC-v1.0.9 Section 5.2
-        $newTimestampContents = $this->repoFileFetcher->fetchFile('timestamp.json', static::MAXIMUM_DOWNLOAD_BYTES)->wait();
+        $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
         // *TUF-SPEC-v1.0.9 Section 5.2.1
         $this->checkSignatures($newTimestampData);
@@ -162,10 +162,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.3
         if ($rootData->supportsConsistentSnapshots()) {
-            $newSnapshotContents = $this->repoFileFetcher->fetchFile(
-                "$snapShotVersion.snapshot.json",
-                static::MAXIMUM_DOWNLOAD_BYTES
-            )->wait();
+            $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $newTimestampData->verifyNewMetaData($newSnapshotData);
@@ -192,10 +189,7 @@ class Updater
         // TUF-SPEC-v1.0.9 Section 5.4
         if ($rootData->supportsConsistentSnapshots()) {
             $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
-            $newTargetsContent = $this->repoFileFetcher->fetchFile(
-                "$targetsVersion.targets.json",
-                static::MAXIMUM_DOWNLOAD_BYTES
-            )->wait();
+            $newTargetsContent = $this->fetchFile("$targetsVersion.targets.json");
             $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
             // TUF-SPEC-v1.0.9 Section 5.4.1
             $newSnapshotData->verifyNewMetaData($newTargetsData);
@@ -492,5 +486,21 @@ class Updater
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
         return $previousRole !== $newRole;
+    }
+
+    /**
+     * Synchronously fetches a file from the remote repo.
+     *
+     * @param string $fileName
+     *   The name of the file to fetch.
+     * @param integer $maxBytes
+     *   (optional) The maximum number of bytes to download.
+     *
+     * @return string
+     *   The contents of the fetched file.
+     */
+    private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
+    {
+        return $this->repoFileFetcher->fetchFile($fileName, $maxBytes)->wait();
     }
 }
