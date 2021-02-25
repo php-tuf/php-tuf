@@ -87,7 +87,7 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The path of the target (as known in the metadata).
      *
-     * @return int|null
+     * @return integer|null
      *   The size of the target in bytes, or NULL if the size is not known.
      */
     public function getLength(string $target): ?int
