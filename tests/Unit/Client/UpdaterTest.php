@@ -176,13 +176,16 @@ class UpdaterTest extends TestCase
      * Test that TUF will transparently verify downloaded target hashes.
      *
      * @covers ::download
+     *
+     * @return void
      */
     public function testVerifiedDownload(): void
     {
         $prophet = new Prophet();
         $fetcher = $prophet->prophesize(RepoFileFetcherInterface::class);
-        $storage = new \ArrayObject();
-        $storage['targets.json'] = file_get_contents(__DIR__ . '/../../../fixtures/TUFTestFixtureSimple/tufrepo/metadata/2.targets.json');
+        $storage = new \ArrayObject([
+            'targets.json' => file_get_contents(__DIR__ . '/../../../fixtures/TUFTestFixtureSimple/tufrepo/metadata/2.targets.json'),
+        ]);
         $updater = new Updater($fetcher->reveal(), [], $storage);
         $promise = new FulfilledPromise('testtarget.txt');
         $fetcher->fetchFile('testtarget.txt', 14)->willReturn($promise);
