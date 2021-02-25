@@ -2,6 +2,9 @@
 
 namespace Tuf\Tests\Client;
 
+use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
@@ -40,12 +43,12 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes):string
+    public function fetchFile(string $fileName, int $maxBytes): PromiseInterface
     {
         if (empty($this->repoFilesContents[$fileName])) {
-            throw new RepoFileNotFound("File $fileName not found.");
+            return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
         }
-        return $this->repoFilesContents[$fileName];
+        return new FulfilledPromise($this->repoFilesContents[$fileName]);
     }
 
     /**
@@ -54,7 +57,7 @@ class TestRepo implements RepoFileFetcherInterface
     public function fetchFileIfExists(string $fileName, int $maxBytes):?string
     {
         try {
-            return $this->fetchFile($fileName, $maxBytes);
+            return $this->fetchFile($fileName, $maxBytes)->wait();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
