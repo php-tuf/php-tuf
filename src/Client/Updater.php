@@ -519,24 +519,21 @@ class Updater
      */
     public function download(string $target): PromiseInterface
     {
-        $targetsMetaData = json_decode($this->durableStorage['targets.json'], true);
+        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
-        if (isset($targetsMetaData['targets'][$target])) {
-            $targetInfo = $targetsMetaData['targets'][$target];
-            $maxBytes = $targetInfo['length'] ?? static::MAXIMUM_DOWNLOAD_BYTES;
+        $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+        $hashes = $targetsMetaData->getHashes($target);
 
-            $verify = function ($content) use ($target, $targetInfo) {
-                foreach ($targetInfo['hashes'] as $algo => $hash) {
-                    if ($hash !== hash($algo, $content)) {
-                        throw new InvalidHashException("Invalid $algo hash for $target");
-                    }
+        $verify = function ($content) use ($target, $hashes) {
+            foreach ($hashes as $algo => $hash) {
+                if ($hash !== hash($algo, $content)) {
+                    throw new InvalidHashException("Invalid $algo hash for $target");
                 }
-                return $content;
-            };
-            return $this->repoFileFetcher->fetchFile($target, $maxBytes)
-                ->then($verify);
-        } else {
-            throw new \InvalidArgumentException("Unknown target: '$target'");
-        }
+            }
+            return $content;
+        };
+
+        return $this->repoFileFetcher->fetchFile($target, $length)
+            ->then($verify);
     }
 }

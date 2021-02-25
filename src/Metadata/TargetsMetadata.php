@@ -65,4 +65,23 @@ class TargetsMetadata extends MetadataBase
         ]);
         return $options;
     }
+
+    public function getHashes(string $target): array
+    {
+        return $this->getInfo($target)['hashes'];
+    }
+
+    public function getLength(string $target): ?int
+    {
+        return $this->getInfo($target)['length'];
+    }
+
+    private function getInfo(string $target): array
+    {
+        $signed = $this->getSigned();
+        if (isset($signed['targets'][$target])) {
+            return $signed['targets'][$target];
+        }
+        throw new \InvalidArgumentException("Unknown target: '$target'");
+    }
 }
