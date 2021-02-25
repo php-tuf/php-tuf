@@ -41,6 +41,10 @@ class TargetsMetadataTest extends MetaDataBaseTest
 
         $target = key($json['signed']['targets']);
         $this->assertSame($metadata->getHashes($target)->getArrayCopy(), $json['signed']['targets'][$target]['hashes']);
+
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage("Unknown target: 'void.txt'");
+        $metadata->getHashes('void.txt');
     }
 
     /**

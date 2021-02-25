@@ -74,7 +74,7 @@ class TargetsMetadata extends MetadataBase
      *
      * @return \ArrayObject
      *   The known hashes for the object. The keys are the hash algorithm (e.g.
-s     *   'sha256') and the values are the hash digest.
+     *   'sha256') and the values are the hash digest.
      */
     public function getHashes(string $target): \ArrayObject
     {
