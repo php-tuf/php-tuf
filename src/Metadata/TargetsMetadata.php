@@ -66,16 +66,44 @@ class TargetsMetadata extends MetadataBase
         return $options;
     }
 
+    /**
+     * Gets the known hashes for a target.
+     *
+     * @param string $target
+     *   The path of the target (as known in the metadata).
+     *
+     * @return array
+     *   The hashes for the target. The keys are the hash algorithm to use, and
+     *   the values are the hash itself.
+     */
     public function getHashes(string $target): array
     {
         return $this->getInfo($target)['hashes'];
     }
 
+    /**
+     * Gets the file size of a target, if known.
+     *
+     * @param string $target
+     *   The path of the target (as known in the metadata).
+     *
+     * @return int|null
+     *   The size of the target in bytes, or NULL if the size is not known.
+     */
     public function getLength(string $target): ?int
     {
         return $this->getInfo($target)['length'];
     }
 
+    /**
+     * Gets the signed info for a single target.
+     *
+     * @param string $target
+     *   The path of the target (as known in the metadata).
+     *
+     * @return array
+     *   The target's info (hashes, length, etc.)
+     */
     private function getInfo(string $target): array
     {
         $signed = $this->getSigned();
