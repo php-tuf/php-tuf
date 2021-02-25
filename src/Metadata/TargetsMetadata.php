@@ -72,11 +72,11 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The path of the target (as known in the metadata).
      *
-     * @return array
+     * @return \ArrayObject
      *   The hashes for the target. The keys are the hash algorithm to use, and
      *   the values are the hash itself.
      */
-    public function getHashes(string $target): array
+    public function getHashes(string $target): \ArrayObject
     {
         return $this->getInfo($target)['hashes'];
     }
@@ -101,10 +101,10 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The path of the target (as known in the metadata).
      *
-     * @return array
+     * @return \ArrayObject
      *   The target's info (hashes, length, etc.)
      */
-    private function getInfo(string $target): array
+    private function getInfo(string $target): \ArrayObject
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {

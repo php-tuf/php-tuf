@@ -2,9 +2,12 @@
 
 namespace Tuf\Tests\Unit\Client;
 
+use GuzzleHttp\Promise\FulfilledPromise;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophet;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
+use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Metadata\MetadataBase;
 
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
@@ -167,5 +170,28 @@ class UpdaterTest extends TestCase
         // The update has already expired, so a freeze attack exception should
         // be thrown.
         $method->invoke($sut, $signedMetadata, $now);
+    }
+
+    /**
+     * Test that TUF will transparently verify downloaded target hashes.
+     *
+     * @covers ::download
+     */
+    public function testVerifiedDownload(): void
+    {
+        $prophet = new Prophet();
+        $fetcher = $prophet->prophesize(RepoFileFetcherInterface::class);
+        $storage = new \ArrayObject();
+        $storage['targets.json'] = file_get_contents(__DIR__ . '/../../../fixtures/TUFTestFixtureSimple/tufrepo/metadata/2.targets.json');
+        $updater = new Updater($fetcher->reveal(), [], $storage);
+        $promise = new FulfilledPromise('testtarget.txt');
+        $fetcher->fetchFile('testtarget.txt', 14)->willReturn($promise);
+        $updater->download('testtarget.txt')->wait();
+
+        $promise = new FulfilledPromise('invalid data');
+        $fetcher->fetchFile('testtarget.txt', 14)->willReturn($promise);
+        $this->expectException(InvalidHashException::class);
+        $this->expectExceptionMessage("Invalid sha256 hash for testtarget.txt");
+        $updater->download('testtarget.txt')->wait();
     }
 }
