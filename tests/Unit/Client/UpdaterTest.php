@@ -2,12 +2,9 @@
 
 namespace Tuf\Tests\Unit\Client;
 
-use GuzzleHttp\Promise\FulfilledPromise;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophet;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
-use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Metadata\MetadataBase;
 
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
