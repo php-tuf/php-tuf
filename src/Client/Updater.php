@@ -2,10 +2,12 @@
 
 namespace Tuf\Client;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
+use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\JsonNormalizer;
@@ -65,6 +67,16 @@ class Updater
      * @var \Tuf\Client\RepoFileFetcherInterface
      */
     protected $repoFileFetcher;
+
+    /**
+     * Whether the repo has been refreshed or not.
+     *
+     * @see ::download()
+     * @see ::refresh()
+     *
+     * @var bool
+     */
+    protected $isRefreshed = false;
 
     /**
      * Updater constructor.
@@ -203,6 +215,7 @@ class Updater
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
+        $this->isRefreshed = true;
         return true;
     }
 
@@ -502,5 +515,45 @@ class Updater
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
         return $this->repoFileFetcher->fetchFile($fileName, $maxBytes)->wait();
+    }
+
+    /**
+     * Downloads a target file, verifies it, and returns its contents.
+     *
+     * @param string $target
+     *   The path of the target file. Needs to be known to the most recent
+     *   targets metadata downloaded in ::refresh().
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     *   A promise representing the eventual verified result of the download
+     *   operation.
+     */
+    public function download(string $target): PromiseInterface
+    {
+        if (!$this->isRefreshed) {
+            $this->refresh();
+        }
+        // @todo Handle the possibility that the target's metadata might not be
+        // in targets.json.
+        // @see https://github.com/php-tuf/php-tuf/issues/116
+        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+
+        $hashes = $targetsMetaData->getHashes($target);
+        if (count($hashes) === 0) {
+            throw new \RuntimeException("No trusted hashes are available for '$target'");
+        }
+        $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+
+        $verify = function ($content) use ($target, $hashes) {
+            foreach ($hashes as $algo => $hash) {
+                if ($hash !== hash($algo, $content)) {
+                    throw new InvalidHashException("Invalid $algo hash for $target");
+                }
+            }
+            return $content;
+        };
+
+        return $this->repoFileFetcher->fetchFile($target, $length)
+            ->then($verify);
     }
 }

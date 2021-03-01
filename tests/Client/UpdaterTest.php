@@ -5,11 +5,11 @@ namespace Tuf\Tests\Client;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
+use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -98,6 +98,30 @@ class UpdaterTest extends TestCase
         }
         $updater = new Updater($this->testRepo, $mirrors, $this->localRepo);
         return $updater;
+    }
+
+    /**
+     * Tests that TUF will transparently verify downloaded target hashes.
+     *
+     * @covers ::download
+     *
+     * @return void
+     */
+    public function testVerifiedDownload(): void
+    {
+        $fixturesSet = 'TUFTestFixtureSimple';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest();
+
+        $testFileContents = file_get_contents(__DIR__ . '/../../fixtures/TUFTestFixtureSimple/tufrepo/targets/testtarget.txt');
+        $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
+        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait());
+
+        $this->testRepo->repoFilesContents['testtarget.txt'] = 'invalid data';
+        $this->expectException(InvalidHashException::class);
+        $this->expectExceptionMessage("Invalid sha256 hash for testtarget.txt");
+        $updater->download('testtarget.txt')->wait();
     }
 
     /**
