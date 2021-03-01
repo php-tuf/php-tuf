@@ -69,6 +69,16 @@ class Updater
     protected $repoFileFetcher;
 
     /**
+     * Whether the repo has been refreshed or not.
+     *
+     * @see ::download()
+     * @see ::refresh()
+     *
+     * @var bool
+     */
+    protected $isRefreshed = false;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
@@ -205,6 +215,7 @@ class Updater
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
+        $this->isRefreshed = true;
         return true;
     }
 
@@ -519,10 +530,16 @@ class Updater
      */
     public function download(string $target): PromiseInterface
     {
+        if (!$this->isRefreshed) {
+            $this->refresh();
+        }
         $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
-        $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $hashes = $targetsMetaData->getHashes($target);
+        if (count($hashes) === 0) {
+            throw new \RuntimeException("No trusted hashes are available for '$target'");
+        }
+        $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
 
         $verify = function ($content) use ($target, $hashes) {
             foreach ($hashes as $algo => $hash) {

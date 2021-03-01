@@ -173,7 +173,7 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Test that TUF will transparently verify downloaded target hashes.
+     * Tests that TUF will transparently verify downloaded target hashes.
      *
      * @covers ::download
      *
