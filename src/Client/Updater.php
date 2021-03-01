@@ -533,7 +533,7 @@ class Updater
         if (!$this->isRefreshed) {
             $this->refresh();
         }
-        // @todo Handle the possibiliy that the target's metadata might not be
+        // @todo Handle the possibility that the target's metadata might not be
         // in targets.json.
         // @see https://github.com/php-tuf/php-tuf/issues/116
         $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
