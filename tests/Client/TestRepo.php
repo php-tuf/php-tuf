@@ -22,7 +22,7 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @var string[]
      */
-    private $repoFilesContents = [];
+    public $repoFilesContents = [];
 
     /**
      * TestRepo constructor.

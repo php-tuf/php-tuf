@@ -171,30 +171,4 @@ class UpdaterTest extends TestCase
         // be thrown.
         $method->invoke($sut, $signedMetadata, $now);
     }
-
-    /**
-     * Tests that TUF will transparently verify downloaded target hashes.
-     *
-     * @covers ::download
-     *
-     * @return void
-     */
-    public function testVerifiedDownload(): void
-    {
-        $prophet = new Prophet();
-        $fetcher = $prophet->prophesize(RepoFileFetcherInterface::class);
-        $storage = new \ArrayObject([
-            'targets.json' => file_get_contents(__DIR__ . '/../../../fixtures/TUFTestFixtureSimple/tufrepo/metadata/2.targets.json'),
-        ]);
-        $updater = new Updater($fetcher->reveal(), [], $storage);
-        $promise = new FulfilledPromise('testtarget.txt');
-        $fetcher->fetchFile('testtarget.txt', 14)->willReturn($promise);
-        $updater->download('testtarget.txt')->wait();
-
-        $promise = new FulfilledPromise('invalid data');
-        $fetcher->fetchFile('testtarget.txt', 14)->willReturn($promise);
-        $this->expectException(InvalidHashException::class);
-        $this->expectExceptionMessage("Invalid sha256 hash for testtarget.txt");
-        $updater->download('testtarget.txt')->wait();
-    }
 }
