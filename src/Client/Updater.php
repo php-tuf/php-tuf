@@ -553,7 +553,7 @@ class Updater
             return $content;
         };
 
-        return $this->repoFileFetcher->fetchTarget($target, $length)
+        return $this->repoFileFetcher->fetchFile($target, $length)
             ->then($verify);
     }
 }
