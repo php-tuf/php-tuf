@@ -27,6 +27,25 @@ class TargetsMetadataTest extends MetaDataBaseTest
         return TargetsMetadata::createFromJson($json);
     }
 
+    /**
+     * @covers ::getHashes
+     *
+     * @return void
+     *   Describe the void.
+     */
+    public function testGetHashes(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+
+        $target = key($json['signed']['targets']);
+        $this->assertSame($metadata->getHashes($target)->getArrayCopy(), $json['signed']['targets'][$target]['hashes']);
+
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage("Unknown target: 'void.txt'");
+        $metadata->getHashes('void.txt');
+    }
 
     /**
      * {@inheritdoc}
@@ -48,6 +67,8 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:delegations:roles:0:paths'];
         $data[] = ['signed:delegations:roles:0:terminating'];
         $data[] = ['signed:delegations:roles:0:threshold'];
+        $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
+        $data[] = ["signed:targets:$target:hashes"];
         return static::getKeyedArray($data);
     }
 
@@ -57,7 +78,8 @@ class TargetsMetadataTest extends MetaDataBaseTest
     public function providerValidField() : array
     {
         $data = parent::providerValidField();
-        // @todo Add targets specifics.
+        $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
+        $data[] = ["signed:targets:$target:hashes", 'array'];
         return $data;
     }
 }
