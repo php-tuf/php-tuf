@@ -67,14 +67,28 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
-     * Gets the known hashes for a target.
+     * Returns the length, in bytes, of a specific target.
      *
      * @param string $target
-     *   The path of the target (as known in the metadata).
+     *   The target path.
+     *
+     * @return integer
+     *   The length (size) of the target, in bytes.
+     */
+    public function getLength(string $target): int
+    {
+        return $this->getInfo($target)['length'];
+    }
+
+    /**
+     * Returns the known hashes for a specific target.
+     *
+     * @param string $target
+     *   The target path.
      *
      * @return \ArrayObject
-     *   The hashes for the target. The keys are the hash algorithm to use, and
-     *   the values are the hash itself.
+     *   The known hashes for the object. The keys are the hash algorithm (e.g.
+     *   'sha256') and the values are the hash digest.
      */
     public function getHashes(string $target): \ArrayObject
     {
@@ -82,29 +96,18 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
-     * Gets the file size of a target, if known.
+     * Gets info about a specific target.
      *
      * @param string $target
-     *   The path of the target (as known in the metadata).
-     *
-     * @return integer|null
-     *   The size of the target in bytes, or NULL if the size is not known.
-     */
-    public function getLength(string $target): ?int
-    {
-        return $this->getInfo($target)['length'];
-    }
-
-    /**
-     * Gets the signed info for a single target.
-     *
-     * @param string $target
-     *   The path of the target (as known in the metadata).
+     *   The target path.
      *
      * @return \ArrayObject
-     *   The target's info (hashes, length, etc.)
+     *   The target's info.
+     *
+     * @throws \InvalidArgumentException
+     *   Thrown if the target is not mentioned in this metadata.
      */
-    private function getInfo(string $target): \ArrayObject
+    protected function getInfo(string $target): \ArrayObject
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {
