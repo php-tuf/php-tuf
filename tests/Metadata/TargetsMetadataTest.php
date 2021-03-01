@@ -78,7 +78,8 @@ class TargetsMetadataTest extends MetaDataBaseTest
     public function providerValidField() : array
     {
         $data = parent::providerValidField();
-        // @todo Add targets specifics.
+        $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
+        $data[] = ["signed:targets:$target:hashes", 'array'];
         return $data;
     }
 }
