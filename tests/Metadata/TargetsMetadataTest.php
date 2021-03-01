@@ -29,11 +29,12 @@ class TargetsMetadataTest extends MetaDataBaseTest
 
     /**
      * @covers ::getHashes
+     * @covers ::getLength
      *
      * @return void
      *   Describe the void.
      */
-    public function testGetHashes(): void
+    public function testGetHashesAndLength(): void
     {
         $json = $this->localRepo[$this->validJson];
         $metadata = TargetsMetadata::createFromJson($json);
@@ -41,10 +42,22 @@ class TargetsMetadataTest extends MetaDataBaseTest
 
         $target = key($json['signed']['targets']);
         $this->assertSame($metadata->getHashes($target)->getArrayCopy(), $json['signed']['targets'][$target]['hashes']);
+        $this->assertSame($metadata->getLength($target), $json['signed']['targets'][$target]['length']);
 
-        $this->expectException('InvalidArgumentException');
-        $this->expectExceptionMessage("Unknown target: 'void.txt'");
-        $metadata->getHashes('void.txt');
+        // Trying to get information about an unknown target should throw.
+        try {
+            $metadata->getHashes('void.txt');
+            $this->fail('Exception was not thrown for an invalid target.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame("Unknown target: 'void.txt'", $e->getMessage());
+        }
+
+        try {
+            $metadata->getLength('void.txt');
+            $this->fail('Exception was not thrown for an invalid target.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame("Unknown target: 'void.txt'", $e->getMessage());
+        }
     }
 
     /**
@@ -69,6 +82,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $data[] = ['signed:delegations:roles:0:threshold'];
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:hashes"];
+        $data[] = ["signed:targets:$target:length"];
         return static::getKeyedArray($data);
     }
 
@@ -80,6 +94,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $data = parent::providerValidField();
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:hashes", 'array'];
+        $data[] = ["signed:targets:$target:length", 'int'];
         return $data;
     }
 }
