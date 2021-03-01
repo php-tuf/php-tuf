@@ -50,7 +50,7 @@ class TUFTestFixtureBase:
         print(targets_dir)
 
         with open(os.path.join(targets_dir, filename), 'w') as targetfile:
-            targetfile.write(filename)
+            targetfile.write('Contents: ' + filename)
 
         list_of_targets = [filename]
 
