@@ -67,6 +67,20 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
+     * Returns the length, in bytes, of a specific target.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return integer
+     *   The length (size) of the target, in bytes.
+     */
+    public function getLength(string $target): int
+    {
+        return $this->getInfo($target)['length'];
+    }
+
+    /**
      * Returns the known hashes for a specific target.
      *
      * @param string $target
