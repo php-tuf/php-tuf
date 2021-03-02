@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
@@ -74,7 +75,18 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     protected function fetchFile(string $fileName, int $maxBytes): PromiseInterface
     {
-        return $this->client->requestAsync('GET', $fileName)
+        // Create a progress callback to abort the download if it exceeds
+        // $maxBytes. This will only work with cURL, so we also verify the
+        // download size when request is finished.
+        $progress = function (int $expectedBytes, int $downloadedBytes) use ($fileName, $maxBytes) {
+            if ($expectedBytes > $maxBytes || $downloadedBytes > $maxBytes) {
+                throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+            }
+        };
+        $options = [];
+        $options[RequestOptions::PROGRESS] = $progress;
+
+        return $this->client->requestAsync('GET', $fileName, $options)
             ->then(
                 $this->onFulfilled($fileName, $maxBytes),
                 $this->onRejected($fileName)
@@ -96,15 +108,23 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     {
         return function (ResponseInterface $response) use ($fileName, $maxBytes) {
             $body = $response->getBody();
-            $body->read($maxBytes);
+            $size = $body->getSize();
 
-            // If we reached the end of the stream, we didn't exceed the maximum
-            // number of bytes.
-            if ($body->eof() === true) {
+            if (isset($size)) {
+                if ($size > $maxBytes) {
+                    throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+                }
+            } else {
+                $body->read($maxBytes);
+
+                // If we reached the end of the stream, we didn't exceed the
+                // maximum number of bytes.
+                if ($body->eof() === false) {
+                    throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+                }
                 $body->rewind();
-                return $body;
             }
-            throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+            return $body;
         };
     }
 
