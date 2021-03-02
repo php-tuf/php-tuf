@@ -9,26 +9,31 @@ use GuzzleHttp\Promise\PromiseInterface;
  */
 interface RepoFileFetcherInterface
 {
-
     /**
-     * Fetches a file from the remote repo.
+     * Fetches a metadata file from the remote repo.
      *
      * @param string $fileName
-     *   The file name.
-     *
+     *   The name of the metadata file to fetch.
      * @param integer $maxBytes
      *   The maximum number of bytes to download.
      *
      * @return \GuzzleHttp\Promise\PromiseInterface
      *   A promise representing the eventual result of the operation.
-     *
-     * @throws \Tuf\Exception\RepoFileNotFound
-     *   Thrown if the file is not found.
-     *
-     * @throws \Tuf\Exception\DownloadSizeException
-     *   Thrown if the file exceeds $maxBytes in size.
      */
-    public function fetchFile(string $fileName, int $maxBytes): PromiseInterface;
+    public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface;
+
+    /**
+     * Fetches a target file from the remote repo.
+     *
+     * @param string $fileName
+     *   The name of the target to fetch.
+     * @param integer $maxBytes
+     *   The maximum number of bytes to download.
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     *   A promise representing the eventual result of the operation.
+     */
+    public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface;
 
     /**
      * Gets a file if it exists in the remote repo.
@@ -41,5 +46,5 @@ interface RepoFileFetcherInterface
      * @return string|null
      *   The contents of the file or null if it does not exist.
      */
-    public function fetchFileIfExists(string $fileName, int $maxBytes):?string;
+    public function fetchMetaDataIfExists(string $fileName, int $maxBytes): ?string;
 }

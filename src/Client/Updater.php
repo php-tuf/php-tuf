@@ -428,7 +428,7 @@ class Updater
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchFileIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+        while ($nextRootContents = $this->repoFileFetcher->fetchMetaDataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
@@ -514,7 +514,7 @@ class Updater
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchFile($fileName, $maxBytes)->wait();
+        return $this->repoFileFetcher->fetchMetaData($fileName, $maxBytes)->wait();
     }
 
     /**
@@ -553,7 +553,7 @@ class Updater
             return $content;
         };
 
-        return $this->repoFileFetcher->fetchFile($target, $length)
+        return $this->repoFileFetcher->fetchTarget($target, $length)
             ->then($verify);
     }
 }

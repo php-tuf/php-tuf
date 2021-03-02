@@ -41,9 +41,25 @@ class TestRepo implements RepoFileFetcherInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface
+    {
+        return $this->fetchFile($fileName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface
+    {
+        return $this->fetchFile($fileName);
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function fetchFile(string $fileName, int $maxBytes): PromiseInterface
+    protected function fetchFile(string $fileName): PromiseInterface
     {
         if (empty($this->repoFilesContents[$fileName])) {
             return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
@@ -54,7 +70,7 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchFileIfExists(string $fileName, int $maxBytes):?string
+    public function fetchMetaDataIfExists(string $fileName, int $maxBytes):?string
     {
         try {
             return $this->fetchFile($fileName, $maxBytes)->wait();
