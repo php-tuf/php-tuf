@@ -546,9 +546,20 @@ class Updater
         $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
 
         $verify = function (StreamInterface $stream) use ($target, $hashes) {
-            $content = $stream->getContents();
+            // If the stream has a URI that refers to a file, use hash_file() to
+            // verify it. Otherwise, read the entire stream as a string and use
+            // hash() to verify it.
+            $uri = $stream->getMetadata('uri');
+            if ($uri && file_exists($uri)) {
+                $content = $uri;
+                $verifier = 'hash_file';
+            } else {
+                $content = $stream->getContents();
+                $verifier = 'hash';
+            }
+
             foreach ($hashes as $algo => $hash) {
-                if ($hash !== hash($algo, $content)) {
+                if ($hash !== $verifier($algo, $content)) {
                     throw new InvalidHashException("Invalid $algo hash for $target");
                 }
             }
