@@ -116,7 +116,7 @@ class UpdaterTest extends TestCase
 
         $testFileContents = file_get_contents(__DIR__ . '/../../fixtures/TUFTestFixtureSimple/tufrepo/targets/testtarget.txt');
         $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
-        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait());
+        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
         $this->testRepo->repoFilesContents['testtarget.txt'] = 'invalid data';
         $this->expectException(InvalidHashException::class);

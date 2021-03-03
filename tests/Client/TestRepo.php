@@ -5,6 +5,7 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Psr7\Utils;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
@@ -64,7 +65,8 @@ class TestRepo implements RepoFileFetcherInterface
         if (empty($this->repoFilesContents[$fileName])) {
             return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
         }
-        return new FulfilledPromise($this->repoFilesContents[$fileName]);
+        $stream = Utils::streamFor($this->repoFilesContents[$fileName]);
+        return new FulfilledPromise($stream);
     }
 
     /**

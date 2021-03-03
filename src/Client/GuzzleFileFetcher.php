@@ -96,12 +96,13 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     {
         return function (ResponseInterface $response) use ($fileName, $maxBytes) {
             $body = $response->getBody();
-            $contents = $body->read($maxBytes);
+            $body->read($maxBytes);
 
             // If we reached the end of the stream, we didn't exceed the maximum
             // number of bytes.
             if ($body->eof() === true) {
-                return $contents;
+                $body->rewind();
+                return $body;
             }
             throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         };

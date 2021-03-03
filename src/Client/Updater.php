@@ -3,6 +3,7 @@
 namespace Tuf\Client;
 
 use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
@@ -544,13 +545,15 @@ class Updater
         }
         $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
 
-        $verify = function ($content) use ($target, $hashes) {
+        $verify = function (StreamInterface $stream) use ($target, $hashes) {
+            $content = $stream->getContents();
             foreach ($hashes as $algo => $hash) {
                 if ($hash !== hash($algo, $content)) {
                     throw new InvalidHashException("Invalid $algo hash for $target");
                 }
             }
-            return $content;
+            $stream->rewind();
+            return $stream;
         };
 
         return $this->repoFileFetcher->fetchTarget($target, $length)
