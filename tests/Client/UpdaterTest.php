@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Client;
 
+use GuzzleHttp\Promise\FulfilledPromise;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
@@ -114,9 +115,19 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
-        $testFileContents = file_get_contents(__DIR__ . '/../../fixtures/TUFTestFixtureSimple/tufrepo/targets/testtarget.txt');
+        $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testtarget.txt', false);
+        $testFileContents = file_get_contents($testFilePath);
         $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
+
+        // If the file fetcher returns a file stream, the updater should NOT try
+        // to read the contents of the stream into memory.
+        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $stream->getMetadata('uri')->willReturn($testFilePath);
+        $stream->getContents()->shouldNotBeCalled();
+        $stream->rewind()->shouldNotBeCalled();
+        $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $updater->download('testtarget.txt')->wait();
 
         $this->testRepo->repoFilesContents['testtarget.txt'] = 'invalid data';
         $this->expectException(InvalidHashException::class);
