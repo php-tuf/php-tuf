@@ -115,7 +115,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
-        $testFilePath = static::getFixturesRealPath('TUFTestFixtureSimple', 'tufrepo/targets/testtarget.txt', false);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
