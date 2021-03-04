@@ -45,13 +45,8 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public static function createFromUri(string $baseUri) : self
     {
-        $scheme = parse_url($baseUri, PHP_URL_SCHEME);
-        if ($scheme === 'https') {
-            $client = new Client(['base_uri' => $baseUri]);
-            return new static($client);
-        } else {
-            throw new \InvalidArgumentException("Repo base URI must be HTTPS: $baseUri");
-        }
+        $client = new Client(['base_uri' => $baseUri]);
+        return new static($client);
     }
 
     /**

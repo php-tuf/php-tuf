@@ -171,9 +171,5 @@ class GuzzleFileFetcherTest extends TestCase
     public function testCreateFromUri(): void
     {
         $this->assertInstanceOf(GuzzleFileFetcher::class, GuzzleFileFetcher::createFromUri('https://example.com'));
-
-        $this->expectException('InvalidArgumentException');
-        $this->expectExceptionMessage('Repo base URI must be HTTPS: http://example.com');
-        GuzzleFileFetcher::createFromUri('http://example.com');
     }
 }
