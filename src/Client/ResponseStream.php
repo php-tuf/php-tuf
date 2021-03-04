@@ -6,22 +6,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * Defines an adapter class for a stream that is aware of an HTTP response.
+ * Defines an adapter for a stream that comes from an HTTP response.
  *
  * This exists because \Tuf\Client\RepoFileFetcherInterface's methods return
  * promises that wrap around instances of StreamInterface, but some consumers
  * of this library might need information about the HTTP response too, if a
  * request was made.
  */
-class ResponseAwareStream implements StreamInterface
+class ResponseStream implements StreamInterface
 {
-    /**
-     * A stream (i.e., the body of an HTTP response).
-     *
-     * @var \Psr\Http\Message\StreamInterface
-     */
-    private $stream;
-
     /**
      * The response that produced the stream.
      *
@@ -32,14 +25,11 @@ class ResponseAwareStream implements StreamInterface
     /**
      * ResponseAwareStream constructor.
      *
-     * @param \Psr\Http\Message\StreamInterface $stream
-     *   A stream (i.e., the body of an HTTP response).
      * @param \Psr\Http\Message\ResponseInterface $response
      *   The response that produced the stream.
      */
-    public function __construct(StreamInterface $stream, ResponseInterface $response)
+    public function __construct(ResponseInterface $response)
     {
-        $this->stream = $stream;
         $this->response = $response;
     }
 
@@ -59,7 +49,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function __toString()
     {
-        return $this->stream->__toString();
+        return $this->getResponse()->getBody()->__toString();
     }
 
     /**
@@ -67,7 +57,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function close()
     {
-        $this->stream->close();
+        $this->getResponse()->getBody()->close();
     }
 
     /**
@@ -75,7 +65,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function detach()
     {
-        return $this->stream->detach();
+        return $this->getResponse()->getBody()->detach();
     }
 
     /**
@@ -83,7 +73,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function getSize()
     {
-        return $this->stream->getSize();
+        return $this->getResponse()->getBody()->getSize();
     }
 
     /**
@@ -91,7 +81,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function tell()
     {
-        return $this->stream->tell();
+        return $this->getResponse()->getBody()->tell();
     }
 
     /**
@@ -99,7 +89,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function eof()
     {
-        return $this->stream->eof();
+        return $this->getResponse()->getBody()->eof();
     }
 
     /**
@@ -107,7 +97,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function isSeekable()
     {
-        return $this->stream->isSeekable();
+        return $this->getResponse()->getBody()->isSeekable();
     }
 
     /**
@@ -115,7 +105,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        return $this->stream->seek($offset, $whence);
+        return $this->getResponse()->getBody()->seek($offset, $whence);
     }
 
     /**
@@ -123,7 +113,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function rewind()
     {
-        return $this->stream->rewind();
+        return $this->getResponse()->getBody()->rewind();
     }
 
     /**
@@ -131,7 +121,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function isWritable()
     {
-        return $this->stream->isWritable();
+        return $this->getResponse()->getBody()->isWritable();
     }
 
     /**
@@ -139,7 +129,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function write($string)
     {
-        return $this->stream->write($string);
+        return $this->getResponse()->getBody()->write($string);
     }
 
     /**
@@ -147,7 +137,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function isReadable()
     {
-        return $this->stream->isReadable();
+        return $this->getResponse()->getBody()->isReadable();
     }
 
     /**
@@ -155,7 +145,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function read($length)
     {
-        return $this->stream->read($length);
+        return $this->getResponse()->getBody()->read($length);
     }
 
     /**
@@ -163,7 +153,7 @@ class ResponseAwareStream implements StreamInterface
      */
     public function getContents()
     {
-        return $this->stream->getContents();
+        return $this->getResponse()->getBody()->getContents();
     }
 
     /**
@@ -171,6 +161,6 @@ class ResponseAwareStream implements StreamInterface
      */
     public function getMetadata($key = null)
     {
-        return $this->stream->getMetadata($key);
+        return $this->getResponse()->getBody()->getMetadata($key);
     }
 }
