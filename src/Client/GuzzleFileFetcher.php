@@ -124,7 +124,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
                 }
                 $body->rewind();
             }
-            return $body;
+            return new ResponseStream($response);
         };
     }
 
