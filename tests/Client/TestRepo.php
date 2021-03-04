@@ -65,6 +65,12 @@ class TestRepo implements RepoFileFetcherInterface
         if (empty($this->repoFilesContents[$fileName])) {
             return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
         }
+        // Allow test code to directly set the returned promise so that the
+        // underlying streams can be mocked.
+        $contents = $this->repoFilesContents[$fileName];
+        if ($contents instanceof PromiseInterface) {
+            return $contents;
+        }
         $stream = Utils::streamFor($this->repoFilesContents[$fileName]);
         return new FulfilledPromise($stream);
     }
