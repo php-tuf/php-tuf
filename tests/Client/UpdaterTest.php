@@ -115,7 +115,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
-        $testFilePath = realpath(__DIR__ . '/../../fixtures/TUFTestFixtureSimple/tufrepo/targets/testtarget.txt');
+        $testFilePath = static::getFixturesRealPath('TUFTestFixtureSimple', 'tufrepo/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
@@ -125,7 +125,7 @@ class UpdaterTest extends TestCase
         $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getMetadata('uri')->willReturn($testFilePath);
         $stream->getContents()->shouldNotBeCalled();
-        $stream->rewind()->shouldBeCalled();
+        $stream->rewind()->shouldNotBeCalled();
         $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         $updater->download('testtarget.txt')->wait();
 
