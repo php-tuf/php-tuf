@@ -60,15 +60,15 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface
+    public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
     {
-        return $this->fetchFile($fileName, $maxBytes);
+        return $this->fetchFile($fileName, $maxBytes, $options);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function fetchFile(string $fileName, int $maxBytes): PromiseInterface
+    protected function fetchFile(string $fileName, int $maxBytes, array $options = []): PromiseInterface
     {
         // Create a progress callback to abort the download if it exceeds
         // $maxBytes. This will only work with cURL, so we also verify the
@@ -78,8 +78,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
                 throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
             }
         };
-        $options = [];
-        $options[RequestOptions::PROGRESS] = $progress;
+        $options += [RequestOptions::PROGRESS => $progress];
 
         return $this->client->requestAsync('GET', $fileName, $options)
             ->then(

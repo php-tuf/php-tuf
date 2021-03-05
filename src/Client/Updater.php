@@ -524,12 +524,14 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
+     * @param mixed ...$extra
+     *   Additional arguments to pass to the file fetcher.
      *
      * @return \GuzzleHttp\Promise\PromiseInterface
      *   A promise representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target): PromiseInterface
+    public function download(string $target, ...$extra): PromiseInterface
     {
         if (!$this->isRefreshed) {
             $this->refresh();
@@ -565,7 +567,7 @@ class Updater
             return $stream;
         };
 
-        return $this->repoFileFetcher->fetchTarget($target, $length)
+        return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
             ->then($verify);
     }
 }
