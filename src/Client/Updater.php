@@ -531,7 +531,7 @@ class Updater
      *   A promise representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target,  ...$extra): PromiseInterface
+    public function download(string $target, ...$extra): PromiseInterface
     {
         if (!$this->isRefreshed) {
             $this->refresh();
