@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\RejectedPromise;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
@@ -128,6 +129,10 @@ class UpdaterTest extends TestCase
         $stream->rewind()->shouldNotBeCalled();
         $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         $updater->download('testtarget.txt')->wait();
+
+        // If the target isn't known, we should get a rejected promise.
+        $promise = $updater->download('void.txt');
+        $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $this->testRepo->repoFilesContents['testtarget.txt'] = 'invalid data';
         $this->expectException(InvalidHashException::class);
