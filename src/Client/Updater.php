@@ -3,6 +3,7 @@
 namespace Tuf\Client;
 
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
@@ -541,9 +542,17 @@ class Updater
         // @see https://github.com/php-tuf/php-tuf/issues/116
         $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
-        $hashes = $targetsMetaData->getHashes($target);
+        // If the target isn't known, or it is known but has no trusted hashes,
+        // immediately return a rejected promise.
+        try {
+            $hashes = $targetsMetaData->getHashes($target);
+        } catch (\InvalidArgumentException $e) {
+            return new RejectedPromise($e);
+        }
+
         if (count($hashes) === 0) {
-            throw new \RuntimeException("No trusted hashes are available for '$target'");
+            $e = new \RuntimeException("No trusted hashes are available for '$target'");
+            return new RejectedPromise($e);
         }
         $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
 
