@@ -182,7 +182,7 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testPrefixes(): void
     {
-        $promise = new FulfilledPromise('Helloooo!');
+        $promise = new FulfilledPromise(new Response());
 
         $client = $this->prophesize('\GuzzleHttp\ClientInterface');
         $client->requestAsync('GET', '/metadata/root.json', Argument::type('array'))
