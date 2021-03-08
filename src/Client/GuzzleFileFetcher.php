@@ -24,14 +24,34 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     private $client;
 
     /**
+     * The path prefix for metadata.
+     *
+     * @var string|null
+     */
+    private $metaDataPrefix;
+
+    /**
+     * The path prefix for targets.
+     *
+     * @var string|null
+     */
+    private $targetsPrefix;
+
+    /**
      * GuzzleFileFetcher constructor.
      *
      * @param \GuzzleHttp\ClientInterface $client
      *   The HTTP client.
+     * @param string|null $metaDataPrefix
+     *   (optional) The path prefix for metadata.
+     * @param string|null $targetsPrefix
+     *   (optional) The path prefix for targets.
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(ClientInterface $client, string $metaDataPrefix = null, string $targetsPrefix = null)
     {
         $this->client = $client;
+        $this->metaDataPrefix = $metaDataPrefix;
+        $this->targetsPrefix = $targetsPrefix;
     }
 
     /**
@@ -54,7 +74,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface
     {
-        return $this->fetchFile($fileName, $maxBytes);
+        return $this->fetchFile($this->metaDataPrefix . $fileName, $maxBytes);
     }
 
     /**
@@ -62,7 +82,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
     {
-        return $this->fetchFile($fileName, $maxBytes, $options);
+        return $this->fetchFile($this->targetsPrefix . $fileName, $maxBytes, $options);
     }
 
     /**

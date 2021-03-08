@@ -7,8 +7,10 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
@@ -159,6 +161,28 @@ class GuzzleFileFetcherTest extends TestCase
         $this->assertSame($fetcher->fetchMetaDataIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));
         $this->assertNull($fetcher->fetchMetaDataIfExists('test.json', 256));
+    }
+
+    /**
+     * Tests that prefixes for metadata and targets are respected.
+     *
+     * @return void
+     */
+    public function testPrefixes(): void
+    {
+        $promise = new FulfilledPromise('Helloooo!');
+
+        $client = $this->prophesize('\GuzzleHttp\ClientInterface');
+        $client->requestAsync('GET', '/metadata/root.json', Argument::type('array'))
+            ->willReturn($promise)
+            ->shouldBeCalled();
+        $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
+            ->willReturn($promise)
+            ->shouldBeCalled();
+
+        $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
+        $fetcher->fetchMetaData('root.json', 128);
+        $fetcher->fetchTarget('test.txt', 128);
     }
 
     /**
