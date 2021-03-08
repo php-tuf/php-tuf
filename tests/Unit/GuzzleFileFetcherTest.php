@@ -7,8 +7,10 @@ use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
@@ -56,6 +58,17 @@ class GuzzleFileFetcherTest extends TestCase
         // code is not 200.
         $handlerStack->push(Middleware::httpErrors());
         $this->client = new Client(['handler' => $handlerStack]);
+    }
+
+    /**
+     * Returns an instance of the file fetcher under test.
+     *
+     * @return \Tuf\Client\GuzzleFileFetcher
+     *   An instance of the file fetcher under test.
+     */
+    private function getFetcher(): GuzzleFileFetcher
+    {
+        return new GuzzleFileFetcher($this->client, '/metadata/', '/targets/');
     }
 
     /**
@@ -113,8 +126,9 @@ class GuzzleFileFetcherTest extends TestCase
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $fetcher = new GuzzleFileFetcher($this->client);
-        $fetcher->fetchMetaData('test.json', $maxBytes ?? strlen($this->testContent))->wait();
+        $this->getFetcher()
+            ->fetchMetaData('test.json', $maxBytes ?? strlen($this->testContent))
+            ->wait();
     }
 
     /**
@@ -141,8 +155,8 @@ class GuzzleFileFetcherTest extends TestCase
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $fetcher = new GuzzleFileFetcher($this->client);
-        $fetcher->fetchMetaDataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
+        $this->getFetcher()
+            ->fetchMetaDataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
     /**
@@ -152,13 +166,35 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testSuccessfulFetch(): void
     {
-        $fetcher = new GuzzleFileFetcher($this->client);
+        $fetcher = $this->getFetcher();
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchMetaData('test.json', 256)->wait()->getContents(), $this->testContent);
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchMetaDataIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));
         $this->assertNull($fetcher->fetchMetaDataIfExists('test.json', 256));
+    }
+
+    /**
+     * Tests that prefixes for metadata and targets are respected.
+     *
+     * @return void
+     */
+    public function testPrefixes(): void
+    {
+        $promise = new FulfilledPromise(new Response());
+
+        $client = $this->prophesize('\GuzzleHttp\ClientInterface');
+        $client->requestAsync('GET', '/metadata/root.json', Argument::type('array'))
+            ->willReturn($promise)
+            ->shouldBeCalled();
+        $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
+            ->willReturn($promise)
+            ->shouldBeCalled();
+
+        $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
+        $fetcher->fetchMetaData('root.json', 128);
+        $fetcher->fetchTarget('test.txt', 128);
     }
 
     /**
