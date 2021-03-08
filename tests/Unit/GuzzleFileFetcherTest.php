@@ -61,6 +61,17 @@ class GuzzleFileFetcherTest extends TestCase
     }
 
     /**
+     * Returns an instance of the file fetcher under test.
+     *
+     * @return \Tuf\Client\GuzzleFileFetcher
+     *   An instance of the file fetcher under test.
+     */
+    private function getFetcher(): GuzzleFileFetcher
+    {
+        return new GuzzleFileFetcher($this->client, '/metadata/', '/targets/');
+    }
+
+    /**
      * Data provider for testfetchFileError().
      *
      * @return array[]
@@ -115,8 +126,9 @@ class GuzzleFileFetcherTest extends TestCase
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $fetcher = new GuzzleFileFetcher($this->client);
-        $fetcher->fetchMetaData('test.json', $maxBytes ?? strlen($this->testContent))->wait();
+        $this->getFetcher()
+            ->fetchMetaData('test.json', $maxBytes ?? strlen($this->testContent))
+            ->wait();
     }
 
     /**
@@ -143,8 +155,8 @@ class GuzzleFileFetcherTest extends TestCase
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $fetcher = new GuzzleFileFetcher($this->client);
-        $fetcher->fetchMetaDataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
+        $this->getFetcher()
+            ->fetchMetaDataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
     /**
@@ -154,7 +166,7 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testSuccessfulFetch(): void
     {
-        $fetcher = new GuzzleFileFetcher($this->client);
+        $fetcher = $this->getFetcher();
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchMetaData('test.json', 256)->wait()->getContents(), $this->testContent);
         $this->mockHandler->append(new Response(200, [], $this->testContent));

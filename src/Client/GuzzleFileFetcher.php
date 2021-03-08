@@ -42,12 +42,12 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *
      * @param \GuzzleHttp\ClientInterface $client
      *   The HTTP client.
-     * @param string|null $metaDataPrefix
-     *   (optional) The path prefix for metadata.
-     * @param string|null $targetsPrefix
-     *   (optional) The path prefix for targets.
+     * @param string $metaDataPrefix
+     *   The path prefix for metadata.
+     * @param string $targetsPrefix
+     *   The path prefix for targets.
      */
-    public function __construct(ClientInterface $client, string $metaDataPrefix = null, string $targetsPrefix = null)
+    public function __construct(ClientInterface $client, string $metaDataPrefix, string $targetsPrefix)
     {
         $this->client = $client;
         $this->metaDataPrefix = $metaDataPrefix;
@@ -59,14 +59,18 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *
      * @param string $baseUri
      *   The base URI from which to fetch files.
+     * @param string $metaDataPrefix
+     *   (optional) The path prefix for metadata. Defaults to '/metadata/'.
+     * @param string $targetsPrefix
+     *   (optional) The path prefix for targets. Defaults to '/targets/'.
      *
      * @return static
      *   A new instance of this class.
      */
-    public static function createFromUri(string $baseUri) : self
+    public static function createFromUri(string $baseUri, string $metaDataPrefix = '/metadata/', string $targetsPrefix = '/targets/') : self
     {
         $client = new Client(['base_uri' => $baseUri]);
-        return new static($client);
+        return new static($client, $metaDataPrefix, $targetsPrefix);
     }
 
     /**
