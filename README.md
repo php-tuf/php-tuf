@@ -1,9 +1,9 @@
 # PHP-TUF
 
-PHP-TUF is a PHP implementation of [The Update Framework 
-(TUF)](https://theupdateframework.io/) to provide signing and verification for 
-secure PHP application updates. [Read the TUF 
-specification](https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md) 
+PHP-TUF is a PHP implementation of [The Update Framework
+(TUF)](https://theupdateframework.io/) to provide signing and verification for
+secure PHP application updates. [Read the TUF
+specification](https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md)
 for more information on how TUF is intended to work and the security it
 provides.
 
@@ -25,10 +25,10 @@ for target signatures.
 - The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
   cryptography library; however, installing `ext-sodium` is recommended for
   better performance and security.
-  
+
 ## PHP-TUF development requirements
 
-We recommend using the [default CLI 
+We recommend using the [default CLI
 implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
 (a Python application) to generate keys and signatures as a part of your
 project's release creation process. This will require:
@@ -43,9 +43,9 @@ project's release creation process. This will require:
    - On Fedora 33:
 
          sudo dnf install pipenv python3-devel libffi-devel
-         
+
    - On Ubuntu 20.10:
-   
+
          sudo apt-get install pipenv python3-dev libffi-dev
 
 1. Configure the virtual environment:
@@ -59,11 +59,10 @@ project's release creation process. This will require:
 ## Code style
 
 The code generally follows PSR-2 with some additional formatting rules for
-code documentation and array formatting.
+code documentation and array formatting. Run PHPCS to check for code style
+compliance:
 
-- Run `composer phpcs` to check for code style compliance.
-- Run `composer phpcs-ci` to check only coding standards that will be hard
-  blockers for a merge.
+     composer phpcs
 
 ## Testing
 
