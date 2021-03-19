@@ -88,6 +88,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     {
         // If $fileName isn't a full URL, treat it as a relative path and prefix
         // it with $this->targetsPrefix.
+        // @todo Revisit the need for this bypass once
+        // https://github.com/php-tuf/php-tuf/issues/128 is resolved. This was
+        // originally added because of the workaround described there.
         if (parse_url($fileName, PHP_URL_HOST) === null) {
             $fileName = $this->targetsPrefix . $fileName;
         }
