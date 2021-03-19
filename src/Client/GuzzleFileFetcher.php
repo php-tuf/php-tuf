@@ -86,7 +86,12 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
     {
-        return $this->fetchFile($this->targetsPrefix . $fileName, $maxBytes, $options);
+        // If $fileName isn't a full URL, treat it as a relative path and prefix
+        // it with $this->targetsPrefix.
+        if (parse_url($fileName, PHP_URL_HOST) === null) {
+            $fileName = $this->targetsPrefix . $fileName;
+        }
+        return $this->fetchFile($fileName, $maxBytes, $options);
     }
 
     /**
