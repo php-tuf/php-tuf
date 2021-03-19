@@ -9,6 +9,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
+use PhpParser\Node\Arg;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
@@ -191,10 +192,15 @@ class GuzzleFileFetcherTest extends TestCase
         $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
             ->willReturn($promise)
             ->shouldBeCalled();
+        // If the target is a full URL, prefixing should be bypassed.
+        $client->requestAsync('GET', 'http://example.com/test.txt', Argument::type('array'))
+            ->willReturn($promise)
+            ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
         $fetcher->fetchMetaData('root.json', 128);
         $fetcher->fetchTarget('test.txt', 128);
+        $fetcher->fetchTarget('http://example.com/test.txt', 128);
     }
 
     /**
