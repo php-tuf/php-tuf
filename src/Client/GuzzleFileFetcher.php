@@ -38,13 +38,6 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     private $targetsPrefix;
 
     /**
-     * A map of targets to the URL from which they should be downloaded.
-     *
-     * @var array
-     */
-    private $targetUrls = [];
-
-    /**
      * GuzzleFileFetcher constructor.
      *
      * @param \GuzzleHttp\ClientInterface $client
@@ -81,28 +74,6 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     }
 
     /**
-     * Maps a target to an arbitrary URL.
-     *
-     * @param string $target
-     *   The target to map.
-     * @param string|null $url
-     *   The URL from which the target should be downloaded, or null to unmap
-     *   a previously set URL.
-     *
-     * @return $this
-     *   The called object.
-     */
-    public function setTargetUrl(string $target, ?string $url): self
-    {
-        if (isset($url)) {
-            $this->targetUrls[$target] = $url;
-        } else {
-            unset($this->targetUrls[$target]);
-        }
-        return $this;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface
@@ -113,11 +84,10 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
+    public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): PromiseInterface
     {
-        if (array_key_exists($fileName, $this->targetUrls)) {
-            $fileName = $this->targetUrls[$fileName];
-        }
+        // Allow calling code to download the target from an arbitrary URL.
+        $fileName = $url ?? $fileName;
         // If $fileName isn't a full URL, treat it as a relative path and prefix
         // it with $this->targetsPrefix.
         // @todo Revisit the need for this bypass once

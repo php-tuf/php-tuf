@@ -204,29 +204,20 @@ class GuzzleFileFetcherTest extends TestCase
     }
 
     /**
-     * Tests mapping targets to arbitrary URLs.
-     *
-     * @covers ::setTargetUrl
+     * Tests fetching a target from an arbitrary URL.
      *
      * @return void
      */
-    public function testMapping(): void
+    public function testFetchFromArbitraryUrl(): void
     {
-        $promise = new FulfilledPromise(true);
-
+        $url = 'https://example.com/test.txt';
         $client = $this->prophesize('\GuzzleHttp\ClientInterface');
-        $client->requestAsync('GET', 'https://example.com/test.txt', Argument::type('array'))
-            ->willReturn($promise)
-            ->shouldBeCalled();
-        $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
-            ->willReturn($promise)
+        $client->requestAsync('GET', $url, Argument::type('array'))
+            ->willReturn(new FulfilledPromise(true))
             ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
-        $fetcher->setTargetUrl('test.txt', 'https://example.com/test.txt')
-            ->fetchTarget('test.txt', 128);
-        $fetcher->setTargetUrl('test.txt', null)
-            ->fetchTarget('test.txt', 128);
+        $fetcher->fetchTarget('test.txt', 128, [], $url);
     }
 
     /**
