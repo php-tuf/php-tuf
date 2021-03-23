@@ -183,26 +183,25 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testPrefixes(): void
     {
+        $options = Argument::type('array');
         $promise = new FulfilledPromise(new Response());
 
         $client = $this->prophesize('\GuzzleHttp\ClientInterface');
-        $client->requestAsync('GET', '/metadata/root.json', Argument::type('array'))
+        $client->requestAsync('GET', '/metadata/root.json', $options)
             ->willReturn($promise)
             ->shouldBeCalled();
-        $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
+        $client->requestAsync('GET', '/targets/test.txt', $options)
+            ->willReturn($promise)
+            ->shouldBeCalledOnce();
+        // If an arbitrary URL is passed, the file name should be ignored.
+        $client->requestAsync('GET', 'https://example.net/foo.php', $options)
             ->willReturn($promise)
             ->shouldBeCalled();
-        // If the target is a full URL, or an arbitrary override URL is passed,
-        // prefixing should be bypassed.
-        $client->requestAsync('GET', 'http://example.com/test.txt', Argument::type('array'))
-            ->willReturn($promise)
-            ->shouldBeCalledTimes(2);
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
         $fetcher->fetchMetaData('root.json', 128);
         $fetcher->fetchTarget('test.txt', 128);
-        $fetcher->fetchTarget('http://example.com/test.txt', 128);
-        $fetcher->fetchTarget('test.txt', 128, [], 'http://example.com/test.txt');
+        $fetcher->fetchTarget('test.txt', 128, [], 'https://example.net/foo.php');
     }
 
     /**

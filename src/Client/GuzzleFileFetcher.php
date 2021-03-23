@@ -93,16 +93,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): PromiseInterface
     {
-        // Allow calling code to download the target from an arbitrary URL.
-        $location = $url ?? $fileName;
-        // If $location isn't a full URL, treat it as a relative path and prefix
-        // it with $this->targetsPrefix.
-        // @todo Revisit the need for this bypass once
-        // https://github.com/php-tuf/php-tuf/issues/128 is resolved. This was
-        // originally added because of the workaround described there.
-        if (parse_url($location, PHP_URL_HOST) === null) {
-            $location = $this->targetsPrefix . $location;
-        }
+        $location = $url ?: $this->targetsPrefix . $fileName;
         return $this->fetchFile($location, $maxBytes, $options);
     }
 
