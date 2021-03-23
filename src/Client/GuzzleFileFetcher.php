@@ -37,6 +37,11 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     private $targetsPrefix;
 
+    /**
+     * A map of targets to the URL from which they should be downloaded.
+     *
+     * @var array
+     */
     private $targetUrls = [];
 
     /**
@@ -75,6 +80,17 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         return new static($client, $metaDataPrefix, $targetsPrefix);
     }
 
+    /**
+     * Maps a target to an arbitrary URL.
+     *
+     * @param string $target
+     *   The target to map.
+     * @param string|null $url
+     *   The URL from which the target should be downloaded, or null to unmap
+     *   a previously set URL.
+     *
+     * @return $this
+     */
     public function setTargetUrl(string $target, ?string $url): self
     {
         if (isset($url)) {

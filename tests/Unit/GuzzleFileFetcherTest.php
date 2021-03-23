@@ -203,6 +203,11 @@ class GuzzleFileFetcherTest extends TestCase
         $fetcher->fetchTarget('http://example.com/test.txt', 128);
     }
 
+    /**
+     * Tests mapping targets to arbitrary URLs.
+     *
+     * @covers ::setTargetUrl
+     */
     public function testMapping(): void
     {
         $promise = new FulfilledPromise(true);
