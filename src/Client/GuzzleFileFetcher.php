@@ -37,6 +37,8 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     private $targetsPrefix;
 
+    private $targetUrls = [];
+
     /**
      * GuzzleFileFetcher constructor.
      *
@@ -73,6 +75,11 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         return new static($client, $metaDataPrefix, $targetsPrefix);
     }
 
+    public function setTargetUrl(string $target, string $url): void
+    {
+        $this->targetUrls[$target] = $url;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -86,6 +93,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
     {
+        if (array_key_exists($fileName, $this->targetUrls)) {
+            $fileName = $this->targetUrls[$fileName];
+        }
         // If $fileName isn't a full URL, treat it as a relative path and prefix
         // it with $this->targetsPrefix.
         // @todo Revisit the need for this bypass once

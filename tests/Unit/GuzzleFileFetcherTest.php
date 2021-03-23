@@ -203,6 +203,18 @@ class GuzzleFileFetcherTest extends TestCase
         $fetcher->fetchTarget('http://example.com/test.txt', 128);
     }
 
+    public function testMapping(): void
+    {
+        $client = $this->prophesize('\GuzzleHttp\ClientInterface');
+        $client->requestAsync('GET', 'https://example.com/test.txt', Argument::type('array'))
+            ->willReturn(new FulfilledPromise(true))
+            ->shouldBeCalled();
+
+        $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
+        $fetcher->setTargetUrl('test.txt', 'https://example.com/test.txt');
+        $fetcher->fetchTarget('test.txt', 128);
+    }
+
     /**
      * Tests creating a file fetcher with a repo base URI.
      *
