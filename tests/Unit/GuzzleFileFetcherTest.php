@@ -211,8 +211,8 @@ class GuzzleFileFetcherTest extends TestCase
             ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
-        $fetcher->setTargetUrl('test.txt', 'https://example.com/test.txt');
-        $fetcher->fetchTarget('test.txt', 128);
+        $fetcher->setTargetUrl('test.txt', 'https://example.com/test.txt')
+            ->fetchTarget('test.txt', 128);
     }
 
     /**

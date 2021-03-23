@@ -75,9 +75,10 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         return new static($client, $metaDataPrefix, $targetsPrefix);
     }
 
-    public function setTargetUrl(string $target, string $url): void
+    public function setTargetUrl(string $target, string $url): self
     {
         $this->targetUrls[$target] = $url;
+        return $this;
     }
 
     /**
