@@ -144,7 +144,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *
      * @param string $fileName
      *   The file name being fetched from the remote repo.
-     * @param integer $maxBytes
+     * @param int $maxBytes
      *   The maximum number of bytes to download.
      *
      * @return \Closure
