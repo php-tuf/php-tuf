@@ -192,32 +192,17 @@ class GuzzleFileFetcherTest extends TestCase
         $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
             ->willReturn($promise)
             ->shouldBeCalled();
-        // If the target is a full URL, prefixing should be bypassed.
+        // If the target is a full URL, or an arbitrary override URL is passed,
+        // prefixing should be bypassed.
         $client->requestAsync('GET', 'http://example.com/test.txt', Argument::type('array'))
             ->willReturn($promise)
-            ->shouldBeCalled();
+            ->shouldBeCalledTimes(2);
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
         $fetcher->fetchMetaData('root.json', 128);
         $fetcher->fetchTarget('test.txt', 128);
         $fetcher->fetchTarget('http://example.com/test.txt', 128);
-    }
-
-    /**
-     * Tests fetching a target from an arbitrary URL.
-     *
-     * @return void
-     */
-    public function testFetchFromArbitraryUrl(): void
-    {
-        $url = 'https://example.com/test.txt';
-        $client = $this->prophesize('\GuzzleHttp\ClientInterface');
-        $client->requestAsync('GET', $url, Argument::type('array'))
-            ->willReturn(new FulfilledPromise(true))
-            ->shouldBeCalled();
-
-        $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
-        $fetcher->fetchTarget('test.txt', 128, [], $url);
+        $fetcher->fetchTarget('test.txt', 128, [], 'http://example.com/test.txt');
     }
 
     /**
