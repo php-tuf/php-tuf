@@ -205,13 +205,20 @@ class GuzzleFileFetcherTest extends TestCase
 
     public function testMapping(): void
     {
+        $promise = new FulfilledPromise(true);
+
         $client = $this->prophesize('\GuzzleHttp\ClientInterface');
         $client->requestAsync('GET', 'https://example.com/test.txt', Argument::type('array'))
-            ->willReturn(new FulfilledPromise(true))
+            ->willReturn($promise)
+            ->shouldBeCalled();
+        $client->requestAsync('GET', '/targets/test.txt', Argument::type('array'))
+            ->willReturn($promise)
             ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
         $fetcher->setTargetUrl('test.txt', 'https://example.com/test.txt')
+            ->fetchTarget('test.txt', 128);
+        $fetcher->setTargetUrl('test.txt', null)
             ->fetchTarget('test.txt', 128);
     }
 
