@@ -207,6 +207,8 @@ class GuzzleFileFetcherTest extends TestCase
      * Tests mapping targets to arbitrary URLs.
      *
      * @covers ::setTargetUrl
+     *
+     * @return void
      */
     public function testMapping(): void
     {

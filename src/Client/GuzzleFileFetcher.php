@@ -90,6 +90,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *   a previously set URL.
      *
      * @return $this
+     *   The called object.
      */
     public function setTargetUrl(string $target, ?string $url): self
     {
