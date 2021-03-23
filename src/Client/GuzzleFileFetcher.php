@@ -83,39 +83,50 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @param array $options
+     *   (optional) Additional request options to pass to the Guzzle client.
+     *   See \GuzzleHttp\RequestOptions.
+     * @param string $url
+     *   (optional) An arbitrary URL from which the target should be downloaded.
+     *   If passed, takes precedence over $fileName.
      */
-    public function fetchTarget(string $fileName, int $maxBytes, array $options = []): PromiseInterface
+    public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): PromiseInterface
     {
-        // If $fileName isn't a full URL, treat it as a relative path and prefix
-        // it with $this->targetsPrefix.
-        // @todo Revisit the need for this bypass once
-        // https://github.com/php-tuf/php-tuf/issues/128 is resolved. This was
-        // originally added because of the workaround described there.
-        if (parse_url($fileName, PHP_URL_HOST) === null) {
-            $fileName = $this->targetsPrefix . $fileName;
-        }
-        return $this->fetchFile($fileName, $maxBytes, $options);
+        $location = $url ?: $this->targetsPrefix . $fileName;
+        return $this->fetchFile($location, $maxBytes, $options);
     }
 
     /**
-     * {@inheritdoc}
+     * Fetches a file from a URL.
+     *
+     * @param string $url
+     *   The URL of the file to fetch.
+     * @param integer $maxBytes
+     *   The maximum number of bytes to download.
+     * @param array $options
+     *   (optional) Additional request options to pass to the Guzzle client.
+     *   See \GuzzleHttp\RequestOptions.
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface
+     *   A promise representing the eventual result of the operation.
      */
-    protected function fetchFile(string $fileName, int $maxBytes, array $options = []): PromiseInterface
+    protected function fetchFile(string $url, int $maxBytes, array $options = []): PromiseInterface
     {
         // Create a progress callback to abort the download if it exceeds
         // $maxBytes. This will only work with cURL, so we also verify the
         // download size when request is finished.
-        $progress = function (int $expectedBytes, int $downloadedBytes) use ($fileName, $maxBytes) {
+        $progress = function (int $expectedBytes, int $downloadedBytes) use ($url, $maxBytes) {
             if ($expectedBytes > $maxBytes || $downloadedBytes > $maxBytes) {
-                throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+                throw new DownloadSizeException("$url exceeded $maxBytes bytes");
             }
         };
         $options += [RequestOptions::PROGRESS => $progress];
 
-        return $this->client->requestAsync('GET', $fileName, $options)
+        return $this->client->requestAsync('GET', $url, $options)
             ->then(
-                $this->onFulfilled($fileName, $maxBytes),
-                $this->onRejected($fileName)
+                $this->onFulfilled($url, $maxBytes),
+                $this->onRejected($url)
             );
     }
 
