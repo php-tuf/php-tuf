@@ -11,7 +11,11 @@ use Tuf\Exception\TufException;
 class InvalidHashException extends TufException
 {
     /**
-     * A stream object pointing to the downloaded target.
+     * An untrusted stream object pointing to the downloaded target.
+     *
+     * WARNING: The contents of the stream are NOT trusted by TUF! Any code
+     * interacting with this exception, or the underlying stream, should proceed
+     * with great caution.
      *
      * @var \Psr\Http\Message\StreamInterface
      */
@@ -21,7 +25,9 @@ class InvalidHashException extends TufException
      * InvalidHashException constructor.
      *
      * @param \Psr\Http\Message\StreamInterface $stream
-     *   A stream object pointing to the downloaded target.
+     *   An untrusted stream object pointing to the downloaded target. The
+     *   contents of this stream are NOT trusted by TUF! Any code interacting
+     *   with this exception, or this stream, should proceed with great caution.
      * @param string $message
      *   (optional) The exception message.
      * @param int $code
@@ -36,7 +42,11 @@ class InvalidHashException extends TufException
     }
 
     /**
-     * Returns the stream object pointing to the downloaded target.
+     * Returns the untrusted stream object pointing to the downloaded target.
+     *
+     * WARNING: The contents of the stream are NOT trusted by TUF! Any code
+     * interacting with this exception, or the underlying stream, should proceed
+     * with great caution.
      *
      * @return \Psr\Http\Message\StreamInterface
      *   The stream object.
