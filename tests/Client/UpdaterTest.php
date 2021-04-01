@@ -139,12 +139,11 @@ class UpdaterTest extends TestCase
         $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
+            $this->fail('Expected InvalidHashException to be thrown, but it was not.');
         } catch (InvalidHashException $e) {
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
             $this->assertSame($stream, $e->getStream());
-            return;
         }
-        $this->fail('Expected InvalidHashException to be thrown, but it was not.');
     }
 
     /**
