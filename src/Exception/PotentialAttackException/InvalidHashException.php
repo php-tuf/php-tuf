@@ -7,6 +7,11 @@ use Tuf\Exception\TufException;
 
 /**
  * Indicates an invalid hash was computed for a downloaded target.
+ *
+ * This exception provides access to the underlying stream which caused the
+ * error. The stream's contents are NOT trusted by TUF, so any code which
+ * interacts with this exception, or the stream, should do so with great caution
+ * and treat the stream contents as unsafe.
  */
 class InvalidHashException extends TufException
 {
