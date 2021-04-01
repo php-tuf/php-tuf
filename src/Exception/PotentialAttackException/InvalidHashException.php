@@ -19,7 +19,7 @@ class InvalidHashException extends TufException
      * An untrusted stream object pointing to the downloaded target.
      *
      * WARNING: The contents of the stream failed TUF validation. Any code
-     * interacting with this stream, should treat it as unsafe and proceed with
+     * interacting with this stream should treat it as unsafe and proceed with
      * great caution.
      *
      * @var \Psr\Http\Message\StreamInterface
