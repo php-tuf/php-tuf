@@ -570,7 +570,7 @@ class Updater
                 }
 
                 if ($hash !== $streamHash) {
-                    throw new InvalidHashException("Invalid $algo hash for $target");
+                    throw new InvalidHashException($stream, "Invalid $algo hash for $target");
                 }
             }
             return $stream;
