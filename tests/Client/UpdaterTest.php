@@ -4,6 +4,7 @@ namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\MetadataException;
@@ -134,10 +135,16 @@ class UpdaterTest extends TestCase
         $promise = $updater->download('void.txt');
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
-        $this->testRepo->repoFilesContents['testtarget.txt'] = 'invalid data';
-        $this->expectException(InvalidHashException::class);
-        $this->expectExceptionMessage("Invalid sha256 hash for testtarget.txt");
-        $updater->download('testtarget.txt')->wait();
+        $stream = Utils::streamFor('invalid data');
+        $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream);
+        try {
+            $updater->download('testtarget.txt')->wait();
+        } catch (InvalidHashException $e) {
+            $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
+            $this->assertSame($stream, $e->getStream());
+            return;
+        }
+        $this->fail('Expected InvalidHashException to be thrown, but it was not.');
     }
 
     /**
