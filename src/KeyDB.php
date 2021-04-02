@@ -3,10 +3,9 @@
 
 namespace Tuf;
 
-use Tuf\Exception\FormatException;
+use DeepCopy\DeepCopy;
 use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
-use function DeepCopy\deep_copy;
 
 /**
  * Represent a collection of keys and their organization.
@@ -165,6 +164,6 @@ class KeyDB
         if (empty($this->keys[$keyId])) {
             throw new NotFoundException($keyId, 'key');
         }
-        return deep_copy($this->keys[$keyId]);
+        return (new DeepCopy())->copy($this->keys[$keyId]);
     }
 }

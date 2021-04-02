@@ -2,6 +2,7 @@
 
 namespace Tuf\Metadata;
 
+use DeepCopy\DeepCopy;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
@@ -14,7 +15,6 @@ use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
-use function DeepCopy\deep_copy;
 
 /**
  * Base class for metadata.
@@ -185,7 +185,7 @@ abstract class MetadataBase
      */
     public function getSigned():\ArrayObject
     {
-        return deep_copy($this->metaData['signed']);
+        return (new DeepCopy())->copy($this->metaData['signed']);
     }
 
     /**
@@ -218,7 +218,7 @@ abstract class MetadataBase
      */
     public function getSignatures() : array
     {
-        return deep_copy($this->metaData['signatures']);
+        return (new DeepCopy())->copy($this->metaData['signatures']);
     }
 
     /**
