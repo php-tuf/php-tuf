@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Exception\NotFoundException;
 
 class TargetsMetadata extends MetadataBase
 {
@@ -104,7 +105,7 @@ class TargetsMetadata extends MetadataBase
      * @return \ArrayObject
      *   The target's info.
      *
-     * @throws \InvalidArgumentException
+     * @throws \Tuf\Exception\NotFoundException
      *   Thrown if the target is not mentioned in this metadata.
      */
     protected function getInfo(string $target): \ArrayObject
@@ -113,6 +114,6 @@ class TargetsMetadata extends MetadataBase
         if (isset($signed['targets'][$target])) {
             return $signed['targets'][$target];
         }
-        throw new \InvalidArgumentException("Unknown target: '$target'");
+        throw new NotFoundException($target, 'Target');
     }
 }

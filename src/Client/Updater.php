@@ -7,6 +7,7 @@ use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\FormatException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
@@ -546,7 +547,7 @@ class Updater
         // immediately return a rejected promise.
         try {
             $hashes = $targetsMetaData->getHashes($target);
-        } catch (\InvalidArgumentException $e) {
+        } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
 
