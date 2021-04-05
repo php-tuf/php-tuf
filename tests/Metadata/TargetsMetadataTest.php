@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TargetsMetadata;
 
@@ -48,15 +49,15 @@ class TargetsMetadataTest extends MetaDataBaseTest
         try {
             $metadata->getHashes('void.txt');
             $this->fail('Exception was not thrown for an invalid target.');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertSame("Unknown target: 'void.txt'", $e->getMessage());
+        } catch (NotFoundException $e) {
+            $this->assertSame("Target not found: void.txt", $e->getMessage());
         }
 
         try {
             $metadata->getLength('void.txt');
             $this->fail('Exception was not thrown for an invalid target.');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertSame("Unknown target: 'void.txt'", $e->getMessage());
+        } catch (NotFoundException $e) {
+            $this->assertSame("Target not found: void.txt", $e->getMessage());
         }
     }
 
