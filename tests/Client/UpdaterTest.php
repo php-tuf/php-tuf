@@ -174,7 +174,10 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that TUF will transparently verify downloaded target hashes.
+     * Tests that TUF will transparently verify downloaded target hashes for targets in delegated JSON files.
+     *
+     * @todo Add test coverage delegated roles that then delegate to other roles in
+     *   https://github.com/php-tuf/php-tuf/issues/142
      *
      * @covers ::download
      *
