@@ -704,8 +704,8 @@ class Updater
                 if (!$this->roleDB->roleExists($delegatedRoleName)) {
                     $this->roleDB->addRole($delegatedRoleName, $delegatedRole);
                 }
-                $targetsFileName = "$delegatedRoleName.json";
-                $newTargetsContent = $this->fetchFile($targetsFileName);
+                $version = $snapshotMetadata->getFileMetaInfo("$delegatedRoleName.json")['version'];
+                $newTargetsContent = $this->fetchFile("$version.$delegatedRoleName.json");
                 $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $delegatedRoleName);
                 $snapshotMetadata->verifyNewMetaData($newTargetsData);
                 $this->checkSignatures($newTargetsData);
@@ -713,7 +713,7 @@ class Updater
                 static::checkFreezeAttack($newTargetsData, $this->getCurrentTime());
                 $newTargetsData->setIsTrusted(true);
                 // TUF-SPEC-v1.0.9 Section 5.4.4
-                $this->durableStorage[$targetsFileName] = $newTargetsContent;
+                $this->durableStorage["$delegatedRoleName.json"] = $newTargetsContent;
                 if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData)) {
                     return $matchingTargetMetadata;
                 }
