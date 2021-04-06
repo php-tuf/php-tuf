@@ -7,6 +7,7 @@ use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
+use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
@@ -128,6 +129,7 @@ class UpdaterTest extends TestCase
         $stream->getMetadata('uri')->willReturn($testFilePath);
         $stream->getContents()->shouldNotBeCalled();
         $stream->rewind()->shouldNotBeCalled();
+        $stream->getSize()->willReturn(strlen($testFileContents));
         $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         $updater->download('testtarget.txt')->wait();
 
@@ -143,6 +145,31 @@ class UpdaterTest extends TestCase
         } catch (InvalidHashException $e) {
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
             $this->assertSame($stream, $e->getStream());
+        }
+
+        // If the stream is longer than expected, we should get an exception,
+        // whether or not the stream's length is known.
+        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $stream->getSize()->willReturn(1024);
+        $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        try {
+            $updater->download('testtarget.txt')->wait();
+            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
+        } catch (DownloadSizeException $e) {
+            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
+        }
+
+        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $stream->getSize()->willReturn(null);
+        $stream->rewind()->shouldBeCalledOnce();
+        $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
+        $stream->eof()->willReturn(false);
+        $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        try {
+            $updater->download('testtarget.txt')->wait();
+            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
+        } catch (DownloadSizeException $e) {
+            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
         }
     }
 
@@ -487,6 +514,32 @@ class UpdaterTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * Tests forcing a refresh from the server.
+     */
+    public function testUpdateRefresh()
+    {
+        $fixturesSet = 'TUFTestFixtureSimple';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $updater = $this->getSystemInTest();
+        // This refresh should succeed.
+        $updater->refresh();
+        // Put the server-side repo into an invalid state.
+        $this->testRepo->removeRepoFile('timestamp.json');
+        // The updater is already refreshed, so this will return early, and
+        // there should be no changes to the client-side repo.
+        $updater->refresh();
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        // If we force a refresh, the invalid state of the server-side repo will
+        // raise an exception.
+        $this->expectException(RepoFileNotFound::class);
+        $this->expectExceptionMessage('File timestamp.json not found.');
+        $updater->refresh(true);
     }
 
     /**

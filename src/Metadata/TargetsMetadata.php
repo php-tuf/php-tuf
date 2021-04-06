@@ -32,7 +32,7 @@ class TargetsMetadata extends MetadataBase
      * @param string|null $roleName
      *   The role name if not the same as the type.
      */
-    public static function createFromJson(string $json, ?string $roleName = null)
+    public static function createFromJson(string $json, string $roleName = null)
     {
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;
@@ -82,7 +82,7 @@ class TargetsMetadata extends MetadataBase
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([
-                      new Type('\ArrayObject'),
+                        new Type('\ArrayObject'),
                     ]),
                 ] + static::getHashesConstraints()),
             ]),
@@ -141,10 +141,9 @@ class TargetsMetadata extends MetadataBase
     {
         try {
             $this->getInfo($target);
-            return TRUE;
-        }
-        catch (NotFoundException $exception) {
-            return FALSE;
+            return true;
+        } catch (NotFoundException $exception) {
+            return false;
         }
     }
 

@@ -84,7 +84,6 @@ class GuzzleFileFetcherTest extends TestCase
             [404, RepoFileNotFound::class, 0],
             [403, 'RuntimeException'],
             [500, BadResponseException::class],
-            [200, DownloadSizeException::class, 0, 4],
         ];
     }
 
@@ -99,7 +98,6 @@ class GuzzleFileFetcherTest extends TestCase
         return [
             [403, 'RuntimeException'],
             [500, BadResponseException::class],
-            [200, DownloadSizeException::class, 0, 4],
         ];
     }
 
