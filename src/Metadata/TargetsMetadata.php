@@ -6,6 +6,7 @@ use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Exception\NotFoundException;
@@ -60,6 +61,9 @@ class TargetsMetadata extends MetadataBase
                         new Type(['type' => 'integer']),
                         new GreaterThanOrEqual(1),
                     ],
+                    'custom' => new Optional([
+                        new Type('\ArrayObject'),
+                    ]),
                 ] + static::getHashesConstraints()),
             ]),
 
