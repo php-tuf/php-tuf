@@ -101,6 +101,25 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
+     * Determines if a target is specified in the current metadata.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return bool
+     *   True if the target is specified, or false otherwise.
+     */
+    public function hasTarget(string $target): bool
+    {
+        try {
+            $this->getInfo($target);
+            return true;
+        } catch (NotFoundException $exception) {
+            return false;
+        }
+    }
+
+    /**
      * Gets info about a specific target.
      *
      * @param string $target
