@@ -110,6 +110,4 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
         return $data;
     }
-
-
 }

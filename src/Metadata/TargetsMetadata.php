@@ -62,7 +62,7 @@ class TargetsMetadata extends MetadataBase
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([
-                      new Type('\ArrayObject'),
+                        new Type('\ArrayObject'),
                     ]),
                 ] + static::getHashesConstraints()),
             ]),
