@@ -132,13 +132,24 @@ class Updater
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
      *
+     * @param bool $force
+     *   (optional) If false, return early if this updater has already been
+     *   refreshed. Defaults to false.
+     *
      * @return boolean
      *     TRUE if the data was successfully refreshed.
      *
      * @see https://github.com/php-tuf/php-tuf/issues/21
      */
-    public function refresh() : bool
+    public function refresh(bool $force = false) : bool
     {
+        if ($force) {
+            $this->isRefreshed = false;
+        }
+        if ($this->isRefreshed) {
+            return true;
+        }
+
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
         $rootData->setIsTrusted(true);
 
@@ -535,9 +546,8 @@ class Updater
      */
     public function download(string $target, ...$extra): PromiseInterface
     {
-        if (!$this->isRefreshed) {
-            $this->refresh();
-        }
+        $this->refresh();
+
         // @todo Handle the possibility that the target's metadata might not be
         // in targets.json.
         // @see https://github.com/php-tuf/php-tuf/issues/116
