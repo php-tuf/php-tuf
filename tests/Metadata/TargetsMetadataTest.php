@@ -67,7 +67,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * @covers ::hasTarget
      */
-    public function testHasTarget()
+    public function testHasTarget(): void
     {
         $json = $this->localRepo[$this->validJson];
         $metadata = TargetsMetadata::createFromJson($json);
