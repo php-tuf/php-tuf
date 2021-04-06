@@ -6,6 +6,9 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TargetsMetadata;
 
+/**
+ * @coversDefaultClass \Tuf\Metadata\TargetsMetadata
+ */
 class TargetsMetadataTest extends MetaDataBaseTest
 {
 
@@ -109,5 +112,31 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
         return $data;
+    }
+
+    /**
+     * @covers ::getDelegatedKeys
+     */
+    public function testGetDelegatedKeys(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+        $keys = $metadata->getDelegatedKeys();
+        static::replaceArrayObjects($keys);
+        $this->assertSame($json['signed']['delegations']['keys'], $keys);
+    }
+
+    /**
+     * @covers ::getDelegatedRoles
+     */
+    public function testGetDelegatedRoles(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+        $keys = $metadata->getDelegatedRoles();
+        static::replaceArrayObjects($keys);
+        $this->assertSame($json['signed']['delegations']['roles'], $keys);
     }
 }
