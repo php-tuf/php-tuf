@@ -472,7 +472,8 @@ class UpdaterTest extends TestCase
     /**
      * Tests forcing a refresh from the server.
      */
-    public function testUpdateRefresh() {
+    public function testUpdateRefresh()
+    {
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
