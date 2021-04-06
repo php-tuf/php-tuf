@@ -8,6 +8,7 @@ use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\FormatException;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
@@ -574,6 +575,54 @@ class Updater
     }
 
     /**
+     * Verifies a stream of data against a known TUF target.
+     *
+     * @param string $target
+     *   The path of the target file. Needs to be known to the most recent
+     *   targets metadata downloaded in ::refresh().
+     * @param \Psr\Http\Message\StreamInterface $data
+     *   A stream pointing to the downloaded target data.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   If the target has no trusted hash(es).
+     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
+     *   If the data stream does not match the known hash(es) for the target.
+     */
+    public function verify(string $target, StreamInterface $data): void
+    {
+        $this->refresh();
+
+        // @todo Handle the possibility that the target's metadata might not be
+        // in targets.json.
+        // @see https://github.com/php-tuf/php-tuf/issues/116
+        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+
+        $maxBytes = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+        $this->checkLength($data, $maxBytes, $target);
+
+        $hashes = $targetsMetaData->getHashes($target);
+        if (count($hashes) === 0) {
+            throw new MetadataException("No trusted hashes are available for '$target'");
+        }
+        foreach ($hashes as $algo => $hash) {
+            // If the stream has a URI that refers to a file, use
+            // hash_file() to verify it. Otherwise, read the entire stream
+            // as a string and use hash() to verify it.
+            $uri = $data->getMetadata('uri');
+            if ($uri && file_exists($uri)) {
+                $streamHash = hash_file($algo, $uri);
+            } else {
+                $streamHash = hash($algo, $data->getContents());
+                $data->rewind();
+            }
+
+            if ($hash !== $streamHash) {
+                throw new InvalidHashException($data, "Invalid $algo hash for $target");
+            }
+        }
+    }
+
+    /**
      * Downloads a target file, verifies it, and returns its contents.
      *
      * @param string $target
@@ -595,43 +644,17 @@ class Updater
         // @see https://github.com/php-tuf/php-tuf/issues/116
         $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
-        // If the target isn't known, or it is known but has no trusted hashes,
-        // immediately return a rejected promise.
+        // If the target isn't known, immediately return a rejected promise.
         try {
-            $hashes = $targetsMetaData->getHashes($target);
+            $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
 
-        if (count($hashes) === 0) {
-            $e = new \RuntimeException("No trusted hashes are available for '$target'");
-            return new RejectedPromise($e);
-        }
-        $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
-
-        $verify = function (StreamInterface $stream) use ($target, $hashes, $length) {
-            $this->checkLength($stream, $length, $target);
-
-            foreach ($hashes as $algo => $hash) {
-                // If the stream has a URI that refers to a file, use
-                // hash_file() to verify it. Otherwise, read the entire stream
-                // as a string and use hash() to verify it.
-                $uri = $stream->getMetadata('uri');
-                if ($uri && file_exists($uri)) {
-                    $streamHash = hash_file($algo, $uri);
-                } else {
-                    $streamHash = hash($algo, $stream->getContents());
-                    $stream->rewind();
-                }
-
-                if ($hash !== $streamHash) {
-                    throw new InvalidHashException($stream, "Invalid $algo hash for $target");
-                }
-            }
-            return $stream;
-        };
-
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then($verify);
+            ->then(function (StreamInterface $stream) use ($target) {
+                $this->verify($target, $stream);
+                return $stream;
+            });
     }
 }
