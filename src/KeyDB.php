@@ -131,7 +131,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private function addKey(\ArrayAccess $keyMeta)
+    public function addKey(\ArrayAccess $keyMeta)
     {
         if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.

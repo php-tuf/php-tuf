@@ -147,6 +147,26 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests that TUF will transparently verify downloaded target hashes.
+     *
+     * @covers ::download
+     *
+     * @return void
+     */
+    public function testVerifiedDelegatedDownload(): void
+    {
+        $fixturesSet = 'TUFTestFixtureDelegated';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest();
+
+        $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testunclaimedtarget.txt', false);
+        $testFileContents = file_get_contents($testFilePath);
+        $this->testRepo->repoFilesContents['testunclaimedtarget.txt'] = $testFileContents;
+        $this->assertSame($testFileContents, $updater->download('testunclaimedtarget.txt')->wait()->getContents());
+    }
+
+    /**
      * Tests refreshing the repository.
      *
      * @param string $fixturesSet

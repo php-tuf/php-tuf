@@ -538,10 +538,16 @@ class Updater
         if (!$this->isRefreshed) {
             $this->refresh();
         }
-        // @todo Handle the possibility that the target's metadata might not be
-        // in targets.json.
-        // @see https://github.com/php-tuf/php-tuf/issues/116
-        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            // @todo Handle the possibility that the target's metadata might not be
+            // in targets.json.
+            // @see https://github.com/php-tuf/php-tuf/issues/116
+        $snapShotMetadata = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+        // Set the metadata as trusted because we retrieved from storage.
+        $snapShotMetadata->setIsTrusted(true);
+        $targetsMetaData = $this->getMetadataForTarget($target, $snapShotMetadata);
+        if ($targetsMetaData === null) {
+            return new RejectedPromise(new NotFoundException($target, 'Target'));
+        }
 
         // If the target isn't known, or it is known but has no trusted hashes,
         // immediately return a rejected promise.
@@ -579,5 +585,53 @@ class Updater
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
             ->then($verify);
+    }
+
+    /**
+     * @param string $target
+     *   The path of the target file. Needs to be known to the most recent
+     *   targets metadata downloaded in ::refresh().
+     */
+    private function getMetadataForTarget(string $target, SnapshotMetadata $snapshotMetadata, ?TargetsMetadata $targetsMetadata = null): ?TargetsMetadata
+    {
+        static $searchedRoles = [];
+        if ($targetsMetadata === null) {
+            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            $searchedRoles = [];
+        }
+        if ($targetsMetadata->hasTarget($target)) {
+            return $targetsMetadata;
+        }
+        else {
+            $delegatedKeys = $targetsMetadata->getDelegatedKeys();
+            foreach ($delegatedKeys as $delegatedKey) {
+                $this->keyDB->addKey($delegatedKey);
+            }
+            $delegatedRoles = $targetsMetadata->getDelegatedRoles();
+            foreach ($delegatedRoles as $delegatedRole) {
+                $delegatedRoleName = $delegatedRole['name'];
+                if (in_array($delegatedRole, $searchedRoles)) {
+                    // TUF-SPEC-v1.0.9 Section 5.4.5.1
+                    // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
+                    continue;
+                }
+                if (!$this->roleDB->roleExists($delegatedRoleName)) {
+                    $this->roleDB->addRole($delegatedRoleName, $delegatedRole);
+                }
+                $targetsFileName = "$delegatedRoleName.json";
+                $newTargetsContent = $this->fetchFile($targetsFileName);
+                $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $delegatedRoleName);
+                $snapshotMetadata->verifyNewMetaData($newTargetsData);
+                $this->checkSignatures($newTargetsData);
+                // TUF-SPEC-v1.0.9 Section 5.4.3
+                static::checkFreezeAttack($newTargetsData, $this->getCurrentTime());
+                $newTargetsData->setIsTrusted(true);
+                // TUF-SPEC-v1.0.9 Section 5.4.4
+                $this->durableStorage[$targetsFileName] = $newTargetsContent;
+                $newTargetsData->hasTarget($target);
+                return $newTargetsData;
+            }
+            return null;
+        }
     }
 }
