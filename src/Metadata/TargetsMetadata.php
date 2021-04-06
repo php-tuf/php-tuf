@@ -120,4 +120,26 @@ class TargetsMetadata extends MetadataBase
         }
         throw new NotFoundException($target, 'Target');
     }
+
+    /**
+     * Gets the delegated keys if any.
+     *
+     * @return \ArrayObject
+     *   The delegated keys.
+     */
+    public function getDelegatedKeys(): \ArrayObject
+    {
+        return $this->getSigned()['delegations']['keys'] ?? new \ArrayObject([]);
+    }
+
+    /**
+     * Gets the delegated roles if any.
+     *
+     * @return \ArrayObject[]
+     *   The delegated roles.
+     */
+    public function getDelegatedRoles(): array
+    {
+        return $this->getSigned()['delegations']['roles'] ?? [];
+    }
 }
