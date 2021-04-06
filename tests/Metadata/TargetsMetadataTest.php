@@ -129,6 +129,32 @@ class TargetsMetadataTest extends MetaDataBaseTest
     }
 
     /**
+     * @covers ::getDelegatedKeys
+     */
+    public function testGetDelegatedKeys(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+        $keys = $metadata->getDelegatedKeys();
+        static::replaceArrayObjects($keys);
+        $this->assertSame($json['signed']['delegations']['keys'], $keys);
+    }
+
+    /**
+     * @covers ::getDelegatedRoles
+     */
+    public function testGetDelegatedRoles(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+        $keys = $metadata->getDelegatedRoles();
+        static::replaceArrayObjects($keys);
+        $this->assertSame($json['signed']['delegations']['roles'], $keys);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function testGetRole()
