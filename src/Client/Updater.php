@@ -6,6 +6,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
+use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\FormatException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
@@ -528,7 +529,48 @@ class Updater
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchMetaData($fileName, $maxBytes)->wait();
+        return $this->repoFileFetcher->fetchMetaData($fileName, $maxBytes)
+            ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
+                $this->checkLength($data, $maxBytes, $fileName);
+                return $data;
+            })
+            ->wait();
+    }
+
+    /**
+     * Verifies the length of a data stream.
+     *
+     * @param \Psr\Http\Message\StreamInterface $data
+     *   The data stream to check.
+     * @param int $maxBytes
+     *   The maximum acceptable length of the stream, in bytes.
+     * @param string $fileName
+     *   The filename associated with the stream.
+     *
+     * @throws \Tuf\Exception\DownloadSizeException
+     *   If the stream's length exceeds $maxBytes in size.
+     */
+    private function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
+    {
+        $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
+        $size = $data->getSize();
+
+        if (isset($size)) {
+            if ($size > $maxBytes) {
+                throw $error;
+            }
+        } else {
+            // @todo Handle non-seekable streams.
+            $data->rewind();
+            $data->read($maxBytes);
+
+            // If we reached the end of the stream, we didn't exceed the
+            // maximum number of bytes.
+            if ($data->eof() === false) {
+                throw $error;
+            }
+            $data->rewind();
+        }
     }
 
     /**
@@ -567,7 +609,9 @@ class Updater
         }
         $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
 
-        $verify = function (StreamInterface $stream) use ($target, $hashes) {
+        $verify = function (StreamInterface $stream) use ($target, $hashes, $length) {
+            $this->checkLength($stream, $length, $target);
+
             foreach ($hashes as $algo => $hash) {
                 // If the stream has a URI that refers to a file, use
                 // hash_file() to verify it. Otherwise, read the entire stream
