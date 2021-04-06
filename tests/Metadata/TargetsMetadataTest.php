@@ -23,9 +23,9 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json, string $role = null) : MetadataBase
     {
-        return TargetsMetadata::createFromJson($json);
+        return TargetsMetadata::createFromJson($json, $role);
     }
 
     /**
@@ -109,5 +109,16 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function testGetRole()
+    {
+        parent::testGetRole();
+        // Confirm that if a role name is specified this will be returned.
+        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson], 'other_role');
+        $this->assertSame('other_role', $metadata->getRole());
     }
 }

@@ -110,6 +110,24 @@ abstract class MetaDataBaseTest extends TestCase
     }
 
     /**
+     * @covers ::getType
+     */
+    public function testGetType()
+    {
+        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
+        $this->assertSame($metadata->getType(), $this->expectedType);
+    }
+
+    /**
+     * @covers ::getRole
+     */
+    public function testGetRole()
+    {
+        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
+        $this->assertSame($this->expectedType, $metadata->getRole());
+    }
+
+    /**
      * Tests valid and invalid expires dates.
      *
      * @param string $expires
