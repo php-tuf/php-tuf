@@ -590,10 +590,7 @@ class Updater
     {
         $this->refresh();
 
-        $snapShotMetadata = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-        // Set the metadata as trusted because we retrieved from storage.
-        $snapShotMetadata->setIsTrusted(true);
-        $targetsMetaData = $this->getMetadataForTarget($target, $snapShotMetadata);
+        $targetsMetaData = $this->getMetadataForTarget($target, TargetsMetadata::createFromJson($this->durableStorage['targets.json']));
         if ($targetsMetaData === null) {
             return new RejectedPromise(new NotFoundException($target, 'Target'));
         }
@@ -643,15 +640,33 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
+     * @param \Tuf\Metadata\TargetsMetadata $targetsMetadata
+     *   The targets metadata to search.
+     *
+     * @return \Tuf\Metadata\TargetsMetadata|null
+     *   The target metadata with a match for the target, or null no match is
+     *   found.
      */
-    private function getMetadataForTarget(string $target, SnapshotMetadata $snapshotMetadata, ?TargetsMetadata $targetsMetadata = null): ?TargetsMetadata
+    private function getMetadataForTarget(string $target, TargetsMetadata $targetsMetadata = null): ?TargetsMetadata
     {
         static $searchedRoles = [];
-        if ($targetsMetadata === null) {
-            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+        static $snapshotMetadata = null;
+        if ($targetsMetadata->getRole() === 'targets') {
+            // Currently searching the top level 'targets.json' file.
             $searchedRoles = [];
+            $snapshotMetadata = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+            // Set the metadata as trusted because we retrieved from storage.
+            $snapshotMetadata->setIsTrusted(true);
+        } elseif ($snapshotMetadata === null || $searchedRoles) {
+            // If $snapshotMetadata has not been set this method was called first with a targets metadata file besides
+            // the top level targets.json.
+            throw new \RuntimeException('\Tuf\Client\Updater::getMetadataForTarget should always be call first with top level targets.json file');
         }
         if ($targetsMetadata->hasTarget($target)) {
+            // If a matching targets metadata has been found return it.
+            // Reset the static variables in this function so that each top level call will start from scratch.
+            $snapshotMetadata = null;
+            $searchedRoles = [];
             return $targetsMetadata;
         } else {
             $delegatedKeys = $targetsMetadata->getDelegatedKeys();
@@ -679,8 +694,9 @@ class Updater
                 $newTargetsData->setIsTrusted(true);
                 // TUF-SPEC-v1.0.9 Section 5.4.4
                 $this->durableStorage[$targetsFileName] = $newTargetsContent;
-                $newTargetsData->hasTarget($target);
-                return $newTargetsData;
+                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData)) {
+                    return $matchingTargetMetadata;
+                }
             }
             return null;
         }
