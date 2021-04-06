@@ -693,20 +693,9 @@ class Updater
                 if (!$this->roleDB->roleExists($delegatedRoleName)) {
                     $this->roleDB->addRole($delegatedRoleName, $delegatedRole);
                 }
-                $version = $snapshotMetadata->getFileMetaInfo("$delegatedRoleName.json")['version'];
-                $newTargetsContent = $this->fetchFile("$version.$delegatedRoleName.json");
-                $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent,
-                  $delegatedRoleName);
-                $snapshotMetadata->verifyNewMetaData($newTargetsData);
-                $this->checkSignatures($newTargetsData);
-                // TUF-SPEC-v1.0.9 Section 5.4.3
-                static::checkFreezeAttack($newTargetsData,
-                  $this->getCurrentTime());
-                $newTargetsData->setIsTrusted(true);
-                // TUF-SPEC-v1.0.9 Section 5.4.4
-                $this->durableStorage["$delegatedRoleName.json"] = $newTargetsContent;
-                if ($matchingTargetMetadata = $this->getMetadataForTarget($target,
-                  $newTargetsData)) {
+                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+                $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
+                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData)) {
                     return $matchingTargetMetadata;
                 }
             }
@@ -728,7 +717,7 @@ class Updater
         $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
-        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         // TUF-SPEC-v1.0.9 Section 5.4.1
         $newSnapshotData->verifyNewMetaData($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.2
