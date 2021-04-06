@@ -6,6 +6,9 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TargetsMetadata;
 
+/**
+ * @coversDefaultClass \Tuf\Metadata\TargetsMetadata
+ */
 class TargetsMetadataTest extends MetaDataBaseTest
 {
 
@@ -59,6 +62,20 @@ class TargetsMetadataTest extends MetaDataBaseTest
         } catch (NotFoundException $e) {
             $this->assertSame("Target not found: void.txt", $e->getMessage());
         }
+    }
+
+    /**
+     * @covers ::hasTarget
+     */
+    public function testHasTarget(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+
+        $target = key($json['signed']['targets']);
+        $this->assertTrue($metadata->hasTarget($target));
+        $this->assertFalse($metadata->hasTarget('a-file-that-does-not-exist-as-a-target.txt'));
     }
 
     /**
