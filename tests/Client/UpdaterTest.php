@@ -470,6 +470,31 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests forcing a refresh from the server.
+     */
+    public function testUpdateRefresh() {
+        $fixturesSet = 'TUFTestFixtureSimple';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $updater = $this->getSystemInTest();
+        // This refresh should succeed.
+        $updater->refresh();
+        // Put the server-side repo into an invalid state.
+        $this->testRepo->removeRepoFile('timestamp.json');
+        // The updater is already refreshed, so this will return early, and
+        // there should be no changes to the client-side repo.
+        $updater->refresh();
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        // If we force a refresh, the invalid state of the server-side repo will
+        // raise an exception.
+        $this->expectException(RepoFileNotFound::class);
+        $this->expectExceptionMessage('File timestamp.json not found.');
+        $updater->refresh(true);
+    }
+
+    /**
      * Tests that exceptions are thrown when a repo is in a rollback attack state.
      *
      * @param string $fixturesSet
