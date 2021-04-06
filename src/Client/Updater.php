@@ -653,8 +653,7 @@ class Updater
         }
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
-        }
-        else {
+        } else {
             $delegatedKeys = $targetsMetadata->getDelegatedKeys();
             foreach ($delegatedKeys as $delegatedKey) {
                 $this->keyDB->addKey($delegatedKey);
