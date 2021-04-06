@@ -216,18 +216,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.4
         if ($rootData->supportsConsistentSnapshots()) {
-            $targetsVersion = $newSnapshotData->getFileMetaInfo('targets.json')['version'];
-            $newTargetsContent = $this->fetchFile("$targetsVersion.targets.json");
-            $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
-            // TUF-SPEC-v1.0.9 Section 5.4.1
-            $newSnapshotData->verifyNewMetaData($newTargetsData);
-            // TUF-SPEC-v1.0.9 Section 5.4.2
-            $this->checkSignatures($newTargetsData);
-            // TUF-SPEC-v1.0.9 Section 5.4.3
-            static::checkFreezeAttack($newTargetsData, $nowDate);
-            $newTargetsData->setIsTrusted(true);
-            // TUF-SPEC-v1.0.9 Section 5.4.4
-            $this->durableStorage['targets.json'] = $newTargetsContent;
+            $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -706,19 +695,48 @@ class Updater
                 }
                 $version = $snapshotMetadata->getFileMetaInfo("$delegatedRoleName.json")['version'];
                 $newTargetsContent = $this->fetchFile("$version.$delegatedRoleName.json");
-                $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $delegatedRoleName);
+                $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent,
+                  $delegatedRoleName);
                 $snapshotMetadata->verifyNewMetaData($newTargetsData);
                 $this->checkSignatures($newTargetsData);
                 // TUF-SPEC-v1.0.9 Section 5.4.3
-                static::checkFreezeAttack($newTargetsData, $this->getCurrentTime());
+                static::checkFreezeAttack($newTargetsData,
+                  $this->getCurrentTime());
                 $newTargetsData->setIsTrusted(true);
                 // TUF-SPEC-v1.0.9 Section 5.4.4
                 $this->durableStorage["$delegatedRoleName.json"] = $newTargetsContent;
-                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData)) {
+                if ($matchingTargetMetadata = $this->getMetadataForTarget($target,
+                  $newTargetsData)) {
                     return $matchingTargetMetadata;
                 }
             }
             return null;
         }
+    }
+
+    /**
+     * Fetches and verifies a targets metadata file.
+     *
+     * The metadata file will be stored as '$role.json'.
+     *
+     * @param string $role
+     *   The role name. This may be 'targets' or a delegated role.
+     */
+    private function fetchAndVerifyTargetsMetadata(string $role): void
+    {
+        $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+        $newSnapshotData->setIsTrusted(true);
+        $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
+        // TUF-SPEC-v1.0.9 Section 5.4.1
+        $newSnapshotData->verifyNewMetaData($newTargetsData);
+        // TUF-SPEC-v1.0.9 Section 5.4.2
+        $this->checkSignatures($newTargetsData);
+        // TUF-SPEC-v1.0.9 Section 5.4.3
+        static::checkFreezeAttack($newTargetsData, $this->getCurrentTime());
+        $newTargetsData->setIsTrusted(true);
+        // TUF-SPEC-v1.0.9 Section 5.4.4
+        $this->durableStorage["$role.json"] = $newTargetsContent;
     }
 }
