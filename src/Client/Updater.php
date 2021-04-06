@@ -339,13 +339,13 @@ class Updater
     {
         $signatures = $metaData->getSignatures();
 
-        $roleInfo = $this->roleDB->getRoleInfo($metaData->getType());
+        $roleInfo = $this->roleDB->getRoleInfo($metaData->getRole());
         $needVerified = $roleInfo['threshold'];
         $haveVerified = 0;
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getType())) {
+            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getRole())) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
@@ -357,7 +357,7 @@ class Updater
         }
 
         if ($haveVerified < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getType());
+            throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getRole());
         }
     }
 
