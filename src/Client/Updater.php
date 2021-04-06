@@ -216,7 +216,7 @@ class Updater
 
         // TUF-SPEC-v1.0.9 Section 5.4
         if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetMetadata('targets');
+            $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -648,14 +648,15 @@ class Updater
     }
 
     /**
-     * @param \Tuf\Metadata\SnapshotMetadata $newSnapshotData
-     * @param \DateTimeImmutable $nowDate
+     * Fetches and verifies a targets metadata file.
      *
-     * @throws \Tuf\Exception\MetadataException
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * The metadata file will be stored as '$role.json'.
+     *
+     * @param string $role
+     *   The role name. This may be 'targets' or a delegated role.
      */
-    protected function fetchAndVerifyTargetMetadata(string $role): TargetsMetadata {
+    private function fetchAndVerifyTargetsMetadata(string $role): void
+    {
         $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
         $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
@@ -670,6 +671,5 @@ class Updater
         $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.9 Section 5.4.4
         $this->durableStorage["$role.json"] = $newTargetsContent;
-        return $newTargetsData;
     }
 }
