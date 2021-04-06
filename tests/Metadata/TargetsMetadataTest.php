@@ -96,6 +96,20 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:hashes", 'array'];
         $data[] = ["signed:targets:$target:length", 'int'];
+        $data[] = ["signed:targets:$target:custom", '\ArrayObject'];
         return $data;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerOptionalFields(): array
+    {
+        $data = parent::providerOptionalFields();
+        $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
+        $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
+        return $data;
+    }
+
+
 }

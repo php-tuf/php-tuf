@@ -277,12 +277,15 @@ abstract class MetaDataBaseTest extends TestCase
             case 'boolean':
                 $newValue = 'this is a string';
                 break;
+            case '\ArrayObject':
+                $newValue = 'Not an ArrayObject';
+                break;
         }
 
         $this->nestedChange($keys, $metadata, $newValue);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
-        $this->expectExceptionMessageMatches("/This value should be of type $expectedType/s");
+        $this->expectExceptionMessageMatches("/This value should be of type " . preg_quote($expectedType) . "/s");
         static::callCreateFromJson($json);
     }
 
