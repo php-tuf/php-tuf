@@ -580,6 +580,8 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
+     * @param \Tuf\Metadata\TargetsMetadata $targetsMetaData
+     *   The targets metadata containing the information for $target.
      * @param \Psr\Http\Message\StreamInterface $data
      *   A stream pointing to the downloaded target data.
      *
@@ -588,14 +590,9 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    public function verify(string $target, StreamInterface $data): void
+    public function verify(string $target, TargetsMetadata $targetsMetaData, StreamInterface $data): void
     {
         $this->refresh();
-
-        // @todo Handle the possibility that the target's metadata might not be
-        // in targets.json.
-        // @see https://github.com/php-tuf/php-tuf/issues/116
-        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
         $maxBytes = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
@@ -653,8 +650,8 @@ class Updater
         }
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target) {
-                $this->verify($target, $stream);
+            ->then(function (StreamInterface $stream) use ($target, $targetsMetaData) {
+                $this->verify($target, $targetsMetaData, $stream);
                 return $stream;
             });
     }
