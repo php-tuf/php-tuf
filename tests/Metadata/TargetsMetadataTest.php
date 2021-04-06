@@ -26,9 +26,9 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json, string $role = null) : MetadataBase
     {
-        return TargetsMetadata::createFromJson($json);
+        return TargetsMetadata::createFromJson($json, $role);
     }
 
     /**
@@ -62,6 +62,20 @@ class TargetsMetadataTest extends MetaDataBaseTest
         } catch (NotFoundException $e) {
             $this->assertSame("Target not found: void.txt", $e->getMessage());
         }
+    }
+
+    /**
+     * @covers ::hasTarget
+     */
+    public function testHasTarget(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = json_decode($json, true);
+
+        $target = key($json['signed']['targets']);
+        $this->assertTrue($metadata->hasTarget($target));
+        $this->assertFalse($metadata->hasTarget('a-file-that-does-not-exist-as-a-target.txt'));
     }
 
     /**
@@ -138,5 +152,16 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $keys = $metadata->getDelegatedRoles();
         static::replaceArrayObjects($keys);
         $this->assertSame($json['signed']['delegations']['roles'], $keys);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function testGetRole()
+    {
+        parent::testGetRole();
+        // Confirm that if a role name is specified this will be returned.
+        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson], 'other_role');
+        $this->assertSame('other_role', $metadata->getRole());
     }
 }

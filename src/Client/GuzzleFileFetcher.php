@@ -125,44 +125,11 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
 
         return $this->client->requestAsync('GET', $url, $options)
             ->then(
-                $this->onFulfilled($url, $maxBytes),
+                function (ResponseInterface $response) {
+                    return new ResponseStream($response);
+                },
                 $this->onRejected($url)
             );
-    }
-
-    /**
-     * Creates a callback function for when the promise is fulfilled.
-     *
-     * @param string $fileName
-     *   The file name being fetched from the remote repo.
-     * @param integer $maxBytes
-     *   The maximum number of bytes to download.
-     *
-     * @return \Closure
-     *   The callback function.
-     */
-    private function onFulfilled(string $fileName, int $maxBytes): \Closure
-    {
-        return function (ResponseInterface $response) use ($fileName, $maxBytes) {
-            $body = $response->getBody();
-            $size = $body->getSize();
-
-            if (isset($size)) {
-                if ($size > $maxBytes) {
-                    throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
-                }
-            } else {
-                $body->read($maxBytes);
-
-                // If we reached the end of the stream, we didn't exceed the
-                // maximum number of bytes.
-                if ($body->eof() === false) {
-                    throw new DownloadSizeException("$fileName exceeded $maxBytes bytes");
-                }
-                $body->rewind();
-            }
-            return new ResponseStream($response);
-        };
     }
 
     /**

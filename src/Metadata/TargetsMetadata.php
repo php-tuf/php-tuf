@@ -20,6 +20,26 @@ class TargetsMetadata extends MetadataBase
     protected const TYPE = 'targets';
 
     /**
+     * The role name if different from the type.
+     *
+     * @var string
+     */
+    private $role;
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string|null $roleName
+     *   The role name if not the same as the type.
+     */
+    public static function createFromJson(string $json, string $roleName = null)
+    {
+        $newMetadata = parent::createFromJson($json);
+        $newMetadata->role = $roleName;
+        return $newMetadata;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected static function getSignedCollectionOptions(): array
@@ -86,6 +106,14 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getRole(): string
+    {
+        return $this->role ?? $this->getType();
+    }
+
+    /**
      * Returns the known hashes for a specific target.
      *
      * @param string $target
@@ -98,6 +126,25 @@ class TargetsMetadata extends MetadataBase
     public function getHashes(string $target): \ArrayObject
     {
         return $this->getInfo($target)['hashes'];
+    }
+
+    /**
+     * Determines if a target is specified in the current metadata.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return bool
+     *   True if the target is specified, or false otherwise.
+     */
+    public function hasTarget(string $target): bool
+    {
+        try {
+            $this->getInfo($target);
+            return true;
+        } catch (NotFoundException $exception) {
+            return false;
+        }
     }
 
     /**
