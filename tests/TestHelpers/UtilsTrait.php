@@ -88,4 +88,22 @@ trait UtilsTrait
             $data[$key] = $newValue;
         }
     }
+
+    /**
+     * Replaces all ArrayObject instances with arrays to allow comparison.
+     *
+     * @param $data
+     *    The data to replace.
+     */
+    protected static function replaceArrayObjects(&$data): void
+    {
+        if ($data instanceof \ArrayObject) {
+            $data = $data->getArrayCopy();
+        }
+        if (is_array($data) || $data instanceof \ArrayObject) {
+            foreach ($data as &$value) {
+                static::replaceArrayObjects($value);
+            }
+        }
+    }
 }
