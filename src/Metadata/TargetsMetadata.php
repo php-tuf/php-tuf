@@ -96,6 +96,27 @@ class TargetsMetadata extends MetadataBase
         return $this->getInfo($target)['hashes'];
     }
 
+
+    /**
+     * Determines if a target is specified in the current metadata.
+     *
+     * @param string $target
+     *   The target path.
+     *
+     * @return bool
+     *   True if the target is specified, or false otherwise.
+     */
+    public function hasTarget(string $target): bool
+    {
+        try {
+            $this->getInfo($target);
+            return TRUE;
+        }
+        catch (NotFoundException $exception) {
+            return FALSE;
+        }
+    }
+
     /**
      * Gets info about a specific target.
      *
@@ -115,5 +136,28 @@ class TargetsMetadata extends MetadataBase
             return $signed['targets'][$target];
         }
         throw new NotFoundException($target, 'Target');
+    }
+
+
+    /**
+     * Gets the delegated keys if any.
+     *
+     * @return \ArrayObject
+     *   The delegated keys.
+     */
+    public function getDelegatedKeys(): \ArrayObject
+    {
+        return $this->getSigned()['delegations']['keys'] ?? new \ArrayObject([]);
+    }
+
+    /**
+     * Gets the delegated roles if any.
+     *
+     * @return \ArrayObject[]
+     *   The delegated roles.
+     */
+    public function getDelegatedRoles(): array
+    {
+        return $this->getSigned()['delegations']['roles'] ?? [];
     }
 }
