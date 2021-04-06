@@ -161,6 +161,7 @@ class UpdaterTest extends TestCase
 
         $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(null);
+        $stream->rewind()->shouldBeCalledOnce();
         $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
         $stream->eof()->willReturn(false);
         $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());

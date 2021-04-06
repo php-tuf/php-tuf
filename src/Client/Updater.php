@@ -560,6 +560,8 @@ class Updater
                 throw $error;
             }
         } else {
+            // @todo Handle non-seekable streams.
+            $data->rewind();
             $data->read($maxBytes);
 
             // If we reached the end of the stream, we didn't exceed the
@@ -567,7 +569,6 @@ class Updater
             if ($data->eof() === false) {
                 throw $error;
             }
-            // @todo Handle non-seekable streams with unknown size.
             $data->rewind();
         }
     }
