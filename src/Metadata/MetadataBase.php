@@ -233,6 +233,20 @@ abstract class MetadataBase
     }
 
     /**
+     * Gets the role for the metadata.
+     *
+     * @return string
+     *   The type.
+     */
+    public function getRole() : string
+    {
+        // For most metadata types the 'type' and the 'role' are the same.
+        // Metadata types that need to specify a different role should override
+        // this method.
+        return $this->getType();
+    }
+
+    /**
      * @return boolean
      *    Whether the metadata is trusted.
      */
@@ -263,7 +277,7 @@ abstract class MetadataBase
     protected function ensureIsTrusted(bool $allowUntrustedAccess = false): void
     {
         if (!$allowUntrustedAccess && !$this->isTrusted()) {
-            throw new \RuntimeException("Cannot use untrusted '{$this->getType()}'. metadata.");
+            throw new \RuntimeException("Cannot use untrusted '{$this->getRole()}'. metadata.");
         }
     }
 }
