@@ -320,7 +320,7 @@ class Updater
         $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
             $format = "Remote %s metadata expired on %s";
-            throw new FreezeAttackException(sprintf($format, $metadata->getType(), $metadataExpiration->format('c')));
+            throw new FreezeAttackException(sprintf($format, $metadata->getRole(), $metadataExpiration->format('c')));
         }
     }
 
