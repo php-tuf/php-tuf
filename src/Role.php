@@ -42,7 +42,7 @@ class Role
      * @param array $keyIds
      *   The key IDs.
      */
-    private function __construct(string $name, int $threshold, array $keyIds)
+    protected function __construct(string $name, int $threshold, array $keyIds)
     {
         $this->name = $name;
         $this->threshold = $threshold;

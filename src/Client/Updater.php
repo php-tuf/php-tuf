@@ -666,16 +666,16 @@ class Updater
             }
             $delegatedRoles = $targetsMetadata->getDelegatedRoles();
             foreach ($delegatedRoles as $delegatedRole) {
-                $delegatedRoleName = $delegatedRole['name'];
+                $delegatedRoleName = $delegatedRole->getName();
                 if (in_array($delegatedRoleName, $searchedRoles)) {
                     // TUF-SPEC-v1.0.9 Section 5.4.5.1
                     // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                     continue;
                 }
                 if (!$this->roleDB->roleExists($delegatedRoleName)) {
-                    $this->roleDB->addRole($delegatedRoleName, $delegatedRole);
+                    $this->roleDB->addRole($delegatedRole);
                 }
-                if (!$this->matchesRolePath($target, $delegatedRole)) {
+                if (!$delegatedRole->matchesRolePath($target)) {
                     continue;
                 }
 
@@ -713,29 +713,5 @@ class Updater
         $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.9 Section 5.4.4
         $this->durableStorage["$role.json"] = $newTargetsContent;
-    }
-
-    /**
-     * @param string $target
-     *   The path of the target file.
-     * @param \ArrayObject $roleInfo
-     *   The role information.
-     *
-     * @return bool
-     *   True if there is path match or no path criteria is set for the role, or
-     *   false otherwise.
-     */
-    private function matchesRolePath(string $target, \ArrayObject $roleInfo): bool
-    {
-        if (isset($roleInfo['paths'])) {
-            foreach ($roleInfo['paths'] as $path) {
-                if (fnmatch($path, $target)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        // If no paths are set then any target is a match.
-        return true;
     }
 }
