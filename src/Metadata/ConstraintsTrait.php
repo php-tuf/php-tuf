@@ -126,4 +126,18 @@ trait ConstraintsTrait
             ],
         ]);
     }
+
+    /**
+     * Gets the role constraints.
+     *
+     * @return \Symfony\Component\Validator\Constraints\Collection
+     *   The role constraints collection.
+     */
+    protected static function getRoleConstraints(): Collection
+    {
+        return new Collection(
+          self::getKeyidsConstraints() +
+          static::getThresholdConstraints()
+        );
+    }
 }

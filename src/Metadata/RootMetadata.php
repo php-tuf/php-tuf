@@ -31,16 +31,13 @@ class RootMetadata extends MetadataBase
                 static::getKeyConstraints(),
             ]),
         ]);
-        $roleConstraints = new Collection(
-            self::getKeyidsConstraints() +
-            static::getThresholdConstraints()
-        );
+
         $options['fields']['roles'] = new Collection([
-            'targets' => new Required($roleConstraints),
-            'timestamp' => new Required($roleConstraints),
-            'snapshot' => new Required($roleConstraints),
-            'root' => new Required($roleConstraints),
-            'mirror' => new Optional($roleConstraints),
+            'targets' => new Required(static::getRoleConstraints()),
+            'timestamp' => new Required(static::getRoleConstraints()),
+            'snapshot' => new Required(static::getRoleConstraints()),
+            'root' => new Required(static::getRoleConstraints()),
+            'mirror' => new Optional(static::getRoleConstraints()),
         ]);
         $options['fields']['consistent_snapshot'] = new Required([
             new Type('boolean'),

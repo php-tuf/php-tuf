@@ -2,11 +2,17 @@
 
 namespace Tuf;
 
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Validation;
+use Tuf\Exception\MetadataException;
+use Tuf\Metadata\ConstraintsTrait;
+
 /**
  * Class that represents a TUF role.
  */
 class Role
 {
+    use ConstraintsTrait;
 
     /**
      * The role name.
@@ -61,11 +67,32 @@ class Role
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): self
     {
+        self::validateRoleInfo($roleInfo);
         return new static(
             $name,
             $roleInfo['threshold'],
             $roleInfo['keyids']
         );
+    }
+
+    /**
+     * Validates the role info.
+     *
+     * @param \ArrayObject $roleInfo
+     *
+     * @throws \Tuf\Exception\MetadataException
+     */
+    private static function validateRoleInfo(\ArrayObject $roleInfo)
+    {
+        $validator = Validation::createValidator();
+        $violations = $validator->validate($roleInfo, static::getRoleConstraints());
+        if (count($violations)) {
+            $exceptionMessages = [];
+            foreach ($violations as $violation) {
+                $exceptionMessages[] = (string) $violation;
+            }
+            throw new MetadataException(implode(",  \n", $exceptionMessages));
+        }
     }
 
     /**
