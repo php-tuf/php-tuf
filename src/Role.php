@@ -9,16 +9,22 @@ class Role
 {
 
     /**
+     * The role name.
+     *
      * @var string
      */
     protected $name;
 
     /**
+     * The role threshold.
+     *
      * @var int
      */
     protected $threshold;
 
     /**
+     * The key IDs.
+     *
      * @var array
      */
     protected $keyIds;
@@ -26,6 +32,13 @@ class Role
 
     /**
      * Role constructor.
+     *
+     * @param string $name
+     *   The name of the role.
+     * @param int $threshold
+     *   The role threshold.
+     * @param array $keyIds
+     *   The key IDs.
      */
     private function __construct(string $name, int $threshold, array $keyIds)
     {
@@ -39,8 +52,12 @@ class Role
      *
      * @param \ArrayObject $roleInfo
      *   The role information from TUF metadata.
+     * @param string $name
+     *   The name of the role.
      *
      * @return static
+     *
+     * @see @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): self
     {
