@@ -5,7 +5,11 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Role;
 
+/**
+ * @coversDefaultClass \Tuf\Metadata\RootMetadata
+ */
 class RootMetadataTest extends MetaDataBaseTest
 {
 
@@ -166,5 +170,28 @@ class RootMetadataTest extends MetaDataBaseTest
             ['getKeys'],
             ['getRoles'],
         ]);
+    }
+
+    /**
+     * @covers ::getRoles
+     */
+    public function testGetRoles(): void
+    {
+        $json = $this->localRepo[$this->validJson];
+        $data = json_decode($json, true);
+        /** @var \Tuf\Metadata\RootMetadata $metaData */
+        $metaData = static::callCreateFromJson($json);
+        $metaData->setIsTrusted(true);
+        $expectRoleNames = ['root', 'snapshot', 'targets', 'timestamp'];
+        $roles = $metaData->getRoles();
+        self::assertCount(4, $roles);
+        foreach ($expectRoleNames as $expectRoleName) {
+            self::assertSame($data['signed']['roles'][$expectRoleName]['threshold'], $roles[$expectRoleName]->getThreshold());
+            self::assertSame($expectRoleName, $roles[$expectRoleName]->getName());
+            foreach ($data['signed']['roles'][$expectRoleName]['keyids'] as $keyId) {
+                self::assertTrue($roles[$expectRoleName]->isKeyIdAcceptable($keyId));
+            }
+            self::assertFalse($roles[$expectRoleName]->isKeyIdAcceptable('nobodys_key'));
+        }
     }
 }
