@@ -9,12 +9,38 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Validation;
+use Tuf\Exception\MetadataException;
 
 /**
  * Trait with methods to provide common constraints.
  */
 trait ConstraintsTrait
 {
+
+    /**
+     * Validates the structure of the metadata.
+     *
+     * @param \ArrayObject $data
+     *   The data to validate.
+     *
+     * @return void
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *    Thrown if validation fails.
+     */
+    protected static function validateWithConstraints(\ArrayObject $data, Collection $collection): void
+    {
+        $validator = Validation::createValidator();
+        $violations = $validator->validate($data, $collection);
+        if (count($violations)) {
+            $exceptionMessages = [];
+            foreach ($violations as $violation) {
+                $exceptionMessages[] = (string) $violation;
+            }
+            throw new MetadataException(implode(",  \n", $exceptionMessages));
+        }
+    }
 
     /**
      * Gets the common hash constraints.
@@ -136,8 +162,8 @@ trait ConstraintsTrait
     protected static function getRoleConstraints(): Collection
     {
         return new Collection(
-          self::getKeyidsConstraints() +
-          static::getThresholdConstraints()
+            self::getKeyidsConstraints() +
+            static::getThresholdConstraints()
         );
     }
 }

@@ -90,33 +90,8 @@ abstract class MetadataBase
     public static function createFromJson(string $json)
     {
         $data = JsonNormalizer::decode($json);
-        static::validateMetaData($data);
+        static::validateWithConstraints($data, new Collection(static::getConstraints()));
         return new static($data, $json);
-    }
-
-    /**
-     * Validates the structure of the metadata.
-     *
-     * @param \ArrayObject $metadata
-     *   The data to validate.
-     *
-     * @return void
-     *
-     * @throws \Tuf\Exception\MetadataException
-     *    Thrown if validation fails.
-     */
-    protected static function validateMetaData(\ArrayObject $metadata): void
-    {
-        $validator = Validation::createValidator();
-        $collection = new Collection(static::getConstraints());
-        $violations = $validator->validate($metadata, $collection);
-        if (count($violations)) {
-            $exceptionMessages = [];
-            foreach ($violations as $violation) {
-                $exceptionMessages[] = (string) $violation;
-            }
-            throw new MetadataException(implode(",  \n", $exceptionMessages));
-        }
     }
 
     /**

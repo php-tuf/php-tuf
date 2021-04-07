@@ -67,32 +67,12 @@ class Role
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): self
     {
-        self::validateRoleInfo($roleInfo);
+        self::validateWithConstraints($roleInfo, static::getRoleConstraints());
         return new static(
             $name,
             $roleInfo['threshold'],
             $roleInfo['keyids']
         );
-    }
-
-    /**
-     * Validates the role info.
-     *
-     * @param \ArrayObject $roleInfo
-     *
-     * @throws \Tuf\Exception\MetadataException
-     */
-    private static function validateRoleInfo(\ArrayObject $roleInfo)
-    {
-        $validator = Validation::createValidator();
-        $violations = $validator->validate($roleInfo, static::getRoleConstraints());
-        if (count($violations)) {
-            $exceptionMessages = [];
-            foreach ($violations as $violation) {
-                $exceptionMessages[] = (string) $violation;
-            }
-            throw new MetadataException(implode(",  \n", $exceptionMessages));
-        }
     }
 
     /**
