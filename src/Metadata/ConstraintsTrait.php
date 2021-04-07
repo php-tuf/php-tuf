@@ -23,16 +23,18 @@ trait ConstraintsTrait
      *
      * @param \ArrayObject $data
      *   The data to validate.
+     * @param \Symfony\Component\Validator\Constraints\Collection $constraints
+     *   Th constraints collection for validation.
      *
      * @return void
      *
      * @throws \Tuf\Exception\MetadataException
      *    Thrown if validation fails.
      */
-    protected static function validateWithConstraints(\ArrayObject $data, Collection $collection): void
+    protected static function validate(\ArrayObject $data, Collection $constraints): void
     {
         $validator = Validation::createValidator();
-        $violations = $validator->validate($data, $collection);
+        $violations = $validator->validate($data, $constraints);
         if (count($violations)) {
             $exceptionMessages = [];
             foreach ($violations as $violation) {
@@ -162,7 +164,7 @@ trait ConstraintsTrait
     protected static function getRoleConstraints(): Collection
     {
         return new Collection(
-            self::getKeyidsConstraints() +
+            static::getKeyidsConstraints() +
             static::getThresholdConstraints()
         );
     }

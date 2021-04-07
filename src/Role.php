@@ -2,9 +2,6 @@
 
 namespace Tuf;
 
-use Symfony\Component\Validator\Constraints\Collection;
-use Symfony\Component\Validator\Validation;
-use Tuf\Exception\MetadataException;
 use Tuf\Metadata\ConstraintsTrait;
 
 /**
@@ -35,7 +32,6 @@ class Role
      */
     protected $keyIds;
 
-
     /**
      * Role constructor.
      *
@@ -63,11 +59,11 @@ class Role
      *
      * @return static
      *
-     * @see @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): self
     {
-        self::validateWithConstraints($roleInfo, static::getRoleConstraints());
+        self::validate($roleInfo, static::getRoleConstraints());
         return new static(
             $name,
             $roleInfo['threshold'],

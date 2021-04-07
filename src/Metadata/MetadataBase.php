@@ -90,7 +90,7 @@ abstract class MetadataBase
     public static function createFromJson(string $json)
     {
         $data = JsonNormalizer::decode($json);
-        static::validateWithConstraints($data, new Collection(static::getConstraints()));
+        static::validate($data, new Collection(static::getConstraints()));
         return new static($data, $json);
     }
 
