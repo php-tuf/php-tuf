@@ -100,8 +100,8 @@ class Role
      *     TRUE if the key is authorized for the given role, or FALSE
      *     otherwise.
      */
-    public function isKeyIdAcceptable($keyId): bool
+    public function isKeyIdAcceptable(string $keyId): bool
     {
-        return in_array($keyId, $this->keyIds);
+        return in_array($keyId, $this->keyIds, true);
     }
 }
