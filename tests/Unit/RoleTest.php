@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\Exception\MetadataException;
 use Tuf\Role;
 
 /**
@@ -30,6 +31,39 @@ class RoleTest extends TestCase
         );
         self::assertSame(1000, $role->getThreshold());
         self::assertSame('my_role', $role->getName());
+    }
+
+    /**
+     * @covers ::createFromMetadata
+     *
+     * @param $data
+     *   Invalid data.
+     *
+     * @dataProvider providerInvalidMetadata
+     */
+    public function testInvalidMetadata($data): void
+    {
+        $this->expectException(MetadataException::class);
+        Role::createFromMetadata(
+            new \ArrayObject($data),
+            'my_role'
+        );
+    }
+
+    /**
+     * Data provider for testInvalidMetadata().
+     *
+     * @return array[]
+     */
+    public function providerInvalidMetadata(): array
+    {
+        return [
+            'nothing' => [[]],
+            'no keyids' => [['threshold' => 1]],
+            'no threshold' => [['keyids' => ['good_key']]],
+            'invalid threshold' => [['threshold' => '1', 'keyids' => ['good_key']]],
+            'invalid keyids' => [['threshold' => 1, 'keyids' => 'good_key_1,good_key_2']],
+        ];
     }
 
     /**
