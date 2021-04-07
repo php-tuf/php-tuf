@@ -341,13 +341,13 @@ class Updater
     {
         $signatures = $metaData->getSignatures();
 
-        $roleInfo = $this->roleDB->getRoleInfo($metaData->getRole());
-        $needVerified = $roleInfo['threshold'];
+        $role = $this->roleDB->getRole($metaData->getRole());
+        $needVerified = $role->getThreshold();
         $haveVerified = 0;
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
         foreach ($signatures as $signature) {
-            if ($this->isKeyIdAcceptableForRole($signature['keyid'], $metaData->getRole())) {
+            if ($role->isKeyIdAcceptable($signature['keyid'])) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
             }
             // @todo Determine if we should check all signatures and warn for
@@ -361,24 +361,6 @@ class Updater
         if ($haveVerified < $needVerified) {
             throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getRole());
         }
-    }
-
-    /**
-     * Checks whether the given key is authorized for the role.
-     *
-     * @param string $keyId
-     *     The key ID to check.
-     * @param string $roleName
-     *     The role name to check (e.g. 'root', 'snapshot', etc.).
-     *
-     * @return boolean
-     *     TRUE if the key is authorized for the given role, or FALSE
-     *     otherwise.
-     */
-    protected function isKeyIdAcceptableForRole(string $keyId, string $roleName) : bool
-    {
-        $roleKeyIds = $this->roleDB->getRoleKeyIds($roleName);
-        return in_array($keyId, $roleKeyIds);
     }
 
     /**
