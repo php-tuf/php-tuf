@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Role;
 
 class RootMetadata extends MetadataBase
 {
@@ -53,17 +54,17 @@ class RootMetadata extends MetadataBase
      * @param boolean $allowUntrustedAccess
      *   Whether this method should access even if the metadata is not trusted.
      *
-     * @return \ArrayObject
-     *   An ArrayObject where the keys are role names and the values arrays with the
-     *   following keys:
-     *   - keyids (string[]): The key ids.
-     *   - threshold (int): Determines how many how may keys are need from
-     *     this role for signing.
+     * @return \Tuf\Role[]
+     *   The roles.
      */
-    public function getRoles(bool $allowUntrustedAccess = false):\ArrayObject
+    public function getRoles(bool $allowUntrustedAccess = false): array
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
-        return $this->getSigned()['roles'];
+        $roles = [];
+        foreach ($this->getSigned()['roles'] as $roleName => $roleInfo) {
+            $roles[$roleName] = Role::createFromMetadata($roleInfo, $roleName);
+        }
+        return $roles;
     }
 
     /**

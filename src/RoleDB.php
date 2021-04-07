@@ -39,32 +39,7 @@ class RoleDB
     {
         $db = new self();
         foreach ($rootMetadata->getRoles($allowUntrustedAccess) as $roleName => $roleInfo) {
-            if ($roleName == 'root') {
-                $roleInfo['version'] = $rootMetadata->getVersion();
-                $roleInfo['expires'] = $rootMetadata->getExpires();
-            }
-            /*
-            Stuff Python TUF initializes that we aren't currently using.
-            $roleInfo['signatures'] = array();
-            $roleInfo['signing_keyids'] = array();
-            $roleInfo['partial_loaded'] = false;
-            */
-
-            // @todo Verify that testing for start of string rather than
-            //     equality has a purpose.
-            if (strncmp($roleName, 'targets', strlen('targets')) === 0) {
-                $roleInfo['paths'] = [];
-                // @todo In the spec, delegations are not part of the role
-                //     structure; delegations reference roles rather than vice
-                //     versa and are in a separate part of the document. Review
-                //     this once https://github.com/php-tuf/php-tuf/issues/52
-                //     is resolved.
-                // @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
-                $roleInfo['delegations'] = ['keys' => [], 'roles' => []];
-            }
-            $roleInfo['paths'] = [];
-
-            $db->addRole($roleName, $roleInfo);
+            $db->addRole($roleInfo);
         }
 
         return $db;
@@ -83,32 +58,20 @@ class RoleDB
      *
      * @param string $roleName
      *     The role name.
-     * @param \ArrayAccess $roleInfo
-     *     An ArrayAccess object of role metadata, including:
-     *     - keyids: An ArrayAccess object of authorized public key signatures for the role.
-     *     - threshold: An integer for the threshold of signatures required for
-     *       this role.
-     *     - paths: An ArrayAccess object of the path patterns that this role may sign.
+     * @param \Tuf\Role $role
+     *     The role to add.
      *
      * @return void
      *
-     * @throws \Exception
-     *     Thrown if the role already exists.
-     *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
-     *
-     * @todo Provide more complete documentation of the structure once
-     *     delgation is implemented and fixtures are regenerated. Issues:
-     *     - https://github.com/php-tuf/php-tuf/issues/50
-     *     - https://github.com/php-tuf/php-tuf/issues/52
+     * @throws \Exception Thrown if the role already exists.
      */
-    public function addRole(string $roleName, \ArrayAccess $roleInfo)
+    public function addRole(Role $role)
     {
-        if ($this->roleExists($roleName)) {
-            throw new \Exception('Role already exists: ' . $roleName);
+        if ($this->roleExists($role->getName())) {
+            throw new \Exception('Role already exists: ' . $role->getName());
         }
 
-        $this->roles[$roleName] = $roleInfo;
+        $this->roles[$role->getName()] = $role;
     }
 
     /**
@@ -131,60 +94,20 @@ class RoleDB
      * @param string $roleName
      *    The role name.
      *
-     * @return array
-     *    The role information. See self::addRole() and the TUF specification
-     *    for the array the structure.
+     * @return \Tuf\Role
+     *    The role.
      *
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the role does not exist.
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public function getRoleInfo(string $roleName)
+    public function getRole(string $roleName)
     {
         if (! $this->roleExists($roleName)) {
             throw new NotFoundException($roleName, 'role');
         }
 
         return $this->roles[$roleName];
-    }
-
-    /**
-     * Gets a list of authorized key IDs for a role.
-     *
-     * @param string $roleName
-     *    The role name.
-     *
-     * @return string[]
-     *    A list of key IDs that are authorized to sign for the role.
-     *
-     * @throws \Exception
-     *    Thrown if the role does not exist.
-     */
-    public function getRoleKeyIds(string $roleName)
-    {
-        $roleInfo = $this->getRoleInfo($roleName);
-        return $roleInfo['keyids'];
-    }
-
-    /**
-     * Gets the threshold required for a given role.
-     *
-     * @param string $roleName
-     *    The role name.
-     *
-     * @return integer
-     *     The threshold number of signatures required for the role.
-     *
-     * @throws \Exception
-     *     Thrown if the role does not exist.
-     */
-    public function getRoleThreshold(string $roleName)
-    {
-        if (! $this->roleExists($roleName)) {
-            throw new \Exception("Role does not exist: $roleName");
-        }
-
-        return $this->roles[$roleName]['threshold'];
     }
 }
