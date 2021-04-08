@@ -13,13 +13,13 @@ class RoleTest extends TestCase
 {
 
     /**
-     * @covers ::createFromMetadata
+     * @covers ::createFromMetadataAndName
      * @covers ::getName
      * @covers ::getThreshold
      */
     public function testCreateFromMetadata(): void
     {
-        $role = Role::createFromMetadata(
+        $role = Role::createFromMetadataAndName(
             new \ArrayObject([
                 'threshold' => 1000,
                 'keyids' => [
@@ -34,7 +34,7 @@ class RoleTest extends TestCase
     }
 
     /**
-     * @covers ::createFromMetadata
+     * @covers ::createFromMetadataAndName
      *
      * @param $data
      *   Invalid data.
@@ -44,7 +44,7 @@ class RoleTest extends TestCase
     public function testInvalidMetadata($data): void
     {
         $this->expectException(MetadataException::class);
-        Role::createFromMetadata(
+        Role::createFromMetadataAndName(
             new \ArrayObject($data),
             'my_role'
         );
@@ -77,7 +77,7 @@ class RoleTest extends TestCase
      */
     public function testIsKeyIdAcceptable(string $keyId, bool $expected): void
     {
-        $role = Role::createFromMetadata(
+        $role = Role::createFromMetadataAndName(
             new \ArrayObject([
                 'threshold' => 1000,
                 'keyids' => [

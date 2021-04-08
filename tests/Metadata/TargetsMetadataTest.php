@@ -149,9 +149,23 @@ class TargetsMetadataTest extends MetaDataBaseTest
         $json = $this->localRepo[$this->validJson];
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
-        $keys = $metadata->getDelegatedRoles();
-        static::replaceArrayObjects($keys);
-        $this->assertSame($json['signed']['delegations']['roles'], $keys);
+        $delegatedRoles = $metadata->getDelegatedRoles();
+        $expectedRoles = $json['signed']['delegations']['roles'];
+        self::assertCount(1, $expectedRoles);
+        self::assertCount(1, $delegatedRoles);
+        foreach ($expectedRoles as $expectedRole) {
+            $delegatedRole = $delegatedRoles[$expectedRole['name']];
+            self::assertSame($expectedRole['threshold'], $delegatedRole->getThreshold());
+            self::assertSame($expectedRole['name'], $delegatedRole->getName());
+            foreach ($expectedRole['keyids'] as $keyId) {
+                self::assertTrue($delegatedRole->isKeyIdAcceptable($keyId));
+            }
+            self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
+            foreach ($expectedRole['paths'] as $path) {
+                self::assertTrue($delegatedRole->matchesRolePath($path));
+            }
+            self::assertFalse($delegatedRole->matchesRolePath('/a/non/matching/path'));
+        }
     }
 
     /**
