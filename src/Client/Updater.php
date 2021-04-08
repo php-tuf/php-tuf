@@ -607,7 +607,11 @@ class Updater
     {
         $this->refresh();
 
-        $targetsMetaData = $this->getMetadataForTarget($target, TargetsMetadata::createFromJson($this->durableStorage['targets.json']));
+        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+        if (!$targetsMetaData->hasTarget($target)) {
+            $targetsMetaData = $this->searchDelegatedTargetRoles($target, $targetsMetaData);
+        }
+
         if ($targetsMetaData === null) {
             return new RejectedPromise(new NotFoundException($target, 'Target'));
         }
@@ -638,55 +642,39 @@ class Updater
      *   The target metadata with a match for the target, or null no match is
      *   found.
      */
-    private function getMetadataForTarget(string $target, TargetsMetadata $targetsMetadata = null): ?TargetsMetadata
+    private function searchDelegatedTargetRoles(string $target, TargetsMetadata $targetsMetadata, array $searchedRoles = []): ?TargetsMetadata
     {
-        static $searchedRoles = [];
-        static $snapshotMetadata = null;
-        if ($targetsMetadata->getRole() === 'targets') {
-            // Currently searching the top level 'targets.json' file.
-            $searchedRoles = [];
-            $snapshotMetadata = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-            // Set the metadata as trusted because we retrieved from storage.
-            $snapshotMetadata->setIsTrusted(true);
-        } elseif ($snapshotMetadata === null || $searchedRoles) {
-            // If $snapshotMetadata has not been set this method was called first with a targets metadata file besides
-            // the top level targets.json.
-            throw new \RuntimeException('\Tuf\Client\Updater::getMetadataForTarget should always be call first with top level targets.json file');
+        $delegatedKeys = $targetsMetadata->getDelegatedKeys();
+        foreach ($delegatedKeys as $delegatedKey) {
+            $this->keyDB->addKey($delegatedKey);
         }
-        if ($targetsMetadata->hasTarget($target)) {
-            // If a matching targets metadata has been found return it.
-            // Reset the static variables in this function so that each top level call will start from scratch.
-            $snapshotMetadata = null;
-            $searchedRoles = [];
-            return $targetsMetadata;
-        } else {
-            $delegatedKeys = $targetsMetadata->getDelegatedKeys();
-            foreach ($delegatedKeys as $delegatedKey) {
-                $this->keyDB->addKey($delegatedKey);
+        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+            $delegatedRoleName = $delegatedRole->getName();
+            if (in_array($delegatedRoleName, $searchedRoles)) {
+                // TUF-SPEC-v1.0.9 Section 5.4.5.1
+                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
+                continue;
             }
-            $delegatedRoles = $targetsMetadata->getDelegatedRoles();
-            foreach ($delegatedRoles as $delegatedRole) {
-                $delegatedRoleName = $delegatedRole->getName();
-                if (in_array($delegatedRoleName, $searchedRoles)) {
-                    // TUF-SPEC-v1.0.9 Section 5.4.5.1
-                    // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
-                    continue;
-                }
-                if (!$this->roleDB->roleExists($delegatedRoleName)) {
-                    $this->roleDB->addRole($delegatedRole);
-                }
-                if (!$delegatedRole->matchesRolePath($target)) {
-                    continue;
-                }
+            if (!$this->roleDB->roleExists($delegatedRoleName)) {
+                $this->roleDB->addRole($delegatedRole);
+            }
+            if (!$delegatedRole->matchesRolePath($target)) {
+                continue;
+            }
 
-                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
-                $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
-                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData)) {
-                    return $matchingTargetMetadata;
-                }
+            $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+            $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
+            if ($newTargetsData->hasTarget($target)) {
+                return $newTargetsData;
             }
-            return null;
+            if (!$delegatedRole->isTerminating()) {
+                continue;
+            }
+            if ($matchingTargetMetadata = $this->searchDelegatedTargetRoles($target, $newTargetsData, $searchedRoles)) {
+                return $matchingTargetMetadata;
+            }
         }
+        return null;
     }
 
     /**
