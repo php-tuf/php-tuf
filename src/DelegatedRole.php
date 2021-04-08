@@ -20,11 +20,8 @@ class DelegatedRole extends Role
         $this->paths = $paths;
     }
 
-    public static function createFromMetadata(\ArrayObject $roleInfo, string $name = null): Role
+    public static function createFromMetadata(\ArrayObject $roleInfo): DelegatedRole
     {
-        if ($name) {
-            throw new \InvalidArgumentException('$name cannont be specified for delegated roles. It must be part of the $roleInfo object.');
-        }
         return new static(
             $roleInfo['name'],
             $roleInfo['threshold'],
