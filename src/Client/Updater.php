@@ -607,11 +607,7 @@ class Updater
     {
         $this->refresh();
 
-        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
-        if (!$targetsMetaData->hasTarget($target)) {
-            $targetsMetaData = $this->searchDelegatedTargetRoles($target, $targetsMetaData);
-        }
-
+        $targetsMetaData = $this->getMetadataForTarget($target);
         if ($targetsMetaData === null) {
             return new RejectedPromise(new NotFoundException($target, 'Target'));
         }
@@ -635,15 +631,26 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param \Tuf\Metadata\TargetsMetadata $targetsMetadata
-     *   The targets metadata to search.
+     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
+     *   The targets metadata to search or null. If null then the search will
+     *   start at the top level 'targets.json' file.
+     * @param string[] $searchedRoles
+     *   The roles that have already been searched.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata with a match for the target, or null no match is
      *   found.
+     * @throws \Tuf\Exception\MetadataException
      */
-    private function searchDelegatedTargetRoles(string $target, TargetsMetadata $targetsMetadata, array $searchedRoles = []): ?TargetsMetadata
+    private function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
+        if ($targetsMetadata === null) {
+            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            if ($targetsMetadata->hasTarget($target)) {
+                return $targetsMetadata;
+            }
+        }
+
         $delegatedKeys = $targetsMetadata->getDelegatedKeys();
         foreach ($delegatedKeys as $delegatedKey) {
             $this->keyDB->addKey($delegatedKey);
@@ -670,7 +677,7 @@ class Updater
             if (!$delegatedRole->isTerminating()) {
                 continue;
             }
-            if ($matchingTargetMetadata = $this->searchDelegatedTargetRoles($target, $newTargetsData, $searchedRoles)) {
+            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                 return $matchingTargetMetadata;
             }
         }
