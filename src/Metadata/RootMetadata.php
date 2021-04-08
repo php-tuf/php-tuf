@@ -59,7 +59,7 @@ class RootMetadata extends MetadataBase
         $this->ensureIsTrusted($allowUntrustedAccess);
         $roles = [];
         foreach ($this->getSigned()['roles'] as $roleName => $roleInfo) {
-            $roles[$roleName] = Role::createFromMetadataAndName($roleInfo, $roleName);
+            $roles[$roleName] = Role::createFromMetadata($roleInfo, $roleName);
         }
         return $roles;
     }

@@ -61,7 +61,7 @@ class Role
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromMetadataAndName(\ArrayObject $roleInfo, string $name): self
+    public static function createFromMetadata(\ArrayObject $roleInfo, string $name): Role
     {
         self::validate($roleInfo, static::getRoleConstraints());
         return new static(

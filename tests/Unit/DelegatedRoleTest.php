@@ -4,33 +4,75 @@ namespace Tuf\Tests\Unit;
 
 use Tuf\DelegatedRole;
 use PHPUnit\Framework\TestCase;
+use Tuf\Role;
 
 /**
  * @coversDefaultClass \Tuf\DelegatedRole
  */
-class DelegatedRoleTest extends TestCase
+class DelegatedRoleTest extends RoleTest
 {
 
     /**
+     * The test role.
+     *
+     * @var \Tuf\DelegatedRole
+     */
+    protected $role;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function testCreateFromMetadata(): void
+    {
+        parent::testCreateFromMetadata();
+        self::assertFalse($this->role->isTerminating());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerInvalidMetadata(): array
+    {
+        return [
+          'nothing' => [[]],
+          'no paths' => [[
+            'name' => 'a role',
+            'threshold' => 1,
+            'keyids' => ['good_key'],
+            'terminating' => false]],
+        ];
+    }
+
+    /**
+     * @covers ::matchesRolePath
+     *
      * @param string $target
+     *   The test target path.
      * @param array $paths
+     *   The paths to set.
      * @param bool $expected
+     *   The expected result.
      *
      * @dataProvider providerMatchesRolePath
      */
     public function testMatchesRolePath(string $target, array $paths, bool $expected): void
     {
-        $data = new \ArrayObject([
+        $data = [
             'name' => 'some_role',
             'threshold' => 1,
             'keyids' => ['key1', 'key2'],
+            'terminating' => false,
             'paths' => $paths,
-        ]);
-        $role = DelegatedRole::createFromMetadata($data);
-        self::assertSame($expected, $role->matchesRolePath($target));
+        ];
+        self::assertSame($expected, $this->createTestRole($data)->matchesRolePath($target));
     }
 
-    public function providerMatchesRolePath()
+    /**
+     * Data provider for testMatchesRolePath().
+     *
+     * @return array[]
+     */
+    public function providerMatchesRolePath(): array
     {
         return [
             'match' => [
@@ -50,5 +92,26 @@ class DelegatedRoleTest extends TestCase
                 false,
             ],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function createTestRole(?array $data = null): Role
+    {
+        $data = $data ?? [
+          'name' => 'my_role',
+            'threshold' => 1000,
+            'keyids' => [
+              'good_key_1',
+              'good_key_2',
+            ],
+            'terminating' => false,
+            'paths' => [
+              'path1',
+              'path2',
+            ],
+          ];
+        return DelegatedRole::createFromMetadata(new \ArrayObject($data));
     }
 }
