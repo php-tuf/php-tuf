@@ -5,7 +5,6 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
-use Tuf\Role;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\RootMetadata
