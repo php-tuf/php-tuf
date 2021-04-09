@@ -7,8 +7,6 @@ use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
 
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
-
 /**
  * @covers \Tuf\Client\Updater
  */
