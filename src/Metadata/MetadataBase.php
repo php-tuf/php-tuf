@@ -12,8 +12,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Symfony\Component\Validator\Validation;
-use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 
 /**

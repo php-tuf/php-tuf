@@ -9,11 +9,9 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
-use PhpParser\Node\Arg;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
 /**
