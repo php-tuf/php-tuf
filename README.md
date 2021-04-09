@@ -1,8 +1,8 @@
 # PHP-TUF
 
 ## IMPORTANT
-PHP-TUF is in a pre-release state is not considered a complete or secure version of the TUF framework.
-It should only currently be used for testing, development and feedback.
+PHP-TUF is in a pre-release state and is not considered a complete or secure version of the TUF framework.
+It should currently only be used for testing, development and feedback.
 
 *Do not use in production for secure target downloads!!*
 
