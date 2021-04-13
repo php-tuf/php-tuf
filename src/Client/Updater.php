@@ -193,7 +193,7 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $newTimestampData->verifyNewMetaData($newSnapshotData);
+            $newTimestampData->verifyNewMetadata($newSnapshotData);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -415,7 +415,7 @@ class Updater
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchMetaDataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+        while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
@@ -501,7 +501,7 @@ class Updater
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchMetaData($fileName, $maxBytes)
+        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
             ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
                 $this->checkLength($data, $maxBytes, $fileName);
                 return $data;
@@ -566,12 +566,12 @@ class Updater
         // @todo Handle the possibility that the target's metadata might not be
         // in targets.json.
         // @see https://github.com/php-tuf/php-tuf/issues/116
-        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+        $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
-        $maxBytes = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+        $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
 
-        $hashes = $targetsMetaData->getHashes($target);
+        $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
             throw new MetadataException("No trusted hashes are available for '$target'");
         }
@@ -613,11 +613,11 @@ class Updater
         // @todo Handle the possibility that the target's metadata might not be
         // in targets.json.
         // @see https://github.com/php-tuf/php-tuf/issues/116
-        $targetsMetaData = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+        $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
         // If the target isn't known, immediately return a rejected promise.
         try {
-            $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
@@ -645,7 +645,7 @@ class Updater
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
         // TUF-SPEC-v1.0.9 Section 5.4.1
-        $newSnapshotData->verifyNewMetaData($newTargetsData);
+        $newSnapshotData->verifyNewMetadata($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.2
         $this->checkSignatures($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.3
