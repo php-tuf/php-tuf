@@ -39,7 +39,7 @@ trait MetaFileInfoTrait
      *
      * @return void
      */
-    public function verifyNewMetaData(MetadataBase $newMetadata):void
+    public function verifyNewMetadata(MetadataBase $newMetadata):void
     {
         $this->ensureIsTrusted();
         $role = $newMetadata->getRole();

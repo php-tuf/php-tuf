@@ -329,7 +329,7 @@ class Updater
     /**
      * Checks signatures on a verifiable structure.
      *
-     * @param \Tuf\Metadata\MetadataBase $metaData
+     * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata to check signatures on.
      *
      * @return void
@@ -337,15 +337,15 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    protected function checkSignatures(MetadataBase $metaData) : void
+    protected function checkSignatures(MetadataBase $metadata) : void
     {
-        $signatures = $metaData->getSignatures();
+        $signatures = $metadata->getSignatures();
 
-        $role = $this->roleDB->getRole($metaData->getRole());
+        $role = $this->roleDB->getRole($metadata->getRole());
         $needVerified = $role->getThreshold();
         $haveVerified = 0;
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
         foreach ($signatures as $signature) {
             if ($role->isKeyIdAcceptable($signature['keyid'])) {
                 $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
@@ -359,7 +359,7 @@ class Updater
         }
 
         if ($haveVerified < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getRole());
+            throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
         }
     }
 

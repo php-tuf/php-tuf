@@ -9,7 +9,7 @@ use Tuf\Metadata\RootMetadata;
 /**
  * @coversDefaultClass \Tuf\Metadata\RootMetadata
  */
-class RootMetadataTest extends MetaDataBaseTest
+class RootMetadataTest extends MetadataBaseTest
 {
 
     use UntrustedExceptionTrait;
@@ -149,10 +149,10 @@ class RootMetadataTest extends MetaDataBaseTest
         $data = json_decode($this->localRepo[$this->validJson], true);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
-            /** @var \Tuf\Metadata\RootMetadata $metaData */
-            $metaData = static::callCreateFromJson(json_encode($data));
-            $metaData->setIsTrusted(true);
-            $this->assertSame($value, $metaData->supportsConsistentSnapshots());
+            /** @var \Tuf\Metadata\RootMetadata $metadata */
+            $metadata = static::callCreateFromJson(json_encode($data));
+            $metadata->setIsTrusted(true);
+            $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
     }
 
@@ -178,11 +178,11 @@ class RootMetadataTest extends MetaDataBaseTest
     {
         $json = $this->localRepo[$this->validJson];
         $data = json_decode($json, true);
-        /** @var \Tuf\Metadata\RootMetadata $metaData */
-        $metaData = static::callCreateFromJson($json);
-        $metaData->setIsTrusted(true);
+        /** @var \Tuf\Metadata\RootMetadata $metadata */
+        $metadata = static::callCreateFromJson($json);
+        $metadata->setIsTrusted(true);
         $expectRoleNames = ['root', 'snapshot', 'targets', 'timestamp'];
-        $roles = $metaData->getRoles();
+        $roles = $metadata->getRoles();
         self::assertCount(4, $roles);
         foreach ($expectRoleNames as $expectRoleName) {
             self::assertSame($data['signed']['roles'][$expectRoleName]['threshold'], $roles[$expectRoleName]->getThreshold());

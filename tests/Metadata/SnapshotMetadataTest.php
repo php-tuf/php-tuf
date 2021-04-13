@@ -6,7 +6,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
-class SnapshotMetadataTest extends MetaDataBaseTest
+class SnapshotMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
 
@@ -99,7 +99,7 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     {
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+            ['verifyNewMetadata', [$this->createMock(MetadataBase::class)]],
         ]);
     }
 }

@@ -5,7 +5,7 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 
-class TimestampMetadataTest extends MetaDataBaseTest
+class TimestampMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
 
@@ -67,7 +67,7 @@ class TimestampMetadataTest extends MetaDataBaseTest
     {
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+            ['verifyNewMetadata', [$this->createMock(MetadataBase::class)]],
         ]);
     }
 }

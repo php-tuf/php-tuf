@@ -11,7 +11,7 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
  */
-abstract class MetaDataBaseTest extends TestCase
+abstract class MetadataBaseTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
 
@@ -64,22 +64,22 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerValidMetaData
+     * @dataProvider providerValidMetadata
      */
-    public function testValidMetaData(string $validJson) : void
+    public function testValidMetadata(string $validJson) : void
     {
         $this->expectNotToPerformAssertions();
         static::callCreateFromJson($this->localRepo[$validJson]);
     }
 
     /**
-     * Dataprovider for testValidMetaData().
+     * Dataprovider for testValidMetadata().
      *
      * @return \string[][]
      *   The nested array containing all client fixture files for the type.
      *
      */
-    public function providerValidMetaData() : array
+    public function providerValidMetadata() : array
     {
         $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
@@ -420,13 +420,13 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerValidMetaData
+     * @dataProvider providerValidMetadata
      */
     public function testNormalization(string $validJson) : void
     {
         $contents = $this->localRepo[$validJson];
         $json = json_decode($contents);
-        $metaData = static::callCreateFromJson($contents);
-        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
+        $metadata = static::callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metadata->getSigned()));
     }
 }
