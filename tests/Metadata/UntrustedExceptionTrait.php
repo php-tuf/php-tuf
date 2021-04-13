@@ -20,10 +20,10 @@ trait UntrustedExceptionTrait
     public function testUntrustedException(string $method, array $args = []): void
     {
         $data = json_decode($this->localRepo[$this->validJson], true);
-        $metaData = static::callCreateFromJson(json_encode($data));
+        $metadata = static::callCreateFromJson(json_encode($data));
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot use untrusted '{$this->expectedType}'. metadata.");
-        $method = new \ReflectionMethod($metaData, $method);
-        $method->invokeArgs($metaData, $args);
+        $method = new \ReflectionMethod($metadata, $method);
+        $method->invokeArgs($metadata, $args);
     }
 }

@@ -9,7 +9,7 @@ use Tuf\Metadata\TargetsMetadata;
 /**
  * @coversDefaultClass \Tuf\Metadata\TargetsMetadata
  */
-class TargetsMetadataTest extends MetaDataBaseTest
+class TargetsMetadataTest extends MetadataBaseTest
 {
 
     /**

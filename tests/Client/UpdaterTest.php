@@ -246,21 +246,21 @@ class UpdaterTest extends TestCase
             }
             switch ($type) {
                 case 'root':
-                    $metaData = RootMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = RootMetadata::createFromJson($this->localRepo["$type.json"]);
                     break;
                 case 'timestamp':
-                    $metaData = TimestampMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = TimestampMetadata::createFromJson($this->localRepo["$type.json"]);
                     break;
                 case 'snapshot':
-                    $metaData = SnapshotMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = SnapshotMetadata::createFromJson($this->localRepo["$type.json"]);
                     break;
                 case 'targets':
-                    $metaData = TargetsMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = TargetsMetadata::createFromJson($this->localRepo["$type.json"]);
                     break;
                 default:
                     $this->fail("Unexpected type: $type");
             }
-            $actualVersion = $metaData->getVersion();
+            $actualVersion = $metadata->getVersion();
             $this->assertSame(
                 $expectedVersions[$type],
                 $actualVersion,

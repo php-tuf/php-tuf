@@ -26,7 +26,7 @@ abstract class MetadataBase
      *
      * @var array
      */
-    protected $metaData;
+    protected $metadata;
 
     /**
      * Metadata type.
@@ -58,7 +58,7 @@ abstract class MetadataBase
      */
     public function __construct(\ArrayObject $metadata, string $sourceJson)
     {
-        $this->metaData = $metadata;
+        $this->metadata = $metadata;
         $this->sourceJson = $sourceJson;
     }
 
@@ -158,7 +158,7 @@ abstract class MetadataBase
      */
     public function getSigned():\ArrayObject
     {
-        return (new DeepCopy())->copy($this->metaData['signed']);
+        return (new DeepCopy())->copy($this->metadata['signed']);
     }
 
     /**
@@ -191,7 +191,7 @@ abstract class MetadataBase
      */
     public function getSignatures() : array
     {
-        return (new DeepCopy())->copy($this->metaData['signatures']);
+        return (new DeepCopy())->copy($this->metadata['signatures']);
     }
 
     /**
