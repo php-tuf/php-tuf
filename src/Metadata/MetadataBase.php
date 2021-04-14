@@ -49,7 +49,7 @@ abstract class MetadataBase
 
 
     /**
-     * MetaDataBase constructor.
+     * MetadataBase constructor.
      *
      * @param \ArrayObject $metadata
      *   The data.

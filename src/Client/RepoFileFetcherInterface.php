@@ -23,7 +23,7 @@ interface RepoFileFetcherInterface
      *   \Psr\Http\Message\StreamInterface, which provides a stream of the
      *   retrieved data.
      */
-    public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface;
+    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface;
 
     /**
      * Fetches a target file from the remote repo.
@@ -52,5 +52,5 @@ interface RepoFileFetcherInterface
      * @return string|null
      *   The contents of the file or null if it does not exist.
      */
-    public function fetchMetaDataIfExists(string $fileName, int $maxBytes): ?string;
+    public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string;
 }

@@ -76,7 +76,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface
+    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
         return $this->fetchFile($this->metadataPrefix . $fileName, $maxBytes);
     }
@@ -161,10 +161,10 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetaDataIfExists(string $fileName, int $maxBytes): ?string
+    public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
-            return $this->fetchMetaData($fileName, $maxBytes)->wait();
+            return $this->fetchMetadata($fileName, $maxBytes)->wait();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
