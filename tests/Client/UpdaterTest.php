@@ -201,9 +201,8 @@ class UpdaterTest extends TestCase
         // Create another version of the client that only starts with the root.json file.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-
         foreach (array_keys($expectedStartVersion) as $role) {
-            if($role !== 'root') {
+            if ($role !== 'root') {
                 // Change the expectation that client will not start with any files other than root.json.
                 $expectedStartVersion[$role] = null;
                 // Remove all files except root.json.
