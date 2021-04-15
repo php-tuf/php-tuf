@@ -187,15 +187,34 @@ class UpdaterTest extends TestCase
      */
     public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions) : void
     {
+        $expectedStartVersion = static::getFixtureClientStartVersions($fixturesSet);
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientRepoVersions($expectedStartVersion);
         $updater = $this->getSystemInTest();
         $this->assertTrue($updater->refresh());
-        // Confirm the root was updated to version 5 which is the highest
-        // version in the test fixtures.
+        // Confirm the local version are updated to the expected versions.
+        $this->assertClientRepoVersions($expectedUpdatedVersions);
+
+        // Create another version of the client that only starts with the root.json file.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+
+        foreach (array_keys($expectedStartVersion) as $role) {
+            if($role !== 'root') {
+                // Change the expectation that client will not start with any files other than root.json.
+                $expectedStartVersion[$role] = null;
+                // Remove all files except root.json.
+                unset($this->localRepo["$role.json"]);
+            }
+        }
+        $this->assertClientRepoVersions($expectedStartVersion);
+        $updater = $this->getSystemInTest();
+        $this->assertTrue($updater->refresh());
+        // Confirm that if we start with only root.json all of the files still
+        // update to the expected versions.
         $this->assertClientRepoVersions($expectedUpdatedVersions);
     }
 
