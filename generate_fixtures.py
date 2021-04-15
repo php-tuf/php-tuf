@@ -202,16 +202,22 @@ class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
 class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureBase):
     def __init__(self):
         super().__init__()
-        timestamp_path = os.path.join(self.tufrepo_dir, 'metadata', 'timestamp.json')
-        print(timestamp_path)
+        timestamp_path = os.path.join(self.tufrepo_dir, "metadata", "timestamp.json")
+        self.repository.mark_dirty(["timestamp"])
         self.write_and_publish_repository(export_client=True)
+
+        # By exporting the repo but not the client, this gives us a new revision
+        # that's ready to alter. If we alter a version the client is already
+        # aware of, it may not pick up this new, altered version.
+        self.repository.mark_dirty(["timestamp"])
+        self.write_and_publish_repository(export_client=False)
         with open(timestamp_path) as timestamp_fd:
             timestamp = json.load(timestamp_fd)
 
-        first_sig = timestamp['signatures'][0]
-        timestamp['signatures'] = [first_sig, first_sig]
+        first_sig = timestamp["signatures"][0]
+        timestamp["signatures"] = [first_sig, first_sig]
 
-        with open(timestamp_path, 'w') as timestamp_fd:
+        with open(timestamp_path, "w") as timestamp_fd:
             json.dump(timestamp, timestamp_fd, indent=1)
 
         # We could also alter the versioned (N.timestamp.json), but the spec
