@@ -4,6 +4,7 @@ from tuf import repository_tool as rt
 import os
 import shutil
 from unittest import mock
+import json
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -198,12 +199,33 @@ class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
         self.write_and_publish_repository(export_client=True)
 
 
+class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureBase):
+    def __init__(self):
+        super().__init__()
+        timestamp_path = os.path.join(self.tufrepo_dir, 'metadata', 'timestamp.json')
+        print(timestamp_path)
+        self.write_and_publish_repository(export_client=True)
+        with open(timestamp_path) as timestamp_fd:
+            timestamp = json.load(timestamp_fd)
+
+        first_sig = timestamp['signatures'][0]
+        timestamp['signatures'] = [first_sig, first_sig]
+
+        with open(timestamp_path, 'w') as timestamp_fd:
+            json.dump(timestamp, timestamp_fd, indent=1)
+
+        # We could also alter the versioned (N.timestamp.json), but the spec
+        # considers these as optional, so we can expect this alteration to be
+        # sufficient.
+
+
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
+    TUFTestFixtureThresholdTwoAttack()
 
 
 generate_fixtures()
