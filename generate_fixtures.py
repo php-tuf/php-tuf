@@ -186,11 +186,24 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         self.write_and_publish_repository()
 
 
+class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
+    def __init__(self):
+        super().__init__()
+        (public_timestamp_key_2, private_timestamp_key_2) = self.write_and_import_keypair(
+            'timestamp_2')
+        self.repository.timestamp.add_verification_key(public_timestamp_key_2)
+        self.repository.timestamp.load_signing_key(private_timestamp_key_2)
+        self.repository.timestamp.threshold = 2
+        self.repository.mark_dirty(['timestamp'])
+        self.write_and_publish_repository(export_client=True)
+
+
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
     TUFTestFixtureAttackRollback()
+    TUFTestFixtureThresholdTwo()
 
 
 generate_fixtures()
