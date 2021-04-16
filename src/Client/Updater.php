@@ -538,6 +538,7 @@ class Updater
             }
         } else {
             // @todo Handle non-seekable streams.
+            // https://github.com/php-tuf/php-tuf/issues/169
             $data->rewind();
             $data->read($maxBytes);
 
