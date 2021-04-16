@@ -85,7 +85,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json)
+    public static function createFromJson(string $json): self
     {
         $data = JsonNormalizer::decode($json);
         static::validate($data, new Collection(static::getConstraints()));
@@ -98,7 +98,7 @@ abstract class MetadataBase
      * @return \Symfony\Component\Validator\Constraint[]
      *   Array of constraints.
      */
-    protected static function getConstraints() : array
+    protected static function getConstraints(): array
     {
         return [
             'signatures' => new Required([
@@ -156,7 +156,7 @@ abstract class MetadataBase
      * @return \ArrayObject
      *   The "signed" section of the data.
      */
-    public function getSigned():\ArrayObject
+    public function getSigned(): \ArrayObject
     {
         return (new DeepCopy())->copy($this->metadata['signed']);
     }
@@ -167,7 +167,7 @@ abstract class MetadataBase
      * @return integer
      *   The version.
      */
-    public function getVersion() : int
+    public function getVersion(): int
     {
         return $this->getSigned()['version'];
     }
@@ -178,7 +178,7 @@ abstract class MetadataBase
      * @return string
      *   The date string.
      */
-    public function getExpires() : string
+    public function getExpires(): string
     {
         return $this->getSigned()['expires'];
     }
@@ -189,7 +189,7 @@ abstract class MetadataBase
      * @return array
      *   The "signatures" section of the data.
      */
-    public function getSignatures() : array
+    public function getSignatures(): array
     {
         return (new DeepCopy())->copy($this->metadata['signatures']);
     }
@@ -200,7 +200,7 @@ abstract class MetadataBase
      * @return string
      *   The type.
      */
-    public function getType() : string
+    public function getType(): string
     {
         return $this->getSigned()['_type'];
     }
@@ -211,7 +211,7 @@ abstract class MetadataBase
      * @return string
      *   The type.
      */
-    public function getRole() : string
+    public function getRole(): string
     {
         // For most metadata types the 'type' and the 'role' are the same.
         // Metadata types that need to specify a different role should override

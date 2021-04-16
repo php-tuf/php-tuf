@@ -122,7 +122,7 @@ class Updater
      * @return string
      *   The type.
      */
-    private static function getFileNameType(string $fileName)
+    private static function getFileNameType(string $fileName): string
     {
         $parts = explode('.', $fileName);
         array_pop($parts);
@@ -145,8 +145,17 @@ class Updater
      *     TRUE if the data was successfully refreshed.
      *
      * @see https://github.com/php-tuf/php-tuf/issues/21
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     *   Throw if a freeze attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *   Throw if a rollback attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if the signature threshold has not be reached.
      */
-    public function refresh(bool $force = false) : bool
+    public function refresh(bool $force = false): bool
     {
         if ($force) {
             $this->isRefreshed = false;
@@ -239,7 +248,7 @@ class Updater
      * @throws FormatException
      *     Thrown if the timestamp string format is not valid.
      */
-    protected static function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
+    protected static function metadataTimestampToDateTime(string $timestamp): \DateTimeImmutable
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
@@ -266,7 +275,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
-    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
+    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -320,7 +329,7 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) :void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now): void
     {
         $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
@@ -338,31 +347,32 @@ class Updater
      * @return void
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
-     *   Thrown if the signature thresold has not be reached.
+     *   Thrown if the signature threshold has not be reached.
      */
-    protected function checkSignatures(MetadataBase $metadata) : void
+    protected function checkSignatures(MetadataBase $metadata): void
     {
         $signatures = $metadata->getSignatures();
 
         $role = $this->roleDB->getRole($metadata->getRole());
         $needVerified = $role->getThreshold();
-        $haveVerified = 0;
+        $verifiedKeySignatures = [];
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
         foreach ($signatures as $signature) {
-            if ($role->isKeyIdAcceptable($signature['keyid'])) {
-                $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
+            // Don't allow the same key to be counted twice.
+            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
+                $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
             //     bad signatures even this method returns TRUE because the
             //     threshold has been met.
-            //.    https://github.com/php-tuf/php-tuf/issues/154
-            if ($haveVerified >= $needVerified) {
+            //     https://github.com/php-tuf/php-tuf/issues/154
+            if (count($verifiedKeySignatures) >= $needVerified) {
                 break;
             }
         }
 
-        if ($haveVerified < $needVerified) {
+        if (count($verifiedKeySignatures) < $needVerified) {
             throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
         }
     }
@@ -380,7 +390,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
@@ -414,7 +424,7 @@ class Updater
      *
      * @return void
      */
-    private function updateRoot(RootMetadata &$rootData)
+    private function updateRoot(RootMetadata &$rootData): void
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
@@ -486,7 +496,7 @@ class Updater
      * @return boolean
      *   True if the keys for the role have been rotated, otherwise false.
      */
-    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
+    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role): bool
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;

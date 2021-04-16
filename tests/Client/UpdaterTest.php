@@ -66,6 +66,18 @@ class UpdaterTest extends TestCase
                 'snapshot' => 3,
                 'targets' => 3,
             ],
+            'TUFTestFixtureThresholdTwo' => [
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureThresholdTwoAttack' => [
+                'root' => 3,
+                'timestamp' => 3,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
             throw new \UnexpectedValueException("Unknown fixture set: $fixturesSet");
@@ -76,12 +88,15 @@ class UpdaterTest extends TestCase
     /**
      * Returns a memory-based updater populated with the test fixtures.
      *
+     * @param string $fixturesSet
+     *     The fixtures set to use.
+     *
      * @return Updater
      *     The test updater, which uses the 'current' test fixtures in the
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest() : Updater
+    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated'): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -93,7 +108,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir($this->getFixturesRealPath($fixturesSet, 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -116,7 +131,7 @@ class UpdaterTest extends TestCase
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
 
         $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
@@ -185,14 +200,14 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions) : void
+    public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         $this->assertTrue($updater->refresh());
         // Confirm the root was updated to version 5 which is the highest
         // version in the test fixtures.
@@ -205,7 +220,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The data set for testRefreshRepository().
      */
-    public function providerRefreshRepository()
+    public function providerRefreshRepository(): array
     {
         return $this->getKeyedArray([
             [
@@ -269,7 +284,6 @@ class UpdaterTest extends TestCase
         }
     }
 
-
     /**
      * Tests that exceptions are thrown when metadata files are not valid.
      *
@@ -292,11 +306,12 @@ class UpdaterTest extends TestCase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo('TUFTestFixtureDelegated');
+        $fixturesSet = 'TUFTestFixtureDelegated';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->refresh();
         } catch (TufException $exception) {
@@ -313,7 +328,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testRefreshException().
      */
-    public function providerRefreshException()
+    public function providerRefreshException(): array
     {
         return static::getKeyedArray([
             [
@@ -405,7 +420,7 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerFileNotFoundExceptions
      */
-    public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions):void
+    public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
@@ -413,7 +428,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->refresh();
         } catch (RepoFileNotFound $exception) {
@@ -430,7 +445,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testFileNotFoundExceptions().
      */
-    public function providerFileNotFoundExceptions():array
+    public function providerFileNotFoundExceptions(): array
     {
         return $this->getKeyedArray([
             [
@@ -496,10 +511,49 @@ class UpdaterTest extends TestCase
         ]);
     }
 
+
+    /**
+     * Data provider for testSignatureThresholds().
+     *
+     * @return mixed[]
+     *   The test cases for testFileNotFoundExceptions().
+     */
+    public function providerTestSignatureThresholds():array
+    {
+        return [
+            ['TUFTestFixtureThresholdTwo'],
+            ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdExpception::class],
+        ];
+    }
+
+    /**
+     * Tests fixtures with signature thresholds greater than 1.
+     *
+     * @param string $fixturesSet
+     *   The fixtures set to use.
+     * @param string $expectedException
+     *   The null or the class name of an expected exception.
+     *
+     * @return void
+     *
+     * @dataProvider providerTestSignatureThresholds
+     */
+    public function testSignatureThresholds(string $fixturesSet, string $expectedException = null)
+    {
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest($fixturesSet);
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        if ($expectedException) {
+            $this->expectException($expectedException);
+        }
+        $updater->refresh();
+    }
+
     /**
      * Tests forcing a refresh from the server.
      */
-    public function testUpdateRefresh()
+    public function testUpdateRefresh(): void
     {
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
@@ -561,7 +615,7 @@ class UpdaterTest extends TestCase
      * @return array[]
      *   The test cases.
      */
-    public function providerAttackRepoException():array
+    public function providerAttackRepoException(): array
     {
         return [
             [
