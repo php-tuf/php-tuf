@@ -110,7 +110,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerOptionalFields()
+    public function providerOptionalFields() : array
     {
         $data = parent::providerOptionalFields();
         $data[] = [

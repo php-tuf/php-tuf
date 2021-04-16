@@ -157,7 +157,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function testGetRole()
+    public function testGetRole(): void
     {
         parent::testGetRole();
         // Confirm that if a role name is specified this will be returned.

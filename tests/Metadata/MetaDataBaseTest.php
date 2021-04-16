@@ -111,8 +111,10 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * @covers ::getType
+     *
+     *  @return void
      */
-    public function testGetType()
+    public function testGetType() : void
     {
         $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
         $this->assertSame($metadata->getType(), $this->expectedType);
@@ -120,8 +122,10 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * @covers ::getRole
+     *
+     *  @return void
      */
-    public function testGetRole()
+    public function testGetRole() : void
     {
         $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
         $this->assertSame($this->expectedType, $metadata->getRole());
@@ -237,7 +241,7 @@ abstract class MetadataBaseTest extends TestCase
      * @return mixed[]
      *   The test cases for testOptionalFields().
      */
-    public function providerOptionalFields()
+    public function providerOptionalFields() : array
     {
         return static::getKeyedArray([
             ['signed:ignored_value', 1],
