@@ -142,6 +142,15 @@ class Updater
      *     TRUE if the data was successfully refreshed.
      *
      * @see https://github.com/php-tuf/php-tuf/issues/21
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     *   Throw if a freeze attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *   Throw if a rollback attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if the signature threshold has not be reached.
      */
     public function refresh(bool $force = false): bool
     {
@@ -335,7 +344,7 @@ class Updater
      * @return void
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
-     *   Thrown if the signature thresold has not be reached.
+     *   Thrown if the signature threshold has not be reached.
      */
     protected function checkSignatures(MetadataBase $metadata): void
     {
@@ -343,22 +352,23 @@ class Updater
 
         $role = $this->roleDB->getRole($metadata->getRole());
         $needVerified = $role->getThreshold();
-        $haveVerified = 0;
+        $verifiedKeySignatures = [];
 
         $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
         foreach ($signatures as $signature) {
-            if ($role->isKeyIdAcceptable($signature['keyid'])) {
-                $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
+            // Don't allow the same key to be counted twice.
+            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
+                $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
             //     bad signatures even this method returns TRUE because the
             //     threshold has been met.
-            if ($haveVerified >= $needVerified) {
+            if (count($verifiedKeySignatures) >= $needVerified) {
                 break;
             }
         }
 
-        if ($haveVerified < $needVerified) {
+        if (count($verifiedKeySignatures) < $needVerified) {
             throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
         }
     }
