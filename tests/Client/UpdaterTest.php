@@ -518,7 +518,8 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testFileNotFoundExceptions().
      */
-    public function providerTestSignatureThresholds():array {
+    public function providerTestSignatureThresholds():array
+    {
         return [
             ['TUFTestFixtureThresholdTwo'],
             ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdExpception::class],
@@ -526,7 +527,7 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that if a file is missing from the repo an exception is thrown.
+     * Tests fixtures with signature thresholds greater than 1.
      *
      * @param string $fixturesSet
      *   The fixtures set to use.
@@ -537,7 +538,8 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerTestSignatureThresholds
      */
-    public function testSignatureThresholds(string $fixturesSet, string $expectedException = null) {
+    public function testSignatureThresholds(string $fixturesSet, string $expectedException = null)
+    {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
