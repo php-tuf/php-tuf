@@ -159,7 +159,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function getMetadata($key = null)
+    public function getMetadata($key = null): string
     {
         return $this->getResponse()->getBody()->getMetadata($key);
     }

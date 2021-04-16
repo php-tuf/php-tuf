@@ -19,7 +19,7 @@ class KeyDBTest extends TestCase
      *
      * @return void
      */
-    public function testCreateFromRootMetadata():void
+    public function testCreateFromRootMetadata(): void
     {
         $rootJsonPath = static::getFixturesRealPath(
             'TUFTestFixtureDelegated',

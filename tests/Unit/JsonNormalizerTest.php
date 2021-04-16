@@ -17,7 +17,7 @@ class JsonNormalizerTest extends TestCase
      *
      * @return void
      */
-    public function testSort():void
+    public function testSort(): void
     {
         $fixturesDirectory = __DIR__ . '/../../non_repo_fixtures';
         $sortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/sorted.json"));

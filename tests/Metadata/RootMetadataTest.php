@@ -26,7 +26,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json): MetadataBase
     {
         return RootMetadata::createFromJson($json);
     }
@@ -34,7 +34,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
 
@@ -54,7 +54,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         $data = parent::providerValidField();
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'keys']);
@@ -80,7 +80,7 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @dataProvider providerRequireRoles
      */
-    public function testRequiredRoles(string $missingRole)
+    public function testRequiredRoles(string $missingRole): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
@@ -97,7 +97,7 @@ class RootMetadataTest extends MetadataBaseTest
      * @return string[][]
      *   The test cases.
      */
-    public function providerRequireRoles()
+    public function providerRequireRoles(): array
     {
         return static::getKeyedArray([
             ['root'],
@@ -110,7 +110,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerOptionalFields()
+    public function providerOptionalFields(): array
     {
         $data = parent::providerOptionalFields();
         $data[] = [
@@ -128,7 +128,7 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @return void
      */
-    public function testInvalidRoleName()
+    public function testInvalidRoleName(): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
@@ -144,7 +144,7 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @return void
      */
-    public function testSupportsConsistentSnapshots() : void
+    public function testSupportsConsistentSnapshots(): void
     {
         $data = json_decode($this->localRepo[$this->validJson], true);
         foreach ([true, false] as $value) {
@@ -162,7 +162,7 @@ class RootMetadataTest extends MetadataBaseTest
      * @return string[]
      *   The test cases for testUntrustedException().
      */
-    public function providerUntrustedException():array
+    public function providerUntrustedException(): array
     {
         return self::getKeyedArray([
             ['supportsConsistentSnapshots'],

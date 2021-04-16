@@ -15,7 +15,7 @@ class MemoryStorageTest extends TestCase
      *
      * @return void
      */
-    public function testSetExceptionOnChange():void
+    public function testSetExceptionOnChange(): void
     {
         $storage = new MemoryStorage();
         $storage->offsetSet('test_key', 'value');

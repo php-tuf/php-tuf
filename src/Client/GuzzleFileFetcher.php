@@ -67,7 +67,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      * @return static
      *   A new instance of this class.
      */
-    public static function createFromUri(string $baseUri, string $metadataPrefix = '/metadata/', string $targetsPrefix = '/targets/') : self
+    public static function createFromUri(string $baseUri, string $metadataPrefix = '/metadata/', string $targetsPrefix = '/targets/'): self
     {
         $client = new Client(['base_uri' => $baseUri]);
         return new static($client, $metadataPrefix, $targetsPrefix);

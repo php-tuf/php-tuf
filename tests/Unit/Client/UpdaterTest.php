@@ -19,7 +19,7 @@ class UpdaterTest extends TestCase
      * @return \Tuf\Client\Updater
      *     The test Updater from the 'current' test fixture data.
      */
-    protected function getSystemInTest() : Updater
+    protected function getSystemInTest(): Updater
     {
         $localRepo = $this->getMockBuilder(\ArrayAccess::class)->getMock();
         $repoFetcher = $this->getMockBuilder(RepoFileFetcherInterface::class)->getMock();
@@ -33,7 +33,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testCheckRollbackAttackNoAttack() : void
+    public function testCheckRollbackAttackNoAttack(): void
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
@@ -63,7 +63,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testCheckRollbackAttackAttack() : void
+    public function testCheckRollbackAttackAttack(): void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
@@ -91,7 +91,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testCheckRollbackAttackAttackExpectedVersion() : void
+    public function testCheckRollbackAttackAttackExpectedVersion(): void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$2" does not the expected version "$3"');
@@ -117,7 +117,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testCheckFreezeAttackNoAttack() : void
+    public function testCheckFreezeAttackNoAttack(): void
     {
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
@@ -148,7 +148,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testCheckFreezeAttackAttack() : void
+    public function testCheckFreezeAttackAttack(): void
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
 

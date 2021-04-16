@@ -35,7 +35,7 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): RoleDB
     {
         $db = new self();
         foreach ($rootMetadata->getRoles($allowUntrustedAccess) as $roleName => $roleInfo) {
@@ -65,7 +65,7 @@ class RoleDB
      *
      * @throws \Exception Thrown if the role already exists.
      */
-    public function addRole(Role $role)
+    public function addRole(Role $role): void
     {
         if ($this->roleExists($role->getName())) {
             throw new \Exception('Role already exists: ' . $role->getName());
@@ -83,7 +83,7 @@ class RoleDB
      * @return boolean
      *     True if the role is found in the role database; false otherwise.
      */
-    public function roleExists(string $roleName)
+    public function roleExists(string $roleName): bool
     {
         return !empty($this->roles[$roleName]);
     }
@@ -102,12 +102,14 @@ class RoleDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public function getRole(string $roleName)
+    public function getRole(string $roleName): Role
     {
         if (! $this->roleExists($roleName)) {
             throw new NotFoundException($roleName, 'role');
         }
 
-        return $this->roles[$roleName];
+        /** @var \Tuf\Role $role */
+        $role = $this->roles[$roleName];
+        return $role;
     }
 }
