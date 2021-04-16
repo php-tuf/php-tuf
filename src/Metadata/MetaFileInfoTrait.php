@@ -21,7 +21,7 @@ trait MetaFileInfoTrait
      * @return \ArrayObject|null
      *   The file information if available or null if not set.
      */
-    public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false):?\ArrayObject
+    public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false): ?\ArrayObject
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
         $signed = $this->getSigned();
@@ -39,7 +39,7 @@ trait MetaFileInfoTrait
      *
      * @return void
      */
-    public function verifyNewMetadata(MetadataBase $newMetadata):void
+    public function verifyNewMetadata(MetadataBase $newMetadata): void
     {
         $this->ensureIsTrusted();
         $role = $newMetadata->getRole();

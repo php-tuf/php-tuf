@@ -100,7 +100,7 @@ class JsonNormalizer
      * @throws \RuntimeException
      *   Thrown if the an object other than \stdClass is found.
      */
-    private static function replaceStdClassWithArrayObject($data):iterable
+    private static function replaceStdClassWithArrayObject($data): iterable
     {
         if ($data instanceof \stdClass) {
             $data = new \ArrayObject($data);

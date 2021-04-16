@@ -44,7 +44,7 @@ trait UtilsTrait
      *   The new keyed array where the keys are string concatenation of the
      *   arguments.
      */
-    protected static function getKeyedArray(array $providedData, int $useArgumentNumber = null) : array
+    protected static function getKeyedArray(array $providedData, int $useArgumentNumber = null): array
     {
         $newData = [];
         foreach ($providedData as $arguments) {
@@ -79,7 +79,7 @@ trait UtilsTrait
      *
      * @return void
      */
-    protected function nestedChange(array $keys, array &$data, $newValue) : void
+    protected function nestedChange(array $keys, array &$data, $newValue): void
     {
         $key = array_shift($keys);
         if ($keys) {

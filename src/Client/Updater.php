@@ -121,7 +121,7 @@ class Updater
      * @return string
      *   The type.
      */
-    private static function getFileNameType(string $fileName) : string
+    private static function getFileNameType(string $fileName): string
     {
         $parts = explode('.', $fileName);
         array_pop($parts);
@@ -143,7 +143,7 @@ class Updater
      *
      * @see https://github.com/php-tuf/php-tuf/issues/21
      */
-    public function refresh(bool $force = false) : bool
+    public function refresh(bool $force = false): bool
     {
         if ($force) {
             $this->isRefreshed = false;
@@ -236,7 +236,7 @@ class Updater
      * @throws FormatException
      *     Thrown if the timestamp string format is not valid.
      */
-    protected static function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
+    protected static function metadataTimestampToDateTime(string $timestamp): \DateTimeImmutable
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
@@ -263,7 +263,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
-    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
+    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -317,7 +317,7 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) : void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now): void
     {
         $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
@@ -337,7 +337,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      *   Thrown if the signature thresold has not be reached.
      */
-    protected function checkSignatures(MetadataBase $metadata) : void
+    protected function checkSignatures(MetadataBase $metadata): void
     {
         $signatures = $metadata->getSignatures();
 
@@ -376,7 +376,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta) : bool
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
@@ -409,7 +409,7 @@ class Updater
      *
      * @return void
      */
-    private function updateRoot(RootMetadata &$rootData) : void
+    private function updateRoot(RootMetadata &$rootData): void
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
@@ -461,7 +461,7 @@ class Updater
      * @throws \Tuf\Exception\FormatException
      *    Thrown if time format is not valid.
      */
-    private function getCurrentTime() : \DateTimeImmutable
+    private function getCurrentTime(): \DateTimeImmutable
     {
         $fakeNow = '2020-01-01T00:00:00Z';
         $nowDate = static::metadataTimestampToDateTime($fakeNow);
@@ -481,7 +481,7 @@ class Updater
      * @return boolean
      *   True if the keys for the role have been rotated, otherwise false.
      */
-    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role) : bool
+    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role): bool
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
@@ -522,7 +522,7 @@ class Updater
      * @throws \Tuf\Exception\DownloadSizeException
      *   If the stream's length exceeds $maxBytes in size.
      */
-    private function checkLength(StreamInterface $data, int $maxBytes, string $fileName) : void
+    private function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
     {
         $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         $size = $data->getSize();
@@ -559,7 +559,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    public function verify(string $target, StreamInterface $data) : void
+    public function verify(string $target, StreamInterface $data): void
     {
         $this->refresh();
 
@@ -606,7 +606,7 @@ class Updater
      *   A promise representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target, ...$extra) : PromiseInterface
+    public function download(string $target, ...$extra): PromiseInterface
     {
         $this->refresh();
 
@@ -637,7 +637,7 @@ class Updater
      * @param string $role
      *   The role name. This may be 'targets' or a delegated role.
      */
-    private function fetchAndVerifyTargetsMetadata(string $role) : void
+    private function fetchAndVerifyTargetsMetadata(string $role): void
     {
         $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
         $newSnapshotData->setIsTrusted(true);

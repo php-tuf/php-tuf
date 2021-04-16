@@ -79,7 +79,7 @@ class RootMetadata extends MetadataBase
      *     and the value is the public key.
      *   - scheme (string): The key scheme.
      */
-    public function getKeys(bool $allowUntrustedAccess = false):\ArrayObject
+    public function getKeys(bool $allowUntrustedAccess = false): \ArrayObject
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
         return $this->getSigned()['keys'];
@@ -91,7 +91,7 @@ class RootMetadata extends MetadataBase
      * @return boolean
      *   Whether consistent snapshots are supported.
      */
-    public function supportsConsistentSnapshots() : bool
+    public function supportsConsistentSnapshots(): bool
     {
         $this->ensureIsTrusted();
         return $this->getSigned()['consistent_snapshot'];

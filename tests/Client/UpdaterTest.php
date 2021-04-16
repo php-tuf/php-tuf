@@ -81,7 +81,7 @@ class UpdaterTest extends TestCase
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest() : Updater
+    protected function getSystemInTest(): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -185,7 +185,7 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions) : void
+    public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
@@ -405,7 +405,7 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerFileNotFoundExceptions
      */
-    public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions):void
+    public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
@@ -430,7 +430,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testFileNotFoundExceptions().
      */
-    public function providerFileNotFoundExceptions():array
+    public function providerFileNotFoundExceptions(): array
     {
         return $this->getKeyedArray([
             [
@@ -561,7 +561,7 @@ class UpdaterTest extends TestCase
      * @return array[]
      *   The test cases.
      */
-    public function providerAttackRepoException():array
+    public function providerAttackRepoException(): array
     {
         return [
             [
