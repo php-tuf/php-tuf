@@ -356,6 +356,7 @@ class Updater
             // @todo Determine if we should check all signatures and warn for
             //     bad signatures even this method returns TRUE because the
             //     threshold has been met.
+            //.    https://github.com/php-tuf/php-tuf/issues/154
             if ($haveVerified >= $needVerified) {
                 break;
             }
