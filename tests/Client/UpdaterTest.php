@@ -535,7 +535,7 @@ class UpdaterTest extends TestCase
      * Data provider for testSignatureThresholds().
      *
      * @return mixed[]
-     *   The test cases for testFileNotFoundExceptions().
+     *   The test cases for testSignatureThresholds().
      */
     public function providerTestSignatureThresholds():array
     {
