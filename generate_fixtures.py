@@ -199,7 +199,7 @@ class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
         self.write_and_publish_repository(export_client=True)
 
 
-class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureBase):
+class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
     def __init__(self):
         super().__init__()
         timestamp_path = os.path.join(self.tufrepo_dir, "metadata", "timestamp.json")
