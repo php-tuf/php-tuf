@@ -97,6 +97,7 @@ class Updater
      *     - targets_path: (string) The path within the repository for targets
      *       (the actual update data that has been signed).
      *     - confined_target_dirs: (array) @todo What is this for?
+     *.      https://github.com/php-tuf/php-tuf/issues/161
      * @param \ArrayAccess $durableStorage
      *     An implementation of \ArrayAccess that stores its contents durably,
      *     as in to disk or a database. Values written for a given repository
