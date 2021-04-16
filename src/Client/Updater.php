@@ -132,6 +132,7 @@ class Updater
     /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
+     *.    https://github.com/php-tuf/php-tuf/issues/162
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
      *
