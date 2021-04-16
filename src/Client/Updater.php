@@ -364,9 +364,9 @@ class Updater
                 $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
-            //     bad signatures even this method returns TRUE because the
+            //     bad signatures even if this method returns TRUE because the
             //     threshold has been met.
-            //     https://github.com/php-tuf/php-tuf/issues/154
+            //     https://github.com/php-tuf/php-tuf/issues/172
             if (count($verifiedKeySignatures) >= $needVerified) {
                 break;
             }
