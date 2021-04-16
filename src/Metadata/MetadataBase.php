@@ -85,7 +85,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json)
+    public static function createFromJson(string $json): self
     {
         $data = JsonNormalizer::decode($json);
         static::validate($data, new Collection(static::getConstraints()));

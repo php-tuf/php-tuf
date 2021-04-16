@@ -80,7 +80,7 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @dataProvider providerRequireRoles
      */
-    public function testRequiredRoles(string $missingRole)
+    public function testRequiredRoles(string $missingRole): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
@@ -97,7 +97,7 @@ class RootMetadataTest extends MetadataBaseTest
      * @return string[][]
      *   The test cases.
      */
-    public function providerRequireRoles()
+    public function providerRequireRoles(): array
     {
         return static::getKeyedArray([
             ['root'],
@@ -128,7 +128,7 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @return void
      */
-    public function testInvalidRoleName()
+    public function testInvalidRoleName(): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');

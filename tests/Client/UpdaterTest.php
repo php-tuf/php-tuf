@@ -205,7 +205,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The data set for testRefreshRepository().
      */
-    public function providerRefreshRepository()
+    public function providerRefreshRepository(): array
     {
         return $this->getKeyedArray([
             [
@@ -313,7 +313,7 @@ class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testRefreshException().
      */
-    public function providerRefreshException()
+    public function providerRefreshException(): array
     {
         return static::getKeyedArray([
             [
@@ -499,7 +499,7 @@ class UpdaterTest extends TestCase
     /**
      * Tests forcing a refresh from the server.
      */
-    public function testUpdateRefresh()
+    public function testUpdateRefresh(): void
     {
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
