@@ -50,7 +50,7 @@ trait ConstraintsTrait
      * @return \Symfony\Component\Validator\Constraint[][]
      *   The hash constraints.
      */
-    protected static function getHashesConstraints() : array
+    protected static function getHashesConstraints(): array
     {
         return [
             'hashes' => [
@@ -71,7 +71,7 @@ trait ConstraintsTrait
      * @return \Symfony\Component\Validator\Constraint[][]
      *   The version constraints.
      */
-    protected static function getVersionConstraints() : array
+    protected static function getVersionConstraints(): array
     {
         return [
             'version' => [
@@ -87,7 +87,7 @@ trait ConstraintsTrait
      * @return \Symfony\Component\Validator\Constraint[][]
      *   The threshold constraints.
      */
-    protected static function getThresholdConstraints() : array
+    protected static function getThresholdConstraints(): array
     {
         return [
             'threshold' => [
@@ -102,7 +102,7 @@ trait ConstraintsTrait
      * @return \Symfony\Component\Validator\Constraint[][]
      *   The keysids constraints.
      */
-    protected static function getKeyidsConstraints() : array
+    protected static function getKeyidsConstraints(): array
     {
         return [
             'keyids' => [
@@ -123,7 +123,7 @@ trait ConstraintsTrait
      * @return Collection
      *   The 'key' Collection constraint.
      */
-    protected static function getKeyConstraints() : Collection
+    protected static function getKeyConstraints(): Collection
     {
         return new Collection([
             'keyid_hash_algorithms' => [

@@ -19,7 +19,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @return \ArrayAccess
      *     The test storage.
      */
-    protected function getSystemInTest() : \ArrayAccess
+    protected function getSystemInTest(): \ArrayAccess
     {
         return new DurableStorageAccessValidator(new MemoryStorage());
     }
@@ -36,7 +36,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *
      * @return void
      */
-    public function testOffsetSet($offset, bool $expectValid) : void
+    public function testOffsetSet($offset, bool $expectValid): void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -62,7 +62,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *
      * @return void
      */
-    public function testOffsetGet($offset, bool $expectValid) : void
+    public function testOffsetGet($offset, bool $expectValid): void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -88,7 +88,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *
      * @return void
      */
-    public function testOffsetExists($offset, bool $expectValid) : void
+    public function testOffsetExists($offset, bool $expectValid): void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -114,7 +114,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *
      * @return void
      */
-    public function testOffsetUnset($offset, bool $expectValid) : void
+    public function testOffsetUnset($offset, bool $expectValid): void
     {
         $sut = $this->getSystemInTest();
         try {
@@ -136,7 +136,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      *     - The test case \ArrayAccess offset.
      *     - Whether the value is expected to be valid.
      */
-    public function offsetsProvider() : array
+    public function offsetsProvider(): array
     {
         return [
             ['a', true],
@@ -160,7 +160,7 @@ class DurableStorageAccessValidatorTest extends TestCase
      * @return string
      *     The expected exception message.
      */
-    private function getOffSetException($offset) : string
+    private function getOffSetException($offset): string
     {
         return "Array offset '$offset' is not a valid durable storage key.";
     }
