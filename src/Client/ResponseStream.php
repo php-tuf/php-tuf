@@ -47,7 +47,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function __toString(): string
+    public function __toString()
     {
         return $this->getResponse()->getBody()->__toString();
     }
@@ -55,7 +55,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function close(): void
+    public function close()
     {
         $this->getResponse()->getBody()->close();
     }
@@ -71,7 +71,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function getSize(): ?int
+    public function getSize()
     {
         return $this->getResponse()->getBody()->getSize();
     }
@@ -79,7 +79,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function tell(): int
+    public function tell()
     {
         return $this->getResponse()->getBody()->tell();
     }
@@ -87,7 +87,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function eof(): bool
+    public function eof()
     {
         return $this->getResponse()->getBody()->eof();
     }
@@ -95,7 +95,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function isSeekable(): bool
+    public function isSeekable()
     {
         return $this->getResponse()->getBody()->isSeekable();
     }
@@ -119,7 +119,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function isWritable(): bool
+    public function isWritable()
     {
         return $this->getResponse()->getBody()->isWritable();
     }
@@ -127,7 +127,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function write($string): int
+    public function write($string)
     {
         return $this->getResponse()->getBody()->write($string);
     }
@@ -135,7 +135,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function isReadable(): bool
+    public function isReadable()
     {
         return $this->getResponse()->getBody()->isReadable();
     }
@@ -143,7 +143,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function read($length): string
+    public function read($length)
     {
         return $this->getResponse()->getBody()->read($length);
     }
@@ -151,7 +151,7 @@ class ResponseStream implements StreamInterface
     /**
      * {@inheritDoc}
      */
-    public function getContents(): string
+    public function getContents()
     {
         return $this->getResponse()->getBody()->getContents();
     }
