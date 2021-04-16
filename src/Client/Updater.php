@@ -135,6 +135,7 @@ class Updater
      *.    https://github.com/php-tuf/php-tuf/issues/162
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
+     *.    https://github.com/php-tuf/php-tuf/issues/21
      *
      * @param bool $force
      *   (optional) If false, return early if this updater has already been
