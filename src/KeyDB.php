@@ -79,31 +79,30 @@ class KeyDB
      *     An ArrayAccess object of key metadata. See self::addKey() and the TUF
      *     specification for the array structure.
      *
-     * @return string[]
-     *     An array of hashed key IDs for the key metadata. Each entry is a
-     *     string hash of the key signature and all its associated metadata.
-     *     There is one entry for each hashing algorithm specified in the
-     *     'keyid_hash_algorithms' child array.
+     * @return string
+     *     The hashed key ID for the key metadata using sha256.
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private static function computeKeyIds(\ArrayAccess $keyMeta): array
+    private static function computeKeyId(\ArrayAccess $keyMeta): string
     {
+        // @see https://github.com/secure-systems-lab/securesystemslib/blob/master/securesystemslib/keys.py
+        // The keyid_hash_algorithms array value is based on the TUF settings,
+        // it's not expected to be part of the key data. The fact that it is
+        // currently included is a quirk of the TUF python code that may be
+        // fixed in future versions. For simplicity, hard-code it using the
+        // normal TUF settings.
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],
             'scheme' => $keyMeta['scheme'],
-            'keyid_hash_algorithms' => $keyMeta['keyid_hash_algorithms'],
+            'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keyval' => ['public' => $keyMeta['keyval']['public']],
         ];
         $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
 
-        // Generate a hash of the key and its metadata for each of the listed
-        // keyid_hash_algorithms.
-        return array_map(function ($algo) use ($keyCanonicalForm) {
-            return hash($algo, $keyCanonicalForm, false);
-        }, $keyMeta['keyid_hash_algorithms']);
+        return hash('sha256', $keyCanonicalForm, false);
     }
 
     /**
@@ -139,10 +138,8 @@ class KeyDB
             throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
         }
         // One key ID for each $keyMeta['keyid_hash_algorithms'].
-        $computedKeyIds = self::computeKeyIds($keyMeta);
-        foreach ($computedKeyIds as $keyId) {
-            $this->keys[$keyId] = $keyMeta;
-        }
+        $computedKeyId = self::computeKeyId($keyMeta);
+        $this->keys[$computedKeyId] = $keyMeta;
     }
 
     /**
