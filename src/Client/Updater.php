@@ -674,7 +674,7 @@ class Updater
         }
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
-            if (in_array($delegatedRoleName, $searchedRoles)) {
+            if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // TUF-SPEC-v1.0.9 Section 5.4.5.1
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
