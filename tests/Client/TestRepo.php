@@ -44,7 +44,7 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetaData(string $fileName, int $maxBytes): PromiseInterface
+    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
         return $this->fetchFile($fileName);
     }
@@ -78,7 +78,7 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritdoc}
      */
-    public function fetchMetaDataIfExists(string $fileName, int $maxBytes):?string
+    public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
             return $this->fetchFile($fileName, $maxBytes)->wait();
@@ -114,7 +114,7 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @return void
      */
-    public function removeRepoFile(string $fileName):void
+    public function removeRepoFile(string $fileName): void
     {
         unset($this->repoFilesContents[$fileName]);
     }

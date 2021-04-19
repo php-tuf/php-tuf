@@ -5,12 +5,11 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
-use Tuf\Role;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\RootMetadata
  */
-class RootMetadataTest extends MetaDataBaseTest
+class RootMetadataTest extends MetadataBaseTest
 {
 
     use UntrustedExceptionTrait;
@@ -27,7 +26,7 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json): MetadataBase
     {
         return RootMetadata::createFromJson($json);
     }
@@ -35,7 +34,7 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
 
@@ -55,7 +54,7 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         $data = parent::providerValidField();
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'keys']);
@@ -81,7 +80,7 @@ class RootMetadataTest extends MetaDataBaseTest
      *
      * @dataProvider providerRequireRoles
      */
-    public function testRequiredRoles(string $missingRole)
+    public function testRequiredRoles(string $missingRole): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
@@ -98,7 +97,7 @@ class RootMetadataTest extends MetaDataBaseTest
      * @return string[][]
      *   The test cases.
      */
-    public function providerRequireRoles()
+    public function providerRequireRoles(): array
     {
         return static::getKeyedArray([
             ['root'],
@@ -111,7 +110,7 @@ class RootMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerOptionalFields()
+    public function providerOptionalFields(): array
     {
         $data = parent::providerOptionalFields();
         $data[] = [
@@ -129,7 +128,7 @@ class RootMetadataTest extends MetaDataBaseTest
      *
      * @return void
      */
-    public function testInvalidRoleName()
+    public function testInvalidRoleName(): void
     {
         $this->expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
@@ -145,15 +144,15 @@ class RootMetadataTest extends MetaDataBaseTest
      *
      * @return void
      */
-    public function testSupportsConsistentSnapshots() : void
+    public function testSupportsConsistentSnapshots(): void
     {
         $data = json_decode($this->localRepo[$this->validJson], true);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
-            /** @var \Tuf\Metadata\RootMetadata $metaData */
-            $metaData = static::callCreateFromJson(json_encode($data));
-            $metaData->setIsTrusted(true);
-            $this->assertSame($value, $metaData->supportsConsistentSnapshots());
+            /** @var \Tuf\Metadata\RootMetadata $metadata */
+            $metadata = static::callCreateFromJson(json_encode($data));
+            $metadata->setIsTrusted(true);
+            $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
     }
 
@@ -163,7 +162,7 @@ class RootMetadataTest extends MetaDataBaseTest
      * @return string[]
      *   The test cases for testUntrustedException().
      */
-    public function providerUntrustedException():array
+    public function providerUntrustedException(): array
     {
         return self::getKeyedArray([
             ['supportsConsistentSnapshots'],
@@ -179,11 +178,11 @@ class RootMetadataTest extends MetaDataBaseTest
     {
         $json = $this->localRepo[$this->validJson];
         $data = json_decode($json, true);
-        /** @var \Tuf\Metadata\RootMetadata $metaData */
-        $metaData = static::callCreateFromJson($json);
-        $metaData->setIsTrusted(true);
+        /** @var \Tuf\Metadata\RootMetadata $metadata */
+        $metadata = static::callCreateFromJson($json);
+        $metadata->setIsTrusted(true);
         $expectRoleNames = ['root', 'snapshot', 'targets', 'timestamp'];
-        $roles = $metaData->getRoles();
+        $roles = $metadata->getRoles();
         self::assertCount(4, $roles);
         foreach ($expectRoleNames as $expectRoleName) {
             self::assertSame($data['signed']['roles'][$expectRoleName]['threshold'], $roles[$expectRoleName]->getThreshold());

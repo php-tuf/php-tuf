@@ -6,7 +6,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
-class SnapshotMetadataTest extends MetaDataBaseTest
+class SnapshotMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
 
@@ -23,14 +23,14 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json): MetadataBase
     {
         return SnapshotMetadata::createFromJson($json);
     }
     /**
      * {@inheritdoc}
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
         $data[] = ['signed:meta'];
@@ -42,7 +42,7 @@ class SnapshotMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         $data = parent::providerValidField();
         $data[] = ['signed:meta', 'array'];
@@ -63,7 +63,7 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      *
      * @return void
      */
-    public function testUnsupportedFields(array $unsupportedField, $fieldValue):void
+    public function testUnsupportedFields(array $unsupportedField, $fieldValue): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $this->nestedChange($unsupportedField, $metadata, $fieldValue);
@@ -81,7 +81,7 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      * @return array[]
      *  The test cases.
      */
-    public function providerUnsupportedFields():array
+    public function providerUnsupportedFields(): array
     {
         return [
             'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
@@ -95,11 +95,11 @@ class SnapshotMetadataTest extends MetaDataBaseTest
      * @return string[]
      *   The test cases for testUntrustedException().
      */
-    public function providerUntrustedException():array
+    public function providerUntrustedException(): array
     {
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+            ['verifyNewMetadata', [$this->createMock(MetadataBase::class)]],
         ]);
     }
 }

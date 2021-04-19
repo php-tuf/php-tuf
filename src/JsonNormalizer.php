@@ -23,8 +23,9 @@ class JsonNormalizer
      * @todo This is a very incomplete implementation of
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
+     *     https://github.com/php-tuf/php-tuf/issues/14
      */
-    public static function asNormalizedJson(iterable $structure) : string
+    public static function asNormalizedJson(iterable $structure): string
     {
         self::rKeySort($structure);
         return json_encode($structure, JSON_UNESCAPED_SLASHES);
@@ -36,10 +37,10 @@ class JsonNormalizer
      * @param string $json
      *   The JSON string.
      *
-     * @return mixed
-     *   The decoded data.
+     * @return iterable
+     *   The data with all stdClass instances replaced with ArrayObject.
      */
-    public static function decode(string $json)
+    public static function decode(string $json): iterable
     {
         $data = json_decode($json);
         return static::replaceStdClassWithArrayObject($data);
@@ -100,7 +101,7 @@ class JsonNormalizer
      * @throws \RuntimeException
      *   Thrown if the an object other than \stdClass is found.
      */
-    private static function replaceStdClassWithArrayObject($data):iterable
+    private static function replaceStdClassWithArrayObject($data): iterable
     {
         if ($data instanceof \stdClass) {
             $data = new \ArrayObject($data);

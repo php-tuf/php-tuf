@@ -5,7 +5,7 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 
-class TimestampMetadataTest extends MetaDataBaseTest
+class TimestampMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
 
@@ -22,7 +22,7 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json) : MetadataBase
+    protected static function callCreateFromJson(string $json): MetadataBase
     {
         return TimestampMetadata::createFromJson($json);
     }
@@ -30,7 +30,7 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
         $data[] = ['signed:meta'];
@@ -44,7 +44,7 @@ class TimestampMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         $data = parent::providerValidField();
         $data[] = ['signed:meta', 'array'];
@@ -63,11 +63,11 @@ class TimestampMetadataTest extends MetaDataBaseTest
      * @return string[]
      *   The test cases for testUntrustedException().
      */
-    public function providerUntrustedException():array
+    public function providerUntrustedException(): array
     {
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewMetaData', [$this->createMock(MetadataBase::class)]],
+            ['verifyNewMetadata', [$this->createMock(MetadataBase::class)]],
         ]);
     }
 }

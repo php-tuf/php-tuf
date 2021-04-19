@@ -45,7 +45,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
      *     filename (characters other than alphanumeric characters, periods,
      *     underscores, or hyphens).
      */
-    protected function throwIfInvalidOffset($offset) : void
+    protected function throwIfInvalidOffset($offset): void
     {
         if (! is_string($offset) || !preg_match("|^[\w._-]+$|", $offset)) {
             throw new \OutOfBoundsException("Array offset '$offset' is not a valid durable storage key.");

@@ -11,7 +11,7 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
  */
-abstract class MetaDataBaseTest extends TestCase
+abstract class MetadataBaseTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
 
@@ -54,7 +54,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
-    abstract protected static function callCreateFromJson(string $json) : MetadataBase;
+    abstract protected static function callCreateFromJson(string $json): MetadataBase;
 
     /**
      * Tests for valid metadata.
@@ -64,22 +64,22 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerValidMetaData
+     * @dataProvider providerValidMetadata
      */
-    public function testValidMetaData(string $validJson) : void
+    public function testValidMetadata(string $validJson): void
     {
         $this->expectNotToPerformAssertions();
         static::callCreateFromJson($this->localRepo[$validJson]);
     }
 
     /**
-     * Dataprovider for testValidMetaData().
+     * Dataprovider for testValidMetadata().
      *
      * @return \string[][]
      *   The nested array containing all client fixture files for the type.
      *
      */
-    public function providerValidMetaData() : array
+    public function providerValidMetadata(): array
     {
         $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'tufclient/tufrepo/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
@@ -98,7 +98,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      *  @return void
      */
-    public function testInvalidType() : void
+    public function testInvalidType(): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
@@ -111,8 +111,10 @@ abstract class MetaDataBaseTest extends TestCase
 
     /**
      * @covers ::getType
+     *
+     *  @return void
      */
-    public function testGetType()
+    public function testGetType(): void
     {
         $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
         $this->assertSame($metadata->getType(), $this->expectedType);
@@ -120,8 +122,10 @@ abstract class MetaDataBaseTest extends TestCase
 
     /**
      * @covers ::getRole
+     *
+     *  @return void
      */
-    public function testGetRole()
+    public function testGetRole(): void
     {
         $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
         $this->assertSame($this->expectedType, $metadata->getRole());
@@ -139,7 +143,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerExpires
      */
-    public function testExpires(string $expires, bool $valid) : void
+    public function testExpires(string $expires, bool $valid): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['expires'] = $expires;
@@ -166,7 +170,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerSpecVersion
      */
-    public function testSpecVersion(string $version, bool $valid) : void
+    public function testSpecVersion(string $version, bool $valid): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $metadata['signed']['spec_version'] = $version;
@@ -195,7 +199,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerExpectedField
      */
-    public function testMissingField(string $expectedField, string $exception = null) : void
+    public function testMissingField(string $expectedField, string $exception = null): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
@@ -223,7 +227,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerOptionalFields
      */
-    public function testOptionalFields(string $optionalField, $value) : void
+    public function testOptionalFields(string $optionalField, $value): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $this->nestedChange(explode(':', $optionalField), $metadata, $value);
@@ -237,7 +241,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return mixed[]
      *   The test cases for testOptionalFields().
      */
-    public function providerOptionalFields()
+    public function providerOptionalFields(): array
     {
         return static::getKeyedArray([
             ['signed:ignored_value', 1],
@@ -254,7 +258,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      */
-    protected function nestedUnset(array $keys, array &$data) : void
+    protected function nestedUnset(array $keys, array &$data): void
     {
         $key = array_shift($keys);
         if ($keys) {
@@ -277,7 +281,7 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @dataProvider providerValidField
      */
-    public function testInvalidField(string $expectedField, string $expectedType) : void
+    public function testInvalidField(string $expectedField, string $expectedType): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $keys = explode(':', $expectedField);
@@ -313,7 +317,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return array
      *   Array of arrays of expires, and whether it should be valid.
      */
-    public function providerExpires() : array
+    public function providerExpires(): array
     {
         return static::getKeyedArray([
             ['1970', false],
@@ -336,7 +340,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return array
      *   Array of arrays of spec version, and whether it should be valid.
      */
-    public function providerSpecVersion() : array
+    public function providerSpecVersion(): array
     {
         return [
             ['1', false],
@@ -355,7 +359,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return array
      *   Array of arrays of expected field name, and optional exception message.
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         return [
             ['signed'],
@@ -375,7 +379,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return array
      *   Array of arrays of expected field name, and field data type.
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         return [
             ['signed', 'array'],
@@ -401,7 +405,7 @@ abstract class MetaDataBaseTest extends TestCase
      * @return string
      *   The first key.
      */
-    protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys) : string
+    protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
         $realPath = static::getFixturesRealPath('TUFTestFixtureDelegated', "tufclient/tufrepo/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
@@ -420,13 +424,13 @@ abstract class MetaDataBaseTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerValidMetaData
+     * @dataProvider providerValidMetadata
      */
-    public function testNormalization(string $validJson) : void
+    public function testNormalization(string $validJson): void
     {
         $contents = $this->localRepo[$validJson];
         $json = json_decode($contents);
-        $metaData = static::callCreateFromJson($contents);
-        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metaData->getSigned()));
+        $metadata = static::callCreateFromJson($contents);
+        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metadata->getSigned()));
     }
 }

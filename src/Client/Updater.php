@@ -97,6 +97,7 @@ class Updater
      *     - targets_path: (string) The path within the repository for targets
      *       (the actual update data that has been signed).
      *     - confined_target_dirs: (array) @todo What is this for?
+     *       https://github.com/php-tuf/php-tuf/issues/161
      * @param \ArrayAccess $durableStorage
      *     An implementation of \ArrayAccess that stores its contents durably,
      *     as in to disk or a database. Values written for a given repository
@@ -121,7 +122,7 @@ class Updater
      * @return string
      *   The type.
      */
-    private static function getFileNameType(string $fileName)
+    private static function getFileNameType(string $fileName): string
     {
         $parts = explode('.', $fileName);
         array_pop($parts);
@@ -131,8 +132,10 @@ class Updater
     /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
+     *     https://github.com/php-tuf/php-tuf/issues/162
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
+     *     https://github.com/php-tuf/php-tuf/issues/21
      *
      * @param bool $force
      *   (optional) If false, return early if this updater has already been
@@ -142,8 +145,17 @@ class Updater
      *     TRUE if the data was successfully refreshed.
      *
      * @see https://github.com/php-tuf/php-tuf/issues/21
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     *   Throw if a freeze attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *   Throw if a rollback attack is detected.
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     *   Thrown if the signature threshold has not be reached.
      */
-    public function refresh(bool $force = false) : bool
+    public function refresh(bool $force = false): bool
     {
         if ($force) {
             $this->isRefreshed = false;
@@ -193,7 +205,7 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.9 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $newTimestampData->verifyNewMetaData($newSnapshotData);
+            $newTimestampData->verifyNewMetadata($newSnapshotData);
         } else {
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
@@ -236,7 +248,7 @@ class Updater
      * @throws FormatException
      *     Thrown if the timestamp string format is not valid.
      */
-    protected static function metadataTimestampToDateTime(string $timestamp) : \DateTimeImmutable
+    protected static function metadataTimestampToDateTime(string $timestamp): \DateTimeImmutable
     {
         $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
         if ($dateTime === false) {
@@ -263,7 +275,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
-    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null) : void
+    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         if ($localMetadata->getType() !== $remoteMetadata->getType()) {
             throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
@@ -317,7 +329,7 @@ class Updater
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now) :void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now): void
     {
         $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
         if ($metadataExpiration < $now) {
@@ -329,37 +341,39 @@ class Updater
     /**
      * Checks signatures on a verifiable structure.
      *
-     * @param \Tuf\Metadata\MetadataBase $metaData
+     * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata to check signatures on.
      *
      * @return void
      *
      * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
-     *   Thrown if the signature thresold has not be reached.
+     *   Thrown if the signature threshold has not be reached.
      */
-    protected function checkSignatures(MetadataBase $metaData) : void
+    protected function checkSignatures(MetadataBase $metadata): void
     {
-        $signatures = $metaData->getSignatures();
+        $signatures = $metadata->getSignatures();
 
-        $role = $this->roleDB->getRole($metaData->getRole());
+        $role = $this->roleDB->getRole($metadata->getRole());
         $needVerified = $role->getThreshold();
-        $haveVerified = 0;
+        $verifiedKeySignatures = [];
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metaData->getSigned());
+        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
         foreach ($signatures as $signature) {
-            if ($role->isKeyIdAcceptable($signature['keyid'])) {
-                $haveVerified += (int) $this->verifySingleSignature($canonicalBytes, $signature);
+            // Don't allow the same key to be counted twice.
+            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
+                $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
-            //     bad signatures even this method returns TRUE because the
+            //     bad signatures even if this method returns TRUE because the
             //     threshold has been met.
-            if ($haveVerified >= $needVerified) {
+            //     https://github.com/php-tuf/php-tuf/issues/172
+            if (count($verifiedKeySignatures) >= $needVerified) {
                 break;
             }
         }
 
-        if ($haveVerified < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on " . $metaData->getRole());
+        if (count($verifiedKeySignatures) < $needVerified) {
+            throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
         }
     }
 
@@ -376,7 +390,7 @@ class Updater
      * @return boolean
      *     TRUE if the signature is valid for the.
      */
-    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta)
+    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
@@ -388,6 +402,7 @@ class Updater
         $sigBytes = hex2bin($signatureMeta['sig']);
         // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
+        //     https://github.com/php-tuf/php-tuf/issues/168
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
@@ -409,13 +424,13 @@ class Updater
      *
      * @return void
      */
-    private function updateRoot(RootMetadata &$rootData)
+    private function updateRoot(RootMetadata &$rootData): void
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
         // *TUF-SPEC-v1.0.9 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchMetaDataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+        while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
@@ -481,7 +496,7 @@ class Updater
      * @return boolean
      *   True if the keys for the role have been rotated, otherwise false.
      */
-    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role)
+    private static function hasRotatedKeys(RootMetadata $previousRootData, RootMetadata $newRootData, string $role): bool
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
@@ -501,7 +516,7 @@ class Updater
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchMetaData($fileName, $maxBytes)
+        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
             ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
                 $this->checkLength($data, $maxBytes, $fileName);
                 return $data;
@@ -522,7 +537,7 @@ class Updater
      * @throws \Tuf\Exception\DownloadSizeException
      *   If the stream's length exceeds $maxBytes in size.
      */
-    private function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
+    protected function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
     {
         $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         $size = $data->getSize();
@@ -533,6 +548,7 @@ class Updater
             }
         } else {
             // @todo Handle non-seekable streams.
+            // https://github.com/php-tuf/php-tuf/issues/169
             $data->rewind();
             $data->read($maxBytes);
 
@@ -551,7 +567,7 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param \Tuf\Metadata\TargetsMetadata $targetsMetaData
+     * @param \Tuf\Metadata\TargetsMetadata $targetsMetadata
      *   The targets metadata containing the information for $target.
      * @param \Psr\Http\Message\StreamInterface $data
      *   A stream pointing to the downloaded target data.
@@ -561,14 +577,14 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    public function verify(string $target, TargetsMetadata $targetsMetaData, StreamInterface $data): void
+    public function verify(string $target, TargetsMetadata $targetsMetadata, StreamInterface $data): void
     {
         $this->refresh();
 
-        $maxBytes = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+        $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
 
-        $hashes = $targetsMetaData->getHashes($target);
+        $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
             throw new MetadataException("No trusted hashes are available for '$target'");
         }
@@ -607,22 +623,21 @@ class Updater
     {
         $this->refresh();
 
-        $targetsMetaData = $this->getMetadataForTarget($target);
-        if ($targetsMetaData === null) {
+        $targetsMetadata = $this->getMetadataForTarget($target);
+        if ($targetsMetadata === null) {
             return new RejectedPromise(new NotFoundException($target, 'Target'));
         }
 
-
         // If the target isn't known, immediately return a rejected promise.
         try {
-            $length = $targetsMetaData->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target, $targetsMetaData) {
-                $this->verify($target, $targetsMetaData, $stream);
+            ->then(function (StreamInterface $stream) use ($target, $targetsMetadata) {
+                $this->verify($target, $targetsMetadata, $stream);
                 return $stream;
             });
     }
@@ -700,7 +715,7 @@ class Updater
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         // TUF-SPEC-v1.0.9 Section 5.4.1
-        $newSnapshotData->verifyNewMetaData($newTargetsData);
+        $newSnapshotData->verifyNewMetadata($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.2
         $this->checkSignatures($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.3

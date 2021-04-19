@@ -9,11 +9,9 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
-use PhpParser\Node\Arg;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
 /**
@@ -126,7 +124,7 @@ class GuzzleFileFetcherTest extends TestCase
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
         $this->getFetcher()
-            ->fetchMetaData('test.json', $maxBytes ?? strlen($this->testContent))
+            ->fetchMetadata('test.json', $maxBytes ?? strlen($this->testContent))
             ->wait();
     }
 
@@ -155,7 +153,7 @@ class GuzzleFileFetcherTest extends TestCase
         $this->expectException($exceptionClass);
         $this->expectExceptionCode($exceptionCode ?? $statusCode);
         $this->getFetcher()
-            ->fetchMetaDataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
+            ->fetchMetadataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
     }
 
     /**
@@ -167,11 +165,11 @@ class GuzzleFileFetcherTest extends TestCase
     {
         $fetcher = $this->getFetcher();
         $this->mockHandler->append(new Response(200, [], $this->testContent));
-        $this->assertSame($fetcher->fetchMetaData('test.json', 256)->wait()->getContents(), $this->testContent);
+        $this->assertSame($fetcher->fetchMetadata('test.json', 256)->wait()->getContents(), $this->testContent);
         $this->mockHandler->append(new Response(200, [], $this->testContent));
-        $this->assertSame($fetcher->fetchMetaDataIfExists('test.json', 256), $this->testContent);
+        $this->assertSame($fetcher->fetchMetadataIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));
-        $this->assertNull($fetcher->fetchMetaDataIfExists('test.json', 256));
+        $this->assertNull($fetcher->fetchMetadataIfExists('test.json', 256));
     }
 
     /**
@@ -197,7 +195,7 @@ class GuzzleFileFetcherTest extends TestCase
             ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
-        $fetcher->fetchMetaData('root.json', 128);
+        $fetcher->fetchMetadata('root.json', 128);
         $fetcher->fetchTarget('test.txt', 128);
         $fetcher->fetchTarget('test.txt', 128, [], 'https://example.net/foo.php');
     }

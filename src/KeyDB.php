@@ -44,7 +44,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false)
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): KeyDB
     {
         $db = new self();
 
@@ -63,7 +63,7 @@ class KeyDB
      *
      * @see src/constants.php
      */
-    public static function getSupportedKeyTypes()
+    public static function getSupportedKeyTypes(): array
     {
         static $types = [];
         if (count($types) == 0) {
@@ -89,7 +89,7 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    private static function computeKeyIds(\ArrayAccess $keyMeta)
+    private static function computeKeyIds(\ArrayAccess $keyMeta): array
     {
         $keyCanonicalStruct = [
             'keytype' => $keyMeta['keytype'],
@@ -131,10 +131,11 @@ class KeyDB
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
-    public function addKey(\ArrayAccess $keyMeta)
+    public function addKey(\ArrayAccess $keyMeta): void
     {
         if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.
+            // https://github.com/php-tuf/php-tuf/issues/160
             throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
         }
         // One key ID for each $keyMeta['keyid_hash_algorithms'].
@@ -159,7 +160,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public function getKey(string $keyId):\ArrayObject
+    public function getKey(string $keyId): \ArrayObject
     {
         if (empty($this->keys[$keyId])) {
             throw new NotFoundException($keyId, 'key');

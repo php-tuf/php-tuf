@@ -9,7 +9,7 @@ use Tuf\Metadata\TargetsMetadata;
 /**
  * @coversDefaultClass \Tuf\Metadata\TargetsMetadata
  */
-class TargetsMetadataTest extends MetaDataBaseTest
+class TargetsMetadataTest extends MetadataBaseTest
 {
 
     /**
@@ -26,7 +26,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json, string $role = null) : MetadataBase
+    protected static function callCreateFromJson(string $json, string $role = null): MetadataBase
     {
         return TargetsMetadata::createFromJson($json, $role);
     }
@@ -81,7 +81,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerExpectedField() : array
+    public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
         $data[] = ['signed:delegations'];
@@ -107,7 +107,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function providerValidField() : array
+    public function providerValidField(): array
     {
         $data = parent::providerValidField();
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
@@ -171,7 +171,7 @@ class TargetsMetadataTest extends MetaDataBaseTest
     /**
      * {@inheritdoc}
      */
-    public function testGetRole()
+    public function testGetRole(): void
     {
         parent::testGetRole();
         // Confirm that if a role name is specified this will be returned.

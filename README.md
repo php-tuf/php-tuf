@@ -1,5 +1,11 @@
 # PHP-TUF
 
+## IMPORTANT
+PHP-TUF is in a pre-release state and is not considered a complete or secure version of the TUF framework.
+It should currently only be used for testing, development and feedback.
+
+*Do not use in production for secure target downloads!!*
+
 PHP-TUF is a PHP implementation of [The Update Framework
 (TUF)](https://theupdateframework.io/) to provide signing and verification for
 secure PHP application updates. [Read the TUF
@@ -35,7 +41,7 @@ project's release creation process. This will require:
 - Python 3.9+
 - PIP 19+
 
-@todo More detailed instructions.
+@todo More detailed instructions. https://github.com/php-tuf/php-tuf/issues/170
 
 ### Server environment setup for the Python TUF CLI
 

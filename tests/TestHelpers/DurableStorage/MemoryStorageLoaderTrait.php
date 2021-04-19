@@ -27,7 +27,7 @@ trait MemoryStorageLoaderTrait
      *     Memory storage containing the test client data.
      *
      */
-    public function memoryStorageFromFixture(string $fixturesSet, string $path) : MemoryStorage
+    public function memoryStorageFromFixture(string $fixturesSet, string $path): MemoryStorage
     {
         $storage = new MemoryStorage();
 
