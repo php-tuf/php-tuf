@@ -661,7 +661,8 @@ class Updater
     private function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
         if ($targetsMetadata === null) {
-            /** @var TargetsMetadata $targetsMetadata */
+            // If no target metadata is provided then start searching with the top level targets.json file.
+            /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
             $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
@@ -692,7 +693,10 @@ class Updater
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
-            if (!$delegatedRole->isTerminating()) {
+            if ($delegatedRole->isTerminating()) {
+                // If the role is terminating then we do not search this targets metadata for additional delegations.
+                // @todo Add tests for terminating delegations that have further delegations.
+                //   Is it even possible to create a test fixture with this setup? https://github.com/php-tuf/php-tuf/issues/142
                 continue;
             }
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
