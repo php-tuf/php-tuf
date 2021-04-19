@@ -15,6 +15,30 @@
 - **Additional dependencies:** [random_compat](https://github.com/paragonie/random_compat)
   (Same policies.)
 
+### Guzzle PHP HTTP client
+- **Repository:** https://github.com/guzzle/guzzle
+- **Release cycle:** https://github.com/guzzle/guzzle/releases
+- **Security policies:** https://github.com/guzzle/guzzle/security/policy
+- **Security issue reporting:** security@guzzlephp.org
+- **Contacts:** N/A
+- **Additional dependencies:** Guzzle dependencies include php, ext-json, psr/http-client. It has additional dev dependencies.
+
+### Symfony Validator
+- **Repository:** https://github.com/symfony/validator
+- **Release cycle:** https://github.com/symfony/validator/releases
+- **Security policies:** https://github.com/symfony/validator/security/policy
+- **Security issue reporting:** security@symfony.com
+- **Contacts:** N/A
+- **Additional dependencies:** The majority of dependencies are other Symfony packages. Dev dependencies include doctrine/annotations, doctrine/cache, and egulias/email-validator.
+
+### DeepCopy
+- **Repository:** https://github.com/myclabs/DeepCopy
+- **Release cycle:** https://github.com/myclabs/DeepCopy/releases
+- **Security policies:** There's no security policy on the Git repo.
+- **Security issue reporting:** ?
+- **Contacts:** N/A
+- **Additional dependencies:** Only php. There are additional dev dependencies.
+
 ## Development PHP dependencies
 
 ### PHPUnit
@@ -39,16 +63,6 @@
   policy](https://symfony.com/doc/master/contributing/code/security.html)
 - **Security issue reporting:** `security [at] symfony.com`
 - **Contacts:** fabpot, michaelcullum
-- **Additional dependencies:** None
-
-### PHP_CodeSniffer
-- **Repository:** https://github.com/squizlabs/PHP_CodeSniffer
-- **Release cycle:** No formal policy documented. Follows semver. Old
-  major versions appear to be supported alongside new. Old minor versions
-  do not appear to receive support.
-- **Security policies:** None listed
-- **Security issue reporting:** ?
-- **Contacts:** ?
 - **Additional dependencies:** None
 
 ## Development Python dependencies
