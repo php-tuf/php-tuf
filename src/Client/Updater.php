@@ -522,7 +522,7 @@ class Updater
      * @throws \Tuf\Exception\DownloadSizeException
      *   If the stream's length exceeds $maxBytes in size.
      */
-    private function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
+    protected function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
     {
         $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
         $size = $data->getSize();
@@ -559,7 +559,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    public function verify(string $target, StreamInterface $data): void
+    protected function verify(string $target, StreamInterface $data): void
     {
         $this->refresh();
 
