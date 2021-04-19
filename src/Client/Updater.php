@@ -643,6 +643,8 @@ class Updater
     }
 
     /**
+     * Gets a target metadata object that contains the specified target.
+     *
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
@@ -655,7 +657,6 @@ class Updater
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata with a match for the target, or null no match is
      *   found.
-     * @throws \Tuf\Exception\MetadataException
      */
     private function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
