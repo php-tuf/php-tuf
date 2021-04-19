@@ -102,13 +102,13 @@ class RoleTest extends TestCase
         $data = $data ?? [
             'threshold' => 1000,
             'keyids' => [
-              'good_key_1',
-              'good_key_2',
+                'good_key_1',
+                'good_key_2',
             ]
-          ];
+        ];
         return Role::createFromMetadata(
-          new \ArrayObject($data),
-          'my_role'
+            new \ArrayObject($data),
+            'my_role'
         );
     }
 }

@@ -3,7 +3,6 @@
 namespace Tuf\Tests\Unit;
 
 use Tuf\DelegatedRole;
-use PHPUnit\Framework\TestCase;
 use Tuf\Role;
 
 /**
@@ -34,12 +33,15 @@ class DelegatedRoleTest extends RoleTest
     public function providerInvalidMetadata(): array
     {
         return [
-          'nothing' => [[]],
-          'no paths' => [[
-            'name' => 'a role',
-            'threshold' => 1,
-            'keyids' => ['good_key'],
-            'terminating' => false]],
+            'nothing' => [[]],
+            'no paths' => [
+                [
+                    'name' => 'a role',
+                    'threshold' => 1,
+                    'keyids' => ['good_key'],
+                    'terminating' => false,
+                ],
+            ],
         ];
     }
 
@@ -100,18 +102,18 @@ class DelegatedRoleTest extends RoleTest
     protected function createTestRole(?array $data = null): Role
     {
         $data = $data ?? [
-          'name' => 'my_role',
+            'name' => 'my_role',
             'threshold' => 1000,
             'keyids' => [
-              'good_key_1',
-              'good_key_2',
+                'good_key_1',
+                'good_key_2',
             ],
             'terminating' => false,
             'paths' => [
-              'path1',
-              'path2',
+                'path1',
+                'path2',
             ],
-          ];
+        ];
         return DelegatedRole::createFromMetadata(new \ArrayObject($data));
     }
 }
