@@ -97,7 +97,7 @@ class Updater
      *     - targets_path: (string) The path within the repository for targets
      *       (the actual update data that has been signed).
      *     - confined_target_dirs: (array) @todo What is this for?
-     *.      https://github.com/php-tuf/php-tuf/issues/161
+     *       https://github.com/php-tuf/php-tuf/issues/161
      * @param \ArrayAccess $durableStorage
      *     An implementation of \ArrayAccess that stores its contents durably,
      *     as in to disk or a database. Values written for a given repository
@@ -132,10 +132,10 @@ class Updater
     /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
-     *.    https://github.com/php-tuf/php-tuf/issues/162
+     *     https://github.com/php-tuf/php-tuf/issues/162
      * @todo The Python implementation has an optional flag to "unsafely update
      *     root if necessary". Do we need it?
-     *.    https://github.com/php-tuf/php-tuf/issues/21
+     *     https://github.com/php-tuf/php-tuf/issues/21
      *
      * @param bool $force
      *   (optional) If false, return early if this updater has already been
@@ -402,7 +402,7 @@ class Updater
         $sigBytes = hex2bin($signatureMeta['sig']);
         // @todo Check that the key type in $signatureMeta is ed25519; return
         //     false if not.
-        //.    https://github.com/php-tuf/php-tuf/issues/168
+        //     https://github.com/php-tuf/php-tuf/issues/168
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
