@@ -660,6 +660,7 @@ class Updater
     private function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
         if ($targetsMetadata === null) {
+            /** @var TargetsMetadata $targetsMetadata */
             $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
@@ -685,6 +686,7 @@ class Updater
             }
 
             $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+            /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
             $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
