@@ -135,6 +135,7 @@ class KeyDB
     {
         if (! in_array($keyMeta['keytype'], self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.
+            // https://github.com/php-tuf/php-tuf/issues/160
             throw new \Exception("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
         }
         // One key ID for each $keyMeta['keyid_hash_algorithms'].

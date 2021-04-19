@@ -66,5 +66,5 @@
 - **Additional dependencies:** None
 
 ## Development Python dependencies
-@todo
+@todo Document dependencies here. https://github.com/php-tuf/php-tuf/issues/159
 

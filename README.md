@@ -41,7 +41,7 @@ project's release creation process. This will require:
 - Python 3.9+
 - PIP 19+
 
-@todo More detailed instructions.
+@todo More detailed instructions. https://github.com/php-tuf/php-tuf/issues/170
 
 ### Server environment setup for the Python TUF CLI
 
