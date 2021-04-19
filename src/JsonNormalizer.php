@@ -23,7 +23,7 @@ class JsonNormalizer
      * @todo This is a very incomplete implementation of
      *     http://wiki.laptop.org/go/Canonical_JSON.
      *     Consider creating a separate library under php-tuf just for this?
-     *.    https://github.com/php-tuf/php-tuf/issues/14
+     *     https://github.com/php-tuf/php-tuf/issues/14
      */
     public static function asNormalizedJson(iterable $structure): string
     {
