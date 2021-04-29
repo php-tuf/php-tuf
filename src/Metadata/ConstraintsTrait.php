@@ -136,7 +136,7 @@ trait ConstraintsTrait
             // library.
             'keyid_hash_algorithms' => [
                 new Optional(),
-                new EqualTo(['value' =>["sha256", "sha512"]]),
+                new EqualTo(['value' => ["sha256", "sha512"]]),
             ],
             'keytype' => [
                 new Type(['type' => 'string']),
