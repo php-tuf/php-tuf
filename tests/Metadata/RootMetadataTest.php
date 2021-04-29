@@ -58,7 +58,6 @@ class RootMetadataTest extends MetadataBaseTest
     {
         $data = parent::providerValidField();
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'keys']);
-        $data[] = ["signed:keys:$firstKey:keyid_hash_algorithms", 'array'];
         $data[] = ["signed:keys:$firstKey:keytype", 'string'];
         $data[] = ["signed:keys:$firstKey:keyval", 'array'];
         $data[] = ["signed:keys:$firstKey:keyval:public", 'string'];
@@ -192,5 +191,23 @@ class RootMetadataTest extends MetadataBaseTest
             }
             self::assertFalse($roles[$expectRoleName]->isKeyIdAcceptable('nobodys_key'));
         }
+    }
+
+    /**
+     * Test that keyid_hash_algorithms must equal the exact value.
+     *
+     * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
+     */
+    public function testKeyidHashAlgorithms()
+    {
+        $json = $this->localRepo[$this->validJson];
+        $data = json_decode($json, true);
+        $keyId = key($data['signed']['keys']);
+        $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
+        self::expectException(MetadataException::class);
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][keys][$keyId][keyid_hash_algorithms]:", '/');
+        $expectedMessage .= '.* This value should be equal to array';
+        self::expectExceptionMessageMatches("/$expectedMessage/s");
+        static::callCreateFromJson(json_encode($data));
     }
 }

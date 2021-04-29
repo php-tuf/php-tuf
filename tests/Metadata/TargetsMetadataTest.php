@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests\Metadata;
 
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TargetsMetadata;
@@ -163,5 +164,23 @@ class TargetsMetadataTest extends MetadataBaseTest
         // Confirm that if a role name is specified this will be returned.
         $metadata = static::callCreateFromJson($this->localRepo[$this->validJson], 'other_role');
         $this->assertSame('other_role', $metadata->getRole());
+    }
+
+    /**
+     * Test that keyid_hash_algorithms must equal the exact value.
+     *
+     * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
+     */
+    public function testKeyidHashAlgorithms()
+    {
+        $json = $this->localRepo[$this->validJson];
+        $data = json_decode($json, true);
+        $keyId = key($data['signed']['delegations']['keys']);
+        $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
+        self::expectException(MetadataException::class);
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
+        $expectedMessage .= '.* This value should be equal to array';
+        self::expectExceptionMessageMatches("/$expectedMessage/s");
+        static::callCreateFromJson(json_encode($data));
     }
 }
