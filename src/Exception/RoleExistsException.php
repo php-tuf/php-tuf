@@ -7,5 +7,4 @@ namespace Tuf\Exception;
  */
 class RoleExistsException extends TufException
 {
-
 }
