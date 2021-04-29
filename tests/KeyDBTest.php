@@ -3,7 +3,6 @@
 namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -32,15 +31,12 @@ class KeyDBTest extends TestCase
         $keyDb = KeyDB::createFromRootMetadata($rootMetadata);
         self::assertInstanceOf(KeyDB::class, $keyDb);
         // Get the first key for comparison.
-        $key = $rootMetadata->getKeys()->getIterator()->current();
-        $jsonEncodedKey = json_encode($key);
-        // Re-create the the key id which can be used by getKey().
-        $keyNormalized = JsonNormalizer::asNormalizedJson($key);
-        $keyId256 = hash('sha256', $keyNormalized);
-        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId256)));
-
-        // Ensure that changing a value in the key does not affect the internal state of the KeyDB object.
-        $key256['keyval']['new_key'] = 'new_value';
-        self::assertSame($jsonEncodedKey, json_encode($keyDb->getKey($keyId256)));
+        $keys = $rootMetadata->getKeys();
+        $key = array_shift($keys);
+        $retrievedKey = $keyDb->getKey($key->getComputedKeyId());
+        // Ensure the retrieved key is the same.
+        self::assertSame($key->getPublic(), $retrievedKey->getPublic());
+        self::assertSame($key->getType(), $retrievedKey->getType());
+        self::assertSame($key->getComputedKeyId(), $retrievedKey->getComputedKeyId());
     }
 }
