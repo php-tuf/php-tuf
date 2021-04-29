@@ -130,7 +130,7 @@ trait ConstraintsTrait
         return new Collection([
             'keyid_hash_algorithms' => [
                 new Optional(),
-                new EqualTo(["sha256", "sha512"]),
+                new EqualTo(['value' =>["sha256", "sha512"]]),
             ],
             'keytype' => [
                 new Type(['type' => 'string']),
