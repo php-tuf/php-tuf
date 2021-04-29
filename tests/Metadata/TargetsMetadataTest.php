@@ -175,7 +175,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     {
         $json = $this->localRepo[$this->validJson];
         $data = json_decode($json, true);
-        $keyId = array_keys($data['signed']['delegations']['keys'])[0];
+        $keyId = key($data['signed']['delegations']['keys']);
         $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
         self::expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');

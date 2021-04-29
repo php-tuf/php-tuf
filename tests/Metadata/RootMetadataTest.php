@@ -202,7 +202,7 @@ class RootMetadataTest extends MetadataBaseTest
     {
         $json = $this->localRepo[$this->validJson];
         $data = json_decode($json, true);
-        $keyId = array_keys($data['signed']['keys'])[0];
+        $keyId = key($data['signed']['keys']);
         $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
         self::expectException(MetadataException::class);
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][keys][$keyId][keyid_hash_algorithms]:", '/');
