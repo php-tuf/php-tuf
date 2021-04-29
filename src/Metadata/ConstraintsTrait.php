@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
@@ -128,7 +129,8 @@ trait ConstraintsTrait
     {
         return new Collection([
             'keyid_hash_algorithms' => [
-                new EqualTo(["sha256", "sha512"])
+                new Optional(),
+                new EqualTo(["sha256", "sha512"]),
             ],
             'keytype' => [
                 new Type(['type' => 'string']),

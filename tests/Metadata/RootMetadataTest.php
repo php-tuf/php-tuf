@@ -198,7 +198,8 @@ class RootMetadataTest extends MetadataBaseTest
      *
      * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
      */
-    public function testKeyidHashAlgorithms() {
+    public function testKeyidHashAlgorithms()
+    {
         $json = $this->localRepo[$this->validJson];
         $data = json_decode($json, true);
         $keyId = array_keys($data['signed']['keys'])[0];
