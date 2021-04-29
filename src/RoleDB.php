@@ -3,6 +3,7 @@
 namespace Tuf;
 
 use Tuf\Exception\NotFoundException;
+use Tuf\Exception\RoleExistsException;
 use Tuf\Metadata\RootMetadata;
 
 /**
@@ -68,7 +69,7 @@ class RoleDB
     public function addRole(Role $role): void
     {
         if ($this->roleExists($role->getName())) {
-            throw new \Exception('Role already exists: ' . $role->getName());
+            throw new RoleExistsException('Role already exists: ' . $role->getName());
         }
 
         $this->roles[$role->getName()] = $role;
