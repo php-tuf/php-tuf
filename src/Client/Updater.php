@@ -670,8 +670,8 @@ class Updater
         }
 
         $delegatedKeys = $targetsMetadata->getDelegatedKeys();
-        foreach ($delegatedKeys as $delegatedKey) {
-            $this->keyDB->addKey($delegatedKey);
+        foreach ($delegatedKeys as $keyId => $delegatedKey) {
+            $this->keyDB->addKey($keyId, $delegatedKey);
         }
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
