@@ -206,15 +206,22 @@ class UpdaterTest extends TestCase
      */
     public function testVerifiedDelegatedDownload(): void
     {
-        $fixturesSet = 'TUFTestFixtureDelegated';
+        $fixturesSet = 'TUFTestFixtureNestedDelegated';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testunclaimedtarget.txt', false);
-        $testFileContents = file_get_contents($testFilePath);
-        $this->testRepo->repoFilesContents['testunclaimedtarget.txt'] = $testFileContents;
-        $this->assertSame($testFileContents, $updater->download('testunclaimedtarget.txt')->wait()->getContents());
+        $delegatedFiles = [
+            'level_1_target.txt',
+            'level_1_2_target.txt',
+            'level_1_2_3_target.txt',
+        ];
+        foreach ($delegatedFiles as $delegatedFile) {
+            $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
+            $testFileContents = file_get_contents($testFilePath);
+            $this->testRepo->repoFilesContents[$delegatedFile] = $testFileContents;
+            $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
+        }
     }
 
     /**
