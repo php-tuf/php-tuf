@@ -566,8 +566,6 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param \Tuf\Metadata\TargetsMetadata $targetsMetadata
-     *   The targets metadata containing the information for $target.
      * @param \Psr\Http\Message\StreamInterface $data
      *   A stream pointing to the downloaded target data.
      *
@@ -576,10 +574,11 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    protected function verify(string $target, TargetsMetadata $targetsMetadata, StreamInterface $data): void
+    protected function verify(string $target, StreamInterface $data): void
     {
         $this->refresh();
 
+        $targetsMetadata = $this->getMetadataForTarget($target);
         $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
 
@@ -636,7 +635,7 @@ class Updater
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
             ->then(function (StreamInterface $stream) use ($target, $targetsMetadata) {
-                $this->verify($target, $targetsMetadata, $stream);
+                $this->verify($target, $stream);
                 return $stream;
             });
     }
