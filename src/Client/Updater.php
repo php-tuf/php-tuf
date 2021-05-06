@@ -576,7 +576,7 @@ class Updater
      * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
-    public function verify(string $target, TargetsMetadata $targetsMetadata, StreamInterface $data): void
+    protected function verify(string $target, TargetsMetadata $targetsMetadata, StreamInterface $data): void
     {
         $this->refresh();
 
