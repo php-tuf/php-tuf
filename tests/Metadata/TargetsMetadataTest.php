@@ -88,7 +88,6 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ['signed:delegations'];
         $data[] = ['signed:delegations:keys'];
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'keys']);
-        $data[] = ["signed:delegations:keys:$firstKey:keyid_hash_algorithms"];
         $data[] = ["signed:delegations:keys:$firstKey:keytype"];
         $data[] = ["signed:delegations:keys:$firstKey:keyval"];
         $data[] = ["signed:delegations:keys:$firstKey:keyval:public"];

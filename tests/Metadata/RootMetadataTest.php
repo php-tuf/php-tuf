@@ -40,7 +40,6 @@ class RootMetadataTest extends MetadataBaseTest
 
         $data[] = ['signed:keys'];
         $firstKey = $this->getFixtureNestedArrayFirstKey('1.root.json', ['signed', 'keys']);
-        $data[] = ["signed:keys:$firstKey:keyid_hash_algorithms"];
         $data[] = ["signed:keys:$firstKey:keytype"];
         $data[] = ["signed:keys:$firstKey:keyval"];
         $data[] = ["signed:keys:$firstKey:scheme"];

@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Key;
 use Tuf\Role;
 
 class RootMetadata extends MetadataBase
@@ -70,19 +71,17 @@ class RootMetadata extends MetadataBase
      * @param boolean $allowUntrustedAccess
      *   Whether this method should access even if the metadata is not trusted.
      *
-     * @return \ArrayObject
-     *   An ArrayObject of keys information where the array keys are the key ids and
-     *   the values are arrays with the following values:
-     *   - keyid_hash_algorithms (string[]): The key id algorithms used.
-     *   - keytype (string): The key type.
-     *   - keyval (string[]): A single item array where key value is 'public'
-     *     and the value is the public key.
-     *   - scheme (string): The key scheme.
+     * @return \Tuf\Key[]
+     *   The keys for the metadata.
      */
-    public function getKeys(bool $allowUntrustedAccess = false): \ArrayObject
+    public function getKeys(bool $allowUntrustedAccess = false): array
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
-        return $this->getSigned()['keys'];
+        $keys = [];
+        foreach ($this->getSigned()['keys'] as $keyId => $keyInfo) {
+            $keys[$keyId] = Key::createFromMetadata($keyInfo);
+        }
+        return $keys;
     }
 
     /**

@@ -393,8 +393,7 @@ class Updater
     protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
     {
         // Get the pubkey from the key database.
-        $keyMeta = $this->keyDB->getKey($signatureMeta['keyid']);
-        $pubkey = $keyMeta['keyval']['public'];
+        $pubkey = $this->keyDB->getKey($signatureMeta['keyid'])->getPublic();
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
