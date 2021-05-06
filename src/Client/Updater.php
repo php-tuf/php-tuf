@@ -717,6 +717,19 @@ class Updater
         $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
         $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        // @todo We don't need this whole depending on the answer to the @todo inside.
+        if (isset($this->durableStorage["$role.json"])) {
+            $existingTargetsMetadata = TargetsMetadata::createFromJson($this->durableStorage["$role.json"]);
+            if ($existingTargetsMetadata->getVersion() === $targetsVersion) {
+                // @todo Todo if we already specified version for this role is there any reason to download again?
+                //   for refresh() and the top level targets maybe we always want to download the version again.
+                //   but for download() and the delegated-role.json maybe we don't want to redownload
+                //   because we may to doing many, many calls to download() after 1 refresh().
+                //   see the test failure in testFileNotFoundExceptions() that uncommenting the next line causes.
+                // we could add `$role !== 'targets' && ` to the top level if here.
+                return;
+            }
+        }
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         // TUF-SPEC-v1.0.9 Section 5.4.1
