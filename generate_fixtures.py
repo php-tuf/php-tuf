@@ -189,17 +189,32 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
 class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
     def __init__(self):
         super().__init__()
-        unclaimed_delegation = self.repository.targets._delegated_roles.get('unclaimed')
+        level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Delegate to an nested delegation target-signing key
-        (public_nested1_key, private_nested1_key) = self.write_and_import_keypair(
-            'targets_nested_delegated')
+        # Delegate from level_1_delegation to level_1 target-signing key
+        (public_level_2_key, private_level_2_key) = self.write_and_import_keypair(
+            'targets_level_2_delegated')
 
-        unclaimed_delegation.delegate(
-            'nested_delegation', [public_nested1_key], ['test_nested_*.txt'])
-        self.write_and_add_target('test_nested_delegation.txt', 'nested_delegation')
-        unclaimed_delegation('nested_delegation').load_signing_key(
-            private_nested1_key)
+        # Add a delegation that matches the path pattern 'test_nested_*.txt'
+        level_1_delegation.delegate(
+            'level_2', [public_level_2_key], ['level_2_*.txt'])
+        self.write_and_add_target('level_2_test.txt', 'level_2')
+        level_1_delegation('level_2').load_signing_key(
+            private_level_2_key)
+
+        level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
+
+        # Delegate from level_1 to nested2_delegation delegation target-signing key
+        (public_level_3_key, private_level_3key) = self.write_and_import_keypair(
+            'targets_level_3_delegated')
+
+        # Add a delegation that matches the path pattern 'test_nested2_*.txt'
+        level_2_delegation.delegate(
+            'level_3', [public_level_3_key], ['level_3_*.txt'])
+        self.write_and_add_target('level_3_test.txt', 'level_3')
+        level_2_delegation('level_3').load_signing_key(
+            private_level_3key)
+
         self.write_and_publish_repository(export_client=False)
 
 class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
