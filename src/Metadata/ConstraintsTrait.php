@@ -134,10 +134,9 @@ trait ConstraintsTrait
             // If it is provided though we only support the default value which
             // is passed on from a setting in the Python `securesystemslib`
             // library.
-            'keyid_hash_algorithms' => [
-                new Optional(),
+            'keyid_hash_algorithms' => new Optional([
                 new EqualTo(['value' => ["sha256", "sha512"]]),
-            ],
+            ]),
             'keytype' => [
                 new Type(['type' => 'string']),
                 new NotBlank(),
