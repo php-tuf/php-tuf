@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
  */
 class KeyTest extends TestCase
 {
-
     /**
      * @covers ::createFromMetadata
      * @covers ::getComputedKeyId
