@@ -657,7 +657,7 @@ class Updater
      *   The target metadata with a match for the target, or null no match is
      *   found.
      */
-    private function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
+    protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
         if ($targetsMetadata === null) {
             // If no target metadata is provided then start searching with the top level targets.json file.
