@@ -72,13 +72,7 @@ class RootMetadata extends MetadataBase
      *   Whether this method should access even if the metadata is not trusted.
      *
      * @return \Tuf\Key[]
-     *   An ArrayObject of keys information where the array keys are the key ids and
-     *   the values are arrays with the following values:
-     *   - keyid_hash_algorithms (string[]): The key id algorithms used.
-     *   - keytype (string): The key type.
-     *   - keyval (string[]): A single item array where key value is 'public'
-     *     and the value is the public key.
-     *   - scheme (string): The key scheme.
+     *   The keys for the metadata.
      */
     public function getKeys(bool $allowUntrustedAccess = false): array
     {
