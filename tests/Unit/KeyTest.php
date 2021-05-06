@@ -38,7 +38,7 @@ class KeyTest extends TestCase
         ];
         $keyCanonicalForm = json_encode($keySortedCanonicalStruct, JSON_UNESCAPED_SLASHES);
 
-        self::assertSame(hash('sha256', $keyCanonicalForm, false), $key->getComputedKeyId());
+        self::assertSame(hash('sha256', $keyCanonicalForm), $key->getComputedKeyId());
     }
 
     /**
