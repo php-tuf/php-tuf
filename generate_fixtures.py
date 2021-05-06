@@ -186,6 +186,21 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
             ['root', 'snapshot', 'targets', 'timestamp'])
         self.write_and_publish_repository()
 
+class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
+    def __init__(self):
+        super().__init__()
+        unclaimed_delegation = self.repository.targets._delegated_roles.get('unclaimed')
+
+        # Delegate to an nested delegation target-signing key
+        (public_nested1_key, private_nested1_key) = self.write_and_import_keypair(
+            'targets_nested_delegated')
+
+        unclaimed_delegation.delegate(
+            'nested_delegation', [public_nested1_key], ['test_nested_*.txt'])
+        self.write_and_add_target('test_nested_delegation.txt', 'nested_delegation')
+        unclaimed_delegation('nested_delegation').load_signing_key(
+            private_nested1_key)
+        self.write_and_publish_repository(export_client=False)
 
 class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
     def __init__(self):
@@ -229,6 +244,7 @@ class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
 def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
+    TUFTestFixtureNestedDelegated()
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
