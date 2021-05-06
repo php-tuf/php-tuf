@@ -20,12 +20,11 @@ class KeyTest extends TestCase
      */
     public function testCreateFromMetadata(array $data): void
     {
-        $defaultData = [
+        $data += [
             'keytype' => 'ed11111',
             'scheme' => 'scheme-ed11111',
             'keyval' => new \ArrayObject(['public' => '12345']),
         ];
-        $data += $defaultData;
         $key = Key::createFromMetadata(new \ArrayObject($data));
         self::assertInstanceOf(Key::class, $key);
         self::assertSame('ed11111', $key->getType());
