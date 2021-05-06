@@ -78,6 +78,12 @@ class UpdaterTest extends TestCase
                 'snapshot' => 1,
                 'targets' => 1,
             ],
+            'TUFTestFixtureNestedDelegated' => [
+              'root' => 3,
+              'timestamp' => 3,
+              'snapshot' => 3,
+              'targets' => 3,
+            ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
             throw new \UnexpectedValueException("Unknown fixture set: $fixturesSet");
@@ -260,6 +266,15 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                 ],
             ],
+          [
+            'TUFTestFixtureNestedDelegated',
+            [
+              'root' => 6,
+              'timestamp' => 6,
+              'snapshot' => 6,
+              'targets' => 6,
+            ],
+          ],
         ], 0);
     }
 
