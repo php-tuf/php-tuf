@@ -32,7 +32,7 @@ class KeyDBTest extends TestCase
         self::assertInstanceOf(KeyDB::class, $keyDb);
         // Get the first key for comparison.
         $keys = $rootMetadata->getKeys();
-        $key = array_shift($keys);
+        $key = reset($keys);
         $retrievedKey = $keyDb->getKey($key->getComputedKeyId());
         // Ensure the retrieved key is the same.
         self::assertSame($key->getPublic(), $retrievedKey->getPublic());
