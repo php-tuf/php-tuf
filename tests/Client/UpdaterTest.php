@@ -79,10 +79,10 @@ class UpdaterTest extends TestCase
                 'targets' => 1,
             ],
             'TUFTestFixtureNestedDelegated' => [
-              'root' => 3,
-              'timestamp' => 3,
-              'snapshot' => 3,
-              'targets' => 3,
+                'root' => 3,
+                'timestamp' => 3,
+                'snapshot' => 3,
+                'targets' => 3,
             ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
@@ -266,15 +266,15 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                 ],
             ],
-          [
-            'TUFTestFixtureNestedDelegated',
             [
-              'root' => 6,
-              'timestamp' => 6,
-              'snapshot' => 6,
-              'targets' => 6,
+                'TUFTestFixtureNestedDelegated',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                ],
             ],
-          ],
         ], 0);
     }
 
