@@ -5,7 +5,7 @@ namespace Tuf;
 use Tuf\Metadata\ConstraintsTrait;
 
 /**
- * Class that represents a Key metadata.
+ * Class that represents key metadata.
  */
 final class Key
 {
