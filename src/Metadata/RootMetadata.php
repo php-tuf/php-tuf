@@ -20,6 +20,13 @@ class RootMetadata extends MetadataBase
     protected const TYPE = 'root';
 
     /**
+     * The keys for the metadata.
+     *
+     * @var \Tuf\Key[]
+     */
+    private $keys;
+
+    /**
      * {@inheritdoc}
      */
     protected static function getSignedCollectionOptions(): array
@@ -76,12 +83,14 @@ class RootMetadata extends MetadataBase
      */
     public function getKeys(bool $allowUntrustedAccess = false): array
     {
-        $this->ensureIsTrusted($allowUntrustedAccess);
-        $keys = [];
-        foreach ($this->getSigned()['keys'] as $keyId => $keyInfo) {
-            $keys[$keyId] = Key::createFromMetadata($keyInfo);
+        if (!isset($this->keys)) {
+            $this->ensureIsTrusted($allowUntrustedAccess);
+            $this->keys = [];
+            foreach ($this->getSigned()['keys'] as $keyId => $keyInfo) {
+                $this->keys[$keyId] = Key::createFromMetadata($keyInfo);
+            }
         }
-        return $keys;
+        return $this->keys;
     }
 
     /**
