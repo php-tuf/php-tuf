@@ -53,6 +53,7 @@ class UpdaterTest extends TestCase
                 'timestamp' => 3,
                 'snapshot' => 3,
                 'targets' => 3,
+                'unclaimed' => 1,
             ],
             'TUFTestFixtureSimple' => [
                 'root' => 2,
@@ -83,6 +84,9 @@ class UpdaterTest extends TestCase
                 'timestamp' => 3,
                 'snapshot' => 3,
                 'targets' => 3,
+                'unclaimed' => 1,
+                'level_2' => null,
+                'level_3' => null,
             ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
@@ -211,16 +215,43 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
-        $delegatedFiles = [
-            'level_1_target.txt',
-            'level_1_2_target.txt',
-            'level_1_2_3_target.txt',
+        // Ensure that client downloads only the delegated role JSON files that
+        // are needed to find the metadata for the target.
+        $expectedClientVersionsAfterDownloads = [
+            'level_1_target.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => null,
+                'level_3' => null,
+            ],
+            'level_1_2_target.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => 1,
+                'level_3' => null,
+            ],
+            'level_1_2_3_target.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => 1,
+                'level_3' => 1,
+            ],
         ];
-        foreach ($delegatedFiles as $delegatedFile) {
+        foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
             $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
             $testFileContents = file_get_contents($testFilePath);
             $this->testRepo->repoFilesContents[$delegatedFile] = $testFileContents;
             $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
+            $this->assertClientRepoVersions($expectedClientVersions);
         }
     }
 
@@ -266,6 +297,13 @@ class UpdaterTest extends TestCase
         $this->assertTrue($updater->refresh());
         // Confirm that if we start with only root.json all of the files still
         // update to the expected versions.
+
+        foreach ($expectedUpdatedVersions as $role => $expectedUpdatedVersion) {
+            if (!in_array($role, ['root', 'timestamp', 'snapshot', 'targets'])) {
+                // Any delegated role metadata files are not fetched during refresh.
+                $expectedUpdatedVersions[$role] = null;
+            }
+        }
         $this->assertClientRepoVersions($expectedUpdatedVersions);
     }
 
@@ -285,6 +323,7 @@ class UpdaterTest extends TestCase
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
+                    'unclaimed' => 1,
                 ],
             ],
             [
@@ -303,6 +342,9 @@ class UpdaterTest extends TestCase
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_3' => null,
                 ],
             ],
         ], 0);
@@ -318,32 +360,31 @@ class UpdaterTest extends TestCase
      */
     protected function assertClientRepoVersions(array $expectedVersions): void
     {
-        foreach ($expectedVersions as $type => $version) {
+        foreach ($expectedVersions as $role => $version) {
             if (is_null($version)) {
-                $this->assertNull($this->localRepo["$type.json"]);
+                $this->assertNull($this->localRepo["$role.json"]);
                 return;
             }
-            switch ($type) {
+            switch ($role) {
                 case 'root':
-                    $metadata = RootMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = RootMetadata::createFromJson($this->localRepo["$role.json"]);
                     break;
                 case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = TimestampMetadata::createFromJson($this->localRepo["$role.json"]);
                     break;
                 case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($this->localRepo["$type.json"]);
-                    break;
-                case 'targets':
-                    $metadata = TargetsMetadata::createFromJson($this->localRepo["$type.json"]);
+                    $metadata = SnapshotMetadata::createFromJson($this->localRepo["$role.json"]);
                     break;
                 default:
-                    $this->fail("Unexpected type: $type");
+                    // Any other roles will be 'targets' or delegated targets roles.
+                    $metadata = TargetsMetadata::createFromJson($this->localRepo["$role.json"]);
+                    break;
             }
             $actualVersion = $metadata->getVersion();
             $this->assertSame(
-                $expectedVersions[$type],
+                $expectedVersions[$role],
                 $actualVersion,
-                "Actual version of $type, '$actualVersion' does not match expected version '$version'"
+                "Actual version of $role, '$actualVersion' does not match expected version '$version'"
             );
         }
     }
