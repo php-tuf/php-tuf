@@ -634,7 +634,7 @@ class Updater
         }
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target, $targetsMetadata) {
+            ->then(function (StreamInterface $stream) use ($target) {
                 $this->verify($target, $stream);
                 return $stream;
             });
