@@ -134,11 +134,18 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testGetDelegatedKeys(): void
     {
         $json = $this->localRepo[$this->validJson];
+        /** @var \Tuf\Metadata\TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
         $keys = $metadata->getDelegatedKeys();
-        static::replaceArrayObjects($keys);
-        $this->assertSame($json['signed']['delegations']['keys'], $keys);
+        $expectedKeys = $json['signed']['delegations']['keys'];
+        self::assertCount(count($expectedKeys), $keys);
+        foreach ($keys as $key) {
+            $computedId = $key->getComputedKeyId();
+            self::assertArrayHasKey($computedId, $expectedKeys);
+            self::assertSame($expectedKeys[$computedId]['keytype'], $key->getType());
+            self::assertSame($expectedKeys[$computedId]['keyval']['public'], $key->getPublic());
+        }
     }
 
     /**

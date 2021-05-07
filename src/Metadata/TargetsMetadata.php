@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Exception\NotFoundException;
+use Tuf\Key;
 
 class TargetsMetadata extends MetadataBase
 {
@@ -171,12 +172,16 @@ class TargetsMetadata extends MetadataBase
     /**
      * Gets the delegated keys if any.
      *
-     * @return \ArrayObject
+     * @return \Tuf\Key[]
      *   The delegated keys.
      */
-    public function getDelegatedKeys(): \ArrayObject
+    public function getDelegatedKeys(): array
     {
-        return $this->getSigned()['delegations']['keys'] ?? new \ArrayObject([]);
+        $keys = [];
+        foreach ($this->getSigned()['delegations']['keys'] as $keyId => $keyInfo) {
+            $keys[$keyId] = Key::createFromMetadata($keyInfo);
+        }
+        return $keys;
     }
 
     /**
