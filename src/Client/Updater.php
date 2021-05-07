@@ -653,7 +653,8 @@ class Updater
      *   The targets metadata to search or null. If null then the search will
      *   start at the top level 'targets.json' file.
      * @param string[] $searchedRoles
-     *   The roles that have already been searched.
+     *   The roles that have already been searched. This is used for recursive
+     *   calls to this function and should be provided by any callers.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata with a match for the target, or null no match is
@@ -662,6 +663,9 @@ class Updater
     protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
     {
         if ($targetsMetadata === null) {
+            if (!empty($searchedRoles)) {
+                throw new \UnexpectedValueException('$searchedRoles should never be provided by outside calls to \Tuf\Client\Updater::getMetadataForTarget(). It is only used for recursive calls.');
+            }
             // If no target metadata is provided then start searching with the top level targets.json file.
             /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
             $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
@@ -690,7 +694,6 @@ class Updater
                 // @todo Add fixtures and tests for roles that delegate to other roles with conflicting 'paths' patterns
                 //    to ensure that targets in the nested delegations are not matched in
                 //    https://github.com/php-tuf/php-tuf/issues/142
-                continue;
                 continue;
             }
 
