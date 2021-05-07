@@ -653,7 +653,7 @@ class Updater
      *   The targets metadata to search or null. If null then the search will
      *   start at the top level 'targets.json' file.
      * @param string[] $searchedRoles
-     *   The roles that have already been searched. This is used for recursive
+     *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
      *   calls to this function and should be provided by any callers.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
