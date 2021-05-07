@@ -42,7 +42,7 @@ class Role
      * @param array $keyIds
      *   The key IDs.
      */
-    protected function __construct(string $name, int $threshold, array $keyIds)
+    private function __construct(string $name, int $threshold, array $keyIds)
     {
         $this->name = $name;
         $this->threshold = $threshold;
@@ -61,7 +61,7 @@ class Role
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
      */
-    public static function createFromMetadata(\ArrayObject $roleInfo, string $name): Role
+    public static function createFromMetadata(\ArrayObject $roleInfo, string $name): self
     {
         self::validate($roleInfo, static::getRoleConstraints());
         return new static(

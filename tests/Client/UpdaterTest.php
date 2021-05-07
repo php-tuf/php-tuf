@@ -195,36 +195,6 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that TUF will transparently verify downloaded target hashes for targets in delegated JSON files.
-     *
-     * @todo Add test coverage delegated roles that then delegate to other roles in
-     *   https://github.com/php-tuf/php-tuf/issues/142
-     *
-     * @covers ::download
-     *
-     * @return void
-     */
-    public function testVerifiedDelegatedDownload(): void
-    {
-        $fixturesSet = 'TUFTestFixtureNestedDelegated';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
-        $updater = $this->getSystemInTest();
-
-        $delegatedFiles = [
-            'level_1_target.txt',
-            'level_1_2_target.txt',
-            'level_1_2_3_target.txt',
-        ];
-        foreach ($delegatedFiles as $delegatedFile) {
-            $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
-            $testFileContents = file_get_contents($testFilePath);
-            $this->testRepo->repoFilesContents[$delegatedFile] = $testFileContents;
-            $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
-        }
-    }
-
-    /**
      * Tests refreshing the repository.
      *
      * @param string $fixturesSet

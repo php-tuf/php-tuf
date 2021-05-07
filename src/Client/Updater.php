@@ -578,7 +578,11 @@ class Updater
     {
         $this->refresh();
 
-        $targetsMetadata = $this->getMetadataForTarget($target);
+        // @todo Handle the possibility that the target's metadata might not be
+        // in targets.json.
+        // @see https://github.com/php-tuf/php-tuf/issues/116
+        $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+
         $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
 
@@ -621,10 +625,10 @@ class Updater
     {
         $this->refresh();
 
-        $targetsMetadata = $this->getMetadataForTarget($target);
-        if ($targetsMetadata === null) {
-            return new RejectedPromise(new NotFoundException($target, 'Target'));
-        }
+        // @todo Handle the possibility that the target's metadata might not be
+        // in targets.json.
+        // @see https://github.com/php-tuf/php-tuf/issues/116
+        $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
 
         // If the target isn't known, immediately return a rejected promise.
         try {
@@ -634,74 +638,10 @@ class Updater
         }
 
         return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target, $targetsMetadata) {
+            ->then(function (StreamInterface $stream) use ($target) {
                 $this->verify($target, $stream);
                 return $stream;
             });
-    }
-
-    /**
-     * Gets a target metadata object that contains the specified target.
-     *
-     * @param string $target
-     *   The path of the target file. Needs to be known to the most recent
-     *   targets metadata downloaded in ::refresh().
-     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
-     *   The targets metadata to search or null. If null then the search will
-     *   start at the top level 'targets.json' file.
-     * @param string[] $searchedRoles
-     *   The roles that have already been searched.
-     *
-     * @return \Tuf\Metadata\TargetsMetadata|null
-     *   The target metadata with a match for the target, or null no match is
-     *   found.
-     */
-    protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
-    {
-        if ($targetsMetadata === null) {
-            // If no target metadata is provided then start searching with the top level targets.json file.
-            /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
-            if ($targetsMetadata->hasTarget($target)) {
-                return $targetsMetadata;
-            }
-        }
-
-        $delegatedKeys = $targetsMetadata->getDelegatedKeys();
-        foreach ($delegatedKeys as $keyId => $delegatedKey) {
-            $this->keyDB->addKey($keyId, $delegatedKey);
-        }
-        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->getName();
-            if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // TUF-SPEC-v1.0.9 Section 5.4.5.1
-                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
-                continue;
-            }
-            if (!$this->roleDB->roleExists($delegatedRoleName)) {
-                $this->roleDB->addRole($delegatedRole);
-            }
-            if (!$delegatedRole->matchesRolePath($target)) {
-                continue;
-            }
-
-            $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
-            /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
-            if ($newTargetsData->hasTarget($target)) {
-                return $newTargetsData;
-            }
-            if ($delegatedRole->isTerminating()) {
-                // If the role is terminating then we do not search this targets metadata for additional delegations.
-                // @todo Add tests for terminating delegations that have further delegations.
-                //   Is it even possible to create a test fixture with this setup? https://github.com/php-tuf/php-tuf/issues/142
-                continue;
-            }
-            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                return $matchingTargetMetadata;
-            }
-        }
-        return null;
     }
 
     /**
@@ -717,21 +657,8 @@ class Updater
         $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
         $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
-        // @todo We don't need this whole depending on the answer to the @todo inside.
-        if (isset($this->durableStorage["$role.json"])) {
-            $existingTargetsMetadata = TargetsMetadata::createFromJson($this->durableStorage["$role.json"]);
-            if ($existingTargetsMetadata->getVersion() === $targetsVersion) {
-                // @todo Todo if we already specified version for this role is there any reason to download again?
-                //   for refresh() and the top level targets maybe we always want to download the version again.
-                //   but for download() and the delegated-role.json maybe we don't want to redownload
-                //   because we may to doing many, many calls to download() after 1 refresh().
-                //   see the test failure in testFileNotFoundExceptions() that uncommenting the next line causes.
-                // we could add `$role !== 'targets' && ` to the top level if here.
-                return;
-            }
-        }
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
-        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
+        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent);
         // TUF-SPEC-v1.0.9 Section 5.4.1
         $newSnapshotData->verifyNewMetadata($newTargetsData);
         // TUF-SPEC-v1.0.9 Section 5.4.2

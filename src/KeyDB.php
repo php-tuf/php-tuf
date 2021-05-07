@@ -92,7 +92,7 @@ class KeyDB
      *
      * @see https://github.com/theupdateframework/specification/blob/v1.0.16/tuf-spec.md#4-document-formats
      */
-    public function addKey(string $keyId, Key $key): void
+    private function addKey(string $keyId, Key $key): void
     {
         if (! in_array($key->getType(), self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.

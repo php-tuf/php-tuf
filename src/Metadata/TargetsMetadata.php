@@ -9,7 +9,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\DelegatedRole;
 use Tuf\Exception\NotFoundException;
 use Tuf\Key;
 
@@ -188,16 +187,11 @@ class TargetsMetadata extends MetadataBase
     /**
      * Gets the delegated roles if any.
      *
-     * @return \Tuf\DelegatedRole[]
+     * @return \ArrayObject[]
      *   The delegated roles.
      */
     public function getDelegatedRoles(): array
     {
-        $roles = [];
-        foreach ($this->getSigned()['delegations']['roles'] as $roleInfo) {
-            $role = DelegatedRole::createFromMetadata($roleInfo);
-            $roles[$role->getName()] = $role;
-        }
-        return $roles;
+        return $this->getSigned()['delegations']['roles'] ?? [];
     }
 }
