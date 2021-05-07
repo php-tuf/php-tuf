@@ -151,8 +151,8 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         (public_unclaimed_key, private_unclaimed_key) = self.write_and_import_keypair(
             'targets_delegated')
         self.repository.targets.delegate(
-            'unclaimed', [public_unclaimed_key], ['testunclaimed*.txt'])
-        self.write_and_add_target('testunclaimedtarget.txt', 'unclaimed')
+            'unclaimed', [public_unclaimed_key], ['level_1_*.txt'])
+        self.write_and_add_target('level_1_target.txt', 'unclaimed')
         self.repository.targets('unclaimed').load_signing_key(
             private_unclaimed_key)
         self.write_and_publish_repository(export_client=True)
@@ -197,8 +197,8 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
 
         # Add a delegation that matches the path pattern 'test_nested_*.txt'
         level_1_delegation.delegate(
-            'level_2', [public_level_2_key], ['level_2_*.txt'])
-        self.write_and_add_target('level_2_test.txt', 'level_2')
+            'level_2', [public_level_2_key], ['level_1_2_*.txt'])
+        self.write_and_add_target('level_1_2_target.txt', 'level_2')
         level_1_delegation('level_2').load_signing_key(
             private_level_2_key)
 
@@ -210,8 +210,8 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
 
         # Add a delegation that matches the path pattern 'test_nested2_*.txt'
         level_2_delegation.delegate(
-            'level_3', [public_level_3_key], ['level_3_*.txt'])
-        self.write_and_add_target('level_3_test.txt', 'level_3')
+            'level_3', [public_level_3_key], ['level_1_2_3_*.txt'])
+        self.write_and_add_target('level_1_2_3_target.txt', 'level_3')
         level_2_delegation('level_3').load_signing_key(
             private_level_3key)
 
