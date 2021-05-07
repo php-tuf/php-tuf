@@ -688,7 +688,7 @@ class Updater
             if (!$this->roleDB->roleExists($delegatedRoleName)) {
                 $this->roleDB->addRole($delegatedRole);
             }
-            if (!$delegatedRole->matchesRolePath($target)) {
+            if (!$delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain so if the path does not match
                 // do not evaluate this role or any roles it delegates to.
                 // @todo Add fixtures and tests for roles that delegate to other roles with conflicting 'paths' patterns
