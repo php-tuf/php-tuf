@@ -579,6 +579,9 @@ class Updater
         $this->refresh();
 
         $targetsMetadata = $this->getMetadataForTarget($target);
+        if ($targetsMetadata === null) {
+            throw new NotFoundException($target, 'Target');
+        }
         $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         $this->checkLength($data, $maxBytes, $target);
 
