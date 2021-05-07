@@ -13,28 +13,26 @@ class RoleTest extends TestCase
 {
 
     /**
+     * The test role.
+     *
+     * @var \Tuf\Role
+     */
+    protected $role;
+
+    /**
      * @covers ::createFromMetadata
      * @covers ::getName
      * @covers ::getThreshold
      */
     public function testCreateFromMetadata(): void
     {
-        $role = Role::createFromMetadata(
-            new \ArrayObject([
-                'threshold' => 1000,
-                'keyids' => [
-                    'good_key_1',
-                    'good_key_2',
-                ]
-            ]),
-            'my_role'
-        );
-        self::assertSame(1000, $role->getThreshold());
-        self::assertSame('my_role', $role->getName());
+        $this->role = $this->createTestRole();
+        self::assertSame(1000, $this->role->getThreshold());
+        self::assertSame('my_role', $this->role->getName());
     }
 
     /**
-     * @covers ::createFromMetadata
+     * @covers ::createFromMetadataAndName
      *
      * @param $data
      *   Invalid data.
@@ -44,10 +42,7 @@ class RoleTest extends TestCase
     public function testInvalidMetadata($data): void
     {
         $this->expectException(MetadataException::class);
-        Role::createFromMetadata(
-            new \ArrayObject($data),
-            'my_role'
-        );
+        $this->createTestRole($data);
     }
 
     /**
@@ -77,17 +72,7 @@ class RoleTest extends TestCase
      */
     public function testIsKeyIdAcceptable(string $keyId, bool $expected): void
     {
-        $role = Role::createFromMetadata(
-            new \ArrayObject([
-                'threshold' => 1000,
-                'keyids' => [
-                    'good_key_1',
-                    'good_key_2',
-                ]
-            ]),
-            'myrole'
-        );
-        self::assertSame($expected, $role->isKeyIdAcceptable($keyId));
+        self::assertSame($expected, $this->createTestRole()->isKeyIdAcceptable($keyId));
     }
 
     /**
@@ -102,5 +87,28 @@ class RoleTest extends TestCase
             ['good_key_2', true],
             ['bad_key', false],
         ];
+    }
+
+    /**
+     * Creates a test role.
+     *
+     * @param array|null $data
+     *   The data for the role or null.
+     *
+     * @return \Tuf\Role
+     */
+    protected function createTestRole(?array $data = null): Role
+    {
+        $data = $data ?? [
+            'threshold' => 1000,
+            'keyids' => [
+                'good_key_1',
+                'good_key_2',
+            ]
+        ];
+        return Role::createFromMetadata(
+            new \ArrayObject($data),
+            'my_role'
+        );
     }
 }
