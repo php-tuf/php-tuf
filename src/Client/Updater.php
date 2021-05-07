@@ -682,6 +682,12 @@ class Updater
                 $this->roleDB->addRole($delegatedRole);
             }
             if (!$delegatedRole->matchesRolePath($target)) {
+                // Targets must match the path in all roles in the delegation chain so if the path does not match
+                // do not evaluate this role or any roles it delegates to.
+                // @todo Add fixtures and tests for roles that delegate to other roles with conflicting 'paths' patterns
+                //    to ensure that targets in the nested delegations are not matched in
+                //    https://github.com/php-tuf/php-tuf/issues/142
+                continue;
                 continue;
             }
 
@@ -693,8 +699,8 @@ class Updater
             }
             if ($delegatedRole->isTerminating()) {
                 // If the role is terminating then we do not search this targets metadata for additional delegations.
-                // @todo Add tests for terminating delegations that have further delegations.
-                //   Is it even possible to create a test fixture with this setup? https://github.com/php-tuf/php-tuf/issues/142
+                // @todo Add fixtures and tests for terminating delegations that have further delegations in
+                //    https://github.com/php-tuf/php-tuf/issues/142
                 continue;
             }
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
