@@ -71,6 +71,8 @@ class DelegatedRole extends Role
     }
 
     /**
+     * Determines whether a target matches a path for this role.
+     *
      * @param string $target
      *   The path of the target file.
      *
@@ -78,7 +80,7 @@ class DelegatedRole extends Role
      *   True if there is path match or no path criteria is set for the role, or
      *   false otherwise.
      */
-    public function matchesRolePath(string $target): bool
+    public function matchesPath(string $target): bool
     {
         if ($this->paths) {
             foreach ($this->paths as $path) {

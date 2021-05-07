@@ -154,6 +154,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testGetDelegatedRoles(): void
     {
         $json = $this->localRepo[$this->validJson];
+        /** @var TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
         $delegatedRoles = $metadata->getDelegatedRoles();
@@ -169,9 +170,9 @@ class TargetsMetadataTest extends MetadataBaseTest
             }
             self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
             foreach ($expectedRole['paths'] as $path) {
-                self::assertTrue($delegatedRole->matchesRolePath($path));
+                self::assertTrue($delegatedRole->matchesPath($path));
             }
-            self::assertFalse($delegatedRole->matchesRolePath('/a/non/matching/path'));
+            self::assertFalse($delegatedRole->matchesPath('/a/non/matching/path'));
         }
     }
 

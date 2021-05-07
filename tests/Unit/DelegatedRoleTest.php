@@ -46,7 +46,7 @@ class DelegatedRoleTest extends RoleTest
     }
 
     /**
-     * @covers ::matchesRolePath
+     * @covers ::matchesPath
      *
      * @param string $target
      *   The test target path.
@@ -66,7 +66,7 @@ class DelegatedRoleTest extends RoleTest
             'terminating' => false,
             'paths' => $paths,
         ];
-        self::assertSame($expected, $this->createTestRole($data)->matchesRolePath($target));
+        self::assertSame($expected, $this->createTestRole($data)->matchesPath($target));
     }
 
     /**
