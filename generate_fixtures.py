@@ -217,6 +217,30 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
 
         self.write_and_publish_repository(export_client=False)
 
+class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
+    def __init__(self):
+        super().__init__()
+        # Add a target that does not match the path for the delegation.
+        self.write_and_add_target('level_a.txt', 'unclaimed')
+        # Add a target that matches the path parent delegation but not the current delegation.
+        self.write_and_add_target('level_1_3_target.txt', 'level_2')
+
+        level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
+
+        # Delegate from level_1_delegation to level_1 target-signing key
+        (public_level_2_error_key, private_level_2_error_key) = self.write_and_import_keypair(
+            'targets_level_2_error')
+
+        # Add a delegation that does not match the pattern of level_1 delegation
+        # Nothing in this delegation should be found.
+        level_1_delegation.delegate(
+            'level_2_error', [public_level_2_error_key], ['level_2_*.txt'])
+        self.write_and_add_target('level_2_unfindable.txt', 'level_2_error')
+        level_1_delegation('level_2').load_signing_key(
+            private_level_2_error_key)
+
+        self.write_and_publish_repository(export_client=False)
+
 class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
     def __init__(self):
         super().__init__()
@@ -260,6 +284,7 @@ def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
+    TUFTestFixtureNestedDelegatedErrors()
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
