@@ -22,7 +22,7 @@ trait UtilsTrait
      * @return string
      *   The path.
      */
-    public static function getFixturesRealPath(string $fixturesSet, string $path, bool $isDir = true): string
+    public static function getFixturesRealPath(string $fixturesSet, string $path = '', bool $isDir = true): string
     {
         $realpath = realpath(__DIR__ . "/../../fixtures/$fixturesSet/$path");
         if ($realpath === false || ($isDir && !is_dir($realpath))) {
