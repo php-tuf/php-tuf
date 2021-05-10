@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
@@ -253,6 +254,41 @@ class UpdaterTest extends TestCase
             $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
             $this->assertClientRepoVersions($expectedClientVersions);
         }
+    }
+
+    /**
+     * Tests that files with delegation set up with produce not found exceptions.
+     *
+     * @param string $fileName
+     *
+     * @dataProvider providerDelegationErrors
+     */
+    public function testDelegationErrors(string $fileName): void
+    {
+        $fixturesSet = 'TUFTestFixtureNestedDelegatedErrors';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest();
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        $testFileContents = file_get_contents($testFilePath);
+        $this->testRepo->repoFilesContents[$fileName] = $testFileContents;
+        self::expectException(NotFoundException::class);
+        self::expectExceptionMessage("Target not found: $fileName");
+        $updater->download($fileName)->wait();
+    }
+
+    /**
+     * Data provider for testDelegationErrors().
+     *
+     * @return \string[][]
+     */
+    public function providerDelegationErrors(): array
+    {
+        return [
+          'no path match' => ['level_a.txt'],
+          'matches parent delegation' => ['level_1_3_target.txt'],
+          'delegated path does not match parent' => ['level_2_unfindable.txt'],
+        ];
     }
 
     /**
