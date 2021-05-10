@@ -202,6 +202,13 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         level_1_delegation('level_2').load_signing_key(
             private_level_2_key)
 
+        # Add a terminating delegation.
+        level_1_delegation.delegate(
+            'level_2_terminating', [public_level_2_key], ['level_1_2_terminating_*.txt'], terminating=True)
+        self.write_and_add_target('level_1_2_terminating_findable.txt', 'level_2_terminating')
+        level_1_delegation('level_2_terminating').load_signing_key(
+            private_level_2_key)
+
         level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
 
         # Delegate from level_1 to nested2_delegation delegation target-signing key
@@ -239,11 +246,12 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         level_1_delegation('level_2').load_signing_key(
             private_key)
 
-
-        # Add a delegation that matches the path pattern 'test_nested2_*.txt'
-        level_1_delegation.delegate(
-            'level_2_terminating', [public_key], ['level_1_2_terminating_*.txt'], terminating=True)
-        self.write_and_add_target('level_1_2_terminating_findable.txt', 'level_2_terminating')
+        level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
+        level_2_terminating_delegation.delegate(
+            'level_3_below_terminated', [public_key], ['level_1_2_terminating_unfindable_*.txt'])
+        self.write_and_add_target('level_1_2_terminating_unfindable_target.txt', 'level_3_below_terminated')
+        level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
+            private_key)
 
 
 

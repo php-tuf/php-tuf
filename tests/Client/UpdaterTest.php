@@ -235,6 +235,17 @@ class UpdaterTest extends TestCase
                 'targets' => 6,
                 'unclaimed' => 2,
                 'level_2' => 1,
+                'level_2_terminating' => null,
+                'level_3' => null,
+            ],
+            'level_1_2_terminating_findable.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => 1,
+                'level_2_terminating' => 1,
                 'level_3' => null,
             ],
             'level_1_2_3_target.txt' => [
@@ -244,6 +255,7 @@ class UpdaterTest extends TestCase
                 'targets' => 6,
                 'unclaimed' => 2,
                 'level_2' => 1,
+                'level_2_terminating' => 1,
                 'level_3' => 1,
             ],
         ];
@@ -304,6 +316,11 @@ class UpdaterTest extends TestCase
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
             'delegated path does not match parent' => ['level_2_unfindable.txt'],
+            // ''level_1_2_terminating_unfindable_target.txt' is add via role
+            // 'level_3_below_terminated' which is delegated from role 'level_2_terminating'.
+            // Because 'level_2_terminating' is terminating role no roles it delegates to
+            // should be evaluated.
+            'parent delegation is terminating' => ['level_1_2_terminating_unfindable_target.txt']
         ];
     }
 
