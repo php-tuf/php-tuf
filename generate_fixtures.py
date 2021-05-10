@@ -231,7 +231,7 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         (public_level_2_error_key, private_level_2_error_key) = self.write_and_import_keypair(
             'targets_level_2_error')
 
-        # Add a delegation that does not matche the pattern of level_1 delegation
+        # Add a delegation that does not match the pattern of level_1 delegation
         # Nothing in this delegation should be found.
         level_1_delegation.delegate(
             'level_2_error', [public_level_2_error_key], ['level_2_*.txt'])
