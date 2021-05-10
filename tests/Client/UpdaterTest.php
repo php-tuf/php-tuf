@@ -257,7 +257,7 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests delegation setup errors will produce target not found exceptions.
+     * Tests that improperly delegated targets will produce exceptions.
      *
      * @param string $fileName
      *
