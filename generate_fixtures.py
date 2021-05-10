@@ -228,16 +228,24 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
         # Delegate from level_1_delegation to level_1 target-signing key
-        (public_level_2_error_key, private_level_2_error_key) = self.write_and_import_keypair(
+        (public_key, private_key) = self.write_and_import_keypair(
             'targets_level_2_error')
 
         # Add a delegation that does not match the pattern of level_1 delegation
         # Nothing in this delegation should be found.
         level_1_delegation.delegate(
-            'level_2_error', [public_level_2_error_key], ['level_2_*.txt'])
+            'level_2_error', [public_key], ['level_2_*.txt'])
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_error')
         level_1_delegation('level_2').load_signing_key(
-            private_level_2_error_key)
+            private_key)
+
+
+        # Add a delegation that matches the path pattern 'test_nested2_*.txt'
+        level_1_delegation.delegate(
+            'level_2_terminating', [public_key], ['level_1_2_terminating_*.txt'], terminating=True)
+        self.write_and_add_target('level_1_2_terminating_findable.txt', 'level_2_terminating')
+
+
 
         self.write_and_publish_repository(export_client=False)
 
