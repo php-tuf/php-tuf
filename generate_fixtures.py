@@ -253,8 +253,6 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
             private_key)
 
-
-
         self.write_and_publish_repository(export_client=False)
 
 class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
