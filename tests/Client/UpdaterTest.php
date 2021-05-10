@@ -280,13 +280,29 @@ class UpdaterTest extends TestCase
     /**
      * Data provider for testDelegationErrors().
      *
+     * The files used in these test cases are setup in the Python class
+     * generate_fixtures.TUFTestFixtureNestedDelegatedErrors().
+     *
      * @return \string[][]
      */
     public function providerDelegationErrors(): array
     {
         return [
+            // 'level_a.txt' is added via the 'unclaimed' role but this role has
+            // `paths: ['level_1_*.txt']` which does not match the file name.
             'no path match' => ['level_a.txt'],
+            // 'level_1_3_target.txt' is added via the 'level_2' role which has
+            // `paths: ['level_1_2_*.txt']`. The 'level_2' role is delegated from the
+            // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
+            // for the 'unclaimed' role but does not match for the 'level_2' role.
             'matches parent delegation' => ['level_1_3_target.txt'],
+            // 'level_2_unfindable.txt' is added via the 'level_2_error' role which has
+            // `paths: ['level_2_*.txt']`. The 'level_2_error' role is delegated from the
+            // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
+            // for the 'level_2_error' role but does not match for the 'unclaimed' role.
+            // No files added via the 'level_2_error' role will be found because its
+            // 'paths' property is incompatible with the its parent delegation's
+            // 'paths' property.
             'delegated path does not match parent' => ['level_2_unfindable.txt'],
         ];
     }
