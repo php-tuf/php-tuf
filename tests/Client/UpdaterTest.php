@@ -146,7 +146,6 @@ class UpdaterTest extends TestCase
 
         $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
-        $this->testRepo->repoFilesContents['testtarget.txt'] = $testFileContents;
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
         // If the file fetcher returns a file stream, the updater should NOT try
@@ -156,7 +155,6 @@ class UpdaterTest extends TestCase
         $stream->getContents()->shouldNotBeCalled();
         $stream->rewind()->shouldNotBeCalled();
         $stream->getSize()->willReturn(strlen($testFileContents));
-        $this->testRepo->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         $updater->download('testtarget.txt')->wait();
 
         // If the target isn't known, we should get a rejected promise.
@@ -250,7 +248,6 @@ class UpdaterTest extends TestCase
         foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
             $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
             $testFileContents = file_get_contents($testFilePath);
-            $this->testRepo->repoFilesContents[$delegatedFile] = $testFileContents;
             $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
             $this->assertClientRepoVersions($expectedClientVersions);
         }
@@ -270,8 +267,6 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
         $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
-        $testFileContents = file_get_contents($testFilePath);
-        $this->testRepo->repoFilesContents[$fileName] = $testFileContents;
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
