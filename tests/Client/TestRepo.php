@@ -35,9 +35,18 @@ class TestRepo implements RepoFileFetcherInterface
     {
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
-        $repoFiles = glob(static::getFixturesRealPath($fixturesSet, '/tufrepo/metadata') . '/*.json');
+        $fixturesPath = static::getFixturesRealPath($fixturesSet, 'tufrepo');
+        $repoFiles = glob("$fixturesPath/metadata/*.json");
+        $targetsPath = "$fixturesPath/targets";
+        if (is_dir($targetsPath)) {
+            $repoFiles = array_merge($repoFiles, glob("$targetsPath/*"));
+        }
         foreach ($repoFiles as $repoFile) {
-            $this->repoFilesContents[basename($repoFile)] = file_get_contents($repoFile);
+            $baseName = basename($repoFile);
+            if (isset($this->repoFilesContents[$baseName])) {
+                throw new \UnexpectedValueException("For testing fixtures target files should not use metadata file names");
+            }
+            $this->repoFilesContents[$baseName] = file_get_contents($repoFile);
         }
     }
 
