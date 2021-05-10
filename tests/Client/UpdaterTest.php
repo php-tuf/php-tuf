@@ -285,9 +285,9 @@ class UpdaterTest extends TestCase
     public function providerDelegationErrors(): array
     {
         return [
-          'no path match' => ['level_a.txt'],
-          'matches parent delegation' => ['level_1_3_target.txt'],
-          'delegated path does not match parent' => ['level_2_unfindable.txt'],
+            'no path match' => ['level_a.txt'],
+            'matches parent delegation' => ['level_1_3_target.txt'],
+            'delegated path does not match parent' => ['level_2_unfindable.txt'],
         ];
     }
 
