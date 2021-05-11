@@ -90,7 +90,7 @@ class KeyDB
      *
      * @return void
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.16/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.10/tuf-spec.md#4-document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
