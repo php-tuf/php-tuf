@@ -691,9 +691,6 @@ class Updater
             if (!$delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain so if the path does not match
                 // do not evaluate this role or any roles it delegates to.
-                // @todo Add fixtures and tests for roles that delegate to other roles with conflicting 'paths' patterns
-                //    to ensure that targets in the nested delegations are not matched in
-                //    https://github.com/php-tuf/php-tuf/issues/142
                 continue;
             }
 
@@ -705,8 +702,6 @@ class Updater
             }
             if ($delegatedRole->isTerminating()) {
                 // If the role is terminating then we do not search this targets metadata for additional delegations.
-                // @todo Add fixtures and tests for terminating delegations that have further delegations in
-                //    https://github.com/php-tuf/php-tuf/issues/142
                 continue;
             }
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
