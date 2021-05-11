@@ -42,7 +42,7 @@ class KeyDB
      * @throws \Tuf\Exception\InvalidKeyException
      *   Thrown if an unsupported or invalid key exists in the metadata.
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.10/tuf-spec.md#4-document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): KeyDB
     {
@@ -119,7 +119,7 @@ class KeyDB
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the key ID is not found in the keydb database.
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.9/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.10/tuf-spec.md#4-document-formats
      */
     public function getKey(string $keyId): Key
     {
