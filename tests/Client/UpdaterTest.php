@@ -549,8 +549,8 @@ class UpdaterTest extends TestCase
                     'targets' => 3,
                 ],
             ],
-            // For targets.json files adding a new key or changing the existing version number
-            // will result in a SignatureThresholdExpception because currently the test
+            // For targets.json files, adding a new key or changing the existing version number
+            // will result in a SignatureThresholdException because currently the test
             // fixtures do not contain hashes for targets.json files in snapshot.json.
             [
                 '5.targets.json',
