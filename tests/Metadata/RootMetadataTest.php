@@ -145,13 +145,24 @@ class RootMetadataTest extends MetadataBaseTest
     public function testSupportsConsistentSnapshots(): void
     {
         $data = json_decode($this->localRepo[$this->validJson], true);
-        foreach ([true, false] as $value) {
+        // Currently we only support consistent snapshots.
+        // @todo Add support for not using consistent snapshots in
+        //    https://github.com/php-tuf/php-tuf/issues/97
+        foreach ([true] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
             $metadata = static::callCreateFromJson(json_encode($data));
             $metadata->setIsTrusted(true);
             $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
+
+        // Ensure we get an error if consistent snapshots are not being used.
+        $data['signed']['consistent_snapshot'] = false;
+        self::expectException(MetadataException::class);
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][consistent_snapshot]:", '/');
+        $expectedMessage .= '.* This value should be equal to true';
+        self::expectExceptionMessageMatches("/$expectedMessage/s");
+        static::callCreateFromJson(json_encode($data));
     }
 
     /**

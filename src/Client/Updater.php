@@ -174,9 +174,6 @@ class Updater
 
         $nowDate = $this->getCurrentTime();
 
-        // TUF-SPEC-v1.0.9 Section 5.1.11. Will be used in spec step 5.4.3.
-        //$consistent = $rootData['consistent'];
-
         // *TUF-SPEC-v1.0.9 Section 5.2
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
@@ -207,6 +204,8 @@ class Updater
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $newTimestampData->verifyNewMetadata($newSnapshotData);
         } else {
+            // @todo Add support for not using consistent snapshots in
+            //    https://github.com/php-tuf/php-tuf/issues/97
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
 
@@ -230,6 +229,8 @@ class Updater
         if ($rootData->supportsConsistentSnapshots()) {
             $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
+            // @todo Add support for not using consistent snapshots in
+            //    https://github.com/php-tuf/php-tuf/issues/97
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
         $this->isRefreshed = true;
