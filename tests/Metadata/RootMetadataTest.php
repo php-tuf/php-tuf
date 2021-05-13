@@ -47,7 +47,7 @@ class RootMetadataTest extends MetadataBaseTest
         $data[] = ['signed:roles:targets:keyids'];
         $data[] = ['signed:roles:targets:threshold'];
         $data[] = ['signed:consistent_snapshot'];
-        return $this->getKeyedArray($data);
+        return static::getKeyedArray($data);
     }
 
     /**
@@ -65,7 +65,7 @@ class RootMetadataTest extends MetadataBaseTest
         $data[] = ['signed:roles:targets:keyids', 'array'];
         $data[] = ['signed:roles:targets:threshold', 'int'];
         $data[] = ['signed:consistent_snapshot', 'boolean'];
-        return $this->getKeyedArray($data);
+        return static::getKeyedArray($data);
     }
 
     /**

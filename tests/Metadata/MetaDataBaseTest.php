@@ -230,7 +230,7 @@ abstract class MetadataBaseTest extends TestCase
     public function testOptionalFields(string $optionalField, $value): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
-        $this->nestedChange(explode(':', $optionalField), $metadata, $value);
+        static::nestedChange(explode(':', $optionalField), $metadata, $value);
         $json = json_encode($metadata);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
     }
@@ -304,7 +304,7 @@ abstract class MetadataBaseTest extends TestCase
                 break;
         }
 
-        $this->nestedChange($keys, $metadata, $newValue);
+        static::nestedChange($keys, $metadata, $newValue);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type " . preg_quote($expectedType) . "/s");
