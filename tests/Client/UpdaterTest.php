@@ -544,6 +544,12 @@ class UpdaterTest extends TestCase
                     'targets' => 3,
                 ],
             ],
+            // For snapshot.json files, adding a new key or changing the existing version number
+            // will result in a MetadataException indicating that the contents hash does not match
+            // the hashes specified in the timestamp.json. This is because timestamp.json in the test
+            // fixtures contains the optional 'hashes' metadata for the snapshot.json files, and this
+            // is checked before the file signatures and the file version number.The order of checking
+            // is specified in TUF-SPEC-v1.0.10 Section 5.3.
             [
                 '5.snapshot.json',
                 ['signed', 'newkey'],
@@ -560,7 +566,7 @@ class UpdaterTest extends TestCase
                 '5.snapshot.json',
                 ['signed', 'version'],
                 6,
-                new MetadataException("Expected snapshot version 5 does not match actual version 6."),
+                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
                     'root' => 5,
                     'timestamp' => 5,
@@ -568,11 +574,26 @@ class UpdaterTest extends TestCase
                     'targets' => 3,
                 ],
             ],
+            // For targets.json files, adding a new key or changing the existing version number
+            // will result in a SignatureThresholdException because currently the test
+            // fixtures do not contain hashes for targets.json files in snapshot.json.
+            [
+                '5.targets.json',
+                ['signed', 'newvalue'],
+                'value',
+                new SignatureThresholdExpception("Signature threshold not met on targets"),
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 3,
+                ],
+            ],
             [
                 '5.targets.json',
                 ['signed', 'version'],
                 6,
-                new MetadataException("Expected targets version 5 does not match actual version 6."),
+                new SignatureThresholdExpception("Signature threshold not met on targets"),
                 [
                     'root' => 5,
                     'timestamp' => 5,

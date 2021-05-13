@@ -79,9 +79,11 @@ class SnapshotMetadataTest extends MetadataBaseTest
      */
     public function providerUntrustedException(): array
     {
+        $mockMetadata = $this->createMock(MetadataBase::class);
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewMetadata', [$this->createMock(MetadataBase::class)]],
+            ['verifyNewHashes', [$mockMetadata]],
+            ['verifyNewVersion', [$mockMetadata]],
         ]);
     }
 }

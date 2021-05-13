@@ -29,7 +29,7 @@ trait MetaFileInfoTrait
     }
 
     /**
-     * Verifies a new metadata object from information in the current object.
+     * Verifies the hashes of a new metadata object from information in the current object.
      *
      * @param \Tuf\Metadata\MetadataBase $newMetadata
      *   The new metadata object.
@@ -39,15 +39,11 @@ trait MetaFileInfoTrait
      *
      * @return void
      */
-    public function verifyNewMetadata(MetadataBase $newMetadata): void
+    public function verifyNewHashes(MetadataBase $newMetadata): void
     {
         $this->ensureIsTrusted();
         $role = $newMetadata->getRole();
         $fileInfo = $this->getFileMetaInfo($role . '.json');
-        $expectedVersion = $fileInfo['version'];
-        if ($expectedVersion !== $newMetadata->getVersion()) {
-            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$newMetadata->getVersion()}.");
-        }
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $newMetadata->getSource())) {
@@ -55,6 +51,28 @@ trait MetaFileInfoTrait
                     throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->getType()}' metadata.");
                 }
             }
+        }
+    }
+
+    /**
+     * Verifies a the version of a new metadata object from information in the current object.
+     *
+     * @param \Tuf\Metadata\MetadataBase $newMetadata
+     *   The new metadata object.
+     *
+     * @throws \Tuf\Exception\MetadataException
+     *   Thrown if the new metadata object cannot be verified.
+     *
+     * @return void
+     */
+    public function verifyNewVersion(MetadataBase $newMetadata): void
+    {
+        $this->ensureIsTrusted();
+        $role = $newMetadata->getRole();
+        $fileInfo = $this->getFileMetaInfo($role . '.json');
+        $expectedVersion = $fileInfo['version'];
+        if ($expectedVersion !== $newMetadata->getVersion()) {
+            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$newMetadata->getVersion()}.");
         }
     }
 }
