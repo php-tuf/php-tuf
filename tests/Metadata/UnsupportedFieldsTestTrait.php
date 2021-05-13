@@ -9,7 +9,6 @@ use Tuf\Exception\MetadataException;
  */
 trait UnsupportedFieldsTestTrait
 {
-
     /**
      * Tests that unsupported fields throw an exception.
      *
