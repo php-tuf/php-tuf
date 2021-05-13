@@ -792,27 +792,6 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Data provider for testAttackRepoException().
-     * @return array[]
-     *   The test cases.
-     */
-    public function providerUnsupportedRepo(): array
-    {
-        return [
-            [
-                'TUFTestFixtureUnsupportedDelegation',
-                new MetadataException('Remote timestamp metadata version "$2" is less than previously seen timestamp version "$3"'),
-                [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
-                ],
-            ],
-        ];
-    }
-
-    /**
      * Tests that exceptions are thrown when a repo is in a rollback attack state.
      *
      * @param string $fixturesSet
