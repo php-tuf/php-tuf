@@ -186,6 +186,20 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
             ['root', 'snapshot', 'targets', 'timestamp'])
         self.write_and_publish_repository()
 
+class TUFTestFixtureUnsupportedDelegation(TUFTestFixtureSimple):
+    def __init__(self):
+        super().__init__()
+
+        # Delegate to an unclaimed target-signing key
+        (public_unclaimed_key, private_unclaimed_key) = self.write_and_import_keypair(
+            'targets_delegated')
+        self.repository.targets.delegate(
+            'unsupported_target', [public_unclaimed_key], ['unsupported_*.txt'], path_hash_prefixes= ['ab34df13'])
+        self.write_and_add_target('unsupported_target.txt', 'unsupported_target')
+        self.repository.targets('unsupported_target').load_signing_key(
+            private_unclaimed_key)
+        self.write_and_publish_repository(export_client=False)
+
 class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
     def __init__(self):
         super().__init__()
@@ -300,6 +314,7 @@ def generate_fixtures():
     TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
+    TUFTestFixtureUnsupportedDelegation()
     TUFTestFixtureNestedDelegatedErrors()
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
