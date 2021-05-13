@@ -61,7 +61,7 @@ class UpdaterTest extends TestCase
                 'timestamp' => 2,
                 'snapshot' => 2,
                 'unsupported_target' => null,
-             // We cannot assert the starting versions of 'targets' because it has
+              // We cannot assert the starting versions of 'targets' because it has
               // an unsupported field and would throw an exception when validating.
             ],
             'TUFTestFixtureSimple' => [
