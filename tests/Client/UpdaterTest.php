@@ -771,7 +771,7 @@ class UpdaterTest extends TestCase
         } catch (MetadataException $exception) {
             $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]:", '/');
             $expectedMessage .= ".*This field is not supported.";
-            self::assertMatchesRegularExpression("/$expectedMessage/s", $exception->getMessage());
+            self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
             $expectedUpdatedVersion = [
