@@ -187,6 +187,7 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         self.write_and_publish_repository()
 
 class TUFTestFixtureUnsupportedDelegation(TUFTestFixtureSimple):
+    # Sets up a repo using `path_hash_prefixes` which is currently not supported.
     def __init__(self):
         super().__init__()
 
