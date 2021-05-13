@@ -79,31 +79,13 @@ trait UtilsTrait
      *
      * @return void
      */
-    protected function nestedChange(array $keys, array &$data, $newValue): void
+    protected static function nestedChange(array $keys, array &$data, $newValue): void
     {
         $key = array_shift($keys);
         if ($keys) {
-            $this->nestedChange($keys, $data[$key], $newValue);
+            static::nestedChange($keys, $data[$key], $newValue);
         } else {
             $data[$key] = $newValue;
-        }
-    }
-
-    /**
-     * Replaces all ArrayObject instances with arrays to allow comparison.
-     *
-     * @param $data
-     *    The data to replace.
-     */
-    protected static function replaceArrayObjects(&$data): void
-    {
-        if ($data instanceof \ArrayObject) {
-            $data = $data->getArrayCopy();
-        }
-        if (is_array($data) || $data instanceof \ArrayObject) {
-            foreach ($data as &$value) {
-                static::replaceArrayObjects($value);
-            }
         }
     }
 }

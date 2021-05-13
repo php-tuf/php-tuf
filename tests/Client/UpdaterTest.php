@@ -127,7 +127,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir($this->getFixturesRealPath($fixturesSet, 'tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'tufclient/tufrepo/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -387,7 +387,7 @@ class UpdaterTest extends TestCase
      */
     public function providerRefreshRepository(): array
     {
-        return $this->getKeyedArray([
+        return static::getKeyedArray([
             [
                 'TUFTestFixtureDelegated',
                 [
@@ -624,7 +624,7 @@ class UpdaterTest extends TestCase
      */
     public function providerFileNotFoundExceptions(): array
     {
-        return $this->getKeyedArray([
+        return static::getKeyedArray([
             [
                 'TUFTestFixtureDelegated',
                 'timestamp.json',

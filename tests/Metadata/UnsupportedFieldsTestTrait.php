@@ -26,7 +26,7 @@ trait UnsupportedFieldsTestTrait
     public function testUnsupportedFields(array $unsupportedField, $fieldValue, string $expectedMessage): void
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
-        $this->nestedChange($unsupportedField, $metadata, $fieldValue);
+        static::nestedChange($unsupportedField, $metadata, $fieldValue);
         self::expectException(MetadataException::class);
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($metadata));
