@@ -12,6 +12,7 @@ use Tuf\Metadata\TargetsMetadata;
  */
 class TargetsMetadataTest extends MetadataBaseTest
 {
+    use UnsupportedFieldsTestTrait;
 
     /**
      * {@inheritdoc}
@@ -203,5 +204,24 @@ class TargetsMetadataTest extends MetadataBaseTest
         $expectedMessage .= '.* This value should be equal to array';
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($data));
+    }
+
+    /**
+     * Data provider for testUnsupportedFields().
+     *
+     * @return array[]
+     *  The test cases.
+     */
+    public function providerUnsupportedFields(): array
+    {
+        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]", '/');
+        $expectedMessage .= ".*This field is not supported.";
+        $cases['path_hash_prefixes'] = [
+            ['signed', 'delegations', 'roles', 0, 'path_hash_prefixes'],
+            [],
+            $expectedMessage,
+
+        ];
+        return $cases;
     }
 }
