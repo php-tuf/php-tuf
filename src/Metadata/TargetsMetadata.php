@@ -4,6 +4,7 @@ namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
+use Tuf\Constraints\Collection as TufCollection;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
@@ -57,22 +58,27 @@ class TargetsMetadata extends MetadataBase
                 ]),
                 'roles' => new All([
                     new Type('\ArrayObject'),
-                    new Collection([
-                        'name' => [
-                            new NotBlank(),
-                            new Type(['type' => 'string']),
-                        ],
-                        'paths' => [
-                            new Type(['type' => 'array']),
-                            new All([
-                                new Type(['type' => 'string']),
+                    new TufCollection([
+                        'fields' => [
+                            'name' => [
                                 new NotBlank(),
-                            ]),
-                        ],
-                        'terminating' => [
-                            new Type(['type' => 'boolean']),
-                        ],
-                    ] + static::getKeyidsConstraints() + static::getThresholdConstraints()),
+                                new Type(['type' => 'string']),
+                            ],
+                            'paths' => [
+                                new Type(['type' => 'array']),
+                                new All([
+                                    new Type(['type' => 'string']),
+                                    new NotBlank(),
+                                ]),
+                            ],
+                            'terminating' => [
+                                new Type(['type' => 'boolean']),
+                            ],
+                        ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
+                        // @todo Support 'path_hash_prefixes' in
+                        //    https://github.com/php-tuf/php-tuf/issues/191
+                        'unsupportedFields' => ['path_hash_prefixes'],
+                    ]),
                 ]),
             ]),
         ]);
