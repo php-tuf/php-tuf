@@ -764,17 +764,16 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
-        self::assertNull($this->localRepo['unsupported_target.json']);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixtureSet));
         $updater = $this->getSystemInTest();
         try {
-            // No changes should be made to client repo.
-            //$this->localRepo->setExceptionOnChange();
             $updater->refresh();
         } catch (MetadataException $exception) {
             $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]:", '/');
             $expectedMessage .= ".*This field is not supported.";
             self::assertMatchesRegularExpression("/$expectedMessage/s", $exception->getMessage());
+            // Assert that the root, timestamp and snapshot metadata files were updated
+            // and that the unsupported_target metadata file was not downloaded.
             $expectedUpdatedVersion = [
                 'root' => 3,
                 'timestamp' => 3,
@@ -783,10 +782,10 @@ class UpdaterTest extends TestCase
                 // We cannot assert the starting versions of 'targets' because it has
                 // an unsupported field and would throw an exception when validating.
             ];
-            $this->assertClientRepoVersions($expectedUpdatedVersion);
+            self::assertClientRepoVersions($expectedUpdatedVersion);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.
-            $this->assertSame($this->localRepo['targets.json'], $startingTargets);
+            self::assertSame($this->localRepo['targets.json'], $startingTargets);
             return;
         }
         $this->fail('No exception thrown.');

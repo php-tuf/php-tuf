@@ -28,9 +28,8 @@ trait UnsupportedFieldsTestTrait
     {
         $metadata = json_decode($this->localRepo[$this->validJson], true);
         $this->nestedChange($unsupportedField, $metadata, $fieldValue);
-        $fieldName = array_pop($unsupportedField);
-        $this->expectException(MetadataException::class);
-        $this->expectExceptionMessageMatches("/$expectedMessage/s");
+        self::expectException(MetadataException::class);
+        self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($metadata));
     }
 
