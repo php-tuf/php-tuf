@@ -56,6 +56,14 @@ class UpdaterTest extends TestCase
                 'targets' => 3,
                 'unclaimed' => 1,
             ],
+            'TUFTestFixtureUnsupportedDelegation' => [
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'unsupported_target' => null,
+              // We cannot assert the starting versions of 'targets' because it has
+              // an unsupported field and would throw an exception when validating.
+            ],
             'TUFTestFixtureSimple' => [
                 'root' => 2,
                 'timestamp' => 2,
@@ -743,6 +751,44 @@ class UpdaterTest extends TestCase
         $this->expectException(RepoFileNotFound::class);
         $this->expectExceptionMessage('File timestamp.json not found.');
         $updater->refresh(true);
+    }
+
+    /**
+     * Tests that an exceptions for an repo with an unsupported field.
+     *
+     * @return void
+     */
+    public function testUnsupportedRepo(): void
+    {
+        $fixtureSet = 'TUFTestFixtureUnsupportedDelegation';
+        $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixtureSet);
+        $startingTargets = $this->localRepo['targets.json'];
+        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixtureSet));
+        $updater = $this->getSystemInTest();
+        try {
+            $updater->refresh();
+        } catch (MetadataException $exception) {
+            $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]:", '/');
+            $expectedMessage .= ".*This field is not supported.";
+            self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
+            // Assert that the root, timestamp and snapshot metadata files were updated
+            // and that the unsupported_target metadata file was not downloaded.
+            $expectedUpdatedVersion = [
+                'root' => 3,
+                'timestamp' => 3,
+                'snapshot' => 3,
+                'unsupported_target' => null,
+                // We cannot assert the starting versions of 'targets' because it has
+                // an unsupported field and would throw an exception when validating.
+            ];
+            self::assertClientRepoVersions($expectedUpdatedVersion);
+            // Ensure that local version of targets has not changed because the
+            // server version is invalid.
+            self::assertSame($this->localRepo['targets.json'], $startingTargets);
+            return;
+        }
+        $this->fail('No exception thrown.');
     }
 
     /**
