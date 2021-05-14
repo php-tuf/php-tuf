@@ -84,6 +84,13 @@ class Updater
     protected $isRefreshed = false;
 
     /**
+     * The time after which metadata should be considered expired.
+     *
+     *   @return \DateTimeImmutable
+     */
+    private $metadataExpiration;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
@@ -159,12 +166,14 @@ class Updater
     {
         if ($force) {
             $this->isRefreshed = false;
+            $this->metadataExpiration = null;
         }
         if ($this->isRefreshed) {
             return true;
         }
 
         // *TUF-SPEC-v1.0.13 Section 5.0
+        $this->setMetadataExpiration();
         $metadataExpirationTime = $this->getMetadataExpirationTime();
 
         // *TUF-SPEC-v1.0.13 Section 5.1
@@ -482,11 +491,12 @@ class Updater
      * @throws \Tuf\Exception\FormatException
      *    Thrown if time format is not valid.
      */
-    protected function getMetadataExpirationTime(): \DateTimeImmutable
+    private function getMetadataExpirationTime(): \DateTimeImmutable
     {
-        $fakeNow = '2020-01-01T00:00:00Z';
-        $nowDate = static::metadataTimestampToDateTime($fakeNow);
-        return $nowDate;
+        if (empty($this->metadataExpiration)) {
+            throw new \LogicException("::setMetadataExpiration must be called before ::getMetadataExpirationTime");
+        }
+        return $this->metadataExpiration;
     }
 
     /**
@@ -744,5 +754,24 @@ class Updater
         $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.13 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
+    }
+
+    /**
+     * Sets the time after which metadata files should be considered expired.
+     *
+     * This should only be called once during ::refresh() and should not be called
+     * otherwise.
+     *
+     * @throws \Tuf\Exception\FormatException
+     */
+    protected function setMetadataExpiration()
+    {
+        if ($this->isRefreshed) {
+            throw new \LogicException('::setMetadataExpiration() cannot be called after refresh has been called()');
+        } elseif ($this->metadataExpiration) {
+            throw new \LogicException('::setMetadataExpiration() should only be called once during ::refresh()');
+        }
+        $fakeNow = '2020-01-01T00:00:00Z';
+        $this->metadataExpiration = static::metadataTimestampToDateTime($fakeNow);
     }
 }
