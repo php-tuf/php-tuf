@@ -88,7 +88,7 @@ class Updater
      *
      *   @return \DateTimeImmutable
      */
-    private $metadataExpiration;
+    protected $metadataExpiration;
 
     /**
      * Updater constructor.
@@ -491,7 +491,7 @@ class Updater
      * @throws \Tuf\Exception\FormatException
      *    Thrown if time format is not valid.
      */
-    private function getMetadataExpirationTime(): \DateTimeImmutable
+    protected function getMetadataExpirationTime(): \DateTimeImmutable
     {
         if (empty($this->metadataExpiration)) {
             throw new \LogicException("::setMetadataExpiration must be called before ::getMetadataExpirationTime");
