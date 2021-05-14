@@ -173,34 +173,34 @@ class Updater
         $this->updateRoot($rootData);
 
         $nowDate = $this->getCurrentTime();
-        
-        // *TUF-SPEC-v1.0.11 Section 5.2
+
+        // *TUF-SPEC-v1.0.12 Section 5.2
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        // *TUF-SPEC-v1.0.11 Section 5.2.1
+        // *TUF-SPEC-v1.0.12 Section 5.2.1
         $this->checkSignatures($newTimestampData);
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
-            // *TUF-SPEC-v1.0.11 Section 5.2.2.1 and 5.2.2.2
+            // *TUF-SPEC-v1.0.12 Section 5.2.2.1 and 5.2.2.2
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
 
-        // *TUF-SPEC-v1.0.11 Section 5.2.3
+        // *TUF-SPEC-v1.0.12 Section 5.2.3
         static::checkFreezeAttack($newTimestampData, $nowDate);
-        // TUF-SPEC-v1.0.11 Section 5.2.4: Persist timestamp metadata
+        // TUF-SPEC-v1.0.12 Section 5.2.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
         $newTimestampData->setIsTrusted(true);
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
 
-        // TUF-SPEC-v1.0.11 Section 5.3
+        // TUF-SPEC-v1.0.12 Section 5.3
         if ($rootData->supportsConsistentSnapshots()) {
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            // TUF-SPEC-v1.0.11 Section 5.3.1
+            // TUF-SPEC-v1.0.12 Section 5.3.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $newTimestampData->verifyNewHashes($newSnapshotData);
         } else {
@@ -209,26 +209,26 @@ class Updater
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
 
-        // TUF-SPEC-v1.0.11 Section 5.3.2
+        // TUF-SPEC-v1.0.12 Section 5.3.2
         $this->checkSignatures($newSnapshotData);
 
-        // TUF-SPEC-v1.0.11 Section 5.3.3
+        // TUF-SPEC-v1.0.12 Section 5.3.3
         $newTimestampData->verifyNewVersion($newSnapshotData);
 
         if (isset($this->durableStorage['snapshot.json'])) {
             $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-            // TUF-SPEC-v1.0.11 Section 5.3.4
+            // TUF-SPEC-v1.0.12 Section 5.3.4
             static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
         }
 
-        // TUF-SPEC-v1.0.11 Section 5.3.5
+        // TUF-SPEC-v1.0.12 Section 5.3.5
         static::checkFreezeAttack($newSnapshotData, $nowDate);
 
-        // TUF-SPEC-v1.0.11 Section 5.3.6
+        // TUF-SPEC-v1.0.12 Section 5.3.6
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         $newSnapshotData->setIsTrusted(true);
 
-        // TUF-SPEC-v1.0.11 Section 5.4
+        // TUF-SPEC-v1.0.12 Section 5.4
         if ($rootData->supportsConsistentSnapshots()) {
             $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
@@ -308,7 +308,7 @@ class Updater
                         throw new RollbackAttackException($message);
                     }
                 } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
-                    // TUF-SPEC-v1.0.11 Section 5.3.4
+                    // TUF-SPEC-v1.0.12 Section 5.3.4
                     // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
                     // continue to be listed in the new snapshot metadata file.
                     throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
@@ -431,7 +431,7 @@ class Updater
     {
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
-        // *TUF-SPEC-v1.0.11 Section 5.1.2
+        // *TUF-SPEC-v1.0.12 Section 5.1.2
         $nextVersion = $rootData->getVersion() + 1;
         while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
@@ -439,30 +439,30 @@ class Updater
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            // *TUF-SPEC-v1.0.11 Section 5.1.3
+            // *TUF-SPEC-v1.0.12 Section 5.1.3
             $this->checkSignatures($nextRoot);
             // Update Role and Key databases to use the new root information.
             $this->roleDB = RoleDB::createFromRootMetadata($nextRoot, true);
             $this->keyDB = KeyDB::createFromRootMetadata($nextRoot, true);
             $this->checkSignatures($nextRoot);
-            // *TUF-SPEC-v1.0.11 Section 5.1.4
+            // *TUF-SPEC-v1.0.12 Section 5.1.4
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
-            // *TUF-SPEC-v1.0.11 Section 5.1.5 - Needs no action.
+            // *TUF-SPEC-v1.0.12 Section 5.1.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
             // file does not matter yet, because we will check for it in step
             // 1.8.
 
-            // *TUF-SPEC-v1.0.11 Section 5.1.6 and 5.1.7
+            // *TUF-SPEC-v1.0.12 Section 5.1.6 and 5.1.7
             $this->durableStorage['root.json'] = $nextRootContents;
             $nextVersion = $rootData->getVersion() + 1;
-            // *TUF-SPEC-v1.0.11 Section 5.1.8 Repeat the above steps.
+            // *TUF-SPEC-v1.0.12 Section 5.1.8 Repeat the above steps.
         }
-        // *TUF-SPEC-v1.0.11 Section 5.1.9
+        // *TUF-SPEC-v1.0.12 Section 5.1.9
         static::checkFreezeAttack($rootData, $this->getCurrentTime());
 
-        // *TUF-SPEC-v1.0.11 Section 5.1.10: Delete the trusted timestamp and snapshot files if either
+        // *TUF-SPEC-v1.0.12 Section 5.1.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
@@ -685,7 +685,7 @@ class Updater
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // TUF-SPEC-v1.0.11 Section 5.4.6.1
+                // TUF-SPEC-v1.0.12 Section 5.4.6.1
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
             }
@@ -730,16 +730,16 @@ class Updater
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
-        // TUF-SPEC-v1.0.11 Section 5.4.1
+        // TUF-SPEC-v1.0.12 Section 5.4.1
         $newSnapshotData->verifyNewHashes($newTargetsData);
-        // TUF-SPEC-v1.0.11 Section 5.4.2
+        // TUF-SPEC-v1.0.12 Section 5.4.2
         $this->checkSignatures($newTargetsData);
-        // TUF-SPEC-v1.0.11 Section 5.4.3
+        // TUF-SPEC-v1.0.12 Section 5.4.3
         $newSnapshotData->verifyNewVersion($newTargetsData);
-        // TUF-SPEC-v1.0.11 Section 5.4.4
+        // TUF-SPEC-v1.0.12 Section 5.4.4
         static::checkFreezeAttack($newTargetsData, $this->getCurrentTime());
         $newTargetsData->setIsTrusted(true);
-        // TUF-SPEC-v1.0.11 Section 5.4.5
+        // TUF-SPEC-v1.0.12 Section 5.4.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
 }

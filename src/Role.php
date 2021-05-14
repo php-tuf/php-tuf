@@ -59,7 +59,7 @@ class Role
      *
      * @return static
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.11/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.12/tuf-spec.md#4-document-formats
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): Role
     {

@@ -61,7 +61,7 @@ final class Key
      *
      * @return static
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.11/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.12/tuf-spec.md#4-document-formats
      */
     public static function createFromMetadata(\ArrayObject $keyInfo): self
     {
@@ -104,7 +104,7 @@ final class Key
      * @return string
      *     The key ID in hex format for the key metadata hashed using sha256.
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.11/tuf-spec.md#4-document-formats
+     * @see https://github.com/theupdateframework/specification/blob/v1.0.12/tuf-spec.md#4-document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
