@@ -36,7 +36,15 @@ final class SignatureVerifier
         $this->keyDb = $keyDb;
     }
 
-    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): SignatureVerifier
+    /**
+     * Creates a SignatureVerifier object from a RootMetadata object.
+     *
+     * @param \Tuf\Metadata\RootMetadata $rootMetadata
+     * @param bool $allowUntrustedAccess
+     *
+     * @return static
+     */
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): self
     {
         return new static(
             RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
