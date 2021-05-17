@@ -52,7 +52,7 @@ final class SignatureVerifier
      *
      * @return void
      *
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
      */
     public function checkSignatures(MetadataBase $metadata): void
