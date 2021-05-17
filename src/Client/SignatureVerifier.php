@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Tuf\Client;
-
 
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\JsonNormalizer;
@@ -13,40 +11,26 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Role;
 use Tuf\RoleDB;
 
+/**
+ * A class that verifies metadata signatures.
+ */
 class SignatureVerifier
 {
 
     /**
      * @var \Tuf\RoleDB
      */
-    protected $roleDb;
+    private $roleDb;
 
     /**
      * @var \Tuf\KeyDB
      */
-    protected $keyDb;
-
-    /**
-     * @return \Tuf\RoleDB
-     */
-    public function getRoleDb(): RoleDB
-    {
-        return $this->roleDb;
-    }
-
-    /**
-     * @return \Tuf\KeyDB
-     */
-    public function getKeyDb(): KeyDB
-    {
-        return $this->keyDb;
-    }
-
+    private $keyDb;
 
     /**
      * SignatureVerifier constructor.
      */
-    public function __construct(RoleDB $roleDb, KeyDB $keyDb)
+    private function __construct(RoleDB $roleDb, KeyDB $keyDb)
     {
         $this->roleDb = $roleDb;
         $this->keyDb = $keyDb;
@@ -55,8 +39,8 @@ class SignatureVerifier
     public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): SignatureVerifier
     {
         return new static(
-          RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
-          KeyDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess)
+            RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
+            KeyDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess)
         );
     }
 
@@ -127,14 +111,30 @@ class SignatureVerifier
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
-    public function addRole(Role $role) {
+    /**
+     * Adds a role to the signature verifier.
+     *
+     * @param \Tuf\Role $role
+     *
+     * @throws \Exception
+     */
+    public function addRole(Role $role):void
+    {
         if (!$this->roleDb->roleExists($role->getName())) {
             $this->roleDb->addRole($role);
         }
     }
 
-    public function addKey(string $keyId, Key $key) {
+    /**
+     * Adds a key to the signature verifier.
+     *
+     * @param string $keyId
+     * @param \Tuf\Key $key
+     *
+     * @throws \Tuf\Exception\InvalidKeyException
+     */
+    public function addKey(string $keyId, Key $key):void
+    {
         $this->keyDb->addKey($keyId, $key);
     }
-
 }

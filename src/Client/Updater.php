@@ -14,7 +14,6 @@ use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
-use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
