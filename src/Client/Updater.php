@@ -14,15 +14,12 @@ use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
-use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
 use Tuf\JsonNormalizer;
-use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\RoleDB;
 
 /**
  * Class Updater
@@ -53,20 +50,6 @@ class Updater
     protected $durableStorage;
 
     /**
-     * The role database for the repository.
-     *
-     * @var \Tuf\RoleDB
-     */
-    protected $roleDB;
-
-    /**
-     * The key database for the repository.
-     *
-     * @var \Tuf\KeyDB
-     */
-    protected $keyDB;
-
-    /**
      * The repo file fetcher.
      *
      * @var \Tuf\Client\RepoFileFetcherInterface
@@ -82,6 +65,11 @@ class Updater
      * @var bool
      */
     protected $isRefreshed = false;
+
+    /**
+     * @var \Tuf\Client\SignatureVerifier
+     */
+    protected $signatureVerifier;
 
     /**
      * Updater constructor.
@@ -167,8 +155,7 @@ class Updater
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
         $rootData->setIsTrusted(true);
 
-        $this->roleDB = RoleDB::createFromRootMetadata($rootData);
-        $this->keyDB = KeyDB::createFromRootMetadata($rootData);
+        $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
         $this->updateRoot($rootData);
 
@@ -178,7 +165,7 @@ class Updater
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
         // *TUF-SPEC-v1.0.12 Section 5.2.1
-        $this->checkSignatures($newTimestampData);
+        $this->signatureVerifier->checkSignatures($newTimestampData);
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
@@ -210,7 +197,7 @@ class Updater
         }
 
         // TUF-SPEC-v1.0.12 Section 5.3.2
-        $this->checkSignatures($newSnapshotData);
+        $this->signatureVerifier->checkSignatures($newSnapshotData);
 
         // TUF-SPEC-v1.0.12 Section 5.3.3
         $newTimestampData->verifyNewVersion($newSnapshotData);
@@ -342,72 +329,6 @@ class Updater
         }
     }
 
-    /**
-     * Checks signatures on a verifiable structure.
-     *
-     * @param \Tuf\Metadata\MetadataBase $metadata
-     *     The metadata to check signatures on.
-     *
-     * @return void
-     *
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
-     *   Thrown if the signature threshold has not be reached.
-     */
-    protected function checkSignatures(MetadataBase $metadata): void
-    {
-        $signatures = $metadata->getSignatures();
-
-        $role = $this->roleDB->getRole($metadata->getRole());
-        $needVerified = $role->getThreshold();
-        $verifiedKeySignatures = [];
-
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
-        foreach ($signatures as $signature) {
-            // Don't allow the same key to be counted twice.
-            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
-                $verifiedKeySignatures[$signature['keyid']] = true;
-            }
-            // @todo Determine if we should check all signatures and warn for
-            //     bad signatures even if this method returns TRUE because the
-            //     threshold has been met.
-            //     https://github.com/php-tuf/php-tuf/issues/172
-            if (count($verifiedKeySignatures) >= $needVerified) {
-                break;
-            }
-        }
-
-        if (count($verifiedKeySignatures) < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
-        }
-    }
-
-    /**
-     * @param string $bytes
-     *     The canonical JSON string of the 'signed' section of the given file.
-     * @param \ArrayAccess $signatureMeta
-     *     The ArrayAccess object of metadata for the signature. Each signature
-     *     metadata contains two elements:
-     *     - keyid: The identifier of the key signing the role data.
-     *     - sig: The hex-encoded signature of the canonical form of the
-     *       metadata for the role.
-     *
-     * @return boolean
-     *     TRUE if the signature is valid for the.
-     */
-    protected function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
-    {
-        // Get the pubkey from the key database.
-        $pubkey = $this->keyDB->getKey($signatureMeta['keyid'])->getPublic();
-
-        // Encode the pubkey and signature, and check that the signature is
-        // valid for the given data and pubkey.
-        $pubkeyBytes = hex2bin($pubkey);
-        $sigBytes = hex2bin($signatureMeta['sig']);
-        // @todo Check that the key type in $signatureMeta is ed25519; return
-        //     false if not.
-        //     https://github.com/php-tuf/php-tuf/issues/168
-        return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
-    }
 
 
     /**
@@ -440,11 +361,9 @@ class Updater
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             // *TUF-SPEC-v1.0.12 Section 5.1.3
-            $this->checkSignatures($nextRoot);
-            // Update Role and Key databases to use the new root information.
-            $this->roleDB = RoleDB::createFromRootMetadata($nextRoot, true);
-            $this->keyDB = KeyDB::createFromRootMetadata($nextRoot, true);
-            $this->checkSignatures($nextRoot);
+            $this->signatureVerifier->checkSignatures($nextRoot);
+            $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($nextRoot, true);
+            $this->signatureVerifier->checkSignatures($nextRoot);
             // *TUF-SPEC-v1.0.12 Section 5.1.4
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
             $nextRoot->setIsTrusted(true);
@@ -680,7 +599,7 @@ class Updater
 
         $delegatedKeys = $targetsMetadata->getDelegatedKeys();
         foreach ($delegatedKeys as $keyId => $delegatedKey) {
-            $this->keyDB->addKey($keyId, $delegatedKey);
+            $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
@@ -689,9 +608,7 @@ class Updater
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
             }
-            if (!$this->roleDB->roleExists($delegatedRoleName)) {
-                $this->roleDB->addRole($delegatedRole);
-            }
+            $this->signatureVerifier->addRole($delegatedRole);
             if (!$delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain so if the path does not match
                 // do not evaluate this role or any roles it delegates to.
@@ -733,7 +650,7 @@ class Updater
         // TUF-SPEC-v1.0.12 Section 5.4.1
         $newSnapshotData->verifyNewHashes($newTargetsData);
         // TUF-SPEC-v1.0.12 Section 5.4.2
-        $this->checkSignatures($newTargetsData);
+        $this->signatureVerifier->checkSignatures($newTargetsData);
         // TUF-SPEC-v1.0.12 Section 5.4.3
         $newSnapshotData->verifyNewVersion($newTargetsData);
         // TUF-SPEC-v1.0.12 Section 5.4.4
