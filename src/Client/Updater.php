@@ -86,7 +86,7 @@ class Updater
     /**
      * The time after which metadata should be considered expired.
      *
-     *   @return \DateTimeImmutable
+     * @var \DateTimeImmutable
      */
     private $metadataExpiration;
 
