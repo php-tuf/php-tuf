@@ -173,8 +173,7 @@ class Updater
         }
 
         // *TUF-SPEC-v1.0.13 Section 5.0
-        $this->setMetadataExpiration();
-        $metadataExpirationTime = $this->getMetadataExpirationTime();
+        $this->metadataExpiration = $this->createExpirationDate();
 
         // *TUF-SPEC-v1.0.13 Section 5.1
         $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
@@ -201,7 +200,7 @@ class Updater
         }
 
         // *TUF-SPEC-v1.0.13 Section 5.3.3
-        static::checkFreezeAttack($newTimestampData, $metadataExpirationTime);
+        static::checkFreezeAttack($newTimestampData, $this->metadataExpiration);
         // TUF-SPEC-v1.0.13 Section 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
         $newTimestampData->setIsTrusted(true);
@@ -234,7 +233,7 @@ class Updater
         }
 
         // TUF-SPEC-v1.0.13 Section 5.4.5
-        static::checkFreezeAttack($newSnapshotData, $metadataExpirationTime);
+        static::checkFreezeAttack($newSnapshotData, $this->metadataExpiration);
 
         // TUF-SPEC-v1.0.13 Section 5.4.6
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
@@ -472,7 +471,7 @@ class Updater
             // *TUF-SPEC-v1.0.13 Section 5.2.8 Repeat the above steps.
         }
         // *TUF-SPEC-v1.0.13 Section 5.2.9
-        static::checkFreezeAttack($rootData, $this->getMetadataExpirationTime());
+        static::checkFreezeAttack($rootData, $this->metadataExpiration);
 
         // *TUF-SPEC-v1.0.13 Section 5.2.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
@@ -481,22 +480,6 @@ class Updater
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
             unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
         }
-    }
-
-    /**
-     * Gets the time beyond which any new metadata will be considered expired.
-     *
-     * @return \DateTimeImmutable
-     *    A time beyond which any new metadata will be considered expired.
-     * @throws \Tuf\Exception\FormatException
-     *    Thrown if time format is not valid.
-     */
-    private function getMetadataExpirationTime(): \DateTimeImmutable
-    {
-        if (empty($this->metadataExpiration)) {
-            throw new \LogicException("::setMetadataExpiration must be called before ::getMetadataExpirationTime");
-        }
-        return $this->metadataExpiration;
     }
 
     /**
@@ -750,28 +733,10 @@ class Updater
         // TUF-SPEC-v1.0.13 Section 5.5.3
         $newSnapshotData->verifyNewVersion($newTargetsData);
         // TUF-SPEC-v1.0.13 Section 5.5.4
-        static::checkFreezeAttack($newTargetsData, $this->getMetadataExpirationTime());
+        static::checkFreezeAttack($newTargetsData, $this->metadataExpiration);
         $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.13 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
-    }
-
-    /**
-     * Sets the time after which metadata files should be considered expired.
-     *
-     * This should only be called once during ::refresh() and should not be called
-     * otherwise.
-     *
-     * @throws \Tuf\Exception\FormatException
-     */
-    private function setMetadataExpiration()
-    {
-        if ($this->isRefreshed) {
-            throw new \LogicException('::setMetadataExpiration() cannot be called after refresh has been called()');
-        } elseif ($this->metadataExpiration) {
-            throw new \LogicException('::setMetadataExpiration() should only be called once during ::refresh()');
-        }
-        $this->metadataExpiration = $this->createExpirationDate();
     }
 
     /**
