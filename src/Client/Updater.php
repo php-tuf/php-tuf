@@ -740,7 +740,7 @@ class Updater
     }
 
     /**
-     * Creates the expiration date after which metadata will be consider expired.
+     * Creates the expiration date after which metadata will be considered expired.
      *
      * @return \DateTimeImmutable
      *   The expiration date.
