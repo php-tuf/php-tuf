@@ -336,18 +336,18 @@ class Updater
      *
      * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata for the timestamp role.
-     * @param \DateTimeInterface $now
-     *     The current date and time at runtime.
+     * @param \DateTimeInterface $updaterMetadataExpirationTime
+     *     The time after which metadata should be considered expired.
      *
      * @return void
      *
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $now): void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $updaterMetadataExpirationTime): void
     {
         $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
-        if ($metadataExpiration < $now) {
+        if ($metadataExpiration < $updaterMetadataExpirationTime) {
             $format = "Remote %s metadata expired on %s";
             throw new FreezeAttackException(sprintf($format, $metadata->getRole(), $metadataExpiration->format('c')));
         }
