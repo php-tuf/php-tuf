@@ -16,7 +16,6 @@ use Tuf\RoleDB;
  */
 final class SignatureVerifier
 {
-
     /**
      * @var \Tuf\RoleDB
      */
