@@ -88,7 +88,7 @@ class Updater
      *
      *   @return \DateTimeImmutable
      */
-    protected $metadataExpiration;
+    private $metadataExpiration;
 
     /**
      * Updater constructor.
@@ -491,7 +491,7 @@ class Updater
      * @throws \Tuf\Exception\FormatException
      *    Thrown if time format is not valid.
      */
-    protected function getMetadataExpirationTime(): \DateTimeImmutable
+    private function getMetadataExpirationTime(): \DateTimeImmutable
     {
         if (empty($this->metadataExpiration)) {
             throw new \LogicException("::setMetadataExpiration must be called before ::getMetadataExpirationTime");
@@ -764,14 +764,25 @@ class Updater
      *
      * @throws \Tuf\Exception\FormatException
      */
-    protected function setMetadataExpiration()
+    private function setMetadataExpiration()
     {
         if ($this->isRefreshed) {
             throw new \LogicException('::setMetadataExpiration() cannot be called after refresh has been called()');
         } elseif ($this->metadataExpiration) {
             throw new \LogicException('::setMetadataExpiration() should only be called once during ::refresh()');
         }
+        $this->metadataExpiration = $this->createExpirationDate();
+    }
+
+    /**
+     * Creates the expiration date after which metadata will be consider expired.
+     *
+     * @return \DateTimeImmutable
+     *   The expiration date.
+     */
+    protected function createExpirationDate(): \DateTimeImmutable
+    {
         $fakeNow = '2020-01-01T00:00:00Z';
-        $this->metadataExpiration = static::metadataTimestampToDateTime($fakeNow);
+        return static::metadataTimestampToDateTime($fakeNow);
     }
 }
