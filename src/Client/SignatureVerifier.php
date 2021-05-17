@@ -118,7 +118,7 @@ final class SignatureVerifier
      *
      * @throws \Exception
      */
-    public function addRole(Role $role):void
+    public function addRole(Role $role): void
     {
         if (!$this->roleDb->roleExists($role->getName())) {
             $this->roleDb->addRole($role);
