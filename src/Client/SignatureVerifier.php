@@ -94,7 +94,7 @@ final class SignatureVerifier
      *       metadata for the role.
      *
      * @return boolean
-     *     TRUE if the signature is valid for the.
+     *     TRUE if the signature is valid for $bytes.
      */
     private function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
     {
@@ -115,8 +115,6 @@ final class SignatureVerifier
      * Adds a role to the signature verifier.
      *
      * @param \Tuf\Role $role
-     *
-     * @throws \Exception
      */
     public function addRole(Role $role): void
     {
@@ -130,8 +128,6 @@ final class SignatureVerifier
      *
      * @param string $keyId
      * @param \Tuf\Key $key
-     *
-     * @throws \Tuf\Exception\InvalidKeyException
      */
     public function addKey(string $keyId, Key $key): void
     {
