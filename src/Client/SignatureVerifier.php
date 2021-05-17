@@ -133,7 +133,7 @@ final class SignatureVerifier
      *
      * @throws \Tuf\Exception\InvalidKeyException
      */
-    public function addKey(string $keyId, Key $key):void
+    public function addKey(string $keyId, Key $key): void
     {
         $this->keyDb->addKey($keyId, $key);
     }
