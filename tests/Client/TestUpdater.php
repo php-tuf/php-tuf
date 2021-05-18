@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Tests\Client;
 
 use Tuf\Client\RepoFileFetcherInterface;
@@ -12,7 +11,6 @@ use Tuf\Tests\TestHelpers\TestClock;
  */
 class TestUpdater extends Updater
 {
-
     public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, \ArrayAccess $durableStorage)
     {
         parent::__construct($repoFileFetcher, $mirrors, $durableStorage);

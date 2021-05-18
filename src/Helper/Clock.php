@@ -7,7 +7,6 @@ namespace Tuf\Helper;
  */
 class Clock
 {
-
     /**
      * Gets the current time.
      *

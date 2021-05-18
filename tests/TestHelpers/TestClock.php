@@ -20,7 +20,8 @@ class TestClock extends Clock
 
     public function getCurrentTime(): int
     {
-        $this->time+= 5;
+        // Increment the time simulate time passing between calls.
+        $this->time+= 1;
         return $this->time;
     }
 }
