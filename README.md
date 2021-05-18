@@ -9,7 +9,7 @@ It should currently only be used for testing, development and feedback.
 PHP-TUF is a PHP implementation of [The Update Framework
 (TUF)](https://theupdateframework.io/) to provide signing and verification for
 secure PHP application updates. [Read the TUF
-specification](https://github.com/theupdateframework/specification/blob/v1.0.13/tuf-spec.md)
+specification](https://github.com/theupdateframework/specification/blob/v1.0.15/tuf-spec.md)
 for more information on how TUF is intended to work and the security it
 provides.
 
@@ -120,5 +120,5 @@ dependency information](DEPENDENCIES.md).
   * [Code Documentation: Main Index](https://github.com/theupdateframework/tuf/blob/develop/tuf/README.md)
   * [CLI](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
   * [Python API Readme](https://github.com/theupdateframework/tuf/blob/develop/tuf/client/README.md)
-* [TUF Specification v1.0.13](https://github.com/theupdateframework/specification/blob/v1.0.13/tuf-spec.md)
+* [TUF Specification v1.0.15](https://github.com/theupdateframework/specification/blob/v1.0.15/tuf-spec.md)
 * [PIP + TUF Integration](https://www.python.org/dev/peps/pep-0458/)
