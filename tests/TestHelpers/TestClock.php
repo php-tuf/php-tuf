@@ -17,13 +17,6 @@ class TestClock extends Clock
      */
     private $time = 1577836800;
 
-    public function __construct()
-    {
-        // Use the same timestamp as used in generate_fixtures.py to create
-        // fixtures
-        $this->time = 1577836800;
-    }
-
     public function getCurrentTime(): int
     {
         // Increment the time simulate time passing between calls.
