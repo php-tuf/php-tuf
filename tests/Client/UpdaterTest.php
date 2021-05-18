@@ -548,8 +548,8 @@ class UpdaterTest extends TestCase
             // will result in a MetadataException indicating that the contents hash does not match
             // the hashes specified in the timestamp.json. This is because timestamp.json in the test
             // fixtures contains the optional 'hashes' metadata for the snapshot.json files, and this
-            // is checked before the file signatures and the file version number.The order of checking
-            // is specified in TUF-SPEC-v1.0.12 Section 5.3.
+            // is checked before the file signatures and the file version number. The order of checking
+            // is specified in TUF-SPEC-v1.0.16 Section 5.5.
             [
                 '5.snapshot.json',
                 ['signed', 'newkey'],
