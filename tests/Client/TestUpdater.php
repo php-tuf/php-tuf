@@ -5,7 +5,6 @@ namespace Tuf\Tests\Client;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
 use Tuf\Helper\Clock;
-use Tuf\Tests\TestHelpers\TestClock;
 
 /**
  * An updater class for testing that allows specifying the Clock instance to use.
