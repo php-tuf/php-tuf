@@ -7,7 +7,7 @@ use Tuf\Client\Updater;
 use Tuf\Tests\TestHelpers\TestClock;
 
 /**
- * An updater class for testing uses \Tuf\Tests\TestHelpers\TestClock class.
+ * An updater class for testing using the \Tuf\Tests\TestHelpers\TestClock class.
  */
 class TestUpdater extends Updater
 {

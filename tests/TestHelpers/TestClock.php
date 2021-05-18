@@ -9,7 +9,13 @@ use Tuf\Helper\Clock;
  */
 class TestClock extends Clock
 {
-    private $time = null;
+    /**
+     * The current time.
+     *
+     * Defaults to the same timestamp used in generate_fixtures.py to create
+     * test fixtures.
+     */
+    private $time = 1577836800;
 
     public function __construct()
     {
