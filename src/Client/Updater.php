@@ -748,6 +748,8 @@ class Updater
     protected function createExpirationDate(): \DateTimeImmutable
     {
         $fakeNow = '2020-01-01T00:00:00Z';
-        return static::metadataTimestampToDateTime($fakeNow);
+        // Allow metadata that expires five minutes after ::refresh() starts.
+        $expirationAdditionInterval = \DateInterval::createFromDateString("5 minutes");
+        return static::metadataTimestampToDateTime($fakeNow)->add($expirationAdditionInterval);
     }
 }
