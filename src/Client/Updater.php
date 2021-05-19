@@ -15,6 +15,7 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Exception\PotentialAttackException\SignatureThresholdExpception;
+use Tuf\Helper\Clock;
 use Tuf\JsonNormalizer;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
@@ -84,6 +85,11 @@ class Updater
     protected $isRefreshed = false;
 
     /**
+     * @var \Tuf\Helper\Clock
+     */
+    protected $clock;
+
+    /**
      * The time after which metadata should be considered expired.
      *
      * @var \DateTimeImmutable
@@ -118,6 +124,7 @@ class Updater
         $this->repoFileFetcher = $repoFileFetcher;
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
+        $this->clock = new Clock();
     }
 
     /**
@@ -747,7 +754,6 @@ class Updater
      */
     private function getUpdateStartTime(): \DateTimeImmutable
     {
-        $fakeNow = '2020-01-01T00:00:00Z';
-        return static::metadataTimestampToDateTime($fakeNow);
+        return (new \DateTimeImmutable())->setTimestamp($this->clock->getCurrentTime());
     }
 }

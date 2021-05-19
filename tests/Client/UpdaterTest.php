@@ -20,6 +20,7 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\TestClock;
 
 class UpdaterTest extends TestCase
 {
@@ -134,7 +135,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new Updater($this->testRepo, $mirrors, $this->localRepo);
+        $updater = new TestUpdater($this->testRepo, $mirrors, $this->localRepo, new TestClock());
         return $updater;
     }
 
