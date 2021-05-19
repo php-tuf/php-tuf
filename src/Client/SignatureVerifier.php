@@ -91,6 +91,8 @@ final class SignatureVerifier
     }
 
     /**
+     * Verifies a single signature.
+     *
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
      * @param \ArrayAccess $signatureMeta
