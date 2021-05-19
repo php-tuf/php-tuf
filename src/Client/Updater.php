@@ -301,6 +301,10 @@ class Updater
                 "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
         }
+        // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
+        // the same files in the new metadata info.
+        // For 'snapshot' type this is TUF-SPEC-v1.0.16 Section 5.4.4
+        // For 'timestamp' type this TUF-SPEC-v1.0.16 Section 5.3.2.2
         if ($type === 'timestamp' || $type === 'snapshot') {
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
