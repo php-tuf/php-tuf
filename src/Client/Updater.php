@@ -625,8 +625,10 @@ class Updater
                 return $newTargetsData;
             }
             if ($delegatedRole->isTerminating()) {
-                // If the role is terminating then we do not search this targets metadata for additional delegations.
-                continue;
+                // TUF-SPEC-v1.0.16 Section 5.5.6.2.2
+                // If the role is terminating then abort searching for a target.
+                // @todo Add test coverage in this PR.
+                return null;
             }
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                 return $matchingTargetMetadata;
