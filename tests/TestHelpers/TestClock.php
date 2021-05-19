@@ -17,10 +17,13 @@ class TestClock extends Clock
      */
     private $time = 1577836800;
 
+    /**
+     * {@inheritdoc}
+     */
     public function getCurrentTime(): int
     {
         // Increment the time simulate time passing between calls.
-        $this->time+= 1;
+        $this->time++;
         return $this->time;
     }
 }
