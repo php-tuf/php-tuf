@@ -383,7 +383,7 @@ class Updater
             $this->signatureVerifier->checkSignatures($nextRoot);
             // *TUF-SPEC-v1.0.12 Section 5.2.4
 
-            static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $rootData->checkRollbackAttack($nextRoot, $nextVersion);
             $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.

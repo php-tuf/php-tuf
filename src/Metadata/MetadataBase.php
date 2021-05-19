@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\JsonNormalizer;
 
 /**
@@ -251,6 +252,44 @@ abstract class MetadataBase
     {
         if (!$allowUntrustedAccess && !$this->isTrusted()) {
             throw new \RuntimeException("Cannot use untrusted '{$this->getRole()}'. metadata.");
+        }
+    }
+
+    /**
+     * Checks for a rollback attack.
+     *
+     * Verifies that an incoming remote version of a metadata file is greater
+     * than or equal to the last known version.
+     *
+     * @param \Tuf\Metadata\MetadataBase $remoteMetadata
+     *     The latest metadata fetched from the remote repository.
+     * @param integer|null $expectedRemoteVersion
+     *     If not null this is expected version of remote metadata.
+     *
+     * @return void
+     *
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     *     Thrown if a potential rollback attack is detected.
+     */
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
+    {
+        $localMetadata = $this;
+
+        if ($localMetadata->getType() !== $remoteMetadata->getType()) {
+            throw new \UnexpectedValueException(__METHOD__ . '() can only be used to compare metadata files of the same type. '
+                . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
+        }
+        $type = $localMetadata->getType();
+        $remoteVersion = $remoteMetadata->getVersion();
+        if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
+            throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
+                "does not the expected version \"$$expectedRemoteVersion\"");
+        }
+        $localVersion = $localMetadata->getVersion();
+        if ($remoteVersion < $localVersion) {
+            $message = "Remote $type metadata version \"$$remoteVersion\" " .
+                "is less than previously seen $type version \"$$localVersion\"";
+            throw new RollbackAttackException($message);
         }
     }
 }
