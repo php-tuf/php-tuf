@@ -5,6 +5,7 @@ namespace Tuf\Tests\Unit\Client;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
+use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 
 /**
@@ -68,19 +69,15 @@ class UpdaterTest extends TestCase
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
 
-        $sut = $this->getSystemInTest();
-
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
-        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
-        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $localData = '{"signed": {"_type": "any", "version": 2}}';
+        $localMetadata = new class (JsonNormalizer::decode($localData), $localData) extends MetadataBase {};
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
-        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
-        $method->setAccessible(true);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+
+        $localMetadata->checkRollbackAttack($incomingMetadata);
     }
 
     /**
@@ -96,18 +93,14 @@ class UpdaterTest extends TestCase
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$2" does not the expected version "$3"');
 
-        $sut = $this->getSystemInTest();
-
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
-        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
-        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+        $localData = '{"signed": {"_type": "any"}}';
+        $localMetadata = new class (JsonNormalizer::decode($localData), $localData) extends MetadataBase {};
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
-        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
-        $method->setAccessible(true);
-        $method->invoke($sut, $localMetadata, $incomingMetadata, 3);
+        $localMetadata->checkRollbackAttack($incomingMetadata, 3);
     }
 
     /**

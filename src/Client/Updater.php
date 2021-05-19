@@ -285,22 +285,8 @@ class Updater
      */
     protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
-        if ($localMetadata->getType() !== $remoteMetadata->getType()) {
-            throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
-               . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
-        }
+        $localMetadata->checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
         $type = $localMetadata->getType();
-        $remoteVersion = $remoteMetadata->getVersion();
-        if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
-            throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
-              "does not the expected version \"$$expectedRemoteVersion\"");
-        }
-        $localVersion = $localMetadata->getVersion();
-        if ($remoteVersion < $localVersion) {
-            $message = "Remote $type metadata version \"$$remoteVersion\" " .
-                "is less than previously seen $type version \"$$localVersion\"";
-            throw new RollbackAttackException($message);
-        }
         if ($type === 'timestamp' || $type === 'snapshot') {
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
