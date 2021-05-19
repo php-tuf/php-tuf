@@ -624,14 +624,17 @@ class Updater
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
+            // TUF-SPEC-v1.0.16 Section 5.5.6.2.1
+            //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
+            // @todo confirm we should recursively search roles even if the current role is terminating????????
+            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
+                return $matchingTargetMetadata;
+            }
             if ($delegatedRole->isTerminating()) {
                 // TUF-SPEC-v1.0.16 Section 5.5.6.2.2
                 // If the role is terminating then abort searching for a target.
                 // @todo Add test coverage in this PR.
                 return null;
-            }
-            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                return $matchingTargetMetadata;
             }
         }
         return null;
