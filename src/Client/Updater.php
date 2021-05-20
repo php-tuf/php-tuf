@@ -20,6 +20,7 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
+use Tuf\Verifier\RootMetadataVerifier;
 use Tuf\Verifier\TimestampMetadataVerifier;
 
 /**
@@ -191,30 +192,31 @@ class Updater
             // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $newTimestampData->verifyNewHashes($newSnapshotData);
+
+            // TUF-SPEC-v1.0.16 Section 5.3.2
+            $this->signatureVerifier->checkSignatures($newSnapshotData);
+
+            // TUF-SPEC-v1.0.16 Section 5.4.3
+            $newTimestampData->verifyNewVersion($newSnapshotData);
+
+            if (isset($this->durableStorage['snapshot.json'])) {
+                $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+                // TUF-SPEC-v1.0.16 Section 5.4.4
+                static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
+            }
+
+            // TUF-SPEC-v1.0.16 Section 5.4.5
+            static::checkFreezeAttack($newSnapshotData, $this->metadataExpiration);
+
+            // TUF-SPEC-v1.0.16 Section 5.4.6
+            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+            $newSnapshotData->setIsTrusted(true);
         } else {
             // @todo Add support for not using consistent snapshots in
             //    https://github.com/php-tuf/php-tuf/issues/97
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
 
-        // TUF-SPEC-v1.0.16 Section 5.3.2
-        $this->signatureVerifier->checkSignatures($newSnapshotData);
-
-        // TUF-SPEC-v1.0.16 Section 5.4.3
-        $newTimestampData->verifyNewVersion($newSnapshotData);
-
-        if (isset($this->durableStorage['snapshot.json'])) {
-            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-            // TUF-SPEC-v1.0.16 Section 5.4.4
-            static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
-        }
-
-        // TUF-SPEC-v1.0.16 Section 5.4.5
-        static::checkFreezeAttack($newSnapshotData, $this->metadataExpiration);
-
-        // TUF-SPEC-v1.0.16 Section 5.4.6
-        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        $newSnapshotData->setIsTrusted(true);
 
         // TUF-SPEC-v1.0.16 Section 5.5
         if ($rootData->supportsConsistentSnapshots()) {
@@ -233,26 +235,13 @@ class Updater
      */
     private function updateTimestamp(): TimestampMetadata
     {
-        // § 5.3
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        if (isset($this->durableStorage['timestamp.json'])) {
-            // § 5.3.2.1 and 5.3.2.2
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-        }
-        $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $newTimestampData, $currentStateTimestampData)
-        // § 5.3.1
-        $this->signatureVerifier->checkSignatures($newTimestampData);
-
-        // If the timestamp or snapshot keys were rotating then the timestamp file
-        // will not exist.
-        if (isset($this->durableStorage['timestamp.json'])) {
-            // § 5.3.2.1 and 5.3.2.2
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-            static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
-        }
-        // § 5.3.3
-        static::checkFreezeAttack($newTimestampData, $this->metadataExpiration);
+        $currentStateTimestampData = isset($this->durableStorage['timestamp.json']) ?
+          TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']):
+          null;
+        $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $currentStateTimestampData);
+        $verifier->verify();
 
         // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
@@ -292,13 +281,8 @@ class Updater
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            // *TUF-SPEC-v1.0.12 Section 5.2.3
-            $this->signatureVerifier->checkSignatures($nextRoot);
-            $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($nextRoot, true);
-            $this->signatureVerifier->checkSignatures($nextRoot);
-            // *TUF-SPEC-v1.0.12 Section 5.2.4
-
-            static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
+            $rootVerifier = new RootMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $nextRoot, $rootData);
+            $rootVerifier->verify();
             $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
@@ -312,7 +296,7 @@ class Updater
             // *TUF-SPEC-v1.0.16 Section 5.2.8 Repeat the above steps.
         }
         // *TUF-SPEC-v1.0.16 Section 5.2.9
-        static::checkFreezeAttack($rootData, $this->metadataExpiration);
+        $rootVerifier->checkFreezeAttack();
 
         // *TUF-SPEC-v1.0.16 Section 5.2.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.

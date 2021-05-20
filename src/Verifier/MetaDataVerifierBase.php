@@ -27,6 +27,11 @@ abstract class MetaDataVerifierBase
      */
     protected $signatureVerifier;
 
+    /**
+     * @var \DateTimeImmutable
+     */
+    protected $metadataExpiration;
+
 
     /**
      * MetaDataVerifierBase constructor.
@@ -35,9 +40,10 @@ abstract class MetaDataVerifierBase
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      * @param \Tuf\Metadata\MetadataBase|null $trustedMetadata
      */
-    public function __construct(SignatureVerifier $signatureVerifier, MetadataBase $untrustedMetadata, ?MetadataBase $trustedMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, MetadataBase $untrustedMetadata, ?MetadataBase $trustedMetadata = null)
     {
         $this->signatureVerifier = $signatureVerifier;
+        $this->metadataExpiration = $metadataExpiration;
         if ($trustedMetadata && !$trustedMetadata->isTrusted()) {
             throw new \LogicException("must be trusted");
         }
@@ -113,10 +119,10 @@ abstract class MetaDataVerifierBase
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(\DateTimeInterface $updaterMetadataExpirationTime): void
+    protected function checkFreezeAttack(): void
     {
         $metadataExpiration = static::metadataTimestampToDatetime($this->untrustedMetadata->getExpires());
-        if ($metadataExpiration < $updaterMetadataExpirationTime) {
+        if ($metadataExpiration < $this->metadataExpiration) {
             $format = "Remote %s metadata expired on %s";
             throw new FreezeAttackException(sprintf($format, $this->untrustedMetadata->getRole(), $metadataExpiration->format('c')));
         }
