@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Constraints\Collection;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
-class SnapshotMetadata extends MetadataAwareMetadataBase
+class SnapshotMetadata extends MetaFileInfoBase
 {
     /**
      * {@inheritdoc}

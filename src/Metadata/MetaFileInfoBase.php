@@ -8,7 +8,7 @@ use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 /**
  * Base class for metadata that contains information about other metadata.
  */
-abstract class MetadataAwareMetadataBase extends MetadataBase
+abstract class MetaFileInfoBase extends MetadataBase
 {
     /**
      * {@inheritDoc}
@@ -17,8 +17,8 @@ abstract class MetadataAwareMetadataBase extends MetadataBase
     {
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
 
-        if (!$remoteMetadata instanceof MetadataAwareMetadataBase) {
-            throw new \InvalidArgumentException(__METHOD__ . '() can only be use with another instance of ' . MetadataAwareMetadataBase::class);
+        if (!$remoteMetadata instanceof MetaFileInfoBase) {
+            throw new \InvalidArgumentException(__METHOD__ . '() can only be use with another instance of ' . MetaFileInfoBase::class);
         }
 
         $type = $this->getType();

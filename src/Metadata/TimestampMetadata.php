@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class TimestampMetadata extends MetadataAwareMetadataBase
+class TimestampMetadata extends MetaFileInfoBase
 {
     /**
      * {@inheritdoc}
