@@ -82,8 +82,6 @@ class SnapshotMetadataTest extends MetadataBaseTest
         $mockMetadata = $this->createMock(MetadataBase::class);
         return self::getKeyedArray([
             ['getFileMetaInfo', ['any-key']],
-            ['verifyNewHashes', [$mockMetadata]],
-            ['verifyNewVersion', [$mockMetadata]],
         ]);
     }
 }
