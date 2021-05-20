@@ -6,7 +6,6 @@ namespace Tuf\Verifier;
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
-use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
 class SnapshotMetadataVerifier extends FileInfoMetadataVerifier

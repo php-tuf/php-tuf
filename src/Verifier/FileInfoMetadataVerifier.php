@@ -5,7 +5,10 @@ namespace Tuf\Verifier;
 
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
-class FileInfoMetadataVerifier extends MetaDataVerifierBase
+/**
+ * Verifier for metadata classes that have information about other files.
+ */
+abstract class FileInfoMetadataVerifier extends MetaDataVerifierBase
 {
 
     /**
@@ -17,11 +20,6 @@ class FileInfoMetadataVerifier extends MetaDataVerifierBase
      */
     protected $untrustedMetadata;
 
-
-    public function verify()
-    {
-        // TODO: Implement verify() method.
-    }
 
     protected function checkRollbackAttack(): void
     {
