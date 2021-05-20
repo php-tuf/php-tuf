@@ -7,15 +7,11 @@ use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
-use Tuf\Exception\FormatException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
-use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Helper\Clock;
-use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -196,8 +192,7 @@ class Updater
             if (isset($this->durableStorage['snapshot.json'])) {
                 $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
                 $currentSnapShotData->setIsTrusted(true);
-            }
-            else {
+            } else {
                 $currentSnapShotData = null;
             }
             $snapshotVerifier = new SnapshotMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $currentSnapShotData, $newTimestampData);
@@ -234,8 +229,7 @@ class Updater
         if (isset($this->durableStorage['timestamp.json'])) {
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             $currentStateTimestampData->setIsTrusted(true);
-        }
-        else {
+        } else {
             $currentStateTimestampData = null;
         }
         $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $currentStateTimestampData);

@@ -1,12 +1,10 @@
 <?php
 
-
 namespace Tuf\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
-use Tuf\Metadata\RootMetadata;
 
 class RootMetadataVerifier extends MetaDataVerifierBase
 {
@@ -21,7 +19,10 @@ class RootMetadataVerifier extends MetaDataVerifierBase
     protected $trustedMetadata;
 
 
-    public function verify()
+    /**
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     */
+    public function verify(): void
     {
         // *TUF-SPEC-v1.0.12 Section 5.2.3
         /** @var \Tuf\Metadata\RootMetadata $this->untrustedMetadata */
@@ -44,13 +45,22 @@ class RootMetadataVerifier extends MetaDataVerifierBase
         parent::checkRollbackAttack();
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * Override to make public.
+     *
+     * After attempting to update the root metadata the new or non-upddated metadata must be checked for a freeze attack.
+     * We cannot check for a freeze attack in ::verify() because when many root files behind only the last version to be downloaded
+     * needs to pass a freeze attack.
+     */
     public static function checkFreezeAttack(
-      MetadataBase $metadata,
-      \DateTimeImmutable $expiration
+        MetadataBase $metadata,
+        \DateTimeImmutable $expiration
     ): void {
-        parent::checkFreezeAttack($metadata,
-          $expiration);
+        parent::checkFreezeAttack(
+            $metadata,
+            $expiration
+        );
     }
-
-
 }

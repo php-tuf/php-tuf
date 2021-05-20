@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Tuf\Verifier;
-
-use Tuf\Metadata\TimestampMetadata;
 
 class TimestampMetadataVerifier extends FileInfoMetadataVerifier
 {
 
-    public function verify()
+    public function verify(): void
     {
         // § 5.3.1
         $this->checkSignatures();

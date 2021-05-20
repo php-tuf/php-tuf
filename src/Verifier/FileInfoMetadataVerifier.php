@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Verifier;
 
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;

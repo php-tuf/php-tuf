@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Verifier;
 
 use Tuf\Client\SignatureVerifier;
@@ -50,6 +49,11 @@ abstract class MetaDataVerifierBase
         $this->trustedMetadata = $trustedMetadata;
         $this->untrustedMetadata = $untrustedMetadata;
     }
+
+    /**
+     * Verify metadata according to the specification.
+     */
+    abstract public function verify(): void;
 
     /**
      * Checks for a rollback attack.
@@ -149,11 +153,8 @@ abstract class MetaDataVerifierBase
         return $dateTime;
     }
 
-    protected function checkSignatures() {
+    protected function checkSignatures()
+    {
         $this->signatureVerifier->checkSignatures($this->untrustedMetadata);
     }
-
-
-
-    abstract public function verify();
 }

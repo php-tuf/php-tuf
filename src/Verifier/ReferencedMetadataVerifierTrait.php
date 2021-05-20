@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Verifier;
 
 use Tuf\Exception\MetadataException;
@@ -17,7 +16,8 @@ trait ReferencedMetadataVerifierTrait
      */
     protected $referencingMetadata;
 
-    protected function setReferencingMetadata(FileInfoMetadataBase $referencingMetadata) {
+    protected function setReferencingMetadata(FileInfoMetadataBase $referencingMetadata)
+    {
         if (!$referencingMetadata || !$referencingMetadata->isTrusted()) {
             throw new \LogicException("must be trusted");
         }

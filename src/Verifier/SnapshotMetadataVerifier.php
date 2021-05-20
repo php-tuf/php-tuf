@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tuf\Verifier;
 
 use Tuf\Client\SignatureVerifier;
@@ -13,19 +12,23 @@ class SnapshotMetadataVerifier extends FileInfoMetadataVerifier
     use ReferencedMetadataVerifierTrait;
 
     public function __construct(
-      SignatureVerifier $signatureVerifier,
-      \DateTimeImmutable $metadataExpiration,
-      MetadataBase $untrustedMetadata,
-      ?MetadataBase $trustedMetadata = null,
-      TimestampMetadata $timestampMetadata = null
+        SignatureVerifier $signatureVerifier,
+        \DateTimeImmutable $metadataExpiration,
+        MetadataBase $untrustedMetadata,
+        ?MetadataBase $trustedMetadata = null,
+        TimestampMetadata $timestampMetadata = null
     ) {
-        parent::__construct($signatureVerifier, $metadataExpiration,
-          $untrustedMetadata, $trustedMetadata);
+        parent::__construct(
+            $signatureVerifier,
+            $metadataExpiration,
+            $untrustedMetadata,
+            $trustedMetadata
+        );
         $this->setReferencingMetadata($timestampMetadata);
     }
 
 
-    public function verify()
+    public function verify(): void
     {
         $this->verifyNewHashes();
 
