@@ -25,8 +25,7 @@ class SnapshotMetadata extends MetadataBase
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
         $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
 
-        $localMetadata = $this;
-        $localMetaFileInfos = $localMetadata->getSigned()['meta'];
+        $localMetaFileInfos = $this->getSigned()['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
             $remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true);

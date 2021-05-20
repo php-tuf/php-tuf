@@ -12,9 +12,8 @@ trait MetaFileInfoTrait
 {
     public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
-        $localMetadata = $this;
-        $type = $localMetadata->getType();
-        $localMetaFileInfos = $localMetadata->getSigned()['meta'];
+        $type = $this->getType();
+        $localMetaFileInfos = $this->getSigned()['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
             if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true)) {
