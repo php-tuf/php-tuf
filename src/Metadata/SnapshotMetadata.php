@@ -8,9 +8,8 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Constraints\Collection;
 
-class SnapshotMetadata extends MetadataBase
+class SnapshotMetadata extends FileInfoMetadataBase
 {
-    use MetaFileInfoTrait;
 
     /**
      * {@inheritdoc}

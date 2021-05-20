@@ -20,6 +20,7 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
+use Tuf\Verifier\TimestampMetadataVerifier;
 
 /**
  * Class Updater
@@ -235,6 +236,11 @@ class Updater
         // § 5.3
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        if (isset($this->durableStorage['timestamp.json'])) {
+            // § 5.3.2.1 and 5.3.2.2
+            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+        }
+        $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $newTimestampData, $currentStateTimestampData)
         // § 5.3.1
         $this->signatureVerifier->checkSignatures($newTimestampData);
 
@@ -253,112 +259,6 @@ class Updater
         $newTimestampData->setIsTrusted(true);
 
         return $newTimestampData;
-    }
-
-    /**
-     * Converts a metadata timestamp string into an immutable DateTime object.
-     *
-     * @param string $timestamp
-     *     The timestamp string in the metadata.
-     *
-     * @return \DateTimeImmutable
-     *     An immutable DateTime object for the given timestamp.
-     *
-     * @throws FormatException
-     *     Thrown if the timestamp string format is not valid.
-     */
-    protected static function metadataTimestampToDateTime(string $timestamp): \DateTimeImmutable
-    {
-        $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
-        if ($dateTime === false) {
-            throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
-        }
-        return $dateTime;
-    }
-
-    /**
-     * Checks for a rollback attack.
-     *
-     * Verifies that an incoming remote version of a metadata file is greater
-     * than or equal to the last known version.
-     *
-     * @param \Tuf\Metadata\MetadataBase $localMetadata
-     *     The locally stored metadata from the most recent update.
-     * @param \Tuf\Metadata\MetadataBase $remoteMetadata
-     *     The latest metadata fetched from the remote repository.
-     * @param integer|null $expectedRemoteVersion
-     *     If not null this is expected version of remote metadata.
-     *
-     * @return void
-     *
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
-     *     Thrown if a potential rollback attack is detected.
-     */
-    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
-    {
-        if ($localMetadata->getType() !== $remoteMetadata->getType()) {
-            throw new \UnexpectedValueException('\Tuf\Client\Updater::checkRollbackAttack() can only be used to compare metadata files of the same type. '
-               . "Local is {$localMetadata->getType()} and remote is {$remoteMetadata->getType()}.");
-        }
-        $type = $localMetadata->getType();
-        $remoteVersion = $remoteMetadata->getVersion();
-        if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
-            throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
-              "does not the expected version \"$$expectedRemoteVersion\"");
-        }
-        $localVersion = $localMetadata->getVersion();
-        if ($remoteVersion < $localVersion) {
-            $message = "Remote $type metadata version \"$$remoteVersion\" " .
-                "is less than previously seen $type version \"$$localVersion\"";
-            throw new RollbackAttackException($message);
-        }
-        // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
-        // the same files in the new metadata info.
-        // For 'snapshot' type this is TUF-SPEC-v1.0.16 Section 5.4.4
-        // For 'timestamp' type this TUF-SPEC-v1.0.16 Section 5.3.2.2
-        if ($type === 'timestamp' || $type === 'snapshot') {
-            $localMetaFileInfos = $localMetadata->getSigned()['meta'];
-            foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
-                /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
-                if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true)) {
-                    if ($remoteFileInfo['version'] < $localFileInfo['version']) {
-                        $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
-                          "is less than previously seen  version \"${$localFileInfo['version']}\"";
-                        throw new RollbackAttackException($message);
-                    }
-                } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
-                    // TUF-SPEC-v1.0.16 Section 5.4.4
-                    // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
-                    // continue to be listed in the new snapshot metadata file.
-                    throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks for a freeze attack.
-     *
-     * Verifies that metadata has not expired, and assumes a potential freeze
-     * attack if it has.
-     *
-     * @param \Tuf\Metadata\MetadataBase $metadata
-     *     The metadata for the timestamp role.
-     * @param \DateTimeInterface $updaterMetadataExpirationTime
-     *     The time after which metadata should be considered expired.
-     *
-     * @return void
-     *
-     * @throws FreezeAttackException
-     *     Thrown if a potential freeze attack is detected.
-     */
-    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeInterface $updaterMetadataExpirationTime): void
-    {
-        $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
-        if ($metadataExpiration < $updaterMetadataExpirationTime) {
-            $format = "Remote %s metadata expired on %s";
-            throw new FreezeAttackException(sprintf($format, $metadata->getRole(), $metadataExpiration->format('c')));
-        }
     }
 
 
