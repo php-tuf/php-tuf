@@ -114,22 +114,6 @@ class Updater
     }
 
     /**
-     * Gets the type for the file name.
-     *
-     * @param string $fileName
-     *   The file name.
-     *
-     * @return string
-     *   The type.
-     */
-    private static function getFileNameType(string $fileName): string
-    {
-        $parts = explode('.', $fileName);
-        array_pop($parts);
-        return array_pop($parts);
-    }
-
-    /**
      * @todo Add docs. See python comments:
      *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
      *     https://github.com/php-tuf/php-tuf/issues/162
