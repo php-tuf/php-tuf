@@ -9,21 +9,19 @@ use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Constraints\Collection;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
-class SnapshotMetadata extends MetadataBase
+class SnapshotMetadata extends MetadataAwareMetadataBase
 {
-    use MetaFileInfoTrait {
-        checkRollbackAttack as traitCheckRollbackAttack;
-    }
-
     /**
      * {@inheritdoc}
      */
     protected const TYPE = 'snapshot';
 
+    /**
+     * {@inheritDoc}
+     */
     public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
-        $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
 
         $localMetaFileInfos = $this->getSigned()['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {

@@ -9,22 +9,12 @@ use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
-class TimestampMetadata extends MetadataBase
+class TimestampMetadata extends MetadataAwareMetadataBase
 {
-    use MetaFileInfoTrait {
-        checkRollbackAttack as traitCheckRollbackAttack;
-    }
-
     /**
      * {@inheritdoc}
      */
     protected const TYPE = 'timestamp';
-
-    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
-    {
-        parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
-        $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
-    }
 
     /**
      * {@inheritdoc}

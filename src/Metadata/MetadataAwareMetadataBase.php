@@ -6,12 +6,21 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
 /**
- * Common methods for metadata that contain information about other metadata objects.
+ * Base class for metadata that contains information about other metadata.
  */
-trait MetaFileInfoTrait
+abstract class MetadataAwareMetadataBase extends MetadataBase
 {
+    /**
+     * {@inheritDoc}
+     */
     public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
+        parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
+
+        if (!$remoteMetadata instanceof MetadataAwareMetadataBase) {
+            throw new \InvalidArgumentException();
+        }
+
         $type = $this->getType();
         $localMetaFileInfos = $this->getSigned()['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {

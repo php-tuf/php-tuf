@@ -273,11 +273,12 @@ abstract class MetadataBase
      */
     public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
-        if ($this->getType() !== $remoteMetadata->getType()) {
-            throw new \UnexpectedValueException(__METHOD__ . '() can only be used to compare metadata files of the same type. '
-                . "Local is {$this->getType()} and remote is {$remoteMetadata->getType()}.");
-        }
         $type = $this->getType();
+        if ($type !== $remoteMetadata->getType()) {
+            throw new \UnexpectedValueException(__METHOD__ . '() can only be used to compare metadata files of the same type. '
+                . "Local is {$type} and remote is {$remoteMetadata->getType()}.");
+        }
+
         $remoteVersion = $remoteMetadata->getVersion();
         if ($expectedRemoteVersion && ($remoteVersion !== $expectedRemoteVersion)) {
             throw new RollbackAttackException("Remote $type metadata version \"$$remoteVersion\" " .
