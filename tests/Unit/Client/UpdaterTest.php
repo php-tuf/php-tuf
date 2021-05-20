@@ -41,20 +41,16 @@ class UpdaterTest extends TestCase
 
         // The incoming version is newer than the local version, so no
         // rollback attack is present.
-        $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
-        $localMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn(1);
+        $json = '{"signed": {"_type": "any", "version": 1}}';
+        $localMetadata = new class (JsonNormalizer::decode($json), $json) extends MetadataBase {};
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
-        $sut = $this->getSystemInTest();
-        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
-        $method->setAccessible(true);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+        $localMetadata->checkRollbackAttack($incomingMetadata);
 
         // Incoming at same version as local.
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+        $localMetadata->checkRollbackAttack($incomingMetadata);
     }
 
     /**

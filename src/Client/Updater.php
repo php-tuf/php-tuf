@@ -13,7 +13,6 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Helper\Clock;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
@@ -189,7 +188,7 @@ class Updater
         if (isset($this->durableStorage['timestamp.json'])) {
             // *TUF-SPEC-v1.0.16 Section 5.3.2.1 and 5.3.2.2
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-            static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
+            $currentStateTimestampData->checkRollbackAttack($newTimestampData);
         }
 
         // *TUF-SPEC-v1.0.16 Section 5.3.3
@@ -222,7 +221,7 @@ class Updater
         if (isset($this->durableStorage['snapshot.json'])) {
             $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
             // TUF-SPEC-v1.0.16 Section 5.4.4
-            static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
+            $currentSnapShotData->checkRollbackAttack($newSnapshotData);
         }
 
         // TUF-SPEC-v1.0.16 Section 5.4.5
@@ -263,29 +262,6 @@ class Updater
             throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
         }
         return $dateTime;
-    }
-
-    /**
-     * Checks for a rollback attack.
-     *
-     * Verifies that an incoming remote version of a metadata file is greater
-     * than or equal to the last known version.
-     *
-     * @param \Tuf\Metadata\MetadataBase $localMetadata
-     *     The locally stored metadata from the most recent update.
-     * @param \Tuf\Metadata\MetadataBase $remoteMetadata
-     *     The latest metadata fetched from the remote repository.
-     * @param integer|null $expectedRemoteVersion
-     *     If not null this is expected version of remote metadata.
-     *
-     * @return void
-     *
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
-     *     Thrown if a potential rollback attack is detected.
-     */
-    protected static function checkRollbackAttack(MetadataBase $localMetadata, MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
-    {
-        $localMetadata->checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
     }
 
     /**
