@@ -20,7 +20,7 @@ class SnapshotMetadata extends MetadataBase
      */
     protected const TYPE = 'snapshot';
 
-    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = NULL): void
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
         $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);

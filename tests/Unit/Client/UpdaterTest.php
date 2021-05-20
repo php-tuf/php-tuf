@@ -41,8 +41,7 @@ class UpdaterTest extends TestCase
 
         // The incoming version is newer than the local version, so no
         // rollback attack is present.
-        $json = '{"signed": {"_type": "any", "version": 1}}';
-        $localMetadata = new class (JsonNormalizer::decode($json), $json) extends MetadataBase {};
+        $localMetadata = $this->mockMetadataFromJson('{"signed": {"_type": "any", "version": 1}}');
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
@@ -67,8 +66,7 @@ class UpdaterTest extends TestCase
 
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
-        $localData = '{"signed": {"_type": "any", "version": 2}}';
-        $localMetadata = new class (JsonNormalizer::decode($localData), $localData) extends MetadataBase {};
+        $localMetadata = $this->mockMetadataFromJson('{"signed": {"_type": "any", "version": 2}}');
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
@@ -91,12 +89,28 @@ class UpdaterTest extends TestCase
 
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
-        $localData = '{"signed": {"_type": "any"}}';
-        $localMetadata = new class (JsonNormalizer::decode($localData), $localData) extends MetadataBase {};
+        $localMetadata = $this->mockMetadataFromJson('{"signed": {"_type": "any"}}');
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $localMetadata->checkRollbackAttack($incomingMetadata, 3);
+    }
+
+    /**
+     * Creates a mocked MetadataBase object from arbitrary JSON.
+     *
+     * @param string $json
+     *   The data that the mocked metadata will use, in JSON format.
+     *
+     * @return \Tuf\Metadata\MetadataBase
+     *   The mocked metadata object.
+     */
+    private function mockMetadataFromJson(string $json): MetadataBase
+    {
+        $data = JsonNormalizer::decode($json);
+
+        return new class ($data, $json) extends MetadataBase {
+        };
     }
 
     /**

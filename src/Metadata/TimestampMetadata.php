@@ -20,7 +20,7 @@ class TimestampMetadata extends MetadataBase
      */
     protected const TYPE = 'timestamp';
 
-    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = NULL): void
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
     {
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
         $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
