@@ -21,6 +21,8 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Verifier\RootMetadataVerifier;
+use Tuf\Verifier\SnapshootMetadataVerifier;
+use Tuf\Verifier\TargetsMetadataVerifier;
 use Tuf\Verifier\TimestampMetadataVerifier;
 
 /**
@@ -191,23 +193,15 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $newTimestampData->verifyNewHashes($newSnapshotData);
-
-            // TUF-SPEC-v1.0.16 Section 5.3.2
-            $this->signatureVerifier->checkSignatures($newSnapshotData);
-
-            // TUF-SPEC-v1.0.16 Section 5.4.3
-            $newTimestampData->verifyNewVersion($newSnapshotData);
-
             if (isset($this->durableStorage['snapshot.json'])) {
                 $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-                // TUF-SPEC-v1.0.16 Section 5.4.4
-                static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
+                $currentSnapShotData->setIsTrusted(true);
             }
-
-            // TUF-SPEC-v1.0.16 Section 5.4.5
-            static::checkFreezeAttack($newSnapshotData, $this->metadataExpiration);
-
+            else {
+                $currentSnapShotData = null;
+            }
+            $snapshotVerifier = new SnapshootMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $currentSnapShotData, $newTimestampData);
+            $snapshotVerifier->verify();
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
             $newSnapshotData->setIsTrusted(true);
@@ -237,9 +231,13 @@ class Updater
     {
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        $currentStateTimestampData = isset($this->durableStorage['timestamp.json']) ?
-          TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']):
-          null;
+        if (isset($this->durableStorage['timestamp.json'])) {
+            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
+            $currentStateTimestampData->setIsTrusted(true);
+        }
+        else {
+            $currentStateTimestampData = null;
+        }
         $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $currentStateTimestampData);
         $verifier->verify();
 
@@ -295,8 +293,7 @@ class Updater
             $nextVersion = $rootData->getVersion() + 1;
             // *TUF-SPEC-v1.0.16 Section 5.2.8 Repeat the above steps.
         }
-        // *TUF-SPEC-v1.0.16 Section 5.2.9
-        $rootVerifier->checkFreezeAttack();
+        RootMetadataVerifier::checkFreezeAttack($rootData, $this->metadataExpiration);
 
         // *TUF-SPEC-v1.0.16 Section 5.2.10: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
@@ -549,16 +546,8 @@ class Updater
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
-        // TUF-SPEC-v1.0.16 Section 5.5.1
-        $newSnapshotData->verifyNewHashes($newTargetsData);
-
-        // TUF-SPEC-v1.0.16 Section 5.5.2
-        $this->signatureVerifier->checkSignatures($newTargetsData);
-        // TUF-SPEC-v1.0.16 Section 5.5.3
-
-        $newSnapshotData->verifyNewVersion($newTargetsData);
-        // TUF-SPEC-v1.0.16 Section 5.5.4
-        static::checkFreezeAttack($newTargetsData, $this->metadataExpiration);
+        $targetVerifier = new TargetsMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTargetsData, null, $newSnapshotData);
+        $targetVerifier->verify();
         $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;

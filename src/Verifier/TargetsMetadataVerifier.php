@@ -6,24 +6,35 @@ namespace Tuf\Verifier;
 use Tuf\Client\SignatureVerifier;
 use Tuf\Metadata\FileInfoMetadataBase;
 use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\SnapshotMetadata;
 
 class TargetsMetadataVerifier extends MetaDataVerifierBase
 {
     use ReferencedMetadataVerifierTrait;
 
-    public function __construct(SignatureVerifier $signatureVerifier, MetadataBase $untrustedMetadata, MetadataBase $trustedMetadata = null, FileInfoMetadataBase $referencingMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $untrustedMetadata, MetadataBase $trustedMetadata = null, SnapshotMetadata $snapshotMetadata = null)
     {
         parent::__construct(
           $signatureVerifier,
-          $trustedMetadata,
-          $untrustedMetadata
+          $expiration,
+          $untrustedMetadata,
+          $trustedMetadata
         );
-        $this->referencingMetadata = $referencingMetadata;
+        $this->setReferencingMetadata($snapshotMetadata);
     }
 
 
     public function verify()
     {
-        // TODO: Implement verify() method.
+        // TUF-SPEC-v1.0.16 Section 5.5.1
+        $this->verifyNewHashes();
+
+        // TUF-SPEC-v1.0.16 Section 5.5.2
+        $this->checkSignatures();
+        // TUF-SPEC-v1.0.16 Section 5.5.3
+
+        $this->verifyNewVersion();
+        // TUF-SPEC-v1.0.16 Section 5.5.4
+        static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
     }
 }

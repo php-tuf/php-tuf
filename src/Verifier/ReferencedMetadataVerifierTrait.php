@@ -4,6 +4,7 @@
 namespace Tuf\Verifier;
 
 use Tuf\Exception\MetadataException;
+use Tuf\Metadata\FileInfoMetadataBase;
 
 /**
  * Interface for verifiers where the metadata is referenced in another metadata file.
@@ -16,6 +17,12 @@ trait ReferencedMetadataVerifierTrait
      */
     protected $referencingMetadata;
 
+    protected function setReferencingMetadata(FileInfoMetadataBase $referencingMetadata) {
+        if (!$referencingMetadata || !$referencingMetadata->isTrusted()) {
+            throw new \LogicException("must be trusted");
+        }
+        $this->referencingMetadata = $referencingMetadata;
+    }
 
 
     /**
@@ -31,6 +38,9 @@ trait ReferencedMetadataVerifierTrait
      */
     public function verifyNewHashes(): void
     {
+        if (!$this->trustedMetadata) {
+            return;
+        }
         $role = $this->untrustedMetadata->getRole();
         $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
@@ -56,6 +66,9 @@ trait ReferencedMetadataVerifierTrait
      */
     public function verifyNewVersion(): void
     {
+        if (!$this->trustedMetadata) {
+            return;
+        }
         $role = $this->untrustedMetadata->getRole();
         $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];

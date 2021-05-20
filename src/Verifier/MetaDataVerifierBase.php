@@ -119,12 +119,12 @@ abstract class MetaDataVerifierBase
      * @throws FreezeAttackException
      *     Thrown if a potential freeze attack is detected.
      */
-    protected function checkFreezeAttack(): void
+    protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeImmutable $expiration): void
     {
-        $metadataExpiration = static::metadataTimestampToDatetime($this->untrustedMetadata->getExpires());
-        if ($metadataExpiration < $this->metadataExpiration) {
+        $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
+        if ($metadataExpiration < $expiration) {
             $format = "Remote %s metadata expired on %s";
-            throw new FreezeAttackException(sprintf($format, $this->untrustedMetadata->getRole(), $metadataExpiration->format('c')));
+            throw new FreezeAttackException(sprintf($format, $metadata->getRole(), $metadataExpiration->format('c')));
         }
     }
 
@@ -147,6 +147,10 @@ abstract class MetaDataVerifierBase
             throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
         }
         return $dateTime;
+    }
+
+    protected function checkSignatures() {
+        $this->signatureVerifier->checkSignatures($this->untrustedMetadata);
     }
 
 

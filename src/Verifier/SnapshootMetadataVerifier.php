@@ -3,15 +3,45 @@
 
 namespace Tuf\Verifier;
 
+use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TimestampMetadata;
 
 class SnapshootMetadataVerifier extends FileInfoMetadataVerifier
 {
     use ReferencedMetadataVerifierTrait;
 
+    public function __construct(
+      SignatureVerifier $signatureVerifier,
+      \DateTimeImmutable $metadataExpiration,
+      MetadataBase $untrustedMetadata,
+      ?MetadataBase $trustedMetadata = null,
+      TimestampMetadata $timestampMetadata = null
+    ) {
+        parent::__construct($signatureVerifier, $metadataExpiration,
+          $untrustedMetadata, $trustedMetadata);
+        $this->setReferencingMetadata($timestampMetadata);
+    }
+
+
     public function verify()
     {
-        // TODO: Implement verify() method.
+        $this->verifyNewHashes();
+
+        // TUF-SPEC-v1.0.16 Section 5.3.2
+        $this->checkSignatures();
+
+        // TUF-SPEC-v1.0.16 Section 5.4.3
+        $this->verifyNewVersion();
+
+        if ($this->trustedMetadata) {
+            static::checkRollbackAttack();
+        }
+
+        // TUF-SPEC-v1.0.16 Section 5.4.5
+        static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
     }
 
     protected function checkRollbackAttack(): void
