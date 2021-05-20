@@ -83,28 +83,6 @@ abstract class MetaDataVerifierBase
               "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
         }
-        // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
-        // the same files in the new metadata info.
-        // For 'snapshot' type this is TUF-SPEC-v1.0.16 Section 5.4.4
-        // For 'timestamp' type this TUF-SPEC-v1.0.16 Section 5.3.2.2
-        if ($type === 'timestamp' || $type === 'snapshot') {
-            $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
-            foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
-                /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $this->untrustedMetadata */
-                if ($remoteFileInfo = $this->untrustedMetadata->getFileMetaInfo($fileName, true)) {
-                    if ($remoteFileInfo['version'] < $localFileInfo['version']) {
-                        $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
-                          "is less than previously seen  version \"${$localFileInfo['version']}\"";
-                        throw new RollbackAttackException($message);
-                    }
-                } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
-                    // TUF-SPEC-v1.0.16 Section 5.4.4
-                    // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
-                    // continue to be listed in the new snapshot metadata file.
-                    throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
-                }
-            }
-        }
     }
 
     /**
