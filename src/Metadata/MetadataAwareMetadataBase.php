@@ -18,7 +18,7 @@ abstract class MetadataAwareMetadataBase extends MetadataBase
         parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
 
         if (!$remoteMetadata instanceof MetadataAwareMetadataBase) {
-            throw new \InvalidArgumentException();
+            throw new \InvalidArgumentException(__METHOD__ . '() can only be use with another instance of ' . MetadataAwareMetadataBase::class);
         }
 
         $type = $this->getType();
