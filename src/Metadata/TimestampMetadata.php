@@ -11,12 +11,20 @@ use Symfony\Component\Validator\Constraints\Type;
 
 class TimestampMetadata extends MetadataBase
 {
-    use MetaFileInfoTrait;
+    use MetaFileInfoTrait {
+        checkRollbackAttack as traitCheckRollbackAttack;
+    }
 
     /**
      * {@inheritdoc}
      */
     protected const TYPE = 'timestamp';
+
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = NULL): void
+    {
+        parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
+        $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
+    }
 
     /**
      * {@inheritdoc}

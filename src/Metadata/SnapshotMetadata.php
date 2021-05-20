@@ -10,12 +10,20 @@ use Tuf\Constraints\Collection;
 
 class SnapshotMetadata extends MetadataBase
 {
-    use MetaFileInfoTrait;
+    use MetaFileInfoTrait {
+        checkRollbackAttack as traitCheckRollbackAttack;
+    }
 
     /**
      * {@inheritdoc}
      */
     protected const TYPE = 'snapshot';
+
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = NULL): void
+    {
+        parent::checkRollbackAttack($remoteMetadata, $expectedRemoteVersion);
+        $this->traitCheckRollbackAttack($remoteMetadata, $expectedRemoteVersion);
+    }
 
     /**
      * {@inheritdoc}

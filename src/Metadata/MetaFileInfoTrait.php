@@ -3,12 +3,50 @@
 namespace Tuf\Metadata;
 
 use Tuf\Exception\MetadataException;
+use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
 /**
  * Common methods for metadata that contain information about other metadata objects.
  */
 trait MetaFileInfoTrait
 {
+    public function checkRollbackAttack(MetadataBase $remoteMetadata, int $expectedRemoteVersion = null): void
+    {
+        $localMetadata = $this;
+        $type = $localMetadata->getType();
+        $localMetaFileInfos = $localMetadata->getSigned()['meta'];
+        foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
+            /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $remoteMetadata */
+            if ($remoteFileInfo = $remoteMetadata->getFileMetaInfo($fileName, true)) {
+                if ($remoteFileInfo['version'] < $localFileInfo['version']) {
+                    $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
+                        "is less than previously seen  version \"${$localFileInfo['version']}\"";
+                    throw new RollbackAttackException($message);
+                }
+            } elseif ($type === 'snapshot' && static::getFileNameType($fileName) === 'targets') {
+                // TUF-SPEC-v1.0.16 Section 5.4.4
+                // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
+                // continue to be listed in the new snapshot metadata file.
+                throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
+            }
+        }
+    }
+
+    /**
+     * Gets the type for the file name.
+     *
+     * @param string $fileName
+     *   The file name.
+     *
+     * @return string
+     *   The type.
+     */
+    private static function getFileNameType(string $fileName): string
+    {
+        $parts = explode('.', $fileName);
+        array_pop($parts);
+        return array_pop($parts);
+    }
 
     /**
      * Gets file information value under the 'meta' key.
