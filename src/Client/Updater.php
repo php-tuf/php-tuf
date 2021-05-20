@@ -232,23 +232,23 @@ class Updater
      */
     private function updateTimestamp(): TimestampMetadata
     {
-        // *TUF-SPEC-v1.0.16 Section 5.3
+        // § 5.3
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        // *TUF-SPEC-v1.0.16 Section 5.3.1
+        // § 5.3.1
         $this->signatureVerifier->checkSignatures($newTimestampData);
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if (isset($this->durableStorage['timestamp.json'])) {
-            // *TUF-SPEC-v1.0.16 Section 5.3.2.1 and 5.3.2.2
+            // § 5.3.2.1 and 5.3.2.2
             $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
-        // *TUF-SPEC-v1.0.16 Section 5.3.3
+        // § 5.3.3
         static::checkFreezeAttack($newTimestampData, $this->metadataExpiration);
 
-        // TUF-SPEC-v1.0.16 Section 5.3.4: Persist timestamp metadata
+        // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
         $newTimestampData->setIsTrusted(true);
 
