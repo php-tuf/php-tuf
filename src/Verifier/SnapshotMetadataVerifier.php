@@ -9,7 +9,7 @@ use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
-class SnapshootMetadataVerifier extends FileInfoMetadataVerifier
+class SnapshotMetadataVerifier extends FileInfoMetadataVerifier
 {
     use ReferencedMetadataVerifierTrait;
 

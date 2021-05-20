@@ -21,7 +21,7 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Verifier\RootMetadataVerifier;
-use Tuf\Verifier\SnapshootMetadataVerifier;
+use Tuf\Verifier\SnapshotMetadataVerifier;
 use Tuf\Verifier\TargetsMetadataVerifier;
 use Tuf\Verifier\TimestampMetadataVerifier;
 
@@ -200,7 +200,7 @@ class Updater
             else {
                 $currentSnapShotData = null;
             }
-            $snapshotVerifier = new SnapshootMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $currentSnapShotData, $newTimestampData);
+            $snapshotVerifier = new SnapshotMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $currentSnapShotData, $newTimestampData);
             $snapshotVerifier->verify();
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
