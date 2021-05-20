@@ -38,16 +38,13 @@ trait ReferencedMetadataVerifierTrait
      */
     public function verifyNewHashes(): void
     {
-        if (!$this->trustedMetadata) {
-            return;
-        }
         $role = $this->untrustedMetadata->getRole();
         $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $this->untrustedMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->untrustedMetadata->getType()}' metadata.");
+                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->referencingMetadata->getType()}' metadata.");
                 }
             }
         }
@@ -66,9 +63,6 @@ trait ReferencedMetadataVerifierTrait
      */
     public function verifyNewVersion(): void
     {
-        if (!$this->trustedMetadata) {
-            return;
-        }
         $role = $this->untrustedMetadata->getRole();
         $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
