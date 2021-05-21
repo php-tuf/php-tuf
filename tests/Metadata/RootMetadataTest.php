@@ -152,7 +152,7 @@ class RootMetadataTest extends MetadataBaseTest
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
             $metadata = static::callCreateFromJson(json_encode($data));
-            $metadata->setIsTrusted(true);
+            $metadata->trust();
             $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
 
@@ -189,7 +189,7 @@ class RootMetadataTest extends MetadataBaseTest
         $data = json_decode($json, true);
         /** @var \Tuf\Metadata\RootMetadata $metadata */
         $metadata = static::callCreateFromJson($json);
-        $metadata->setIsTrusted(true);
+        $metadata->trust();
         $expectRoleNames = ['root', 'snapshot', 'targets', 'timestamp'];
         $roles = $metadata->getRoles();
         self::assertCount(4, $roles);

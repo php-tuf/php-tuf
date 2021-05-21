@@ -221,7 +221,7 @@ class Updater
 
         // TUF-SPEC-v1.0.16 Section 5.4.6
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        $newSnapshotData->setIsTrusted(true);
+        $newSnapshotData->trust();
 
         // TUF-SPEC-v1.0.16 Section 5.5
         if ($rootData->supportsConsistentSnapshots()) {
@@ -258,7 +258,7 @@ class Updater
 
         // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
-        $newTimestampData->setIsTrusted(true);
+        $newTimestampData->trust();
 
         return $newTimestampData;
     }
@@ -407,7 +407,7 @@ class Updater
             // *TUF-SPEC-v1.0.12 Section 5.2.4
 
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
-            $nextRoot->setIsTrusted(true);
+            $nextRoot->trust();
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -682,7 +682,7 @@ class Updater
         $newSnapshotData->verifyNewVersion($newTargetsData);
         // TUF-SPEC-v1.0.16 Section 5.5.4
         static::checkFreezeAttack($newTargetsData, $this->metadataExpiration);
-        $newTargetsData->setIsTrusted(true);
+        $newTargetsData->trust();
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
