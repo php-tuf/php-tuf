@@ -38,9 +38,7 @@ abstract class VerifierBase
     {
         $this->signatureVerifier = $signatureVerifier;
         $this->metadataExpiration = $metadataExpiration;
-        if ($trustedMetadata && !$trustedMetadata->isTrusted()) {
-            throw new \LogicException("must be trusted");
-        }
+        $trustedMetadata->ensureIsTrusted();
         $this->trustedMetadata = $trustedMetadata;
     }
 
