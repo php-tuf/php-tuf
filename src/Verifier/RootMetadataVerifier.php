@@ -6,7 +6,7 @@ use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
-class RootMetadataVerifier extends MetaDataVerifierBase
+class RootMetadataVerifier extends MetadataVerifierBase
 {
 
     /**

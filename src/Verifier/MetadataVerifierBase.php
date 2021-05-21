@@ -8,7 +8,7 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
-abstract class MetaDataVerifierBase
+abstract class MetadataVerifierBase
 {
 
     /**

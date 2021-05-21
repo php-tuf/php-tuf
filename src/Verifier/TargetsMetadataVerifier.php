@@ -6,7 +6,7 @@ use Tuf\Client\SignatureVerifier;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
-class TargetsMetadataVerifier extends MetaDataVerifierBase
+class TargetsMetadataVerifier extends MetadataVerifierBase
 {
     use ReferencedMetadataVerifierTrait;
 

@@ -7,7 +7,7 @@ use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 /**
  * Verifier for metadata classes that have information about other files.
  */
-abstract class FileInfoMetadataVerifier extends MetaDataVerifierBase
+abstract class FileInfoMetadataVerifier extends MetadataVerifierBase
 {
 
     /**
