@@ -1,13 +1,13 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 
 /**
  * Verifier for metadata classes that have information about other files.
  */
-abstract class FileInfoMetadataVerifier extends MetadataVerifierBase
+abstract class FileInfoVerifier extends VerifierBase
 {
 
     /**

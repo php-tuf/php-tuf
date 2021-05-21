@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\FileInfoMetadataBase;

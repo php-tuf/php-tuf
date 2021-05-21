@@ -1,12 +1,12 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
-class TargetsMetadataVerifier extends MetadataVerifierBase
+class TargetsVerifier extends VerifierBase
 {
     use ReferencedMetadataVerifierTrait;
 

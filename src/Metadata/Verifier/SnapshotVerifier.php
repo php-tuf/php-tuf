@@ -1,13 +1,13 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 
-class SnapshotMetadataVerifier extends FileInfoMetadataVerifier
+class SnapshotVerifier extends FileInfoVerifier
 {
     use ReferencedMetadataVerifierTrait;
 

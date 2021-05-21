@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\FormatException;
@@ -8,7 +8,7 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
-abstract class MetadataVerifierBase
+abstract class VerifierBase
 {
 
     /**

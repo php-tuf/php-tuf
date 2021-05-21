@@ -1,12 +1,12 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
-class RootMetadataVerifier extends MetadataVerifierBase
+class RootVerifier extends VerifierBase
 {
 
     /**

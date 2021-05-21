@@ -1,8 +1,8 @@
 <?php
 
-namespace Tuf\Verifier;
+namespace Tuf\Metadata\Verifier;
 
-class TimestampMetadataVerifier extends FileInfoMetadataVerifier
+class TimestampVerifier extends FileInfoVerifier
 {
 
     public function verify(): void
