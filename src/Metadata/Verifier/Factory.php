@@ -4,6 +4,7 @@ namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Metadata\Factory as MetadataFactory;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
@@ -46,10 +47,8 @@ class Factory
      *
      * @param string $role
      *   The role.
-     *
-     * @return \Tuf\Metadata\Verifier\RootVerifier|\Tuf\Metadata\Verifier\SnapshotVerifier|\Tuf\Metadata\Verifier\TargetsVerifier|\Tuf\Metadata\Verifier\TimestampVerifier
      */
-    public function getVerifier(string $role)
+    public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
         $trustedMetadata = $this->metadataFactory->load($role);
         switch ($role) {
@@ -69,6 +68,6 @@ class Factory
                 $snapshotMetadata = $this->metadataFactory->load(SnapshotMetadata::TYPE);
                 $verifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
         }
-        return $verifier;
+        $verifier->verify($untrustedMetadata);
     }
 }
