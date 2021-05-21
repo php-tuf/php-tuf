@@ -16,7 +16,9 @@ abstract class FileInfoVerifier extends VerifierBase
      */
     protected $trustedMetadata;
 
-
+    /**
+     * {@inheritdoc}
+     */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
         parent::checkRollbackAttack($untrustedMetadata);

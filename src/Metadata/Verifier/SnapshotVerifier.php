@@ -22,19 +22,21 @@ class SnapshotVerifier extends FileInfoVerifier
             $metadataExpiration,
             $trustedMetadata
         );
-        $this->setReferrer($timestampMetadata);
+        $this->setAuthorityMetadata($timestampMetadata);
     }
 
-
+    /**
+     * {@inheritdoc}
+     */
     public function verify(MetadataBase $untrustedMetadata): void
     {
-        $this->verifyNewHashes($untrustedMetadata);
+        $this->verifyAgainstAuthorityHashes($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.3.2
         $this->checkSignatures($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.4.3
-        $this->verifyNewVersion($untrustedMetadata);
+        $this->verifyAgainstAuthorityVersion($untrustedMetadata);
 
         if ($this->trustedMetadata) {
             static::checkRollbackAttack($untrustedMetadata);
@@ -46,6 +48,9 @@ class SnapshotVerifier extends FileInfoVerifier
         $untrustedMetadata->setIsTrusted(true);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
         parent::checkRollbackAttack($untrustedMetadata);

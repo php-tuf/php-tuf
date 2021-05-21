@@ -7,6 +7,9 @@ use Tuf\Metadata\MetadataBase;
 class TimestampVerifier extends FileInfoVerifier
 {
 
+    /**
+     * {@inheritdoc}
+     */
     public function verify(MetadataBase $untrustedMetadata): void
     {
         // § 5.3.1

@@ -7,63 +7,65 @@ use Tuf\Metadata\FileInfoMetadataBase;
 use Tuf\Metadata\MetadataBase;
 
 /**
- * Interface for verifiers where the metadata is referenced by another metadata file.
+ * Helper methods for verifiers where the metadata is referenced by another metadata file.
  */
 trait ReferencedMetadataVerifierTrait
 {
 
     /**
+     * The authority metadata which has the expected hashes and version number of the untrusted metadata.
+     *
      * @var \Tuf\Metadata\FileInfoMetadataBase
      */
-    protected $referrer;
+    protected $authorityMetadata;
 
-    protected function setReferrer(FileInfoMetadataBase $referrer): void
+    protected function setAuthorityMetadata(FileInfoMetadataBase $authority): void
     {
-        $referrer->ensureIsTrusted();
-        $this->referrer = $referrer;
+        $authority->ensureIsTrusted();
+        $this->authorityMetadata = $authority;
     }
 
 
     /**
-     * Verifies the hashes of a new metadata object from information in the current object.
+     * Verifies the hashes of a untrusted metadata from hashes in the authority metadata.
      *
-     * @param \Tuf\Metadata\MetadataBase $newMetadata
-     *   The new metadata object.
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     *   The untrusted metadata.
      *
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if the new metadata object cannot be verified.
      *
      * @return void
      */
-    public function verifyNewHashes(MetadataBase $untrustedMetadata): void
+    protected function verifyAgainstAuthorityHashes(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
-        $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->authorityMetadata->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $untrustedMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->referrer->getType()}' metadata.");
+                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->authorityMetadata->getType()}' metadata.");
                 }
             }
         }
     }
 
     /**
-     * Verifies a the version of a new metadata object from information in the current object.
+     * Verifies the version of a untrusted metadata against the version in authority metadata.
      *
-     * @param \Tuf\Metadata\MetadataBase $newMetadata
-     *   The new metadata object.
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     *   The untrusted metadata.
      *
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if the new metadata object cannot be verified.
      *
      * @return void
      */
-    public function verifyNewVersion($untrustedMetadata): void
+    protected function verifyAgainstAuthorityVersion(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
-        $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->authorityMetadata->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $untrustedMetadata->getVersion()) {
             throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$untrustedMetadata->getVersion()}.");

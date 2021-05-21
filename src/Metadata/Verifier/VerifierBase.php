@@ -60,12 +60,8 @@ abstract class VerifierBase
      * Verifies that an incoming remote version of a metadata file is greater
      * than or equal to the last known version.
      *
-     * @param \Tuf\Metadata\MetadataBase $this->trustedMetadata
-     *     The locally stored metadata from the most recent update.
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
-     *     The latest metadata fetched from the remote repository.
-     * @param integer|null $expectedRemoteVersion
-     *     If not null this is expected version of remote metadata.
+     *     The untrusted metadata.
      *
      * @return void
      *
@@ -91,14 +87,14 @@ abstract class VerifierBase
      * attack if it has.
      *
      * @param \Tuf\Metadata\MetadataBase $metadata
-     *     The metadata for the timestamp role.
-     * @param \DateTimeInterface $updaterMetadataExpirationTime
-     *     The time after which metadata should be considered expired.
+     *     The metadata to check.
+     * @param \DateTimeImmutable $expiration
+     *     The metadata expiration.
      *
      * @return void
      *
-     * @throws FreezeAttackException
-     *     Thrown if a potential freeze attack is detected.
+     * @throws \Tuf\Exception\FormatException
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException Thrown if a potential freeze attack is detected.
      */
     protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeImmutable $expiration): void
     {

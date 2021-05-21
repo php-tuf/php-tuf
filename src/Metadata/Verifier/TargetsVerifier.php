@@ -17,20 +17,22 @@ class TargetsVerifier extends VerifierBase
             $expiration,
             $trustedMetadata
         );
-        $this->setReferrer($snapshotMetadata);
+        $this->setAuthorityMetadata($snapshotMetadata);
     }
 
-
+    /**
+     * {@inheritdoc}
+     */
     public function verify(MetadataBase $untrustedMetadata): void
     {
         // TUF-SPEC-v1.0.16 Section 5.5.1
-        $this->verifyNewHashes($untrustedMetadata);
+        $this->verifyAgainstAuthorityHashes($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.5.2
         $this->checkSignatures($untrustedMetadata);
         // TUF-SPEC-v1.0.16 Section 5.5.3
 
-        $this->verifyNewVersion($untrustedMetadata);
+        $this->verifyAgainstAuthorityVersion($untrustedMetadata);
         // TUF-SPEC-v1.0.16 Section 5.5.4
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
         $untrustedMetadata->setIsTrusted(true);
