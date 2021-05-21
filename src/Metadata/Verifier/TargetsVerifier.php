@@ -26,9 +26,10 @@ class TargetsVerifier extends VerifierBase
 
         // TUF-SPEC-v1.0.16 Section 5.5.2
         $this->checkSignatures($untrustedMetadata);
-        // TUF-SPEC-v1.0.16 Section 5.5.3
 
+        // TUF-SPEC-v1.0.16 Section 5.5.3
         $this->verifyAgainstAuthorityVersion($untrustedMetadata);
+
         // TUF-SPEC-v1.0.16 Section 5.5.4
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
         $untrustedMetadata->setIsTrusted(true);

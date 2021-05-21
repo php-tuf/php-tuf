@@ -22,15 +22,18 @@ class SnapshotVerifier extends FileInfoVerifier
      */
     public function verify(MetadataBase $untrustedMetadata): void
     {
-        $this->verifyAgainstAuthorityHashes($untrustedMetadata);
+        // TUF-SPEC-v1.0.16 Section 5.4.21$this->verifyAgainstAuthorityHashes($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.3.2
+        // TUF-SPEC-v1.0.16 Section 5.4.2
         $this->checkSignatures($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.4.3
         $this->verifyAgainstAuthorityVersion($untrustedMetadata);
 
+        // If the timestamp or snapshot keys were rotating then the snapshot file
+        // will not exist.
         if ($this->trustedMetadata) {
+            // TUF-SPEC-v1.0.16 Section 5.4.4
             static::checkRollbackAttack($untrustedMetadata);
         }
 
