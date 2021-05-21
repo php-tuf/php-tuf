@@ -225,7 +225,7 @@ class Updater
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
-        $verifier = $this->metadataFactory->getVerifier($newTimestampData::TYPE, $this->signatureVerifier);
+        $verifier = $this->metadataFactory->getVerifier(TimestampMetadata::TYPE, $this->signatureVerifier);
         $verifier->verify($newTimestampData);
 
         // § 5.3.4: Persist timestamp metadata
@@ -265,7 +265,7 @@ class Updater
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            $rootVerifier = $this->metadataFactory->getVerifier($nextRoot::TYPE, $this->signatureVerifier);
+            $rootVerifier = $this->metadataFactory->getVerifier(RootMetadata::TYPE, $this->signatureVerifier);
             $rootVerifier->verify($nextRoot);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
