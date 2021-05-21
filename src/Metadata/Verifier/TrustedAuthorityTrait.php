@@ -7,22 +7,22 @@ use Tuf\Metadata\FileInfoMetadataBase;
 use Tuf\Metadata\MetadataBase;
 
 /**
- * Helper methods for verifiers where the metadata is referenced by another metadata file.
+ * Helper methods for verifiers where another trusted metadata file is considered authoritative.
  */
-trait ReferencedMetadataVerifierTrait
+trait TrustedAuthorityTrait
 {
 
     /**
-     * The authority metadata which has the expected hashes and version number of the untrusted metadata.
+     * The trusted metadata which has the expected hashes and version number of the untrusted metadata.
      *
      * @var \Tuf\Metadata\FileInfoMetadataBase
      */
-    protected $authorityMetadata;
+    protected $authority;
 
-    protected function setAuthorityMetadata(FileInfoMetadataBase $authority): void
+    protected function setTrustedAuthority(FileInfoMetadataBase $authority): void
     {
         $authority->ensureIsTrusted();
-        $this->authorityMetadata = $authority;
+        $this->authority = $authority;
     }
 
 
@@ -40,12 +40,12 @@ trait ReferencedMetadataVerifierTrait
     protected function verifyAgainstAuthorityHashes(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
-        $fileInfo = $this->authorityMetadata->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->authority->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $untrustedMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->authorityMetadata->getType()}' metadata.");
+                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->authority->getType()}' metadata.");
                 }
             }
         }
@@ -65,7 +65,7 @@ trait ReferencedMetadataVerifierTrait
     protected function verifyAgainstAuthorityVersion(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
-        $fileInfo = $this->authorityMetadata->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->authority->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $untrustedMetadata->getVersion()) {
             throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$untrustedMetadata->getVersion()}.");

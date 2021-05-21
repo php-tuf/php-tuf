@@ -9,20 +9,14 @@ use Tuf\Metadata\TimestampMetadata;
 
 class SnapshotVerifier extends FileInfoVerifier
 {
-    use ReferencedMetadataVerifierTrait;
+    use TrustedAuthorityTrait;
 
-    public function __construct(
-        SignatureVerifier $signatureVerifier,
-        \DateTimeImmutable $metadataExpiration,
-        ?MetadataBase $trustedMetadata = null,
-        TimestampMetadata $timestampMetadata = null
-    ) {
-        parent::__construct(
-            $signatureVerifier,
-            $metadataExpiration,
-            $trustedMetadata
-        );
-        $this->setAuthorityMetadata($timestampMetadata);
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, MetadataBase $trustedMetadata = null, TimestampMetadata $timestampMetadata = null)
+    {
+        parent::__construct($signatureVerifier, $metadataExpiration, $trustedMetadata);
+        if ($timestampMetadata) {
+            $this->setTrustedAuthority($timestampMetadata);
+        }
     }
 
     /**

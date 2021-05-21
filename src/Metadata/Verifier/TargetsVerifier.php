@@ -8,16 +8,14 @@ use Tuf\Metadata\SnapshotMetadata;
 
 class TargetsVerifier extends VerifierBase
 {
-    use ReferencedMetadataVerifierTrait;
+    use TrustedAuthorityTrait;
 
     public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $trustedMetadata = null, ?SnapshotMetadata $snapshotMetadata = null)
     {
-        parent::__construct(
-            $signatureVerifier,
-            $expiration,
-            $trustedMetadata
-        );
-        $this->setAuthorityMetadata($snapshotMetadata);
+        parent::__construct($signatureVerifier, $expiration, $trustedMetadata);
+        if ($snapshotMetadata) {
+            $this->setTrustedAuthority($snapshotMetadata);
+        }
     }
 
     /**
