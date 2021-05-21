@@ -3,7 +3,10 @@
 
 namespace Tuf\Metadata;
 
-class FileInfoMetadataBase extends MetadataBase
+/**
+ * Base class for metadata objects that store information about other metadata files.
+ */
+abstract class FileInfoMetadataBase extends MetadataBase
 {
     /**
      * Gets file information value under the 'meta' key.
