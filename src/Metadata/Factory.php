@@ -52,7 +52,7 @@ class Factory
                 default:
                     $currentMetadata = TargetsMetadata::createFromJson($json);
             }
-            $currentMetadata->setTrusted();
+            $currentMetadata->trust();
             return $currentMetadata;
         } else {
             return null;

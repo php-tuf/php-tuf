@@ -224,7 +224,7 @@ abstract class MetadataBase
      *
      * @return void
      */
-    public function setTrusted(): void
+    public function trust(): void
     {
         $this->isTrusted = true;
     }
