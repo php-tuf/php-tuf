@@ -127,14 +127,4 @@ abstract class VerifierBase
         }
         return $dateTime;
     }
-
-    /**
-     * Check signatures for untrusted metadata.
-     *
-     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
-     */
-    protected function checkSignatures(MetadataBase $untrustedMetadata)
-    {
-        $this->signatureVerifier->checkSignatures($untrustedMetadata);
-    }
 }

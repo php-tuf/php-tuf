@@ -26,9 +26,9 @@ class RootVerifier extends VerifierBase
     {
         // *TUF-SPEC-v1.0.12 Section 5.2.3
         /** @var \Tuf\Metadata\RootMetadata $untrustedMetadata */
-        $this->checkSignatures($untrustedMetadata);
+        $this->signatureVerifier->checkSignatures($untrustedMetadata);
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($untrustedMetadata, true);
-        $this->checkSignatures($untrustedMetadata);
+        $this->signatureVerifier->checkSignatures($untrustedMetadata);
         // *TUF-SPEC-v1.0.12 Section 5.2.4
 
         // *TUF-SPEC-v1.0.12 Section 5.2.4

@@ -25,7 +25,7 @@ class SnapshotVerifier extends FileInfoVerifier
         // TUF-SPEC-v1.0.16 Section 5.4.21$this->verifyAgainstAuthorityHashes($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.4.2
-        $this->checkSignatures($untrustedMetadata);
+        $this->signatureVerifier->checkSignatures($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.4.3
         $this->verifyAgainstAuthorityVersion($untrustedMetadata);

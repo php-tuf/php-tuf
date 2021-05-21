@@ -13,7 +13,7 @@ class TimestampVerifier extends FileInfoVerifier
     public function verify(MetadataBase $untrustedMetadata): void
     {
         // § 5.3.1
-        $this->checkSignatures($untrustedMetadata);
+        $this->signatureVerifier->checkSignatures($untrustedMetadata);
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
         if ($this->trustedMetadata) {
