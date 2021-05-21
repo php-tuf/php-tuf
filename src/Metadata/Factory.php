@@ -18,12 +18,19 @@ class Factory
      *
      * @var \ArrayAccess
      */
-    protected $storage;
+    private $storage;
 
     /**
      * @var \DateTimeImmutable
      */
-    protected $metadataExpiration;
+    private $metadataExpiration;
+
+    /**
+     * @var \Tuf\Client\SignatureVerifier
+     */
+    private $signatureVerifier;
+
+
 
     /**
      * Factory constructor.
@@ -35,6 +42,14 @@ class Factory
     {
         $this->storage = $storage;
         $this->metadataExpiration = $metadataExpiration;
+    }
+
+    /**
+     * @param \Tuf\Client\SignatureVerifier $signatureVerifier
+     */
+    public function setSignatureVerifier(SignatureVerifier $signatureVerifier): void
+    {
+        $this->signatureVerifier = $signatureVerifier;
     }
 
     /**
@@ -75,29 +90,28 @@ class Factory
      * Gets a metadata verifier for a role.
      *
      * @param string $role
-     * @param \Tuf\Client\SignatureVerifier $signatureVerifier
      *
      * @return \Tuf\Metadata\Verifier\RootVerifier|\Tuf\Metadata\Verifier\SnapshotVerifier|\Tuf\Metadata\Verifier\TargetsVerifier|\Tuf\Metadata\Verifier\TimestampVerifier
      */
-    public function getVerifier(string $role, SignatureVerifier $signatureVerifier)
+    public function getVerifier(string $role)
     {
         $trustedMetadata = $this->load($role);
         switch ($role) {
             case RootMetadata::TYPE:
-                $verifier = new RootVerifier($signatureVerifier, $this->metadataExpiration, $trustedMetadata);
+                $verifier = new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
                 break;
             case SnapshotMetadata::TYPE:
                 /** @var \Tuf\Metadata\TimestampMetadata $timestampMetadata */
                 $timestampMetadata = $this->load(TimestampMetadata::TYPE);
-                $verifier = new SnapshotVerifier($signatureVerifier, $this->metadataExpiration, $trustedMetadata, $timestampMetadata);
+                $verifier = new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $timestampMetadata);
                 break;
             case TimestampMetadata::TYPE:
-                $verifier = new TimestampVerifier($signatureVerifier, $this->metadataExpiration, $trustedMetadata);
+                $verifier = new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
                 break;
             default:
                 /** @var \Tuf\Metadata\SnapshotMetadata $snapshotMetadata */
                 $snapshotMetadata = $this->load(SnapshotMetadata::TYPE);
-                $verifier = new TargetsVerifier($signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
+                $verifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
         }
         return $verifier;
     }
