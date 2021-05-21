@@ -10,8 +10,9 @@ use Tuf\Metadata\MetadataBase;
  */
 abstract class FileInfoVerifier extends VerifierBase
 {
-
     /**
+     * The trusted metadata, if any.
+     *
      * @var \Tuf\Metadata\FileInfoMetadataBase
      */
     protected $trustedMetadata;

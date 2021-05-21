@@ -39,8 +39,11 @@ class Factory
      * Factory constructor.
      *
      * @param \Tuf\Metadata\Factory $metadataFactory
+     *   The trusted metadata factory.
      * @param \Tuf\Client\SignatureVerifier $signatureVerifier
+     *   The signature verifier.
      * @param \DateTimeImmutable $metadataExpiration
+     *   The time beyond which untrusted metadata will be considered expired.
      */
     public function __construct(MetadataFactory $metadataFactory, SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration)
     {
@@ -53,7 +56,9 @@ class Factory
      * Verifies an untrusted metadata object for a role.
      *
      * @param string $role
+     *   The metadata role (e.g. 'root', 'targets', etc.)
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     *   The untrusted metadata object.
      *
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      */
@@ -78,5 +83,7 @@ class Factory
                 $verifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
         }
         $verifier->verify($untrustedMetadata);
+        // If the verifier didn't throw an exception, we can trust this metadata.
+        $untrustedMetadata->setIsTrusted(true);
     }
 }

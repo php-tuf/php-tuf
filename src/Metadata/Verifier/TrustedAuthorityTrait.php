@@ -11,23 +11,27 @@ use Tuf\Metadata\MetadataBase;
  */
 trait TrustedAuthorityTrait
 {
-
     /**
-     * The trusted metadata which has the expected hashes and version number of the untrusted metadata.
+     * Trusted metadata which has information about the untrusted metadata.
      *
      * @var \Tuf\Metadata\FileInfoMetadataBase
      */
     protected $authority;
 
+    /**
+     * Sets the trusted metadata which has information about the untrusted metadata.
+     *
+     * @param FileInfoMetadataBase $authority
+     *   The trusted (authoritative) metadata.
+     */
     protected function setTrustedAuthority(FileInfoMetadataBase $authority): void
     {
         $authority->ensureIsTrusted();
         $this->authority = $authority;
     }
 
-
     /**
-     * Verifies the hashes of a untrusted metadata from hashes in the authority metadata.
+     * Verifies the hashes of untrusted metadata against hashes in the trusted metadata.
      *
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata.
@@ -37,7 +41,7 @@ trait TrustedAuthorityTrait
      *
      * @return void
      */
-    protected function verifyAgainstAuthorityHashes(MetadataBase $untrustedMetadata): void
+    protected function checkAgainstHashesFromTrustedAuthority(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
         $fileInfo = $this->authority->getFileMetaInfo($role . '.json');
@@ -52,7 +56,7 @@ trait TrustedAuthorityTrait
     }
 
     /**
-     * Verifies the version of a untrusted metadata against the version in authority metadata.
+     * Verifies the version of untrusted metadata against the version in trusted metadata.
      *
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata.
@@ -62,7 +66,7 @@ trait TrustedAuthorityTrait
      *
      * @return void
      */
-    protected function verifyAgainstAuthorityVersion(MetadataBase $untrustedMetadata): void
+    protected function checkAgainstVersionFromTrustedAuthority(MetadataBase $untrustedMetadata): void
     {
         $role = $untrustedMetadata->getRole();
         $fileInfo = $this->authority->getFileMetaInfo($role . '.json');

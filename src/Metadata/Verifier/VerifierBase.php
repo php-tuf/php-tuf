@@ -13,29 +13,36 @@ use Tuf\Metadata\MetadataBase;
  */
 abstract class VerifierBase
 {
-
     /**
+     * The trusted metadata, if any.
+     *
      * @var \Tuf\Metadata\MetadataBase
      */
     protected $trustedMetadata;
 
     /**
+     * The signature verifier.
+     *
      * @var \Tuf\Client\SignatureVerifier
      */
     protected $signatureVerifier;
 
     /**
+     * The time beyond which untrusted metadata will be considered expired.
+     *
      * @var \DateTimeImmutable
      */
     protected $metadataExpiration;
 
-
     /**
-     * MetaDataVerifierBase constructor.
+     * VerifierBase constructor.
      *
      * @param \Tuf\Client\SignatureVerifier $signatureVerifier
+     *   The signature verifier.
      * @param \DateTimeImmutable $metadataExpiration
+     *   The time beyond which untrusted metadata is considered expired.
      * @param \Tuf\Metadata\MetadataBase|null $trustedMetadata
+     *   The trusted metadata, if any.
      */
     public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, ?MetadataBase $trustedMetadata = null)
     {
@@ -49,8 +56,6 @@ abstract class VerifierBase
 
     /**
      * Verify metadata according to the specification.
-     *
-     * All implementation should set the metadata to trusted after verification.
      *
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata to verify.

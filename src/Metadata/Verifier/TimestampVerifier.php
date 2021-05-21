@@ -4,9 +4,11 @@ namespace Tuf\Metadata\Verifier;
 
 use Tuf\Metadata\MetadataBase;
 
+/**
+ * Verifier for timestamp metadata.
+ */
 class TimestampVerifier extends FileInfoVerifier
 {
-
     /**
      * {@inheritdoc}
      */
@@ -22,7 +24,5 @@ class TimestampVerifier extends FileInfoVerifier
         }
         // § 5.3.3
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
-
-        $untrustedMetadata->setIsTrusted(true);
     }
 }
