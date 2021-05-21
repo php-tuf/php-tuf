@@ -229,14 +229,11 @@ abstract class MetadataBase
     }
 
     /**
-     * @param boolean $isTrusted
-     *   Whether the metadata should be trusted.
-     *
      * @return void
      */
-    public function setIsTrusted(bool $isTrusted): void
+    public function setTrusted(): void
     {
-        $this->isTrusted = $isTrusted;
+        $this->isTrusted = true;
     }
 
     /**
