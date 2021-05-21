@@ -10,12 +10,10 @@ class TargetsVerifier extends VerifierBase
 {
     use TrustedAuthorityTrait;
 
-    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $trustedMetadata = null, ?SnapshotMetadata $snapshotMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $trustedMetadata = null, SnapshotMetadata $snapshotMetadata = null)
     {
         parent::__construct($signatureVerifier, $expiration, $trustedMetadata);
-        if ($snapshotMetadata) {
-            $this->setTrustedAuthority($snapshotMetadata);
-        }
+        $this->setTrustedAuthority($snapshotMetadata);
     }
 
     /**

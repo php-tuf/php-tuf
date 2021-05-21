@@ -14,9 +14,7 @@ class SnapshotVerifier extends FileInfoVerifier
     public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, MetadataBase $trustedMetadata = null, TimestampMetadata $timestampMetadata = null)
     {
         parent::__construct($signatureVerifier, $metadataExpiration, $trustedMetadata);
-        if ($timestampMetadata) {
-            $this->setTrustedAuthority($timestampMetadata);
-        }
+        $this->setTrustedAuthority($timestampMetadata);
     }
 
     /**
