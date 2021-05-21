@@ -18,7 +18,7 @@ class TargetsVerifier extends VerifierBase
             $untrustedMetadata,
             $trustedMetadata
         );
-        $this->setReferencingMetadata($snapshotMetadata);
+        $this->setReferrer($snapshotMetadata);
     }
 
 

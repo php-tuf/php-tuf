@@ -24,7 +24,7 @@ class SnapshotVerifier extends FileInfoVerifier
             $untrustedMetadata,
             $trustedMetadata
         );
-        $this->setReferencingMetadata($timestampMetadata);
+        $this->setReferrer($timestampMetadata);
     }
 
 

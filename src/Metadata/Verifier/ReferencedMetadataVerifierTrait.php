@@ -6,7 +6,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Metadata\FileInfoMetadataBase;
 
 /**
- * Interface for verifiers where the metadata is referenced in another metadata file.
+ * Interface for verifiers where the metadata is referenced by another metadata file.
  */
 trait ReferencedMetadataVerifierTrait
 {
@@ -14,12 +14,12 @@ trait ReferencedMetadataVerifierTrait
     /**
      * @var \Tuf\Metadata\FileInfoMetadataBase
      */
-    protected $referencingMetadata;
+    protected $referrer;
 
-    protected function setReferencingMetadata(FileInfoMetadataBase $referencingMetadata)
+    protected function setReferrer(FileInfoMetadataBase $referrer): void
     {
-        $referencingMetadata->ensureIsTrusted();
-        $this->referencingMetadata = $referencingMetadata;
+        $referrer->ensureIsTrusted();
+        $this->referrer = $referrer;
     }
 
 
@@ -37,12 +37,12 @@ trait ReferencedMetadataVerifierTrait
     public function verifyNewHashes(): void
     {
         $role = $this->untrustedMetadata->getRole();
-        $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $this->untrustedMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->referencingMetadata->getType()}' metadata.");
+                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->referrer->getType()}' metadata.");
                 }
             }
         }
@@ -62,7 +62,7 @@ trait ReferencedMetadataVerifierTrait
     public function verifyNewVersion(): void
     {
         $role = $this->untrustedMetadata->getRole();
-        $fileInfo = $this->referencingMetadata->getFileMetaInfo($role . '.json');
+        $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
         if ($expectedVersion !== $this->untrustedMetadata->getVersion()) {
             throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$this->untrustedMetadata->getVersion()}.");
