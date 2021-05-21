@@ -18,9 +18,7 @@ trait ReferencedMetadataVerifierTrait
 
     protected function setReferencingMetadata(FileInfoMetadataBase $referencingMetadata)
     {
-        if (!$referencingMetadata || !$referencingMetadata->isTrusted()) {
-            throw new \LogicException("must be trusted");
-        }
+        $referencingMetadata->ensureIsTrusted();
         $this->referencingMetadata = $referencingMetadata;
     }
 

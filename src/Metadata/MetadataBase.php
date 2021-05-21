@@ -247,7 +247,7 @@ abstract class MetadataBase
      *
      * @return void
      */
-    protected function ensureIsTrusted(bool $allowUntrustedAccess = false): void
+    public function ensureIsTrusted(bool $allowUntrustedAccess = false): void
     {
         if (!$allowUntrustedAccess && !$this->isTrusted()) {
             throw new \RuntimeException("Cannot use untrusted '{$this->getRole()}'. metadata.");
