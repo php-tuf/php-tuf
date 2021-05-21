@@ -35,6 +35,13 @@ class Factory
      */
     private $metadataExpiration;
 
+    /**
+     * Factory constructor.
+     *
+     * @param \Tuf\Metadata\Factory $metadataFactory
+     * @param \Tuf\Client\SignatureVerifier $signatureVerifier
+     * @param \DateTimeImmutable $metadataExpiration
+     */
     public function __construct(MetadataFactory $metadataFactory, SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration)
     {
         $this->metadataFactory = $metadataFactory;
@@ -43,10 +50,12 @@ class Factory
     }
 
     /**
-     * Gets a metadata verifier for a role.
+     * Verifies an untrusted metadata object for a role.
      *
      * @param string $role
-     *   The role.
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     *
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      */
     public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
