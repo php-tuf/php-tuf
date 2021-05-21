@@ -255,7 +255,7 @@ class UpdaterTest extends TestCase
                 'level_2_terminating' => 1,
                 'level_3' => null,
             ],
-            'level_1_2_3_target.txt' => [
+            'level_1_2_3_below_non_terminating_target.txt' => [
                 'root' => 6,
                 'timestamp' => 6,
                 'snapshot' => 6,
@@ -264,6 +264,17 @@ class UpdaterTest extends TestCase
                 'level_2' => 1,
                 'level_2_terminating' => 1,
                 'level_3' => 1,
+            ],
+            'level_1_2_terminating_3_target.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => 1,
+                'level_2_terminating' => 1,
+                'level_3' => 1,
+                'level_3_below_terminated' => 1,
             ],
         ];
         foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
