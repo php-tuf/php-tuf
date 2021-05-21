@@ -38,7 +38,9 @@ abstract class VerifierBase
     {
         $this->signatureVerifier = $signatureVerifier;
         $this->metadataExpiration = $metadataExpiration;
-        $trustedMetadata->ensureIsTrusted();
+        if ($trustedMetadata) {
+            $trustedMetadata->ensureIsTrusted();
+        }
         $this->trustedMetadata = $trustedMetadata;
     }
 
