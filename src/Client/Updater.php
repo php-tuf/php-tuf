@@ -196,8 +196,8 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $snapshotVerifier = $this->metadataFactory->getVerifier(SnapshotMetadata::TYPE);
-            $snapshotVerifier->verify($newSnapshotData);
+            $this->metadataFactory->getVerifier(SnapshotMetadata::TYPE)
+                ->verify($newSnapshotData);
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
@@ -226,8 +226,8 @@ class Updater
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
-        $verifier = $this->metadataFactory->getVerifier(TimestampMetadata::TYPE);
-        $verifier->verify($newTimestampData);
+        $this->metadataFactory->getVerifier(TimestampMetadata::TYPE)
+            ->verify($newTimestampData);
 
         // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
@@ -266,8 +266,8 @@ class Updater
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            $rootVerifier = $this->metadataFactory->getVerifier(RootMetadata::TYPE);
-            $rootVerifier->verify($nextRoot);
+            $this->metadataFactory->getVerifier(RootMetadata::TYPE)
+                ->verify($nextRoot);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -531,8 +531,8 @@ class Updater
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
-        $targetVerifier = $this->metadataFactory->getVerifier(TargetsMetadata::TYPE);
-        $targetVerifier->verify($newTargetsData);
+        $this->metadataFactory->getVerifier(TargetsMetadata::TYPE)
+            ->verify($newTargetsData);
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
