@@ -52,6 +52,8 @@ abstract class MetaDataVerifierBase
 
     /**
      * Verify metadata according to the specification.
+     *
+     * All implementation should set the metadata to trusted after verification.
      */
     abstract public function verify(): void;
 

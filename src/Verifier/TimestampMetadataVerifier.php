@@ -17,5 +17,7 @@ class TimestampMetadataVerifier extends FileInfoMetadataVerifier
         }
         // § 5.3.3
         static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
+
+        $this->untrustedMetadata->setIsTrusted(true);
     }
 }

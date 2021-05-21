@@ -44,6 +44,8 @@ class SnapshotMetadataVerifier extends FileInfoMetadataVerifier
 
         // TUF-SPEC-v1.0.16 Section 5.4.5
         static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
+
+        $this->untrustedMetadata->setIsTrusted(true);
     }
 
     protected function checkRollbackAttack(): void

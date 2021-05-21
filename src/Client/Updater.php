@@ -171,6 +171,7 @@ class Updater
         $this->metadataExpiration = $this->getUpdateStartTime();
 
         // *TUF-SPEC-v1.0.16 Section 5.1
+        /** @var \Tuf\Metadata\RootMetadata $rootData */
         $rootData = $this->loadCurrentMetadata('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
@@ -193,7 +194,6 @@ class Updater
             $snapshotVerifier->verify();
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-            $newSnapshotData->setIsTrusted(true);
         } else {
             // @todo Add support for not using consistent snapshots in
             //    https://github.com/php-tuf/php-tuf/issues/97
@@ -225,7 +225,6 @@ class Updater
 
         // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
-        $newTimestampData->setIsTrusted(true);
 
         return $newTimestampData;
     }
@@ -263,7 +262,6 @@ class Updater
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $rootVerifier = new RootMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $nextRoot, $rootData);
             $rootVerifier->verify();
-            $nextRoot->setIsTrusted(true);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -524,13 +522,11 @@ class Updater
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
         $newSnapshotData = $this->loadCurrentMetadata('snapshot');
-        $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $targetVerifier = new TargetsMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTargetsData, null, $newSnapshotData);
         $targetVerifier->verify();
-        $newTargetsData->setIsTrusted(true);
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
@@ -569,7 +565,6 @@ class Updater
                     break;
                 default:
                     $currentMetadata = TargetsMetadata::createFromJson($json);
-
             }
             $currentMetadata->setIsTrusted(true);
             return $currentMetadata;

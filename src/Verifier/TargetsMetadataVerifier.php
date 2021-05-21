@@ -34,5 +34,6 @@ class TargetsMetadataVerifier extends MetaDataVerifierBase
         $this->verifyNewVersion();
         // TUF-SPEC-v1.0.16 Section 5.5.4
         static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
+        $this->untrustedMetadata->setIsTrusted(true);
     }
 }
