@@ -8,6 +8,9 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
+/**
+ * A base class for metadata verifiers.
+ */
 abstract class VerifierBase
 {
 
@@ -93,7 +96,6 @@ abstract class VerifierBase
      *
      * @return void
      *
-     * @throws \Tuf\Exception\FormatException
      * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException Thrown if a potential freeze attack is detected.
      */
     protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeImmutable $expiration): void
@@ -127,6 +129,8 @@ abstract class VerifierBase
     }
 
     /**
+     * Check signatures for untrusted metadata.
+     *
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      */
     protected function checkSignatures(MetadataBase $untrustedMetadata)
