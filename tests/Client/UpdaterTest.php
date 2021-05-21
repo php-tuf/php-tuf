@@ -269,6 +269,7 @@ class UpdaterTest extends TestCase
         foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
             $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
             $testFileContents = file_get_contents($testFilePath);
+            self::assertNotEmpty($testFileContents);
             $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
             $this->assertClientRepoVersions($expectedClientVersions);
         }
@@ -320,11 +321,12 @@ class UpdaterTest extends TestCase
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
             'delegated path does not match parent' => ['level_2_unfindable.txt'],
-            // ''level_1_2_terminating_unfindable_target.txt' is add via role
-            // 'level_3_below_terminated' which is delegated from role 'level_2_terminating'.
-            // Because 'level_2_terminating' is terminating role no roles it delegates to
-            // should be evaluated.
-            'parent delegation is terminating' => ['level_1_2_terminating_unfindable_target.txt']
+            // 'level_2_after_terminating_unfindable.txt' is added via role
+            // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
+            //  but added after 'level_2_terminating'.
+            // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
+            // delegations are evaluated after it.
+            'delegation is after terminating delegation' => ['level_2_after_terminating_unfindable.txt'],
         ];
     }
 

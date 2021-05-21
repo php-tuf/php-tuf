@@ -249,24 +249,25 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
 
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Delegate from level_1_delegation to level_1 target-signing key
-        (public_level_2_error_key, private_level_2_error_key) = self.write_and_import_keypair(
-            'targets_level_2_error')
+        # Add a target that does not match the delegations pathes.
+        self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        # Add a delegation that does not match the pattern of level_1 delegation
-        # Nothing in this delegation should be found.
+        (public_level_2_after_terminating_key, private_level_2_after_terminating_key) = self.write_and_import_keypair(
+            'targets_level_2_after_terminating')
+
+        # Add a delegation after level_2_terminating which will not be evaluted.
         level_1_delegation.delegate(
-            'level_2_error', [public_level_2_error_key], ['level_2_*.txt'])
-        self.write_and_add_target('level_2_unfindable.txt', 'level_2_error')
+            'level_2_after_terminating', [public_level_2_after_terminating_key], ['level_2_*.txt'])
+        self.write_and_add_target('level_2_after_terminating_unfindable.txt', 'level_2_after_terminating')
         level_1_delegation('level_2').load_signing_key(
-            private_level_2_error_key)
+            private_level_2_after_terminating_key)
 
         level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
         (public_level_3_below_terminated_key, private_level_3_below_terminated_key) = self.write_and_import_keypair(
             'targets_level_3_below_terminated')
         level_2_terminating_delegation.delegate(
-            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_terminating_unfindable_*.txt'])
-        self.write_and_add_target('level_1_2_terminating_unfindable_target.txt', 'level_3_below_terminated')
+            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_3_*.txt'])
+        self.write_and_add_target('level_1_2_3_target.txt', 'level_3_below_terminated')
         level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
             private_level_3_below_terminated_key)
 
