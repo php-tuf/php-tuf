@@ -10,9 +10,9 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
 /**
- * Defines a class that returns verifier objects for untrusted metadata.
+ * Verifies untrusted metadata.
  */
-class Factory
+class UniversalVerifier
 {
     /**
      * The trusted metadata factory.

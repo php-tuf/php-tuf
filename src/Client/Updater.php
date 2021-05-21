@@ -17,7 +17,7 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\Metadata\Verifier\Factory as VerifierFactory;
+use Tuf\Metadata\Verifier\UniversalVerifier;
 use Tuf\Metadata\Verifier\RootVerifier;
 
 /**
@@ -188,7 +188,7 @@ class Updater
         $rootData = $this->metadataFactory->load('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
-        $this->verifierFactory = new VerifierFactory($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
+        $this->verifierFactory = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
 
         // *TUF-SPEC-v1.0.16 Section 5.2
         $this->updateRoot($rootData);
