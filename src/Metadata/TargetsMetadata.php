@@ -20,7 +20,7 @@ class TargetsMetadata extends MetadataBase
     /**
      * {@inheritdoc}
      */
-    protected const TYPE = 'targets';
+    public const TYPE = 'targets';
 
     /**
      * The role name if different from the type.

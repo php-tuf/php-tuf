@@ -18,7 +18,7 @@ class RootMetadata extends MetadataBase
     /**
      * {@inheritdoc}
      */
-    protected const TYPE = 'root';
+    public const TYPE = 'root';
 
     /**
      * {@inheritdoc}

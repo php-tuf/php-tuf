@@ -14,7 +14,7 @@ class SnapshotMetadata extends FileInfoMetadataBase
     /**
      * {@inheritdoc}
      */
-    protected const TYPE = 'snapshot';
+    public const TYPE = 'snapshot';
 
     /**
      * {@inheritdoc}
