@@ -15,6 +15,7 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Helper\Clock;
+use Tuf\Metadata\Factory;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -84,6 +85,13 @@ class Updater
     private $metadataExpiration;
 
     /**
+     * The trusted metadata factory.
+     *
+     * @var Factory
+     */
+    protected $metadataFactory;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
@@ -112,6 +120,7 @@ class Updater
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
         $this->clock = new Clock();
+        $this->metadataFactory = new Factory($this->durableStorage);
     }
 
     /**
@@ -170,8 +179,7 @@ class Updater
         $this->metadataExpiration = $this->getUpdateStartTime();
 
         // *TUF-SPEC-v1.0.16 Section 5.1
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
-        $rootData->setIsTrusted(true);
+        $rootData = $this->metadataFactory->load('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
@@ -202,8 +210,8 @@ class Updater
         // TUF-SPEC-v1.0.16 Section 5.4.3
         $newTimestampData->verifyNewVersion($newSnapshotData);
 
-        if (isset($this->durableStorage['snapshot.json'])) {
-            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+        $currentSnapShotData = $this->metadataFactory->load('snapshot');
+        if ($currentSnapShotData) {
             // TUF-SPEC-v1.0.16 Section 5.4.4
             static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
         }
@@ -240,9 +248,9 @@ class Updater
 
         // If the timestamp or snapshot keys were rotating then the timestamp file
         // will not exist.
-        if (isset($this->durableStorage['timestamp.json'])) {
+        $currentStateTimestampData = $this->metadataFactory->load('timestamp');
+        if ($currentStateTimestampData) {
             // § 5.3.2.1 and 5.3.2.2
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
             static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
         }
         // § 5.3.3
@@ -609,7 +617,7 @@ class Updater
             }
             // If no target metadata is provided then start searching with the top level targets.json file.
             /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            $targetsMetadata = $this->metadataFactory->load('targets');
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
             }
@@ -635,7 +643,7 @@ class Updater
 
             $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
             /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
+            $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
@@ -660,8 +668,7 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
-        $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-        $newSnapshotData->setIsTrusted(true);
+        $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);

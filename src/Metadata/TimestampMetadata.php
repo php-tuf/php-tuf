@@ -16,7 +16,7 @@ class TimestampMetadata extends MetadataBase
     /**
      * {@inheritdoc}
      */
-    protected const TYPE = 'timestamp';
+    public const TYPE = 'timestamp';
 
     /**
      * {@inheritdoc}
