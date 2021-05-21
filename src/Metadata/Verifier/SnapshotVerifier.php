@@ -14,48 +14,45 @@ class SnapshotVerifier extends FileInfoVerifier
     public function __construct(
         SignatureVerifier $signatureVerifier,
         \DateTimeImmutable $metadataExpiration,
-        MetadataBase $untrustedMetadata,
         ?MetadataBase $trustedMetadata = null,
         TimestampMetadata $timestampMetadata = null
     ) {
         parent::__construct(
             $signatureVerifier,
             $metadataExpiration,
-            $untrustedMetadata,
             $trustedMetadata
         );
         $this->setReferrer($timestampMetadata);
     }
 
 
-    public function verify(): void
+    public function verify(MetadataBase $untrustedMetadata): void
     {
-        $this->verifyNewHashes();
+        $this->verifyNewHashes($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.3.2
-        $this->checkSignatures();
+        $this->checkSignatures($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.4.3
-        $this->verifyNewVersion();
+        $this->verifyNewVersion($untrustedMetadata);
 
         if ($this->trustedMetadata) {
-            static::checkRollbackAttack();
+            static::checkRollbackAttack($untrustedMetadata);
         }
 
         // TUF-SPEC-v1.0.16 Section 5.4.5
-        static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
+        static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
 
-        $this->untrustedMetadata->setIsTrusted(true);
+        $untrustedMetadata->setIsTrusted(true);
     }
 
-    protected function checkRollbackAttack(): void
+    protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
-        parent::checkRollbackAttack();
+        parent::checkRollbackAttack($untrustedMetadata);
         $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
-        $type = $this->trustedMetadata->getType();
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
-            /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $this->untrustedMetadata */
-            if (!$this->untrustedMetadata->getFileMetaInfo($fileName, true)) {
+            /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
+            if (!$untrustedMetadata->getFileMetaInfo($fileName, true)) {
                 // TUF-SPEC-v1.0.16 Section 5.4.4
                 // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
                 // continue to be listed in the new snapshot metadata file.

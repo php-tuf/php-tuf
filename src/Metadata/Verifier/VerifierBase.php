@@ -17,11 +17,6 @@ abstract class VerifierBase
     protected $trustedMetadata;
 
     /**
-     * @var \Tuf\Metadata\MetadataBase
-     */
-    protected $untrustedMetadata;
-
-    /**
      * @var \Tuf\Client\SignatureVerifier
      */
     protected $signatureVerifier;
@@ -36,10 +31,10 @@ abstract class VerifierBase
      * MetaDataVerifierBase constructor.
      *
      * @param \Tuf\Client\SignatureVerifier $signatureVerifier
-     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     * @param \DateTimeImmutable $metadataExpiration
      * @param \Tuf\Metadata\MetadataBase|null $trustedMetadata
      */
-    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, MetadataBase $untrustedMetadata, ?MetadataBase $trustedMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, ?MetadataBase $trustedMetadata = null)
     {
         $this->signatureVerifier = $signatureVerifier;
         $this->metadataExpiration = $metadataExpiration;
@@ -47,15 +42,17 @@ abstract class VerifierBase
             throw new \LogicException("must be trusted");
         }
         $this->trustedMetadata = $trustedMetadata;
-        $this->untrustedMetadata = $untrustedMetadata;
     }
 
     /**
      * Verify metadata according to the specification.
      *
      * All implementation should set the metadata to trusted after verification.
+     *
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     *   The untrusted metadata to verify.
      */
-    abstract public function verify(): void;
+    abstract public function verify(MetadataBase $untrustedMetadata): void;
 
     /**
      * Checks for a rollback attack.
@@ -65,7 +62,7 @@ abstract class VerifierBase
      *
      * @param \Tuf\Metadata\MetadataBase $this->trustedMetadata
      *     The locally stored metadata from the most recent update.
-     * @param \Tuf\Metadata\MetadataBase $this->untrustedMetadata
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *     The latest metadata fetched from the remote repository.
      * @param integer|null $expectedRemoteVersion
      *     If not null this is expected version of remote metadata.
@@ -75,10 +72,10 @@ abstract class VerifierBase
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
-    protected function checkRollbackAttack(): void
+    protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
         $type = $this->trustedMetadata->getType();
-        $remoteVersion = $this->untrustedMetadata->getVersion();
+        $remoteVersion = $untrustedMetadata->getVersion();
         $localVersion = $this->trustedMetadata->getVersion();
         if ($remoteVersion < $localVersion) {
             $message = "Remote $type metadata version \"$$remoteVersion\" " .
@@ -133,8 +130,11 @@ abstract class VerifierBase
         return $dateTime;
     }
 
-    protected function checkSignatures()
+    /**
+     * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
+     */
+    protected function checkSignatures(MetadataBase $untrustedMetadata)
     {
-        $this->signatureVerifier->checkSignatures($this->untrustedMetadata);
+        $this->signatureVerifier->checkSignatures($untrustedMetadata);
     }
 }

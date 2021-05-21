@@ -18,9 +18,6 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Metadata\Verifier\RootVerifier;
-use Tuf\Metadata\Verifier\SnapshotVerifier;
-use Tuf\Metadata\Verifier\TargetsVerifier;
-use Tuf\Metadata\Verifier\TimestampVerifier;
 
 /**
  * Class Updater
@@ -120,7 +117,6 @@ class Updater
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
         $this->clock = new Clock();
-        $this->metadataFactory = new Factory($this->durableStorage);
     }
 
     /**
@@ -177,6 +173,7 @@ class Updater
 
         // *TUF-SPEC-v1.0.16 Section 5.0
         $this->metadataExpiration = $this->getUpdateStartTime();
+        $this->metadataFactory = new Factory($this->durableStorage, $this->metadataExpiration);
 
         // *TUF-SPEC-v1.0.16 Section 5.1
         /** @var \Tuf\Metadata\RootMetadata $rootData */
@@ -198,8 +195,8 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $snapshotVerifier = new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $this->metadataFactory->load('snapshot'), $newTimestampData);
-            $snapshotVerifier->verify();
+            $snapshotVerifier = $this->metadataFactory->getVerifier(SnapshotMetadata::TYPE, $this->signatureVerifier);
+            $snapshotVerifier->verify($newSnapshotData);
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
@@ -228,8 +225,8 @@ class Updater
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
-        $verifier = new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $this->metadataFactory->load('timestamp'));
-        $verifier->verify();
+        $verifier = $this->metadataFactory->getVerifier($newTimestampData::TYPE, $this->signatureVerifier);
+        $verifier->verify($newTimestampData);
 
         // § 5.3.4: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
@@ -268,8 +265,8 @@ class Updater
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
-            $rootVerifier = new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $nextRoot, $rootData);
-            $rootVerifier->verify();
+            $rootVerifier = $this->metadataFactory->getVerifier($nextRoot::TYPE, $this->signatureVerifier);
+            $rootVerifier->verify($nextRoot);
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -533,8 +530,8 @@ class Updater
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
-        $targetVerifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $newTargetsData, null, $newSnapshotData);
-        $targetVerifier->verify();
+        $targetVerifier = $this->metadataFactory->getVerifier(TargetsMetadata::TYPE, $this->signatureVerifier);
+        $targetVerifier->verify($newTargetsData);
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }

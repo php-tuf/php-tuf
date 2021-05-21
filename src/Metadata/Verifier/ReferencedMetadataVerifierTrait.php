@@ -4,6 +4,7 @@ namespace Tuf\Metadata\Verifier;
 
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\FileInfoMetadataBase;
+use Tuf\Metadata\MetadataBase;
 
 /**
  * Interface for verifiers where the metadata is referenced by another metadata file.
@@ -34,13 +35,13 @@ trait ReferencedMetadataVerifierTrait
      *
      * @return void
      */
-    public function verifyNewHashes(): void
+    public function verifyNewHashes(MetadataBase $untrustedMetadata): void
     {
-        $role = $this->untrustedMetadata->getRole();
+        $role = $untrustedMetadata->getRole();
         $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
         if (isset($fileInfo['hashes'])) {
             foreach ($fileInfo['hashes'] as $algo => $hash) {
-                if ($hash !== hash($algo, $this->untrustedMetadata->getSource())) {
+                if ($hash !== hash($algo, $untrustedMetadata->getSource())) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
                     throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->referrer->getType()}' metadata.");
                 }
@@ -59,13 +60,13 @@ trait ReferencedMetadataVerifierTrait
      *
      * @return void
      */
-    public function verifyNewVersion(): void
+    public function verifyNewVersion($untrustedMetadata): void
     {
-        $role = $this->untrustedMetadata->getRole();
+        $role = $untrustedMetadata->getRole();
         $fileInfo = $this->referrer->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
-        if ($expectedVersion !== $this->untrustedMetadata->getVersion()) {
-            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$this->untrustedMetadata->getVersion()}.");
+        if ($expectedVersion !== $untrustedMetadata->getVersion()) {
+            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$untrustedMetadata->getVersion()}.");
         }
     }
 }

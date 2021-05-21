@@ -22,28 +22,28 @@ class RootVerifier extends VerifierBase
     /**
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      */
-    public function verify(): void
+    public function verify(MetadataBase $untrustedMetadata): void
     {
         // *TUF-SPEC-v1.0.12 Section 5.2.3
-        /** @var \Tuf\Metadata\RootMetadata $this->untrustedMetadata */
-        $this->checkSignatures();
-        $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($this->untrustedMetadata, true);
-        $this->checkSignatures();
+        /** @var \Tuf\Metadata\RootMetadata $untrustedMetadata */
+        $this->checkSignatures($untrustedMetadata);
+        $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($untrustedMetadata, true);
+        $this->checkSignatures($untrustedMetadata);
         // *TUF-SPEC-v1.0.12 Section 5.2.4
 
-        static::checkRollbackAttack();
-        $this->untrustedMetadata->setIsTrusted(true);
+        static::checkRollbackAttack($untrustedMetadata);
+        $untrustedMetadata->setIsTrusted(true);
     }
 
-    protected function checkRollbackAttack(): void
+    protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
         $expectedUntrustedVersion = $this->trustedMetadata->getVersion() + 1;
-        $untrustedVersion = $this->untrustedMetadata->getVersion();
-        if ($expectedUntrustedVersion && ($this->untrustedMetadata->getVersion() !== $expectedUntrustedVersion)) {
+        $untrustedVersion = $untrustedMetadata->getVersion();
+        if ($expectedUntrustedVersion && ($untrustedMetadata->getVersion() !== $expectedUntrustedVersion)) {
             throw new RollbackAttackException("Remote 'root' metadata version \"$untrustedVersion\" " .
               "does not the expected version \"$$expectedUntrustedVersion\"");
         }
-        parent::checkRollbackAttack();
+        parent::checkRollbackAttack($untrustedMetadata);
     }
 
     /**

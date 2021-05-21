@@ -10,30 +10,29 @@ class TargetsVerifier extends VerifierBase
 {
     use ReferencedMetadataVerifierTrait;
 
-    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $untrustedMetadata, MetadataBase $trustedMetadata = null, SnapshotMetadata $snapshotMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $trustedMetadata = null, ?SnapshotMetadata $snapshotMetadata = null)
     {
         parent::__construct(
             $signatureVerifier,
             $expiration,
-            $untrustedMetadata,
             $trustedMetadata
         );
         $this->setReferrer($snapshotMetadata);
     }
 
 
-    public function verify(): void
+    public function verify(MetadataBase $untrustedMetadata): void
     {
         // TUF-SPEC-v1.0.16 Section 5.5.1
-        $this->verifyNewHashes();
+        $this->verifyNewHashes($untrustedMetadata);
 
         // TUF-SPEC-v1.0.16 Section 5.5.2
-        $this->checkSignatures();
+        $this->checkSignatures($untrustedMetadata);
         // TUF-SPEC-v1.0.16 Section 5.5.3
 
-        $this->verifyNewVersion();
+        $this->verifyNewVersion($untrustedMetadata);
         // TUF-SPEC-v1.0.16 Section 5.5.4
-        static::checkFreezeAttack($this->untrustedMetadata, $this->metadataExpiration);
-        $this->untrustedMetadata->setIsTrusted(true);
+        static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
+        $untrustedMetadata->setIsTrusted(true);
     }
 }
