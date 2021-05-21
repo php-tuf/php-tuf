@@ -12,6 +12,7 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Helper\Clock;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -170,8 +171,7 @@ class Updater
         $this->metadataExpiration = $this->getUpdateStartTime();
 
         // *TUF-SPEC-v1.0.16 Section 5.1
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
-        $rootData->setIsTrusted(true);
+        $rootData = $this->loadCurrentMetadata('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
@@ -189,13 +189,7 @@ class Updater
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            if (isset($this->durableStorage['snapshot.json'])) {
-                $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-                $currentSnapShotData->setIsTrusted(true);
-            } else {
-                $currentSnapShotData = null;
-            }
-            $snapshotVerifier = new SnapshotMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $currentSnapShotData, $newTimestampData);
+            $snapshotVerifier = new SnapshotMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newSnapshotData, $this->loadCurrentMetadata('snapshot'), $newTimestampData);
             $snapshotVerifier->verify();
             // TUF-SPEC-v1.0.16 Section 5.4.6
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
@@ -226,13 +220,7 @@ class Updater
     {
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        if (isset($this->durableStorage['timestamp.json'])) {
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-            $currentStateTimestampData->setIsTrusted(true);
-        } else {
-            $currentStateTimestampData = null;
-        }
-        $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $currentStateTimestampData);
+        $verifier = new TimestampMetadataVerifier($this->signatureVerifier, $this->metadataExpiration, $newTimestampData, $this->loadCurrentMetadata('timestamp'));
         $verifier->verify();
 
         // § 5.3.4: Persist timestamp metadata
@@ -484,7 +472,7 @@ class Updater
             }
             // If no target metadata is provided then start searching with the top level targets.json file.
             /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            $targetsMetadata = $this->loadCurrentMetadata('targets');
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
             }
@@ -510,7 +498,7 @@ class Updater
 
             $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
             /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
+            $newTargetsData = $this->loadCurrentMetadata($delegatedRoleName);
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
@@ -535,7 +523,7 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
-        $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+        $newSnapshotData = $this->loadCurrentMetadata('snapshot');
         $newSnapshotData->setIsTrusted(true);
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
@@ -556,5 +544,37 @@ class Updater
     private function getUpdateStartTime(): \DateTimeImmutable
     {
         return (new \DateTimeImmutable())->setTimestamp($this->clock->getCurrentTime());
+    }
+
+    /**
+     * @param string $role
+     *
+     * @return \Tuf\Metadata\MetadataBase|\Tuf\Metadata\SnapshotMetadata|null
+     * @throws \Tuf\Exception\MetadataException
+     */
+    protected function loadCurrentMetadata(string $role): ?MetadataBase
+    {
+        $fileName = "$role.json";
+        if (isset($this->durableStorage[$fileName])) {
+            $json = $this->durableStorage[$fileName];
+            switch ($role) {
+                case 'root':
+                    $currentMetadata = RootMetadata::createFromJson($json);
+                    break;
+                case 'snapshot':
+                    $currentMetadata = SnapshotMetadata::createFromJson($json);
+                    break;
+                case 'timestamp':
+                    $currentMetadata = TimestampMetadata::createFromJson($json);
+                    break;
+                default:
+                    $currentMetadata = TargetsMetadata::createFromJson($json);
+
+            }
+            $currentMetadata->setIsTrusted(true);
+            return $currentMetadata;
+        } else {
+            return null;
+        }
     }
 }
