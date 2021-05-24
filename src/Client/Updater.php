@@ -85,14 +85,14 @@ class Updater
     /**
      * The trusted metadata factory.
      *
-     * @var MetadataFactory
+     * @var \Tuf\Metadata\Factory
      */
     protected $metadataFactory;
 
     /**
      * The verifier factory.
      *
-     * @var UniversalVerifier
+     * @var \Tuf\Metadata\Verifier\UniversalVerifier
      */
     protected $universalVerifier;
 
