@@ -37,6 +37,13 @@ class Updater
     const MAXIMUM_DOWNLOAD_BYTES = 100000;
 
     /**
+     * The maximum number of target roles supported.
+     *
+     * TUF-SPEC-v1.0.16 Section 5.5.6.1
+     */
+    const MAXIMUM_TARGET_ROLES = 100;
+
+    /**
      * @var \array[][]
      */
     protected $mirrors;
@@ -486,6 +493,7 @@ class Updater
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
             }
+            $searchedRoles[] = 'targets';
         }
 
         $delegatedKeys = $targetsMetadata->getDelegatedKeys();
@@ -499,6 +507,10 @@ class Updater
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
             }
+            if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
+                return null;
+            }
+
             $this->signatureVerifier->addRole($delegatedRole);
             if (!$delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain so if the path does not match
@@ -512,6 +524,7 @@ class Updater
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
+            $searchedRoles[] = $delegatedRole;
             // TUF-SPEC-v1.0.16 Section 5.5.6.2.1
             //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {

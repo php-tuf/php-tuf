@@ -116,7 +116,7 @@ class UpdaterTest extends TestCase
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated'): Updater
+    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated', string $updaterClass = TestUpdater::class): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -135,8 +135,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new TestUpdater($this->testRepo, $mirrors, $this->localRepo, new TestClock());
-        return $updater;
+        return new $updaterClass($this->testRepo, $mirrors, $this->localRepo, new TestClock());
     }
 
     /**
@@ -288,6 +287,32 @@ class UpdaterTest extends TestCase
         }
     }
 
+    /**
+     * Tests for enforcement of maximum number of roles limit.
+     */
+    public function testMaximumRoles(): void
+    {
+        $fixturesSet = 'TUFTestFixtureNestedDelegated';
+        $fileName = 'level_1_2_terminating_3_target.txt';
+
+        // Ensure the file can found if the maximum role limit is 100.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest($fixturesSet);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        $testFileContents = file_get_contents($testFilePath);
+        self::assertNotEmpty($testFileContents);
+        self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
+
+
+        // Ensure the file can not found if the maximum role limit is 3.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest($fixturesSet, LimitRolesTestUpdater::class);
+        self::expectException(NotFoundException::class);
+        self::expectExceptionMessage("Target not found: $fileName");
+        $updater->download($fileName)->wait();
+    }
     /**
      * Tests that improperly delegated targets will produce exceptions.
      *
