@@ -45,7 +45,8 @@ class VerifierTest extends TestCase
 
         $verifier = new class ($localMetadata) extends VerifierBase
         {
-            public function __construct($trustedMetadata) {
+            public function __construct($trustedMetadata)
+            {
                 $this->trustedMetadata = $trustedMetadata;
             }
 
