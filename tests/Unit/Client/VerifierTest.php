@@ -3,8 +3,6 @@
 namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\Client\RepoFileFetcherInterface;
-use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\Verifier\RootVerifier;
 use Tuf\Metadata\Verifier\VerifierBase;
@@ -14,19 +12,6 @@ use Tuf\Metadata\Verifier\VerifierBase;
  */
 class VerifierTest extends TestCase
 {
-    /**
-     * Creates a test Updater using memory storage of client fixture data.
-     *
-     * @return \Tuf\Client\Updater
-     *     The test Updater from the 'current' test fixture data.
-     */
-    protected function getSystemInTest(): Updater
-    {
-        $localRepo = $this->getMockBuilder(\ArrayAccess::class)->getMock();
-        $repoFetcher = $this->getMockBuilder(RepoFileFetcherInterface::class)->getMock();
-        return new Updater($repoFetcher, [], $localRepo);
-    }
-
     /**
      * Tests that no rollback attack is flagged when one is not performed.
      *
@@ -155,7 +140,6 @@ class VerifierTest extends TestCase
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
 
-        $sut = $this->getSystemInTest();
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
         $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:01Z');
@@ -167,11 +151,11 @@ class VerifierTest extends TestCase
 
         // The update's expiration is later than now, so no freeze attack
         // exception should be thrown.
-        $method->invoke($sut, $signedMetadata, $now);
+        $method->invoke(null, $signedMetadata, $now);
 
         // No exception should be thrown exactly at expiration time.
         $signedMetadata->expects(self::any())->method('getExpires')->willReturn($nowString);
-        $method->invoke($sut, $signedMetadata, $now);
+        $method->invoke(null, $signedMetadata, $now);
     }
 
     /**
@@ -185,7 +169,6 @@ class VerifierTest extends TestCase
     {
         $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
 
-        $sut = $this->getSystemInTest();
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
         $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:00Z');
@@ -197,6 +180,6 @@ class VerifierTest extends TestCase
 
         // The update has already expired, so a freeze attack exception should
         // be thrown.
-        $method->invoke($sut, $signedMetadata, $now);
+        $method->invoke(null, $signedMetadata, $now);
     }
 }
