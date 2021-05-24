@@ -213,12 +213,13 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         super().__init__()
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Delegate from level_1_delegation to level_1 target-signing key
+        # Delegate from level_1_delegation to level_2
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2',
                                      paths=['level_1_2_*.txt'],
                                      file_name='level_1_2_target.txt')
 
+        # Create a terminating delegation
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_terminating',
                                      paths= ['level_1_2_terminating_*.txt'],
@@ -227,6 +228,7 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
 
         level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
 
+        # Create a delegation under non-terminating 'level_2' delegation.
         self.delegate_role_with_file(delegator_role=level_2_delegation,
                                      delegated_role_name='level_3',
                                      paths=['level_1_2_3_*.txt'],
@@ -258,7 +260,7 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         # Add a target that does not match the delegation's paths.
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        # Add a delegation after level_2_terminating which will not be evaluted.
+        # Add a delegation after level_2_terminating which will not be evaluated.
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_after_terminating',
                                      paths=['level_2_*.txt'],
