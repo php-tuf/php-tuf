@@ -1,5 +1,6 @@
 # For instructions on using this script, please see the README.
 
+from os import path
 from tuf import repository_tool as rt
 import os
 import shutil
@@ -17,24 +18,24 @@ class TUFTestFixtureBase:
 
     def __init__(self):
         # Initialize fixtures/ if missing and make it the working directory.
-        fixtures_dir = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'fixtures')
-        if not os.path.exists(fixtures_dir):
+        fixtures_dir = path.join(path.dirname(
+            path.realpath(__file__)), 'fixtures')
+        if not path.exists(fixtures_dir):
             os.mkdir(fixtures_dir)
 
-        self.my_fixtures_dir = os.path.join(fixtures_dir, type(self).__name__)
+        self.my_fixtures_dir = path.join(fixtures_dir, type(self).__name__)
         print('Building fixtures at {}'.format(self.my_fixtures_dir))
 
         # Clean up previous fixtures.
         print('Deleting {}'.format(self.my_fixtures_dir))
-        if os.path.isdir(self.my_fixtures_dir):
+        if path.isdir(self.my_fixtures_dir):
             shutil.rmtree(self.my_fixtures_dir + '/')
 
         os.mkdir(self.my_fixtures_dir)
         # os.chdir(self.my_fixtures_dir)
 
         # Create a basic TUF repository.
-        self.tufrepo_dir = os.path.join(self.my_fixtures_dir, 'tufrepo')
+        self.tufrepo_dir = path.join(self.my_fixtures_dir, 'tufrepo')
         print('Initializing repo at {}'.format(self.tufrepo_dir))
         self.repository = rt.create_new_repository(
             self.tufrepo_dir, type(self).__name__)
@@ -44,13 +45,13 @@ class TUFTestFixtureBase:
         print('Initialized repo at {}'.format(self.tufrepo_dir))
 
     def write_and_add_target(self, filename, signing_target=None):
-        targets_dir = os.path.join(self.tufrepo_dir, 'targets')
-        # if not os.path.exists(targets_dir):
+        targets_dir = path.join(self.tufrepo_dir, 'targets')
+        # if not path.exists(targets_dir):
         #    os.mkdir(targets_dir)
 
         print(targets_dir)
 
-        with open(os.path.join(targets_dir, filename), 'w') as targetfile:
+        with open(path.join(targets_dir, filename), 'w') as targetfile:
             targetfile.write('Contents: ' + filename)
 
         list_of_targets = [filename]
@@ -65,7 +66,7 @@ class TUFTestFixtureBase:
 
     def write_and_import_keypair(self, name_dst):
         # Identify the paths for the next pre-generated keypair.
-        pathpriv_src = os.path.join(os.path.dirname(os.path.realpath(
+        pathpriv_src = path.join(path.dirname(path.realpath(
             __file__)), 'fixture_keys', '{}_key'.format(self.next_keypair_index))
         pathpub_src = '{}.pub'.format(pathpriv_src)
         self.next_keypair_index += 1
@@ -110,14 +111,14 @@ class TUFTestFixtureBase:
     def write_and_publish_repository(self, export_client=False):
         self.repository.writeall(consistent_snapshot=True)
         # Publish the metadata
-        staging_dir = os.path.join(self.tufrepo_dir, 'metadata.staged')
-        live_dir = os.path.join(self.tufrepo_dir, 'metadata')
+        staging_dir = path.join(self.tufrepo_dir, 'metadata.staged')
+        live_dir = path.join(self.tufrepo_dir, 'metadata')
         shutil.copytree(staging_dir, live_dir, dirs_exist_ok=True)
 
         if export_client:
-            client_tufrepo_dir = os.path.join(
+            client_tufrepo_dir = path.join(
                 self.my_fixtures_dir, 'tufclient', 'tufrepo')
-            if os.path.exists(client_tufrepo_dir):
+            if path.exists(client_tufrepo_dir):
                 shutil.rmtree(client_tufrepo_dir + '/')
             rt.create_tuf_client_directory(
                 self.tufrepo_dir, client_tufrepo_dir)
@@ -293,7 +294,7 @@ class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
 class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
     def __init__(self):
         super().__init__()
-        timestamp_path = os.path.join(self.tufrepo_dir, "metadata", "timestamp.json")
+        timestamp_path = path.join(self.tufrepo_dir, "metadata", "timestamp.json")
         self.repository.mark_dirty(["timestamp"])
         self.write_and_publish_repository(export_client=True)
 
