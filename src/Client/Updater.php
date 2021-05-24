@@ -524,12 +524,15 @@ class Updater
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
-            if ($delegatedRole->isTerminating()) {
-                // If the role is terminating then we do not search this targets metadata for additional delegations.
-                continue;
-            }
+            // TUF-SPEC-v1.0.16 Section 5.5.6.2.1
+            //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                 return $matchingTargetMetadata;
+            }
+            if ($delegatedRole->isTerminating()) {
+                // TUF-SPEC-v1.0.16 Section 5.5.6.2.2
+                // If the role is terminating then abort searching for a target.
+                return null;
             }
         }
         return null;

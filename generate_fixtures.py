@@ -230,12 +230,26 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         (public_level_3_key, private_level_3key) = self.write_and_import_keypair(
             'targets_level_3_delegated')
 
-        # Add a delegation that matches the path pattern 'test_nested2_*.txt'
+        # Add a delegated role 'level_3' from role 'level_2'. For files in this delegation to be found
+        # the 'paths' property must also be compatible with the 'paths' property of 'level_2'
         level_2_delegation.delegate(
             'level_3', [public_level_3_key], ['level_1_2_3_*.txt'])
-        self.write_and_add_target('level_1_2_3_target.txt', 'level_3')
+        self.write_and_add_target('level_1_2_3_below_non_terminating_target.txt', 'level_3')
         level_2_delegation('level_3').load_signing_key(
             private_level_3key)
+
+        # Add a delegation below the 'level_2_terminating' role.
+        # Delegations from a terminating role are evaluated but delegations after a terminating delegation
+        # are not.
+        # See TUFTestFixtureNestedDelegatedErrors
+        level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
+        (public_level_3_below_terminated_key, private_level_3_below_terminated_key) = self.write_and_import_keypair(
+            'targets_level_3_below_terminated')
+        level_2_terminating_delegation.delegate(
+            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_terminating_3_*.txt'])
+        self.write_and_add_target('level_1_2_terminating_3_target.txt', 'level_3_below_terminated')
+        level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
+            private_level_3_below_terminated_key)
 
         self.write_and_publish_repository(export_client=False)
 
@@ -249,26 +263,18 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
 
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Delegate from level_1_delegation to level_1 target-signing key
-        (public_level_2_error_key, private_level_2_error_key) = self.write_and_import_keypair(
-            'targets_level_2_error')
+        # Add a target that does not match the delegation's paths.
+        self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        # Add a delegation that does not match the pattern of level_1 delegation
-        # Nothing in this delegation should be found.
+        (public_level_2_after_terminating_key, private_level_2_after_terminating_key) = self.write_and_import_keypair(
+            'targets_level_2_after_terminating')
+
+        # Add a delegation after level_2_terminating which will not be evaluted.
         level_1_delegation.delegate(
-            'level_2_error', [public_level_2_error_key], ['level_2_*.txt'])
-        self.write_and_add_target('level_2_unfindable.txt', 'level_2_error')
+            'level_2_after_terminating', [public_level_2_after_terminating_key], ['level_2_*.txt'])
+        self.write_and_add_target('level_2_after_terminating_unfindable.txt', 'level_2_after_terminating')
         level_1_delegation('level_2').load_signing_key(
-            private_level_2_error_key)
-
-        level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
-        (public_level_3_below_terminated_key, private_level_3_below_terminated_key) = self.write_and_import_keypair(
-            'targets_level_3_below_terminated')
-        level_2_terminating_delegation.delegate(
-            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_terminating_unfindable_*.txt'])
-        self.write_and_add_target('level_1_2_terminating_unfindable_target.txt', 'level_3_below_terminated')
-        level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
-            private_level_3_below_terminated_key)
+            private_level_2_after_terminating_key)
 
         self.write_and_publish_repository(export_client=False)
 
