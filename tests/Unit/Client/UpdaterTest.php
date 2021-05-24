@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\Verifier\VerifierBase;
 
 /**
  * @covers \Tuf\Client\Updater
@@ -38,22 +39,32 @@ class UpdaterTest extends TestCase
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
 
-        // The incoming version is newer than the local version, so no
-        // rollback attack is present.
         $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $localMetadata->expects(self::any())->method('getType')->willReturn('any');
         $localMetadata->expects(self::any())->method('getVersion')->willReturn(1);
+
+        $verifier = new class ($localMetadata) extends VerifierBase
+        {
+            public function __construct($trustedMetadata) {
+                $this->trustedMetadata = $trustedMetadata;
+            }
+
+            public function verify(MetadataBase $untrustedMetadata): void
+            {
+                $this->checkRollbackAttack($untrustedMetadata);
+            }
+        };
+
+        // The incoming version is newer than the local version, so no
+        // rollback attack is present.
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
-        $sut = $this->getSystemInTest();
-        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
-        $method->setAccessible(true);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+        $verifier->verify($incomingMetadata);
 
         // Incoming at same version as local.
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+        $verifier->verify($incomingMetadata);
     }
 
     /**
@@ -68,19 +79,29 @@ class UpdaterTest extends TestCase
         $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
 
-        $sut = $this->getSystemInTest();
-
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
         $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $localMetadata->expects(self::any())->method('getType')->willReturn('any');
         $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+
+        $verifier = new class ($localMetadata) extends VerifierBase
+        {
+            public function __construct(MetadataBase $trustedMetadata)
+            {
+                $this->trustedMetadata = $trustedMetadata;
+            }
+
+            public function verify(MetadataBase $untrustedMetadata): void
+            {
+                $this->checkRollbackAttack($untrustedMetadata);
+            }
+        };
+
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
-        $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
-        $method->setAccessible(true);
-        $method->invoke($sut, $localMetadata, $incomingMetadata);
+        $verifier->verify($incomingMetadata);
     }
 
     /**
