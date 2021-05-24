@@ -12,7 +12,7 @@ class Factory
      *
      * @var \ArrayAccess
      */
-    protected $storage;
+    private $storage;
 
     /**
      * Factory constructor.
