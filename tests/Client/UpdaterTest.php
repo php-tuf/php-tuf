@@ -302,7 +302,7 @@ class UpdaterTest extends TestCase
         $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
+        self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
 
 
         // Ensure the file can not found if the maximum role limit is 3.
