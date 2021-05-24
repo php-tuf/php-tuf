@@ -116,7 +116,7 @@ class UpdaterTest extends TestCase
      *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated'): Updater
+    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated', string $updaterClass = TestUpdater::class): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -135,8 +135,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
-        $updater = new TestUpdater($this->testRepo, $mirrors, $this->localRepo, new TestClock());
-        return $updater;
+        return new $updaterClass($this->testRepo, $mirrors, $this->localRepo, new TestClock());
     }
 
     /**
@@ -274,6 +273,20 @@ class UpdaterTest extends TestCase
         }
     }
 
+    /**
+     * Tests for enforcement of maximum number of roles limit.
+     */
+    public function testMaximumRoles(): void
+    {
+        $fixturesSet = 'TUFTestFixtureNestedDelegated';
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest('TUFTestFixtureDelegated', LimitRolesTestUpdater::class);
+
+        self::expectException(NotFoundException::class);
+        self::expectExceptionMessage("Target not found: level_1_2_3_target.txt");
+        $updater->download("level_1_2_3_target.txt")->wait();
+    }
     /**
      * Tests that improperly delegated targets will produce exceptions.
      *
