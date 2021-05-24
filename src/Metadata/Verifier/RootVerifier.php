@@ -42,7 +42,7 @@ class RootVerifier extends VerifierBase
         $expectedUntrustedVersion = $this->trustedMetadata->getVersion() + 1;
         $untrustedVersion = $untrustedMetadata->getVersion();
         if ($expectedUntrustedVersion && ($untrustedMetadata->getVersion() !== $expectedUntrustedVersion)) {
-            throw new RollbackAttackException("Remote 'root' metadata version \"$untrustedVersion\" " .
+            throw new RollbackAttackException("Remote 'root' metadata version \"$$untrustedVersion\" " .
               "does not the expected version \"$$expectedUntrustedVersion\"");
         }
         parent::checkRollbackAttack($untrustedMetadata);
