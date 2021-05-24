@@ -4,18 +4,16 @@ namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\RepoFileFetcherInterface;
-use Tuf\Client\SignatureVerifier;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\Verifier\RootVerifier;
 use Tuf\Metadata\Verifier\VerifierBase;
 
 /**
- * @covers \Tuf\Client\Updater
+ * @covers \Tuf\Metadata\Verifier\VerifierBase
  */
-class UpdaterTest extends TestCase
+class VerifierTest extends TestCase
 {
-
     /**
      * Creates a test Updater using memory storage of client fixture data.
      *
