@@ -293,13 +293,25 @@ class UpdaterTest extends TestCase
     public function testMaximumRoles(): void
     {
         $fixturesSet = 'TUFTestFixtureNestedDelegated';
+        $fileName = 'level_1_2_terminating_3_target.txt';
+
+        // Ensure the file can found if the maximum role limit is 100.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $updater = $this->getSystemInTest('TUFTestFixtureDelegated', LimitRolesTestUpdater::class);
+        $updater = $this->getSystemInTest($fixturesSet);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        $testFileContents = file_get_contents($testFilePath);
+        self::assertNotEmpty($testFileContents);
+        $this->assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
 
+
+        // Ensure the file can not found if the maximum role limit is 3.
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->testRepo = new TestRepo($fixturesSet);
+        $updater = $this->getSystemInTest($fixturesSet, LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
-        self::expectExceptionMessage("Target not found: level_1_2_3_target.txt");
-        $updater->download("level_1_2_3_target.txt")->wait();
+        self::expectExceptionMessage("Target not found: $fileName");
+        $updater->download($fileName)->wait();
     }
     /**
      * Tests that improperly delegated targets will produce exceptions.

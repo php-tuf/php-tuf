@@ -7,5 +7,5 @@ namespace Tuf\Tests\Client;
  */
 class LimitRolesTestUpdater extends TestUpdater
 {
-    const MAXIMUM_TARGET_ROLES = 2;
+    const MAXIMUM_TARGET_ROLES = 3;
 }
