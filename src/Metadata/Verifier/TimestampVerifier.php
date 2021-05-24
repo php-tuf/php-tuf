@@ -20,7 +20,7 @@ class TimestampVerifier extends FileInfoVerifier
         // will not exist.
         if ($this->trustedMetadata) {
             // § 5.3.2.1 and 5.3.2.2
-            static::checkRollbackAttack($untrustedMetadata);
+            $this->checkRollbackAttack($untrustedMetadata);
         }
         // § 5.3.3
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);

@@ -50,7 +50,7 @@ class SnapshotVerifier extends FileInfoVerifier
         // will not exist.
         if ($this->trustedMetadata) {
             // TUF-SPEC-v1.0.16 Section 5.4.4
-            static::checkRollbackAttack($untrustedMetadata);
+            $this->checkRollbackAttack($untrustedMetadata);
         }
 
         // TUF-SPEC-v1.0.16 Section 5.4.5

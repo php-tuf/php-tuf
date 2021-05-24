@@ -31,7 +31,7 @@ class RootVerifier extends VerifierBase
         // *TUF-SPEC-v1.0.12 Section 5.2.4
 
         // *TUF-SPEC-v1.0.12 Section 5.2.4
-        static::checkRollbackAttack($untrustedMetadata);
+        $this->checkRollbackAttack($untrustedMetadata);
     }
 
     /**
