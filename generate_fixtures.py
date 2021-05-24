@@ -235,13 +235,9 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         # are not.
         # See TUFTestFixtureNestedDelegatedErrors
         level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
-        (public_level_3_below_terminated_key, private_level_3_below_terminated_key) = self.write_and_import_keypair(
-            'targets_level_3_below_terminated')
-        level_2_terminating_delegation.delegate(
-            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_terminating_3_*.txt'])
-        self.write_and_add_target('level_1_2_terminating_3_target.txt', 'level_3_below_terminated')
-        level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
-            private_level_3_below_terminated_key)
+        self.delegate_role(delegator_role=level_2_terminating_delegation, delegated_role_name='level_3_below_terminated',
+                           paths=['level_1_2_terminating_3_*.txt'],
+                           file_name='level_1_2_terminating_3_target.txt')
 
         self.write_and_publish_repository(export_client=False)
 
