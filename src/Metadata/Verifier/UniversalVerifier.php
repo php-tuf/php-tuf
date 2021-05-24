@@ -84,6 +84,6 @@ class UniversalVerifier
         }
         $verifier->verify($untrustedMetadata);
         // If the verifier didn't throw an exception, we can trust this metadata.
-        $untrustedMetadata->setIsTrusted(true);
+        $untrustedMetadata->trust();
     }
 }

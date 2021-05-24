@@ -92,7 +92,7 @@ class Updater
     /**
      * The verifier factory.
      *
-     * @var VerifierFactory
+     * @var UniversalVerifier
      */
     protected $verifierFactory;
 
@@ -273,6 +273,7 @@ class Updater
             }
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->verifierFactory->verify(RootMetadata::TYPE, $nextRoot);
+
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata

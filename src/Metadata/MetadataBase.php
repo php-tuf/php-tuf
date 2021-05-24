@@ -220,23 +220,13 @@ abstract class MetadataBase
     }
 
     /**
-     * @return boolean
-     *    Whether the metadata is trusted.
-     */
-    public function isTrusted(): bool
-    {
-        return $this->isTrusted;
-    }
-
-    /**
-     * @param boolean $isTrusted
-     *   Whether the metadata should be trusted.
+     * Sets the metadata as trusted.
      *
      * @return void
      */
-    public function setIsTrusted(bool $isTrusted): void
+    public function trust(): void
     {
-        $this->isTrusted = $isTrusted;
+        $this->isTrusted = true;
     }
 
     /**
@@ -249,7 +239,7 @@ abstract class MetadataBase
      */
     public function ensureIsTrusted(bool $allowUntrustedAccess = false): void
     {
-        if (!$allowUntrustedAccess && !$this->isTrusted()) {
+        if (!$allowUntrustedAccess && !$this->isTrusted) {
             throw new \RuntimeException("Cannot use untrusted '{$this->getRole()}'. metadata.");
         }
     }
