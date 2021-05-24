@@ -60,7 +60,10 @@ class UniversalVerifier
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata object.
      *
+     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
+     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
      */
     public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
