@@ -4,6 +4,7 @@ namespace Tuf\Tests\Unit\Client;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\RepoFileFetcherInterface;
+use Tuf\Client\SignatureVerifier;
 use Tuf\Client\Updater;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\Verifier\VerifierBase;
@@ -123,9 +124,25 @@ class UpdaterTest extends TestCase
         // be identified as a rollback attack.
         $localMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $localMetadata->expects(self::any())->method('getType')->willReturn('any');
+
+        $verifier = new class ($localMetadata) extends VerifierBase
+        {
+            public function __construct(MetadataBase $trustedMetadata)
+            {
+                $this->trustedMetadata = $trustedMetadata;
+            }
+
+            public function verify(MetadataBase $untrustedMetadata): void
+            {
+                $this->checkRollbackAttack($untrustedMetadata);
+            }
+        };
+
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $incomingMetadata->expects(self::any())->method('getType')->willReturn('any');
         $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
+        $verifier->verify($incomingMetadata);
+        return;
         $method = new \ReflectionMethod(Updater::class, 'checkRollbackAttack');
         $method->setAccessible(true);
         $method->invoke($sut, $localMetadata, $incomingMetadata, 3);
@@ -150,7 +167,7 @@ class UpdaterTest extends TestCase
         $nowString = '1970-01-01T00:00:00Z';
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $nowString);
 
-        $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
+        $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
         $method->setAccessible(true);
 
         // The update's expiration is later than now, so no freeze attack
@@ -180,7 +197,7 @@ class UpdaterTest extends TestCase
         // 1 second later.
         $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", '1970-01-01T00:00:01Z');
 
-        $method = new \ReflectionMethod(Updater::class, 'checkFreezeAttack');
+        $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
         $method->setAccessible(true);
 
         // The update has already expired, so a freeze attack exception should
