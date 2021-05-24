@@ -27,7 +27,7 @@ class KeyDBTest extends TestCase
         );
         $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath));
         self::assertInstanceOf(RootMetadata::class, $rootMetadata);
-        $rootMetadata->setIsTrusted(true);
+        $rootMetadata->trust();
         $keyDb = KeyDB::createFromRootMetadata($rootMetadata);
         self::assertInstanceOf(KeyDB::class, $keyDb);
         // Get the first key for comparison.

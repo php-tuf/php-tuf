@@ -15,6 +15,7 @@ use Tuf\Exception\PotentialAttackException\FreezeAttackException;
 use Tuf\Exception\PotentialAttackException\InvalidHashException;
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
 use Tuf\Helper\Clock;
+use Tuf\Metadata\Factory;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -84,6 +85,13 @@ class Updater
     private $metadataExpiration;
 
     /**
+     * The trusted metadata factory.
+     *
+     * @var Factory
+     */
+    protected $metadataFactory;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
@@ -112,6 +120,7 @@ class Updater
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
         $this->clock = new Clock();
+        $this->metadataFactory = new Factory($this->durableStorage);
     }
 
     /**
@@ -170,8 +179,7 @@ class Updater
         $this->metadataExpiration = $this->getUpdateStartTime();
 
         // *TUF-SPEC-v1.0.16 Section 5.1
-        $rootData = RootMetadata::createFromJson($this->durableStorage['root.json']);
-        $rootData->setIsTrusted(true);
+        $rootData = $this->metadataFactory->load('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
 
@@ -179,24 +187,7 @@ class Updater
         $this->updateRoot($rootData);
 
         // *TUF-SPEC-v1.0.16 Section 5.3
-        $newTimestampContents = $this->fetchFile('timestamp.json');
-        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
-        // *TUF-SPEC-v1.0.16 Section 5.3.1
-        $this->signatureVerifier->checkSignatures($newTimestampData);
-
-        // If the timestamp or snapshot keys were rotating then the timestamp file
-        // will not exist.
-        if (isset($this->durableStorage['timestamp.json'])) {
-            // *TUF-SPEC-v1.0.16 Section 5.3.2.1 and 5.3.2.2
-            $currentStateTimestampData = TimestampMetadata::createFromJson($this->durableStorage['timestamp.json']);
-            static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
-        }
-
-        // *TUF-SPEC-v1.0.16 Section 5.3.3
-        static::checkFreezeAttack($newTimestampData, $this->metadataExpiration);
-        // TUF-SPEC-v1.0.16 Section 5.3.4: Persist timestamp metadata
-        $this->durableStorage['timestamp.json'] = $newTimestampContents;
-        $newTimestampData->setIsTrusted(true);
+        $newTimestampData = $this->updateTimestamp();
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
@@ -219,8 +210,8 @@ class Updater
         // TUF-SPEC-v1.0.16 Section 5.4.3
         $newTimestampData->verifyNewVersion($newSnapshotData);
 
-        if (isset($this->durableStorage['snapshot.json'])) {
-            $currentSnapShotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
+        $currentSnapShotData = $this->metadataFactory->load('snapshot');
+        if ($currentSnapShotData) {
             // TUF-SPEC-v1.0.16 Section 5.4.4
             static::checkRollbackAttack($currentSnapShotData, $newSnapshotData);
         }
@@ -230,7 +221,7 @@ class Updater
 
         // TUF-SPEC-v1.0.16 Section 5.4.6
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        $newSnapshotData->setIsTrusted(true);
+        $newSnapshotData->trust();
 
         // TUF-SPEC-v1.0.16 Section 5.5
         if ($rootData->supportsConsistentSnapshots()) {
@@ -242,6 +233,34 @@ class Updater
         }
         $this->isRefreshed = true;
         return true;
+    }
+
+    /**
+     * Updates the timestamp role, per section 5.3 of the TUF spec.
+     */
+    private function updateTimestamp(): TimestampMetadata
+    {
+        // § 5.3
+        $newTimestampContents = $this->fetchFile('timestamp.json');
+        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        // § 5.3.1
+        $this->signatureVerifier->checkSignatures($newTimestampData);
+
+        // If the timestamp or snapshot keys were rotating then the timestamp file
+        // will not exist.
+        $currentStateTimestampData = $this->metadataFactory->load('timestamp');
+        if ($currentStateTimestampData) {
+            // § 5.3.2.1 and 5.3.2.2
+            static::checkRollbackAttack($currentStateTimestampData, $newTimestampData);
+        }
+        // § 5.3.3
+        static::checkFreezeAttack($newTimestampData, $this->metadataExpiration);
+
+        // § 5.3.4: Persist timestamp metadata
+        $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $newTimestampData->trust();
+
+        return $newTimestampData;
     }
 
     /**
@@ -301,6 +320,10 @@ class Updater
                 "is less than previously seen $type version \"$$localVersion\"";
             throw new RollbackAttackException($message);
         }
+        // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
+        // the same files in the new metadata info.
+        // For 'snapshot' type this is TUF-SPEC-v1.0.16 Section 5.4.4
+        // For 'timestamp' type this TUF-SPEC-v1.0.16 Section 5.3.2.2
         if ($type === 'timestamp' || $type === 'snapshot') {
             $localMetaFileInfos = $localMetadata->getSigned()['meta'];
             foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
@@ -384,7 +407,7 @@ class Updater
             // *TUF-SPEC-v1.0.12 Section 5.2.4
 
             static::checkRollbackAttack($rootData, $nextRoot, $nextVersion);
-            $nextRoot->setIsTrusted(true);
+            $nextRoot->trust();
             $rootData = $nextRoot;
             // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
             // Note that the expiration of the new (intermediate) root metadata
@@ -594,7 +617,7 @@ class Updater
             }
             // If no target metadata is provided then start searching with the top level targets.json file.
             /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = TargetsMetadata::createFromJson($this->durableStorage['targets.json']);
+            $targetsMetadata = $this->metadataFactory->load('targets');
             if ($targetsMetadata->hasTarget($target)) {
                 return $targetsMetadata;
             }
@@ -620,7 +643,7 @@ class Updater
 
             $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
             /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = TargetsMetadata::createFromJson($this->durableStorage["$delegatedRoleName.json"]);
+            $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
             if ($newTargetsData->hasTarget($target)) {
                 return $newTargetsData;
             }
@@ -650,8 +673,7 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
-        $newSnapshotData = SnapshotMetadata::createFromJson($this->durableStorage['snapshot.json']);
-        $newSnapshotData->setIsTrusted(true);
+        $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
@@ -665,7 +687,7 @@ class Updater
         $newSnapshotData->verifyNewVersion($newTargetsData);
         // TUF-SPEC-v1.0.16 Section 5.5.4
         static::checkFreezeAttack($newTargetsData, $this->metadataExpiration);
-        $newTargetsData->setIsTrusted(true);
+        $newTargetsData->trust();
         // TUF-SPEC-v1.0.16 Section 5.5.5
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }

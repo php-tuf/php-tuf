@@ -15,7 +15,7 @@ class SnapshotMetadata extends MetadataBase
     /**
      * {@inheritdoc}
      */
-    protected const TYPE = 'snapshot';
+    public const TYPE = 'snapshot';
 
     /**
      * {@inheritdoc}
