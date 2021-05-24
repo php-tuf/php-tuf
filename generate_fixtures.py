@@ -263,7 +263,7 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
 
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Add a target that does not match the delegations pathes.
+        # Add a target that does not match the delegation's paths.
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
         (public_level_2_after_terminating_key, private_level_2_after_terminating_key) = self.write_and_import_keypair(
