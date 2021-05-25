@@ -36,16 +36,16 @@ class TargetsVerifier extends VerifierBase
      */
     public function verify(MetadataBase $untrustedMetadata): void
     {
-        // TUF-SPEC-v1.0.16 Section 5.5.1
+        // § 5.6.2
         $this->checkAgainstHashesFromTrustedAuthority($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.5.2
+        // § 5.6.3
         $this->signatureVerifier->checkSignatures($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.5.3
+        // § 5.6.4
         $this->checkAgainstVersionFromTrustedAuthority($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.5.4
+        // § 5.6.5
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
     }
 }

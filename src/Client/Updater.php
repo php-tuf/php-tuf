@@ -39,7 +39,7 @@ class Updater
     /**
      * The maximum number of target roles supported.
      *
-     * TUF-SPEC-v1.0.16 Section 5.5.6.1
+     * § 5.6.7.1
      */
     const MAXIMUM_TARGET_ROLES = 100;
 
@@ -220,7 +220,7 @@ class Updater
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
 
-        // TUF-SPEC-v1.0.16 Section 5.5
+        // § 5.6
         if ($rootData->supportsConsistentSnapshots()) {
             $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
@@ -509,7 +509,7 @@ class Updater
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // TUF-SPEC-v1.0.16 Section 5.5.6.1
+                // § 5.6.7.1
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
             }
@@ -531,13 +531,13 @@ class Updater
                 return $newTargetsData;
             }
             $searchedRoles[] = $delegatedRole;
-            // TUF-SPEC-v1.0.16 Section 5.5.6.2.1
+            // § 5.6.7.2.1
             //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                 return $matchingTargetMetadata;
             }
             if ($delegatedRole->isTerminating()) {
-                // TUF-SPEC-v1.0.16 Section 5.5.6.2.2
+                // § 5.6.7.2.2
                 // If the role is terminating then abort searching for a target.
                 return null;
             }
@@ -557,10 +557,11 @@ class Updater
     {
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        // § 5.6.1
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
-        // TUF-SPEC-v1.0.16 Section 5.5.5
+        // § 5.5.6
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
 

@@ -265,7 +265,7 @@ class UpdaterTest extends TestCase
                 'level_3' => 1,
             ],
             // Roles delegated from a terminating role are evaluated.
-            // See TUF-SPEC-v1.0.16 Section 5.5.6.2.1 and 5.5.6.2.2.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2_terminating_3_target.txt' => [
                 'root' => 6,
                 'timestamp' => 6,
@@ -364,7 +364,7 @@ class UpdaterTest extends TestCase
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
-            // See TUF-SPEC-v1.0.16 Section 5.5.6.2.1 and 5.5.6.2.2.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
             'delegation is after terminating delegation' => ['level_2_after_terminating_unfindable.txt'],
         ];
     }
