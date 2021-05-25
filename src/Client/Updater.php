@@ -187,26 +187,26 @@ class Updater
             return true;
         }
 
-        // *TUF-SPEC-v1.0.16 Section 5.0
+        // § 5.1
         $this->metadataExpiration = $this->getUpdateStartTime();
 
-        // *TUF-SPEC-v1.0.16 Section 5.1
+        // § 5.2
         /** @var \Tuf\Metadata\RootMetadata $rootData */
         $rootData = $this->metadataFactory->load('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
         $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
 
-        // *TUF-SPEC-v1.0.16 Section 5.2
+        // § 5.3
         $this->updateRoot($rootData);
 
-        // *TUF-SPEC-v1.0.16 Section 5.3
+        // § 5.4
         $newTimestampData = $this->updateTimestamp();
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
 
-        // TUF-SPEC-v1.0.16 Section 5.4
+        // § 5.5
         if ($rootData->supportsConsistentSnapshots()) {
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
             // TUF-SPEC-v1.0.16 Section 5.4.1
@@ -269,9 +269,11 @@ class Updater
      */
     private function updateRoot(RootMetadata &$rootData): void
     {
+        // § 5.3.1 needs no action, since we currently require consistent
+        // snapshots.
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
-        // *TUF-SPEC-v1.0.16 Section 5.2.2
+        // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
         while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
@@ -281,26 +283,29 @@ class Updater
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->universalVerifier->verify(RootMetadata::TYPE, $nextRoot);
 
+            // § 5.3.6 Needs no action. The expiration of the new (intermediate)
+            // root metadata file does not matter yet, because we will check for
+            // it in § 5.3.10.
+            // § 5.3.7
             $rootData = $nextRoot;
-            // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
-            // Note that the expiration of the new (intermediate) root metadata
-            // file does not matter yet, because we will check for it in step
-            // 1.8.
 
-            // *TUF-SPEC-v1.0.16 Section 5.2.6 and 5.2.7
+            // § 5.3.8
             $this->durableStorage['root.json'] = $nextRootContents;
+            // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
-            // *TUF-SPEC-v1.0.16 Section 5.2.8 Repeat the above steps.
         }
+        // § 5.3.10
         RootVerifier::checkFreezeAttack($rootData, $this->metadataExpiration);
 
-        // *TUF-SPEC-v1.0.16 Section 5.2.10: Delete the trusted timestamp and snapshot files if either
+        // § 5.3.11: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
             unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
         }
+        // § 5.3.12 needs no action because we currently require consistent
+        // snapshots.
     }
 
     /**
