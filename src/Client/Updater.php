@@ -237,12 +237,13 @@ class Updater
      */
     private function updateTimestamp(): TimestampMetadata
     {
+        // § 5.4.1
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
-        // § 5.3.4: Persist timestamp metadata
+        // § 5.4.5: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
 
         return $newTimestampData;
