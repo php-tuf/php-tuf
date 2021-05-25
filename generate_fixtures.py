@@ -78,6 +78,18 @@ class TUFTestFixtureBase:
             pathpriv_src, password='pw')
         return (public_key, private_key)
 
+    def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, target_file):
+        self.delegate_role(delegated_role_name, delegator_role, paths)
+        self.write_and_add_target(target_file, delegated_role_name)
+
+    def delegate_role(self, delegated_role_name, delegator_role, paths):
+        (public_key, private_key) = self.write_and_import_keypair(
+            delegated_role_name)
+        delegator_role.delegate(
+            delegated_role_name, [public_key], paths)
+        delegator_role(delegated_role_name).load_signing_key(
+            private_key)
+
     def _initialize_basic_roles(self):
         # Create and Import Keypairs
         # Public keys are stored to class attributes to allow revocation.
@@ -148,13 +160,10 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         super().__init__()
 
         # Delegate to an unclaimed target-signing key
-        (public_unclaimed_key, private_unclaimed_key) = self.write_and_import_keypair(
-            'targets_delegated')
-        self.repository.targets.delegate(
-            'unclaimed', [public_unclaimed_key], ['level_1_*.txt'])
-        self.write_and_add_target('level_1_target.txt', 'unclaimed')
-        self.repository.targets('unclaimed').load_signing_key(
-            private_unclaimed_key)
+        self.delegate_role_with_file(delegator_role=self.repository.targets,
+                                     delegated_role_name='unclaimed',
+                                     paths=['level_1_*.txt'],
+                                     target_file='level_1_target.txt')
         self.write_and_publish_repository(export_client=True)
 
         # === Point of No Return ===
@@ -206,50 +215,37 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         super().__init__()
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Delegate from level_1_delegation to level_1 target-signing key
-        (public_level_2_key, private_level_2_key) = self.write_and_import_keypair(
-            'targets_level_2_delegated')
+        # Delegate from level_1_delegation to level_2
+        self.delegate_role_with_file(delegator_role=level_1_delegation,
+                                     delegated_role_name='level_2',
+                                     paths=['level_1_2_*.txt'],
+                                     target_file='level_1_2_target.txt')
 
-        # Add a delegation that matches the path pattern 'test_nested_*.txt'
-        level_1_delegation.delegate(
-            'level_2', [public_level_2_key], ['level_1_2_*.txt'])
-        self.write_and_add_target('level_1_2_target.txt', 'level_2')
-        level_1_delegation('level_2').load_signing_key(
-            private_level_2_key)
+        # Create a terminating delegation
+        self.delegate_role_with_file(delegator_role=level_1_delegation,
+                                     delegated_role_name='level_2_terminating',
+                                     paths= ['level_1_2_terminating_*.txt'],
+                                     target_file='level_1_2_terminating_findable.txt')
 
-        # Add a terminating delegation.
-        level_1_delegation.delegate(
-            'level_2_terminating', [public_level_2_key], ['level_1_2_terminating_*.txt'], terminating=True)
-        self.write_and_add_target('level_1_2_terminating_findable.txt', 'level_2_terminating')
-        level_1_delegation('level_2_terminating').load_signing_key(
-            private_level_2_key)
 
         level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
 
-        # Delegate from level_1 to nested2_delegation delegation target-signing key
-        (public_level_3_key, private_level_3key) = self.write_and_import_keypair(
-            'targets_level_3_delegated')
+        # Create a delegation under non-terminating 'level_2' delegation.
+        self.delegate_role_with_file(delegator_role=level_2_delegation,
+                                     delegated_role_name='level_3',
+                                     paths=['level_1_2_3_*.txt'],
+                                     target_file='level_1_2_3_below_non_terminating_target.txt')
 
-        # Add a delegated role 'level_3' from role 'level_2'. For files in this delegation to be found
-        # the 'paths' property must also be compatible with the 'paths' property of 'level_2'
-        level_2_delegation.delegate(
-            'level_3', [public_level_3_key], ['level_1_2_3_*.txt'])
-        self.write_and_add_target('level_1_2_3_below_non_terminating_target.txt', 'level_3')
-        level_2_delegation('level_3').load_signing_key(
-            private_level_3key)
 
         # Add a delegation below the 'level_2_terminating' role.
         # Delegations from a terminating role are evaluated but delegations after a terminating delegation
         # are not.
         # See TUFTestFixtureNestedDelegatedErrors
         level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
-        (public_level_3_below_terminated_key, private_level_3_below_terminated_key) = self.write_and_import_keypair(
-            'targets_level_3_below_terminated')
-        level_2_terminating_delegation.delegate(
-            'level_3_below_terminated', [public_level_3_below_terminated_key], ['level_1_2_terminating_3_*.txt'])
-        self.write_and_add_target('level_1_2_terminating_3_target.txt', 'level_3_below_terminated')
-        level_2_terminating_delegation('level_3_below_terminated').load_signing_key(
-            private_level_3_below_terminated_key)
+        self.delegate_role_with_file(delegator_role=level_2_terminating_delegation,
+                                     delegated_role_name='level_3_below_terminated',
+                                     paths=['level_1_2_terminating_3_*.txt'],
+                                     target_file='level_1_2_terminating_3_target.txt')
 
         self.write_and_publish_repository(export_client=False)
 
@@ -266,15 +262,12 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         # Add a target that does not match the delegation's paths.
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        (public_level_2_after_terminating_key, private_level_2_after_terminating_key) = self.write_and_import_keypair(
-            'targets_level_2_after_terminating')
+        # Add a delegation after level_2_terminating which will not be evaluated.
+        self.delegate_role_with_file(delegator_role=level_1_delegation,
+                                     delegated_role_name='level_2_after_terminating',
+                                     paths=['level_2_*.txt'],
+                                     target_file='level_2_after_terminating_unfindable.txt')
 
-        # Add a delegation after level_2_terminating which will not be evaluted.
-        level_1_delegation.delegate(
-            'level_2_after_terminating', [public_level_2_after_terminating_key], ['level_2_*.txt'])
-        self.write_and_add_target('level_2_after_terminating_unfindable.txt', 'level_2_after_terminating')
-        level_1_delegation('level_2').load_signing_key(
-            private_level_2_after_terminating_key)
 
         self.write_and_publish_repository(export_client=False)
 
