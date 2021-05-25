@@ -25,8 +25,8 @@ abstract class FileInfoVerifier extends VerifierBase
         parent::checkRollbackAttack($untrustedMetadata);
         // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
         // the same files in the new metadata info.
-        // For 'snapshot' type this is TUF-SPEC-v1.0.16 Section 5.4.4
-        // For 'timestamp' type this TUF-SPEC-v1.0.16 Section 5.3.2.2
+        // For 'snapshot' type this is § 5.5.5.
+        // For 'timestamp' type this is § 5.4.3.?.
         $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
         $type = $this->trustedMetadata->getType();
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
