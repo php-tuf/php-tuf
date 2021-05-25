@@ -78,12 +78,12 @@ class TUFTestFixtureBase:
             pathpriv_src, password='pw')
         return (public_key, private_key)
 
-    def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, file_name):
+    def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, target_file):
         (public_key, private_key) = self.write_and_import_keypair(
             delegated_role_name)
         delegator_role.delegate(
             delegated_role_name, [public_key], paths)
-        self.write_and_add_target(file_name, delegated_role_name)
+        self.write_and_add_target(target_file, delegated_role_name)
         delegator_role(delegated_role_name).load_signing_key(
             private_key)
 
@@ -161,7 +161,7 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
         self.delegate_role_with_file(delegator_role=self.repository.targets,
                                      delegated_role_name='unclaimed',
                                      paths=['level_1_*.txt'],
-                                     file_name='level_1_target.txt')
+                                     target_file='level_1_target.txt')
         self.write_and_publish_repository(export_client=True)
 
         # === Point of No Return ===
@@ -217,13 +217,13 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2',
                                      paths=['level_1_2_*.txt'],
-                                     file_name='level_1_2_target.txt')
+                                     target_file='level_1_2_target.txt')
 
         # Create a terminating delegation
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_terminating',
                                      paths= ['level_1_2_terminating_*.txt'],
-                                     file_name='level_1_2_terminating_findable.txt')
+                                     target_file='level_1_2_terminating_findable.txt')
 
 
         level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
@@ -232,7 +232,7 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         self.delegate_role_with_file(delegator_role=level_2_delegation,
                                      delegated_role_name='level_3',
                                      paths=['level_1_2_3_*.txt'],
-                                     file_name='level_1_2_3_below_non_terminating_target.txt')
+                                     target_file='level_1_2_3_below_non_terminating_target.txt')
 
 
         # Add a delegation below the 'level_2_terminating' role.
@@ -243,7 +243,7 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         self.delegate_role_with_file(delegator_role=level_2_terminating_delegation,
                                      delegated_role_name='level_3_below_terminated',
                                      paths=['level_1_2_terminating_3_*.txt'],
-                                     file_name='level_1_2_terminating_3_target.txt')
+                                     target_file='level_1_2_terminating_3_target.txt')
 
         self.write_and_publish_repository(export_client=False)
 
@@ -264,7 +264,7 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_after_terminating',
                                      paths=['level_2_*.txt'],
-                                     file_name='level_2_after_terminating_unfindable.txt')
+                                     target_file='level_2_after_terminating_unfindable.txt')
 
 
         self.write_and_publish_repository(export_client=False)
