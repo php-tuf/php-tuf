@@ -79,14 +79,16 @@ class TUFTestFixtureBase:
         return (public_key, private_key)
 
     def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, target_file):
+        self.delegate_role(delegated_role_name, delegator_role, paths)
+        self.write_and_add_target(target_file, delegated_role_name)
+
+    def delegate_role(self, delegated_role_name, delegator_role, paths):
         (public_key, private_key) = self.write_and_import_keypair(
             delegated_role_name)
         delegator_role.delegate(
             delegated_role_name, [public_key], paths)
-        self.write_and_add_target(target_file, delegated_role_name)
         delegator_role(delegated_role_name).load_signing_key(
             private_key)
-
 
     def _initialize_basic_roles(self):
         # Create and Import Keypairs
