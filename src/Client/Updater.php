@@ -208,11 +208,11 @@ class Updater
 
         // § 5.5
         if ($rootData->supportsConsistentSnapshots()) {
+            // § 5.5.1
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // TUF-SPEC-v1.0.16 Section 5.4.6
+            // § 5.5.7
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
             // @todo Add support for not using consistent snapshots in
