@@ -25,4 +25,18 @@ class TimestampVerifier extends FileInfoVerifier
         // § 5.3.3
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
+    {
+        // § 5.3.2.1
+        parent::checkRollbackAttack($untrustedMetadata);
+        // § 5.3.2.2
+        /** @var \Tuf\Metadata\SnapshotMetadata $untrustedMetadata */
+        $this->checkFileInfoVersions($untrustedMetadata);
+    }
+
+
 }
