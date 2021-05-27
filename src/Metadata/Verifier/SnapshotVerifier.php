@@ -62,7 +62,9 @@ class SnapshotVerifier extends FileInfoVerifier
      */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
-        parent::checkRollbackAttack($untrustedMetadata);
+        // TUF-SPEC-v1.0.16 Section 5.4.4
+        /** @var TimestampMetadata $untrustedMetadata */
+        $this->checkFileInfoVersions($untrustedMetadata);
         $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */

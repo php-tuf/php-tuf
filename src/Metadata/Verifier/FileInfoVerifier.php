@@ -3,7 +3,7 @@
 namespace Tuf\Metadata\Verifier;
 
 use Tuf\Exception\PotentialAttackException\RollbackAttackException;
-use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\FileInfoMetadataBase;
 
 /**
  * Verifier for metadata classes that have information about other files.
@@ -17,12 +17,17 @@ abstract class FileInfoVerifier extends VerifierBase
      */
     protected $trustedMetadata;
 
+
     /**
-     * {@inheritdoc}
+     * Checks for rollback of files referenced in $untrustedMetadata.
+     *
+     * @param \Tuf\Metadata\FileInfoMetadataBase $untrustedMetadata
+     *     The untrusted metadata.
+     *
+     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      */
-    protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
+    protected function checkFileInfoVersions(FileInfoMetadataBase $untrustedMetadata): void
     {
-        parent::checkRollbackAttack($untrustedMetadata);
         // Check that all files in the trusted/local metadata info under the 'meta' section are less or equal to
         // the same files in the new metadata info.
         // For 'snapshot' type this is § 5.5.5.
