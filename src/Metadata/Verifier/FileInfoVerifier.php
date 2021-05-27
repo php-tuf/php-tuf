@@ -19,7 +19,10 @@ abstract class FileInfoVerifier extends VerifierBase
 
 
     /**
-     * @param \Tuf\Metadata\TimestampMetadata $untrustedMetadata
+     * Checks for rollback of files referenced in $untrustedMetadata.
+     *
+     * @param \Tuf\Metadata\FileInfoMetadataBase $untrustedMetadata
+     *     The untrusted metadata.
      *
      * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
      */
