@@ -33,8 +33,7 @@ abstract class FileInfoVerifier extends VerifierBase
         $type = $this->trustedMetadata->getType();
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
-            if ($remoteFileInfo = $untrustedMetadata->getFileMetaInfo($fileName,
-              true)) {
+            if ($remoteFileInfo = $untrustedMetadata->getFileMetaInfo($fileName, true)) {
                 if ($remoteFileInfo['version'] < $localFileInfo['version']) {
                     $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
                       "is less than previously seen  version \"${$localFileInfo['version']}\"";

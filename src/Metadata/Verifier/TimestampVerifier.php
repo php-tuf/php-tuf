@@ -37,6 +37,4 @@ class TimestampVerifier extends FileInfoVerifier
         /** @var \Tuf\Metadata\SnapshotMetadata $untrustedMetadata */
         $this->checkFileInfoVersions($untrustedMetadata);
     }
-
-
 }
