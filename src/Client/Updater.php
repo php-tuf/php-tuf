@@ -39,7 +39,7 @@ class Updater
     /**
      * The maximum number of target roles supported.
      *
-     * TUF-SPEC-v1.0.16 Section 5.5.6.1
+     * § 5.6.7.1
      */
     const MAXIMUM_TARGET_ROLES = 100;
 
@@ -187,32 +187,32 @@ class Updater
             return true;
         }
 
-        // *TUF-SPEC-v1.0.16 Section 5.0
+        // § 5.1
         $this->metadataExpiration = $this->getUpdateStartTime();
 
-        // *TUF-SPEC-v1.0.16 Section 5.1
+        // § 5.2
         /** @var \Tuf\Metadata\RootMetadata $rootData */
         $rootData = $this->metadataFactory->load('root');
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
         $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
 
-        // *TUF-SPEC-v1.0.16 Section 5.2
+        // § 5.3
         $this->updateRoot($rootData);
 
-        // *TUF-SPEC-v1.0.16 Section 5.3
+        // § 5.4
         $newTimestampData = $this->updateTimestamp();
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
         $snapShotVersion = $snapshotInfo['version'];
 
-        // TUF-SPEC-v1.0.16 Section 5.4
+        // § 5.5
         if ($rootData->supportsConsistentSnapshots()) {
+            // § 5.5.1
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            // TUF-SPEC-v1.0.16 Section 5.4.1
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // TUF-SPEC-v1.0.16 Section 5.4.6
+            // § 5.5.7
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
             // @todo Add support for not using consistent snapshots in
@@ -220,7 +220,7 @@ class Updater
             throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
         }
 
-        // TUF-SPEC-v1.0.16 Section 5.5
+        // § 5.6
         if ($rootData->supportsConsistentSnapshots()) {
             $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
@@ -237,12 +237,13 @@ class Updater
      */
     private function updateTimestamp(): TimestampMetadata
     {
+        // § 5.4.1
         $newTimestampContents = $this->fetchFile('timestamp.json');
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
-        // § 5.3.4: Persist timestamp metadata
+        // § 5.4.5: Persist timestamp metadata
         $this->durableStorage['timestamp.json'] = $newTimestampContents;
 
         return $newTimestampData;
@@ -269,9 +270,11 @@ class Updater
      */
     private function updateRoot(RootMetadata &$rootData): void
     {
+        // § 5.3.1 needs no action, since we currently require consistent
+        // snapshots.
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
-        // *TUF-SPEC-v1.0.16 Section 5.2.2
+        // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
         while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
             $rootsDownloaded++;
@@ -281,26 +284,29 @@ class Updater
             $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->universalVerifier->verify(RootMetadata::TYPE, $nextRoot);
 
+            // § 5.3.6 Needs no action. The expiration of the new (intermediate)
+            // root metadata file does not matter yet, because we will check for
+            // it in § 5.3.10.
+            // § 5.3.7
             $rootData = $nextRoot;
-            // *TUF-SPEC-v1.0.16 Section 5.2.5 - Needs no action.
-            // Note that the expiration of the new (intermediate) root metadata
-            // file does not matter yet, because we will check for it in step
-            // 1.8.
 
-            // *TUF-SPEC-v1.0.16 Section 5.2.6 and 5.2.7
+            // § 5.3.8
             $this->durableStorage['root.json'] = $nextRootContents;
+            // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
-            // *TUF-SPEC-v1.0.16 Section 5.2.8 Repeat the above steps.
         }
+        // § 5.3.10
         RootVerifier::checkFreezeAttack($rootData, $this->metadataExpiration);
 
-        // *TUF-SPEC-v1.0.16 Section 5.2.10: Delete the trusted timestamp and snapshot files if either
+        // § 5.3.11: Delete the trusted timestamp and snapshot files if either
         // file has rooted keys.
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
             unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
         }
+        // § 5.3.12 needs no action because we currently require consistent
+        // snapshots.
     }
 
     /**
@@ -503,7 +509,7 @@ class Updater
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // TUF-SPEC-v1.0.16 Section 5.5.6.1
+                // § 5.6.7.1
                 // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
                 continue;
             }
@@ -525,13 +531,13 @@ class Updater
                 return $newTargetsData;
             }
             $searchedRoles[] = $delegatedRole;
-            // TUF-SPEC-v1.0.16 Section 5.5.6.2.1
+            // § 5.6.7.2.1
             //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
             if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                 return $matchingTargetMetadata;
             }
             if ($delegatedRole->isTerminating()) {
-                // TUF-SPEC-v1.0.16 Section 5.5.6.2.2
+                // § 5.6.7.2.2
                 // If the role is terminating then abort searching for a target.
                 return null;
             }
@@ -551,10 +557,11 @@ class Updater
     {
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        // § 5.6.1
         $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
-        // TUF-SPEC-v1.0.16 Section 5.5.5
+        // § 5.5.6
         $this->durableStorage["$role.json"] = $newTargetsContent;
     }
 

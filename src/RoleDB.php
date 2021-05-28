@@ -34,7 +34,7 @@ class RoleDB
      * @throws \Exception
      *     Thrown if a threshold value in the metadata is not valid.
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.16/tuf-spec.md#4-document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): RoleDB
     {
@@ -101,7 +101,7 @@ class RoleDB
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the role does not exist.
      *
-     * @see https://github.com/theupdateframework/specification/blob/v1.0.16/tuf-spec.md#4-document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
      */
     public function getRole(string $roleName): Role
     {

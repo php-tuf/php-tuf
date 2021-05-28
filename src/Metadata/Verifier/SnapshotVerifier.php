@@ -37,23 +37,23 @@ class SnapshotVerifier extends FileInfoVerifier
      */
     public function verify(MetadataBase $untrustedMetadata): void
     {
-        // TUF-SPEC-v1.0.16 Section 5.4.21
+        // § 5.5.2
         $this->checkAgainstHashesFromTrustedAuthority($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.4.2
+        // § 5.5.3
         $this->signatureVerifier->checkSignatures($untrustedMetadata);
 
-        // TUF-SPEC-v1.0.16 Section 5.4.3
+        // § 5.5.4
         $this->checkAgainstVersionFromTrustedAuthority($untrustedMetadata);
 
         // If the timestamp or snapshot keys were rotating then the snapshot file
         // will not exist.
         if ($this->trustedMetadata) {
-            // TUF-SPEC-v1.0.16 Section 5.4.4
+            // § 5.5.5
             $this->checkRollbackAttack($untrustedMetadata);
         }
 
-        // TUF-SPEC-v1.0.16 Section 5.4.5
+        // § 5.5.6
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
     }
 
@@ -69,6 +69,7 @@ class SnapshotVerifier extends FileInfoVerifier
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
             if (!$untrustedMetadata->getFileMetaInfo($fileName, true)) {
+                // § 5.5.5
                 // Any targets metadata filename that was listed in the trusted snapshot metadata file, if any, MUST
                 // continue to be listed in the new snapshot metadata file.
                 throw new RollbackAttackException("Remote snapshot metadata file references '$fileName' but this is not present in the remote file");
