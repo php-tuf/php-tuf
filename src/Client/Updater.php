@@ -518,24 +518,24 @@ class Updater
             }
 
             $this->signatureVerifier->addRole($delegatedRole);
-            if (!$delegatedRole->matchesPath($target)) {
+            if ($delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain so if the path does not match
                 // do not evaluate this role or any roles it delegates to.
-                continue;
+                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+                /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
+                $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
+                if ($newTargetsData->hasTarget($target)) {
+                    return $newTargetsData;
+                }
+                $searchedRoles[] = $delegatedRole;
+                // § 5.6.7.2.1
+                //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
+                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
+                    return $matchingTargetMetadata;
+                }
             }
 
-            $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
-            /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
-            if ($newTargetsData->hasTarget($target)) {
-                return $newTargetsData;
-            }
-            $searchedRoles[] = $delegatedRole;
-            // § 5.6.7.2.1
-            //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
-            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                return $matchingTargetMetadata;
-            }
+
             if ($delegatedRole->isTerminating()) {
                 // § 5.6.7.2.2
                 // If the role is terminating then abort searching for a target.
