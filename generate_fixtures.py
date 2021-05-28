@@ -260,8 +260,8 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
 
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Add a target that does not match paths for the parent role and role it was add for.
-        self.write_and_add_target('level_2_non-matching-parent-and-direct-role.txt', 'level_2_terminating')
+        # Add a target that does not match the delegation's paths.
+        self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
         # Add a delegation after level_2_terminating which will not be evaluated.
         self.delegate_role_with_file(delegator_role=level_1_delegation,
