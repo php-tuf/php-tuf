@@ -359,13 +359,13 @@ class UpdaterTest extends TestCase
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
             'delegated path does not match parent' => ['level_2_unfindable.txt'],
-            // 'level_2_after_terminating_unfindable.txt' is added via role
+            // 'level_1_2_after_terminating_unfindable.txt' is added via role
             // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'delegation is after terminating delegation' => ['level_2_after_terminating_unfindable.txt'],
+            'delegation is after terminating delegation' => ['level_1_2_after_terminating_unfindable.txt'],
         ];
     }
 
