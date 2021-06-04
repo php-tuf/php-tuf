@@ -42,7 +42,7 @@ class KeyDB
      * @throws \Tuf\Exception\InvalidKeyException
      *   Thrown if an unsupported or invalid key exists in the metadata.
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): KeyDB
     {
@@ -90,7 +90,7 @@ class KeyDB
      *
      * @return void
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
@@ -119,7 +119,7 @@ class KeyDB
      * @throws \Tuf\Exception\NotFoundException
      *     Thrown if the key ID is not found in the keydb database.
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
      */
     public function getKey(string $keyId): Key
     {
