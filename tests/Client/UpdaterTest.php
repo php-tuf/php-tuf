@@ -277,6 +277,20 @@ class UpdaterTest extends TestCase
                 'level_3' => 1,
                 'level_3_below_terminated' => 1,
             ],
+            // Roles after terminating delegation where the target path does not
+            // the terminating role are evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2a_terminating_plus_1_more_findable.txt' => [
+                'root' => 6,
+                'timestamp' => 6,
+                'snapshot' => 6,
+                'targets' => 6,
+                'unclaimed' => 2,
+                'level_2' => 1,
+                'level_2_terminating' => 1,
+                'level_3' => 1,
+                'level_3_below_terminated' => 1,
+            ],
         ];
         foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
             $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
@@ -359,13 +373,13 @@ class UpdaterTest extends TestCase
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
             'delegated path does not match parent' => ['level_2_unfindable.txt'],
-            // 'level_1_2_after_terminating_unfindable.txt' is added via role
-            // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'delegation is after terminating delegation' => ['level_1_2_after_terminating_unfindable.txt'],
+            'delegation is after terminating delegation' => ['level_1_2_terminating_plus_1_more_unfindable.txt'],
         ];
     }
 

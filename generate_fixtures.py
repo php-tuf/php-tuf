@@ -248,6 +248,12 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
                                      paths=['level_1_2_terminating_3_*.txt'],
                                      target_file='level_1_2_terminating_3_target.txt')
 
+        # Add a delegation after level_2_terminating but the path does not matches level_2_terminating which will be evaluated.
+        self.delegate_role_with_file(delegator_role=level_1_delegation,
+                                     delegated_role_name='level_2_after_terminating_not_match_terminating_path',
+                                     paths=['level_1_2a_terminating_plus_1_more_*.txt'],
+                                     target_file='level_1_2a_terminating_plus_1_more_findable.txt')
+
         self.write_and_publish_repository(export_client=False)
 
 class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
@@ -263,11 +269,11 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         # Add a target that does not match the delegation's paths.
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        # Add a delegation after level_2_terminating which will not be evaluated.
+        # Add a delegation after level_2_terminating and the path also matches level_2_terminating which will not be evaluated.
         self.delegate_role_with_file(delegator_role=level_1_delegation,
-                                     delegated_role_name='level_2_after_terminating',
-                                     paths=['level_1_2_after_terminating_*.txt'],
-                                     target_file='level_1_2_after_terminating_unfindable.txt')
+                                     delegated_role_name='level_2_after_terminating_match_terminating_path',
+                                     paths=['level_1_2_terminating_plus_1_more_*.txt'],
+                                     target_file='level_1_2_terminating_plus_1_more_unfindable.txt')
 
 
         self.write_and_publish_repository(export_client=False)
