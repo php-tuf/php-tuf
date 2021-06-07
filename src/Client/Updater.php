@@ -519,7 +519,7 @@ class Updater
 
             $this->signatureVerifier->addRole($delegatedRole);
             if ($delegatedRole->matchesPath($target)) {
-                // Targets must match the path in all roles in the delegation chain so if the path does not match
+                // Targets must match the path in all roles in the delegation chain, so if the path does not match,
                 // do not evaluate this role or any roles it delegates to.
                 $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
