@@ -78,15 +78,15 @@ class TUFTestFixtureBase:
             pathpriv_src, password='pw')
         return (public_key, private_key)
 
-    def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, target_file):
-        self.delegate_role(delegated_role_name, delegator_role, paths)
+    def delegate_role_with_file(self, delegator_role, delegated_role_name, paths, target_file, terminating=False):
+        self.delegate_role(delegated_role_name, delegator_role, paths, terminating)
         self.write_and_add_target(target_file, delegated_role_name)
 
-    def delegate_role(self, delegated_role_name, delegator_role, paths):
+    def delegate_role(self, delegated_role_name, delegator_role, paths, terminating=False):
         (public_key, private_key) = self.write_and_import_keypair(
             delegated_role_name)
         delegator_role.delegate(
-            delegated_role_name, [public_key], paths)
+            delegated_role_name, [public_key], paths, terminating=terminating)
         delegator_role(delegated_role_name).load_signing_key(
             private_key)
 
@@ -225,7 +225,8 @@ class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_terminating',
                                      paths= ['level_1_2_terminating_*.txt'],
-                                     target_file='level_1_2_terminating_findable.txt')
+                                     target_file='level_1_2_terminating_findable.txt',
+                                     terminating=True)
 
 
         level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
@@ -259,14 +260,14 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
 
         level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
 
-        # Add a target that does not match the delegation's paths.
-        self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
+        # Add a target that does not match the paths of the parent role or the signing role. This target should be effectively "unfindable" by TUF.
+        self.write_and_add_target('level_2_non-matching-parent-and-direct-role.txt', 'level_2_terminating')
 
         # Add a delegation after level_2_terminating which will not be evaluated.
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_after_terminating',
-                                     paths=['level_2_*.txt'],
-                                     target_file='level_2_after_terminating_unfindable.txt')
+                                     paths=['level_1_2_after_terminating_*.txt'],
+                                     target_file='level_1_2_after_terminating_unfindable.txt')
 
 
         self.write_and_publish_repository(export_client=False)

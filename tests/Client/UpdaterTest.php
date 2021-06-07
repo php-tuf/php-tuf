@@ -327,6 +327,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
         $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        self::assertTrue(file_exists($testFilePath));
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
@@ -351,21 +352,19 @@ class UpdaterTest extends TestCase
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
             // for the 'unclaimed' role but does not match for the 'level_2' role.
             'matches parent delegation' => ['level_1_3_target.txt'],
-            // 'level_2_unfindable.txt' is added via the 'level_2_error' role which has
-            // `paths: ['level_2_*.txt']`. The 'level_2_error' role is delegated from the
-            // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
-            // for the 'level_2_error' role but does not match for the 'unclaimed' role.
-            // No files added via the 'level_2_error' role will be found because its
-            // 'paths' property is incompatible with the its parent delegation's
-            // 'paths' property.
-            'delegated path does not match parent' => ['level_2_unfindable.txt'],
-            // 'level_2_after_terminating_unfindable.txt' is added via role
-            // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
-            //  but added after 'level_2_terminating'.
-            // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
-            // delegations are evaluated after it.
+            // Test case: file that does not match parent role and direct role paths.
+            // 'level_2_non-matching-parent-and-direct-role.txt' added via role 'level_2_terminating'
+            // 'level_2_terminating' paths = ['level_1_2_terminating_*.txt']
+            // 'level_2_terminating' delegated from 'unclaimed' role
+            // 'unclaimed' role paths = ['level_1_*.txt']
+            'delegated path does not match parent or direct role' => ['level_2_non-matching-parent-and-direct-role.txt'],
+            // Test case: delegation on same level as a terminating delegation but create after the terminating delegation will not be evaluated.
+            // 'level_1_2_after_terminating_unfindable.txt' is added via role 'level_2_after_terminating'
+            // 'level_2_after_terminating' delegated from 'unclaimed'
+            // 'level_2_terminating' delegated from 'unclaimed'
+            //  The 'level_2_terminating' delegation was created before the 'level_2_after_terminating' delegation.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'delegation is after terminating delegation' => ['level_2_after_terminating_unfindable.txt'],
+            'delegation is after terminating delegation' => ['level_1_2_after_terminating_unfindable.txt'],
         ];
     }
 
