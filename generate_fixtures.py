@@ -269,7 +269,7 @@ class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
         # Add a target that does not match the delegation's paths.
         self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
 
-        # Add a delegation after level_2_terminating and the path also matches level_2_terminating which will not be evaluated.
+        # Add a delegation after level_2_terminating and the target path also matches level_2_terminating which will not be evaluated.
         self.delegate_role_with_file(delegator_role=level_1_delegation,
                                      delegated_role_name='level_2_after_terminating_match_terminating_path',
                                      paths=['level_1_2_terminating_plus_1_more_*.txt'],
