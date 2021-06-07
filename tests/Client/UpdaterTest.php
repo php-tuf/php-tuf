@@ -353,10 +353,10 @@ class UpdaterTest extends TestCase
             // for the 'unclaimed' role but does not match for the 'level_2' role.
             'matches parent delegation' => ['level_1_3_target.txt'],
             // Test case: file that does not match parent role and direct role paths.
-            // 'level_2_non-matching-parent-and-direct-role.txt' add via role 'level_2_terminating'
-            // 'level_2_terminating': paths = [''level_1_2_terminating_*.txt']
+            // 'level_2_non-matching-parent-and-direct-role.txt' added via role 'level_2_terminating'
+            // 'level_2_terminating' paths = ['level_1_2_terminating_*.txt']
             // 'level_2_terminating' delegated from 'unclaimed' role
-            // 'unclaimed' role': paths = ['level_1_*.txt']
+            // 'unclaimed' role paths = ['level_1_*.txt']
             'delegated path does not match parent or direct role' => ['level_2_non-matching-parent-and-direct-role.txt'],
             // Test case: delegation on same level as a terminating delegation but create after the terminating delegation will not be evaluated.
             // 'level_1_2_after_terminating_unfindable.txt' is added via role 'level_2_after_terminating'
