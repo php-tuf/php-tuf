@@ -61,7 +61,7 @@ final class Key
      *
      * @return static
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
      */
     public static function createFromMetadata(\ArrayObject $keyInfo): self
     {
@@ -104,7 +104,7 @@ final class Key
      * @return string
      *     The key ID in hex format for the key metadata hashed using sha256.
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.17#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
