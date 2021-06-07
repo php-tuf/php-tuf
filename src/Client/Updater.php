@@ -533,13 +533,11 @@ class Updater
                 if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
                     return $matchingTargetMetadata;
                 }
-            }
-
-
-            if ($delegatedRole->isTerminating()) {
-                // § 5.6.7.2.2
-                // If the role is terminating then abort searching for a target.
-                return null;
+                if ($delegatedRole->isTerminating()) {
+                    // § 5.6.7.2.2
+                    // If the role is terminating then abort searching for a target.
+                    return null;
+                }
             }
         }
         return null;
