@@ -527,7 +527,7 @@ class Updater
                 if ($newTargetsData->hasTarget($target)) {
                     return $newTargetsData;
                 }
-                $searchedRoles[] = $delegatedRole;
+                $searchedRoles[] = $delegatedRoleName;
                 // § 5.6.7.2.1
                 //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
                 if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
