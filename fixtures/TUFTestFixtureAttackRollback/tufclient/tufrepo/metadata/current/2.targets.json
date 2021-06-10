@@ -2,7 +2,7 @@
  "signatures": [
   {
    "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
-   "sig": "ae328ec35ffa1e5888908081a9b7717defc7aba6a1c8d235b2afa7619a533be339aa47317dce809226189208aff3b5317dc1aced914c511b91a92615c4be0503"
+   "sig": "31e7447a5fa4a7caa47c5d24bb2f91dca81e3c163aca659949cf6a8a1ded505cb6225249fd950831508ee91e60c0654761e9b140689d88acf50b834cbc8e8c0b"
   }
  ],
  "signed": {
@@ -20,6 +20,13 @@
      "sha512": "17dd75df5d24fb7c29cf8ad4c993e53b60933f5adf424071c8634569c756c84de863415fdc9b444ef7794875997b60615bdcdc406c6a55c105b49748d6ef392b"
     },
     "length": 24
+   },
+   "testtarget2.txt": {
+    "hashes": {
+     "sha256": "7bdf999c067c412ce270e489d3287d26013e28babdaa7435d8e01076d97bac98",
+     "sha512": "8a7eb031d89658b5a168a60e35bbdc262db7bd838ea020e2ad67c2b41a95b592c09c3d4ef702dea223df5a6d993b11af0ea0e942cafb63f400dccffcf2facc2a"
+    },
+    "length": 25
    }
   },
   "version": 2

@@ -2,7 +2,7 @@
  "signatures": [
   {
    "keyid": "d4dab4b4d68b91665a6d0dac5b4e64677aa6d853fc787669168b4b4ba9822129",
-   "sig": "d0bf76a5cfc0aee1b8a1b1bf0ed8ca646a1a6d5f205945c515e8546bfd3c1e6b5e07cc0b93836bd030dd05ba68f177aecb05f6bf90c6702fd178e53310022506"
+   "sig": "fff6796e84ba92f42b380cda471808ac564fba63f8f849fe35cd95925884985d109d30b0dc13a0928df726e58e518a07b45c28d29fd0ebc7ee9e8319072fa807"
   }
  ],
  "signed": {
@@ -10,6 +10,17 @@
   "consistent_snapshot": true,
   "expires": "2020-12-31T05:48:20Z",
   "keys": {
+   "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b": {
+    "keyid_hash_algorithms": [
+     "sha256",
+     "sha512"
+    ],
+    "keytype": "ed25519",
+    "keyval": {
+     "public": "f758af464295e62a1da4d3267be6d13f4aba9c7d52166d01b6bd5b4559496c9d"
+    },
+    "scheme": "ed25519"
+   },
    "3a05831328273e4b821c3bbe1fed0c5332749d8e071675879af26a401a5c85ae": {
     "keyid_hash_algorithms": [
      "sha256",
@@ -76,9 +87,10 @@
    },
    "timestamp": {
     "keyids": [
-     "3a05831328273e4b821c3bbe1fed0c5332749d8e071675879af26a401a5c85ae"
+     "3a05831328273e4b821c3bbe1fed0c5332749d8e071675879af26a401a5c85ae",
+     "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b"
     ],
-    "threshold": 1
+    "threshold": 2
    }
   },
   "spec_version": "1.0.0",

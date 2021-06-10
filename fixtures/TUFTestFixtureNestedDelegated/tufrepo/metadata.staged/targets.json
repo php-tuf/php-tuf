@@ -2,11 +2,11 @@
  "signatures": [
   {
    "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
-   "sig": "5ac13ddb3ccebbb81d686a9f337aa88adedf4463e0c5503c8c505f44cdf9f45f75b31cf7f96f6e4c9fcbed9f0bc5c9fcad909f0a0bffbab63cb133467854db05"
+   "sig": "bbff28de564115b57a171106d67ef0f71f60a7a959a4b0847b18520ac97c060bf5ffb4f70f550facd73415fae3b36a6b042e5bfb795519e39cd10f034551ac0f"
   },
   {
    "keyid": "718fedad390b4d0d470b890781eb8c94e5a7e975aebe65fc0862246c945fce68",
-   "sig": "d8b8fd8ec26605189857a050f555d89468f9e19e31e09e9c2e4ed7dea844c3fdbbdf00b1a27671b6e31ddd8585992db563e4e0f89dce1083a5b0fd9579fd260d"
+   "sig": "363ee3799094e598ce31ecfe0ae73aacba39a7aeca7f11b6880bd67f443173960c073a4142fdd6cff40d182455c7bdca96ced6801815c01a9ac1e6e9cdcc100f"
   }
  ],
  "signed": {
@@ -50,6 +50,6 @@
     "length": 24
    }
   },
-  "version": 6
+  "version": 5
  }
 }

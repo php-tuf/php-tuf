@@ -2,11 +2,11 @@
  "signatures": [
   {
    "keyid": "77dfdca206c0fe1b8e55d67d21dd0e195a0998a9d2b56c6d3ee8f68d04c21e93",
-   "sig": "c7c22de0afe54592ed1bd026b676a76da6fe297308538c5a52e3c71adb0c655d94e13fb96413650a250283118dbc9f8e47dc75201fd0cc499eb2e507cf8f710c"
+   "sig": "13ebeaec8a7921301813fccfbf50d953f0469be857fc685b483d8d5f318ce60f72fe1dcac232e7442b2bf134d9d45ed75ed9c50bef622de09bec712ddd930d08"
   },
   {
    "keyid": "9ca81f7ff17f6218246474a51b47eb035741bc472557ef5ac493e279f446b85b",
-   "sig": "1fbcf183173ff6602f87db7ce04edd2c564d9e10ef4f1de15542fabdd932e835cfc5cdc0ccbaa11614ab351262817dfa9f31b1603cb36c12676e48070d581e03"
+   "sig": "0fc549564ed5dc0d66b3c6e53877b96b148842330238b7618304935737190fa53b9c69b8eaac6517457470ff169acc835feb770a010ebe2b5a41100bd0809c0f"
   }
  ],
  "signed": {
@@ -29,13 +29,13 @@
     "version": 1
    },
    "targets.json": {
-    "version": 7
+    "version": 6
    },
    "unclaimed.json": {
     "version": 3
    }
   },
   "spec_version": "1.0.0",
-  "version": 7
+  "version": 6
  }
 }

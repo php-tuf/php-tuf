@@ -2,14 +2,38 @@
  "signatures": [
   {
    "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
-   "sig": "ae328ec35ffa1e5888908081a9b7717defc7aba6a1c8d235b2afa7619a533be339aa47317dce809226189208aff3b5317dc1aced914c511b91a92615c4be0503"
+   "sig": "a1f27453e4e4063792a21c866701c76256746c33b2796388cbbe2dbee73dc8a88e92add7e4eadb475bea79b15b5067e9342581d9b077595196efb87e9a5ba000"
   }
  ],
  "signed": {
   "_type": "targets",
   "delegations": {
-   "keys": {},
-   "roles": []
+   "keys": {
+    "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b": {
+     "keyid_hash_algorithms": [
+      "sha256",
+      "sha512"
+     ],
+     "keytype": "ed25519",
+     "keyval": {
+      "public": "f758af464295e62a1da4d3267be6d13f4aba9c7d52166d01b6bd5b4559496c9d"
+     },
+     "scheme": "ed25519"
+    }
+   },
+   "roles": [
+    {
+     "keyids": [
+      "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b"
+     ],
+     "name": "unsupported_target",
+     "path_hash_prefixes": [
+      "ab34df13"
+     ],
+     "terminating": false,
+     "threshold": 1
+    }
+   ]
   },
   "expires": "2020-04-01T07:27:10Z",
   "spec_version": "1.0.0",

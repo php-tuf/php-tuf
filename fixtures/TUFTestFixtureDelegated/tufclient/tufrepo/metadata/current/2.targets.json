@@ -2,14 +2,38 @@
  "signatures": [
   {
    "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
-   "sig": "ae328ec35ffa1e5888908081a9b7717defc7aba6a1c8d235b2afa7619a533be339aa47317dce809226189208aff3b5317dc1aced914c511b91a92615c4be0503"
+   "sig": "b8e439405c95a75546e8948a12335c87be7300dab9d08cc2243492fcc2ac55571876ef62ddfd18a26d5e04ab6e9f3757bfa5383dfeea995b8943ea382644f30d"
   }
  ],
  "signed": {
   "_type": "targets",
   "delegations": {
-   "keys": {},
-   "roles": []
+   "keys": {
+    "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b": {
+     "keyid_hash_algorithms": [
+      "sha256",
+      "sha512"
+     ],
+     "keytype": "ed25519",
+     "keyval": {
+      "public": "f758af464295e62a1da4d3267be6d13f4aba9c7d52166d01b6bd5b4559496c9d"
+     },
+     "scheme": "ed25519"
+    }
+   },
+   "roles": [
+    {
+     "keyids": [
+      "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b"
+     ],
+     "name": "unclaimed",
+     "paths": [
+      "level_1_*.txt"
+     ],
+     "terminating": false,
+     "threshold": 1
+    }
+   ]
   },
   "expires": "2020-04-01T07:27:10Z",
   "spec_version": "1.0.0",
