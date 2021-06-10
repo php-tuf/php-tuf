@@ -58,9 +58,9 @@ class UpdaterTest extends TestCase
                 'unclaimed' => 1,
             ],
             'TUFTestFixtureUnsupportedDelegation' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
                 'unsupported_target' => null,
               // We cannot assert the starting versions of 'targets' because it has
               // an unsupported field and would throw an exception when validating.
@@ -838,9 +838,9 @@ class UpdaterTest extends TestCase
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
             $expectedUpdatedVersion = [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
                 'unsupported_target' => null,
                 // We cannot assert the starting versions of 'targets' because it has
                 // an unsupported field and would throw an exception when validating.
