@@ -22,7 +22,7 @@ class KeyDBTest extends TestCase
     {
         $rootJsonPath = static::getFixturesRealPath(
             'TUFTestFixtureDelegated',
-            'tufclient/tufrepo/metadata/current/3.root.json',
+            'tufclient/tufrepo/metadata/current/2.root.json',
             false
         );
         $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath));
