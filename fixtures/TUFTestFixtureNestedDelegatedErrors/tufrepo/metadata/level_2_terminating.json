@@ -1,0 +1,60 @@
+{
+ "signatures": [
+  {
+   "keyid": "15024498e03f033ec92758a1dc7107b34eebe759b09827b02a7fb3c64ca3e586",
+   "sig": "65968d8aca0477043a330787457f767ae69e1ac2ea1bdc89a9edfca345c2b86dd07548f11b0391881afdef42d770f8d88cd27c09cd9f76118a73f649b59ad402"
+  }
+ ],
+ "signed": {
+  "_type": "targets",
+  "delegations": {
+   "keys": {
+    "06e78858e726b48732eaae08a5731465587d322f4e63c0fae62ec13537c0a1cb": {
+     "keyid_hash_algorithms": [
+      "sha256",
+      "sha512"
+     ],
+     "keytype": "ed25519",
+     "keyval": {
+      "public": "f6b299bcfb4e15ef652c80e9e3dda995acbb4bf71dce889a82ba70228e45a8bf"
+     },
+     "scheme": "ed25519"
+    }
+   },
+   "roles": [
+    {
+     "keyids": [
+      "06e78858e726b48732eaae08a5731465587d322f4e63c0fae62ec13537c0a1cb"
+     ],
+     "name": "level_3_below_terminated",
+     "paths": [
+      "level_1_2_terminating_3_*.txt"
+     ],
+     "terminating": false,
+     "threshold": 1
+    }
+   ]
+  },
+  "expires": "2020-04-01T07:27:10Z",
+  "spec_version": "1.0.0",
+  "targets": {
+   "level_1_2_terminating_findable.txt": {
+    "custom": {},
+    "hashes": {
+     "sha256": "48d9616edd2c6ff721fa9cfbb036469bcc9b161f95ef37b00535d67ed5b9326f",
+     "sha512": "3429fbdf85a646cc326972a726deeab28b3bc417641f3475fa519996d78bf37bec01be7c22fd3d2178250707e2f673f958b566a37c1db3039372b2a20049596c"
+    },
+    "length": 44
+   },
+   "level_2_unfindable.txt": {
+    "custom": {},
+    "hashes": {
+     "sha256": "53ca32316d4316edb6457fd6e330d8a0d04d5b7d33fd35d5680f5eaf91863891",
+     "sha512": "3a1bf9f12606ee81a73c23184e2802917be88e879e43f3338aa655950b6405156c7fcef00952a15dd70ceb49629f22f3361169c2325ef06ccf806c86e9194628"
+    },
+    "length": 32
+   }
+  },
+  "version": 2
+ }
+}

@@ -1,0 +1,34 @@
+{
+ "signatures": [
+  {
+   "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
+   "sig": "18c1b0e57b320ce6b7771a8abfb999c70aeb8ae1fe634ade13971ddef702aabf64a72bdca98ef10352adafc519c666642a17481abc210aa74096da6de400e509"
+  }
+ ],
+ "signed": {
+  "_type": "targets",
+  "delegations": {
+   "keys": {},
+   "roles": []
+  },
+  "expires": "2020-04-01T07:27:10Z",
+  "spec_version": "1.0.0",
+  "targets": {
+   "testtarget.txt": {
+    "hashes": {
+     "sha256": "c9e2a718ba4f180100e413382c9bee5759df61c1f2c31be0e09a03e378151371",
+     "sha512": "17dd75df5d24fb7c29cf8ad4c993e53b60933f5adf424071c8634569c756c84de863415fdc9b444ef7794875997b60615bdcdc406c6a55c105b49748d6ef392b"
+    },
+    "length": 24
+   },
+   "testtarget2.txt": {
+    "hashes": {
+     "sha256": "7bdf999c067c412ce270e489d3287d26013e28babdaa7435d8e01076d97bac98",
+     "sha512": "8a7eb031d89658b5a168a60e35bbdc262db7bd838ea020e2ad67c2b41a95b592c09c3d4ef702dea223df5a6d993b11af0ea0e942cafb63f400dccffcf2facc2a"
+    },
+    "length": 25
+   }
+  },
+  "version": 3
+ }
+}
