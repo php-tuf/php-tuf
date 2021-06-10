@@ -72,10 +72,10 @@ class UpdaterTest extends TestCase
                 'targets' => 1,
             ],
             'TUFTestFixtureAttackRollback' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
             ],
             'TUFTestFixtureThresholdTwo' => [
                 'root' => 1,
@@ -881,7 +881,7 @@ class UpdaterTest extends TestCase
             $this->localRepo->setExceptionOnChange();
             $updater->refresh();
         } catch (TufException $exception) {
-            $this->assertEquals($exception, $expectedException);
+            $this->assertEquals($expectedException, $exception);
             $this->assertClientRepoVersions($expectedUpdatedVersions);
             return;
         }
@@ -898,12 +898,12 @@ class UpdaterTest extends TestCase
         return [
             [
                 'TUFTestFixtureAttackRollback',
-                new RollbackAttackException('Remote timestamp metadata version "$2" is less than previously seen timestamp version "$3"'),
+                new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
         ];
