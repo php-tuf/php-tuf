@@ -34,7 +34,7 @@ class TUFTestFixtureBase:
         # os.chdir(self.my_fixtures_dir)
 
         # Create a basic TUF repository.
-        self.tufrepo_dir = os.path.join(self.my_fixtures_dir, 'tufrepo')
+        self.tufrepo_dir = os.path.join(self.my_fixtures_dir, 'server')
         print('Initializing repo at {}'.format(self.tufrepo_dir))
         self.repository = rt.create_new_repository(
             self.tufrepo_dir, type(self).__name__)
@@ -127,7 +127,7 @@ class TUFTestFixtureBase:
 
         if export_client:
             client_tufrepo_dir = os.path.join(
-                self.my_fixtures_dir, 'tufclient', 'tufrepo')
+                self.my_fixtures_dir, 'client')
             if os.path.exists(client_tufrepo_dir):
                 shutil.rmtree(client_tufrepo_dir + '/')
             rt.create_tuf_client_directory(
