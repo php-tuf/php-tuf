@@ -117,7 +117,6 @@ class TUFTestFixtureBase:
         # Make it so (consistently)
         self.repository.mark_dirty(
             ['root', 'snapshot', 'targets', 'timestamp'])
-        self.repository.writeall(consistent_snapshot=True)
 
     def write_and_publish_repository(self, export_client=False):
         self.repository.writeall(consistent_snapshot=True)

@@ -17,7 +17,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $validJson = '3.targets.json';
+    protected $validJson = '2.targets.json';
 
 
     /**
