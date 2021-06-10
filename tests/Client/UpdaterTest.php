@@ -51,10 +51,10 @@ class UpdaterTest extends TestCase
     {
         $startVersions = [
             'TUFTestFixtureDelegated' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
                 'unclaimed' => 1,
             ],
             'TUFTestFixtureUnsupportedDelegation' => [
@@ -90,10 +90,10 @@ class UpdaterTest extends TestCase
                 'targets' => 1,
             ],
             'TUFTestFixtureNestedDelegated' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
                 'unclaimed' => 1,
                 'level_2' => null,
                 'level_3' => null,
@@ -433,29 +433,29 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureDelegated',
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 4,
                     'unclaimed' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
                 [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureNestedDelegated',
                 [
-                    'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     'unclaimed' => 1,
                     'level_2' => null,
                     'level_3' => null,
