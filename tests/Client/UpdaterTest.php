@@ -551,27 +551,27 @@ class UpdaterTest extends TestCase
     {
         return static::getKeyedArray([
             [
+                '3.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdExpception('Signature threshold not met on root'),
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            [
                 '4.root.json',
                 ['signed', 'newkey'],
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on root'),
                 [
                     'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
-                ],
-            ],
-            [
-                '5.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
-                [
-                    'root' => 4,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
             [
@@ -580,10 +580,10 @@ class UpdaterTest extends TestCase
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on timestamp'),
                 [
-                    'root' => 5,
+                    'root' => 4,
                     'timestamp' => null,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
             // For snapshot.json files, adding a new key or changing the existing version number
@@ -593,54 +593,54 @@ class UpdaterTest extends TestCase
             // is checked before the file signatures and the file version number. The order of checking
             // is specified in § 5.5.
             [
-                '5.snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'newkey'],
                 'new value',
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
                     'snapshot' => null,
-                    'targets' => 3,
+                    'targets' => 2,
                 ],
             ],
             [
-                '5.snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'version'],
                 6,
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
                     'snapshot' => null,
-                    'targets' => 3,
+                    'targets' => 2,
                 ],
             ],
             // For targets.json files, adding a new key or changing the existing version number
             // will result in a SignatureThresholdException because currently the test
             // fixtures do not contain hashes for targets.json files in snapshot.json.
             [
-                '5.targets.json',
+                '4.targets.json',
                 ['signed', 'newvalue'],
                 'value',
                 new SignatureThresholdExpception("Signature threshold not met on targets"),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 3,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
                 ],
             ],
             [
-                '5.targets.json',
+                '4.targets.json',
                 ['signed', 'version'],
                 6,
                 new SignatureThresholdExpception("Signature threshold not met on targets"),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 3,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
                 ],
             ],
         ]);
@@ -692,10 +692,10 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureDelegated',
                 'timestamp.json',
                 [
-                    'root' => 5,
+                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => null,
-                    'targets' => 5,
+                    'targets' => 4,
                 ],
             ],
             [
