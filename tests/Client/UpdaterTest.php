@@ -78,14 +78,14 @@ class UpdaterTest extends TestCase
                 'targets' => 3,
             ],
             'TUFTestFixtureThresholdTwo' => [
-                'root' => 2,
-                'timestamp' => 2,
+                'root' => 1,
+                'timestamp' => 1,
                 'snapshot' => 1,
                 'targets' => 1,
             ],
             'TUFTestFixtureThresholdTwoAttack' => [
-                'root' => 3,
-                'timestamp' => 3,
+                'root' => 2,
+                'timestamp' => 2,
                 'snapshot' => 1,
                 'targets' => 1,
             ],
