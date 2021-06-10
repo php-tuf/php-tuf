@@ -66,10 +66,10 @@ class UpdaterTest extends TestCase
               // an unsupported field and would throw an exception when validating.
             ],
             'TUFTestFixtureSimple' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
             ],
             'TUFTestFixtureAttackRollback' => [
                 'root' => 3,
