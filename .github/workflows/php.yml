@@ -49,12 +49,7 @@ jobs:
       - name: Generate fixtures
         run: |
           pipenv run python generate_fixtures.py
-          if [ -z $(git status --porcelain) ];
-          then
-              exit 0
-          else
-              exit 1
-          fi
+          git diff --cached --exit-code
 
   build:
     name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
