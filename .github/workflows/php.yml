@@ -11,7 +11,7 @@ env:
 
 jobs:
   fixtures:
-    name: Generate test fixtures
+    name: Confirm test fixtures generation
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
