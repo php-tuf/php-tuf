@@ -310,7 +310,6 @@ class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
 
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
-    TUFTestFixtureSimple()
     TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
     TUFTestFixtureUnsupportedDelegation()
