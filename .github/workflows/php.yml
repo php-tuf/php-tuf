@@ -53,6 +53,8 @@ jobs:
         then
             echo "Fixture generation produced changes!"
             git status
+            echo "GIT DIFF"
+            git diff
             exit 1
         else
             exit 0
