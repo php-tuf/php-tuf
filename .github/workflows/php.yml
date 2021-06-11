@@ -19,5 +19,5 @@ jobs:
         run: |
           touch new.txt
           rm SECURITY.md
-          ll
+          ls
           git diff --cached --exit-code
