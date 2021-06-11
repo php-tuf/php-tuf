@@ -13,7 +13,7 @@ import shutil
 class FixtureBuilder:
 
     def __init__(self, name):
-        self.dir = os.path.join(os.path.dirname(__file__), name)
+        self.dir = os.path.join(os.path.dirname(__file__), 'fixtures/' + name)
 
         # The index of the next key pair (in the keys/ directory) to use when initializing
         # a role.
@@ -81,7 +81,7 @@ class FixtureBuilder:
 
     def _import_key(self, role_name):
         """Loads a key pair from the keys/ directory."""
-        keys_dir = os.path.join(os.path.dirname(__file__), 'keys')
+        keys_dir = os.path.join(os.path.dirname(__file__), 'fixtures/keys')
         private_key = os.path.join(keys_dir, str(self._key_index)) + '_key'
         public_key = '{}.pub'.format(private_key)
 
