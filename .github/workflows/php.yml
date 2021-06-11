@@ -19,5 +19,11 @@ jobs:
         run: |
           touch new.txt
           rm SECURITY.md
-          ls
-          git diff --cached --exit-code
+          if [[ $(git status --porcelain) ]];
+          then
+              echo "Fixture generation produced changes!"
+              git status
+              exit 1
+          else
+              exit 0
+          fi
