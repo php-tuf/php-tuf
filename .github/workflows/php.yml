@@ -49,4 +49,5 @@ jobs:
       - name: Generate fixtures
         run: |
           pipenv run python generate_fixtures.py
+          touch new.txt
           git diff --cached --exit-code
