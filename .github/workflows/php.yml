@@ -14,41 +14,8 @@ jobs:
     name: Confirm test fixtures generation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - id: cache-pip
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - id: cache-pipenv
-        uses: actions/cache@v2
-        with:
-          path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pipenv-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - name: Install pip/pipenv
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade pipenv
-      - name: Install dependencies via pipenv
-        run: |
-          if [ -f Pipfile.lock ]; then pipenv --three install; fi
-      - name: Lint with flake8
-        run: |
-          # stop the build if there are Python syntax errors or undefined names
-          pipenv run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          pipenv run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Generate fixtures
         run: |
-          pipenv run python generate_fixtures.py
           touch new.txt
           rm SECURITY.md
           ll
