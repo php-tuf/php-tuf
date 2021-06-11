@@ -50,4 +50,5 @@ jobs:
         run: |
           pipenv run python generate_fixtures.py
           touch new.txt
+          rm SECURITY.md
           git diff --cached --exit-code
