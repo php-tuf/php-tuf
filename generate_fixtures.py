@@ -66,7 +66,7 @@ class TUFTestFixtureBase:
     def write_and_import_keypair(self, name_dst):
         # Identify the paths for the next pre-generated keypair.
         pathpriv_src = os.path.join(os.path.dirname(os.path.realpath(
-            __file__)), 'fixture_keys', '{}_key'.format(self.next_keypair_index))
+            __file__)), 'fixtures', 'keys', '{}_key'.format(self.next_keypair_index))
         pathpub_src = '{}.pub'.format(pathpriv_src)
         self.next_keypair_index += 1
 
