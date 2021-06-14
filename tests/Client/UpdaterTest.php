@@ -51,49 +51,49 @@ class UpdaterTest extends TestCase
     {
         $startVersions = [
             'TUFTestFixtureDelegated' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
-                'unclaimed' => 1,
-            ],
-            'TUFTestFixtureUnsupportedDelegation' => [
                 'root' => 2,
                 'timestamp' => 2,
                 'snapshot' => 2,
+                'targets' => 2,
+                'unclaimed' => 1,
+            ],
+            'TUFTestFixtureUnsupportedDelegation' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
                 'unsupported_target' => null,
               // We cannot assert the starting versions of 'targets' because it has
               // an unsupported field and would throw an exception when validating.
             ],
             'TUFTestFixtureSimple' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureAttackRollback' => [
                 'root' => 2,
                 'timestamp' => 2,
                 'snapshot' => 2,
                 'targets' => 2,
             ],
-            'TUFTestFixtureAttackRollback' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
-            ],
             'TUFTestFixtureThresholdTwo' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureThresholdTwoAttack' => [
                 'root' => 2,
                 'timestamp' => 2,
                 'snapshot' => 1,
                 'targets' => 1,
             ],
-            'TUFTestFixtureThresholdTwoAttack' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
             'TUFTestFixtureNestedDelegated' => [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
-                'targets' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
                 'unclaimed' => 1,
                 'level_2' => null,
                 'level_3' => null,
@@ -113,7 +113,7 @@ class UpdaterTest extends TestCase
      *
      * @return Updater
      *     The test updater, which uses the 'current' test fixtures in the
-     *     tufclient/tufrepo/metadata/current/ directory and a localhost HTTP
+     *     client/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
     protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated', string $updaterClass = TestUpdater::class): Updater
@@ -128,7 +128,7 @@ class UpdaterTest extends TestCase
         ];
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'tufclient/tufrepo/metadata/current'));
+        $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'client/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -148,11 +148,11 @@ class UpdaterTest extends TestCase
     public function testVerifiedDownload(): void
     {
         $fixturesSet = 'TUFTestFixtureSimple';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, 'tufrepo/targets/testtarget.txt', false);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
@@ -218,7 +218,7 @@ class UpdaterTest extends TestCase
     public function testVerifiedDelegatedDownload(): void
     {
         $fixturesSet = 'TUFTestFixtureNestedDelegated';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
@@ -226,39 +226,39 @@ class UpdaterTest extends TestCase
         // are needed to find the metadata for the target.
         $expectedClientVersionsAfterDownloads = [
             'level_1_target.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => null,
                 'level_3' => null,
             ],
             'level_1_2_target.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => 1,
                 'level_2_terminating' => null,
                 'level_3' => null,
             ],
             'level_1_2_terminating_findable.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => 1,
                 'level_2_terminating' => 1,
                 'level_3' => null,
             ],
             'level_1_2_3_below_non_terminating_target.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => 1,
                 'level_2_terminating' => 1,
@@ -267,10 +267,10 @@ class UpdaterTest extends TestCase
             // Roles delegated from a terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2_terminating_3_target.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => 1,
                 'level_2_terminating' => 1,
@@ -293,7 +293,7 @@ class UpdaterTest extends TestCase
             ],
         ];
         foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
-            $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$delegatedFile", false);
+            $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
             $testFileContents = file_get_contents($testFilePath);
             self::assertNotEmpty($testFileContents);
             $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
@@ -310,17 +310,17 @@ class UpdaterTest extends TestCase
         $fileName = 'level_1_2_terminating_3_target.txt';
 
         // Ensure the file can found if the maximum role limit is 100.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
 
 
         // Ensure the file can not found if the maximum role limit is 3.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet, LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
@@ -337,10 +337,10 @@ class UpdaterTest extends TestCase
     public function testDelegationErrors(string $fileName): void
     {
         $fixturesSet = 'TUFTestFixtureNestedDelegatedErrors';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "tufrepo/targets/$fileName", false);
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
@@ -400,7 +400,7 @@ class UpdaterTest extends TestCase
         $expectedStartVersion = static::getFixtureClientStartVersions($fixturesSet);
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
 
         $this->assertClientRepoVersions($expectedStartVersion);
@@ -410,7 +410,7 @@ class UpdaterTest extends TestCase
         $this->assertClientRepoVersions($expectedUpdatedVersions);
 
         // Create another version of the client that only starts with the root.json file.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         foreach (array_keys($expectedStartVersion) as $role) {
             if ($role !== 'root') {
@@ -447,29 +447,29 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureDelegated',
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 4,
                     'unclaimed' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
                 [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureNestedDelegated',
                 [
-                    'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     'unclaimed' => 1,
                     'level_2' => null,
                     'level_3' => null,
@@ -540,7 +540,7 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $fixturesSet = 'TUFTestFixtureDelegated';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
@@ -565,27 +565,27 @@ class UpdaterTest extends TestCase
     {
         return static::getKeyedArray([
             [
+                '3.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdExpception('Signature threshold not met on root'),
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            [
                 '4.root.json',
                 ['signed', 'newkey'],
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on root'),
                 [
                     'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
-                ],
-            ],
-            [
-                '5.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
-                [
-                    'root' => 4,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
             [
@@ -594,10 +594,10 @@ class UpdaterTest extends TestCase
                 'new value',
                 new SignatureThresholdExpception('Signature threshold not met on timestamp'),
                 [
-                    'root' => 5,
+                    'root' => 4,
                     'timestamp' => null,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
             // For snapshot.json files, adding a new key or changing the existing version number
@@ -607,54 +607,54 @@ class UpdaterTest extends TestCase
             // is checked before the file signatures and the file version number. The order of checking
             // is specified in § 5.5.
             [
-                '5.snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'newkey'],
                 'new value',
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
                     'snapshot' => null,
-                    'targets' => 3,
+                    'targets' => 2,
                 ],
             ],
             [
-                '5.snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'version'],
                 6,
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
                     'snapshot' => null,
-                    'targets' => 3,
+                    'targets' => 2,
                 ],
             ],
             // For targets.json files, adding a new key or changing the existing version number
             // will result in a SignatureThresholdException because currently the test
             // fixtures do not contain hashes for targets.json files in snapshot.json.
             [
-                '5.targets.json',
+                '4.targets.json',
                 ['signed', 'newvalue'],
                 'value',
                 new SignatureThresholdExpception("Signature threshold not met on targets"),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 3,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
                 ],
             ],
             [
-                '5.targets.json',
+                '4.targets.json',
                 ['signed', 'version'],
                 6,
                 new SignatureThresholdExpception("Signature threshold not met on targets"),
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 3,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
                 ],
             ],
         ]);
@@ -678,7 +678,7 @@ class UpdaterTest extends TestCase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
@@ -706,60 +706,60 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureDelegated',
                 'timestamp.json',
                 [
-                    'root' => 5,
+                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => null,
-                    'targets' => 5,
+                    'targets' => 4,
                 ],
             ],
             [
                 'TUFTestFixtureDelegated',
-                '5.snapshot.json',
+                '4.snapshot.json',
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
+                    'root' => 4,
+                    'timestamp' => 4,
                     'snapshot' => null,
-                    'targets' => 5,
+                    'targets' => 4,
                 ],
             ],
             [
                 'TUFTestFixtureDelegated',
-                '5.targets.json',
+                '4.targets.json',
                 [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 3,
+                    'root' => 4,
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
                 'timestamp.json',
                 [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
-                '2.snapshot.json',
+                '1.snapshot.json',
                 [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
                 ],
             ],
             [
                 'TUFTestFixtureSimple',
-                '2.targets.json',
+                '1.targets.json',
                 [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
                 ],
             ],
         ]);
@@ -794,7 +794,7 @@ class UpdaterTest extends TestCase
      */
     public function testSignatureThresholds(string $fixturesSet, string $expectedException = null)
     {
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
@@ -810,7 +810,7 @@ class UpdaterTest extends TestCase
     public function testUpdateRefresh(): void
     {
         $fixturesSet = 'TUFTestFixtureSimple';
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
 
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
@@ -838,7 +838,7 @@ class UpdaterTest extends TestCase
     public function testUnsupportedRepo(): void
     {
         $fixtureSet = 'TUFTestFixtureUnsupportedDelegation';
-        $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixtureSet));
@@ -852,9 +852,9 @@ class UpdaterTest extends TestCase
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
             $expectedUpdatedVersion = [
-                'root' => 3,
-                'timestamp' => 3,
-                'snapshot' => 3,
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
                 'unsupported_target' => null,
                 // We cannot assert the starting versions of 'targets' because it has
                 // an unsupported field and would throw an exception when validating.
@@ -886,7 +886,7 @@ class UpdaterTest extends TestCase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'tufclient/tufrepo/metadata/current');
+        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest();
@@ -895,7 +895,7 @@ class UpdaterTest extends TestCase
             $this->localRepo->setExceptionOnChange();
             $updater->refresh();
         } catch (TufException $exception) {
-            $this->assertEquals($exception, $expectedException);
+            $this->assertEquals($expectedException, $exception);
             $this->assertClientRepoVersions($expectedUpdatedVersions);
             return;
         }
@@ -912,12 +912,12 @@ class UpdaterTest extends TestCase
         return [
             [
                 'TUFTestFixtureAttackRollback',
-                new RollbackAttackException('Remote timestamp metadata version "$2" is less than previously seen timestamp version "$3"'),
+                new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
                 [
-                    'root' => 3,
-                    'timestamp' => 3,
-                    'snapshot' => 3,
-                    'targets' => 3,
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
                 ],
             ],
         ];

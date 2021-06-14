@@ -11,7 +11,7 @@ env:
 
 jobs:
   fixtures:
-    name: Generate test fixtures
+    name: Confirm test fixtures generation
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -49,16 +49,17 @@ jobs:
     - name: Generate fixtures
       run: |
         pipenv run python generate_fixtures.py
-    - name: Store fixtures as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: fixtures
-        path: fixtures/
-        retention-days: 5
+        if [[ $(git status --porcelain) ]];
+        then
+            echo "Fixture generation produced changes!"
+            git status
+            exit 1
+        else
+            exit 0
+        fi
 
   build:
     name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
-    needs: fixtures
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
@@ -115,18 +116,11 @@ jobs:
       - name: Run PHPCS
         run: composer phpcs
 
-      - name: Download fixtures
-        uses: actions/download-artifact@v2
-        with:
-          name: fixtures
-          path: fixtures
-
       - name: Run test suite
         run: composer test
 
   build-lowest-version:
     name: Build lowest version
-    needs: fixtures
     runs-on: ubuntu-latest
 
     steps:
@@ -147,12 +141,6 @@ jobs:
 
       - name: Download dependencies
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
-
-      - name: Download fixtures
-        uses: actions/download-artifact@v2
-        with:
-          name: fixtures
-          path: fixtures
 
       - name: Run test suite
         run: composer test
