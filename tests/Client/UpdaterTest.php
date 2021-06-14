@@ -208,83 +208,113 @@ class UpdaterTest extends TestCase
     /**
      * Tests that TUF will transparently verify downloaded target hashes for targets in delegated JSON files.
      *
+     * @param string $fixturesSet
+     *   The fixture set to test.
+     * @param string $delegatedFile
+     *   The delegated file to download.
+     * @param array $expectedClientVersions
+     *   The expected client versions after the download.
+     *
+     * @return void
      * @todo Add test coverage delegated roles that then delegate to other roles in
      *   https://github.com/php-tuf/php-tuf/issues/142
      *
      * @covers ::download
      *
-     * @return void
+     * @dataProvider providerVerifiedDelegatedDownload
+     *
      */
-    public function testVerifiedDelegatedDownload(): void
+    public function testVerifiedDelegatedDownload(string $fixturesSet, string $delegatedFile, array $expectedClientVersions): void
     {
-        $fixturesSet = 'TUFTestFixtureNestedDelegated';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
+        $testFileContents = file_get_contents($testFilePath);
+        self::assertNotEmpty($testFileContents);
+        $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
-        $expectedClientVersionsAfterDownloads = [
+        $this->assertClientRepoVersions($expectedClientVersions);
+    }
+
+    public function providerVerifiedDelegatedDownload(): array
+    {
+        return [
             'level_1_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => null,
-                'level_3' => null,
+                'TUFTestFixtureNestedDelegated',
+                'level_1_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_3' => null,
+                ],
             ],
             'level_1_2_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => null,
-                'level_3' => null,
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                ],
             ],
             'level_1_2_terminating_findable.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => null,
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_terminating_findable.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                ],
             ],
             'level_1_2_3_below_non_terminating_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => 1,
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_3_below_non_terminating_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => 1,
+                ],
             ],
             // Roles delegated from a terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2_terminating_3_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => 1,
-                'level_3_below_terminated' => 1,
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_terminating_3_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                    'level_3_below_terminated' => 1,
+                ],
             ],
         ];
-        foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
-            $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
-            $testFileContents = file_get_contents($testFilePath);
-            self::assertNotEmpty($testFileContents);
-            $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
-            $this->assertClientRepoVersions($expectedClientVersions);
-        }
     }
 
     /**
