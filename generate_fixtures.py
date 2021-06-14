@@ -7,6 +7,7 @@ from unittest import mock
 import json
 import fixtures.TUFTestFixtureSimple
 import fixtures.TUFTestFixtureAttackRollback
+import fixtures.TUFTestFixtureDelegated
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -302,7 +303,6 @@ def generate_fixtures():
     # Fixtures generated with old method.
     # TODO: covert all fixtures to use new FixtureBuilder class and delete
     # classes above when all have been converted.
-    TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
     TUFTestFixtureUnsupportedDelegation()
     TUFTestFixtureNestedDelegatedErrors()
@@ -313,6 +313,7 @@ def generate_fixtures():
     # Fixtures generated with new FixtureBuilder class.
     fixtures.TUFTestFixtureSimple.build()
     fixtures.TUFTestFixtureAttackRollback.build()
+    fixtures.TUFTestFixtureDelegated.build()
 
 
 generate_fixtures()
