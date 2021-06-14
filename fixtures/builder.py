@@ -100,7 +100,13 @@ class FixtureBuilder:
 
     def add_target(self, filename, signing_role='targets'):
         """Adds an existing target file and signs it."""
-        self._role(signing_role).add_targets([filename])
+        # @todo Just use add_target or add_targets consistently. This is only
+        # here while fixtures are being ported to FixtureBuilder, to maintain
+        # consistency with previously generated fixtures.
+        if signing_role is 'targets':
+            self._role('targets').add_targets([filename])
+        else:
+            self._role(signing_role).add_target(filename)
         self.repository.mark_dirty(['snapshot', 'targets', 'timestamp', signing_role])
 
         return self
