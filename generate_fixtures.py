@@ -5,6 +5,7 @@ import os
 import shutil
 from unittest import mock
 import json
+import fixtures.TUFTestFixtureSimple
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -310,6 +311,9 @@ class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
 
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
+    # Fixtures generated with old method.
+    # TODO: covert all fixtures to use new FixtureBuilder class and delete
+    # classes above when all have been converted.
     TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
     TUFTestFixtureUnsupportedDelegation()
@@ -317,6 +321,9 @@ def generate_fixtures():
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
+
+    # Fixtures generated with new FixtureBuilder class.
+    fixtures.TUFTestFixtureSimple.build()
 
 
 generate_fixtures()

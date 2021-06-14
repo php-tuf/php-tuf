@@ -1,4 +1,4 @@
-from builder import FixtureBuilder
+from fixtures.builder import FixtureBuilder
 
 
 def build():
