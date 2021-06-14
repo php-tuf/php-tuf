@@ -424,8 +424,8 @@ class UpdaterTest extends TestCase
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'delegation is after terminating delegation' => [
                 'TUFTestFixtureNestedDelegatedErrors',
-                // @todo file file name in https://github.com/php-tuf/php-tuf/pull/216 becauses it does match the
-                // 'paths' property for 'unclaimed' and therefore cannot be find.
+                // @todo file file name in https://github.com/php-tuf/php-tuf/pull/216 becauses it does NOT match the
+                // 'paths' property for 'unclaimed' and therefore cannot be find not only for the reason state above.
                 'level_2_after_terminating_unfindable.txt',
                 [
                     'root' => 6,
