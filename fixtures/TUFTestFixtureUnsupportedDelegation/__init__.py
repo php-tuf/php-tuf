@@ -2,6 +2,7 @@ from fixtures.builder import FixtureBuilder
 
 
 def build():
+    # Set up a repo using `path_hash_prefixes`, which is currently not supported.
     fixture = FixtureBuilder('TUFTestFixtureUnsupportedDelegation')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)
