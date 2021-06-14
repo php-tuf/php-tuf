@@ -10,6 +10,7 @@ import fixtures.TUFTestFixtureAttackRollback
 import fixtures.TUFTestFixtureDelegated
 import fixtures.TUFTestFixtureNestedDelegated
 import fixtures.TUFTestFixtureUnsupportedDelegation
+import fixtures.TUFTestFixtureNestedDelegatedErrors
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -146,108 +147,6 @@ class TUFTestFixtureSimple(TUFTestFixtureBase):
         self.write_and_publish_repository(export_client=True)
 
 
-class TUFTestFixtureDelegated(TUFTestFixtureSimple):
-    def __init__(self):
-        super().__init__()
-
-        # Delegate to an unclaimed target-signing key
-        self.delegate_role_with_file(delegator_role=self.repository.targets,
-                                     delegated_role_name='unclaimed',
-                                     paths=['level_1_*.txt'],
-                                     target_file='level_1_target.txt')
-        self.write_and_publish_repository(export_client=True)
-
-        # === Point of No Return ===
-        # Past this point, we don't re-export the client. This supports testing the
-        # client's own ability to pick up and trust new data from the repository.
-        # Generate new keys for target and snapshot roles.
-        (public_targets_key_2, private_targets_key_2) = self.write_and_import_keypair(
-            'targets2')
-        (public_snapshots_key_2,
-         private_snapshots_key_2) = self.write_and_import_keypair('snapshot2')
-        # Add new verification keys.
-        self.repository.targets.add_verification_key(public_targets_key_2)
-        self.repository.targets.load_signing_key(private_targets_key_2)
-        self.repository.snapshot.add_verification_key(public_snapshots_key_2)
-        self.repository.snapshot.load_signing_key(private_snapshots_key_2)
-        self.repository.status()
-        # Write the updated repository data.
-        self.repository.mark_dirty(
-            ['root', 'snapshot', 'targets', 'timestamp'])
-        self.write_and_publish_repository()
-        # Revoke the older keys.
-        self.repository.targets.remove_verification_key(
-            self.public_targets_key)
-        self.repository.snapshot.remove_verification_key(
-            self.public_snapshots_key)
-        self.repository.status()
-        # Write the updated repository data.
-        self.repository.mark_dirty(
-            ['root', 'snapshot', 'targets', 'timestamp'])
-        self.write_and_publish_repository()
-
-
-class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
-    def __init__(self):
-        super().__init__()
-        level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
-
-        # Delegate from level_1_delegation to level_2
-        self.delegate_role_with_file(delegator_role=level_1_delegation,
-                                     delegated_role_name='level_2',
-                                     paths=['level_1_2_*.txt'],
-                                     target_file='level_1_2_target.txt')
-
-        # Create a terminating delegation
-        self.delegate_role_with_file(delegator_role=level_1_delegation,
-                                     delegated_role_name='level_2_terminating',
-                                     paths= ['level_1_2_terminating_*.txt'],
-                                     target_file='level_1_2_terminating_findable.txt')
-
-
-        level_2_delegation = level_1_delegation._delegated_roles.get('level_2')
-
-        # Create a delegation under non-terminating 'level_2' delegation.
-        self.delegate_role_with_file(delegator_role=level_2_delegation,
-                                     delegated_role_name='level_3',
-                                     paths=['level_1_2_3_*.txt'],
-                                     target_file='level_1_2_3_below_non_terminating_target.txt')
-
-
-        # Add a delegation below the 'level_2_terminating' role.
-        # Delegations from a terminating role are evaluated but delegations after a terminating delegation
-        # are not.
-        # See TUFTestFixtureNestedDelegatedErrors
-        level_2_terminating_delegation = self.repository.targets._delegated_roles.get('level_2_terminating')
-        self.delegate_role_with_file(delegator_role=level_2_terminating_delegation,
-                                     delegated_role_name='level_3_below_terminated',
-                                     paths=['level_1_2_terminating_3_*.txt'],
-                                     target_file='level_1_2_terminating_3_target.txt')
-
-        self.write_and_publish_repository(export_client=False)
-
-class TUFTestFixtureNestedDelegatedErrors(TUFTestFixtureNestedDelegated):
-    def __init__(self):
-        super().__init__()
-        # Add a target that does not match the path for the delegation.
-        self.write_and_add_target('level_a.txt', 'unclaimed')
-        # Add a target that matches the path parent delegation but not the current delegation.
-        self.write_and_add_target('level_1_3_target.txt', 'level_2')
-
-        level_1_delegation = self.repository.targets._delegated_roles.get('unclaimed')
-
-        # Add a target that does not match the delegation's paths.
-        self.write_and_add_target('level_2_unfindable.txt', 'level_2_terminating')
-
-        # Add a delegation after level_2_terminating which will not be evaluated.
-        self.delegate_role_with_file(delegator_role=level_1_delegation,
-                                     delegated_role_name='level_2_after_terminating',
-                                     paths=['level_2_*.txt'],
-                                     target_file='level_2_after_terminating_unfindable.txt')
-
-
-        self.write_and_publish_repository(export_client=False)
-
 class TUFTestFixtureThresholdTwo(TUFTestFixtureBase):
     def __init__(self):
         super().__init__()
@@ -291,8 +190,6 @@ def generate_fixtures():
     # Fixtures generated with old method.
     # TODO: covert all fixtures to use new FixtureBuilder class and delete
     # classes above when all have been converted.
-    TUFTestFixtureNestedDelegatedErrors()
-
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
 
@@ -302,6 +199,7 @@ def generate_fixtures():
     fixtures.TUFTestFixtureDelegated.build()
     fixtures.TUFTestFixtureNestedDelegated.build()
     fixtures.TUFTestFixtureUnsupportedDelegation.build()
+    fixtures.TUFTestFixtureNestedDelegatedErrors.build()
 
 
 generate_fixtures()
