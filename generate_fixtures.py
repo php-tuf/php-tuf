@@ -5,6 +5,7 @@ import os
 import shutil
 from unittest import mock
 import json
+import fixtures.TUFTestFixtureSimple
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -66,7 +67,7 @@ class TUFTestFixtureBase:
     def write_and_import_keypair(self, name_dst):
         # Identify the paths for the next pre-generated keypair.
         pathpriv_src = os.path.join(os.path.dirname(os.path.realpath(
-            __file__)), 'fixture_keys', '{}_key'.format(self.next_keypair_index))
+            __file__)), 'fixtures', 'keys', '{}_key'.format(self.next_keypair_index))
         pathpub_src = '{}.pub'.format(pathpriv_src)
         self.next_keypair_index += 1
 
@@ -310,7 +311,9 @@ class TUFTestFixtureThresholdTwoAttack(TUFTestFixtureThresholdTwo):
 
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
-    TUFTestFixtureSimple()
+    # Fixtures generated with old method.
+    # TODO: covert all fixtures to use new FixtureBuilder class and delete
+    # classes above when all have been converted.
     TUFTestFixtureDelegated()
     TUFTestFixtureNestedDelegated()
     TUFTestFixtureUnsupportedDelegation()
@@ -318,6 +321,9 @@ def generate_fixtures():
     TUFTestFixtureAttackRollback()
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
+
+    # Fixtures generated with new FixtureBuilder class.
+    fixtures.TUFTestFixtureSimple.build()
 
 
 generate_fixtures()
