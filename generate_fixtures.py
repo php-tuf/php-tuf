@@ -11,6 +11,7 @@ import fixtures.TUFTestFixtureDelegated
 import fixtures.TUFTestFixtureNestedDelegated
 import fixtures.TUFTestFixtureUnsupportedDelegation
 import fixtures.TUFTestFixtureNestedDelegatedErrors
+import fixtures.TUFTestFixtureThresholdTwo
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -190,7 +191,6 @@ def generate_fixtures():
     # Fixtures generated with old method.
     # TODO: covert all fixtures to use new FixtureBuilder class and delete
     # classes above when all have been converted.
-    TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
 
     # Fixtures generated with new FixtureBuilder class.
@@ -200,6 +200,7 @@ def generate_fixtures():
     fixtures.TUFTestFixtureNestedDelegated.build()
     fixtures.TUFTestFixtureUnsupportedDelegation.build()
     fixtures.TUFTestFixtureNestedDelegatedErrors.build()
+    fixtures.TUFTestFixtureThresholdTwo.build()
 
 
 generate_fixtures()
