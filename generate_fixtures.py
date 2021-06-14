@@ -6,6 +6,7 @@ import shutil
 from unittest import mock
 import json
 import fixtures.TUFTestFixtureSimple
+import fixtures.TUFTestFixtureAttackRollback
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -140,19 +141,6 @@ class TUFTestFixtureSimple(TUFTestFixtureBase):
         super().__init__()
         self.write_and_add_target('testtarget.txt')
         self.write_and_publish_repository(export_client=True)
-
-
-class TUFTestFixtureAttackRollback(TUFTestFixtureSimple):
-    def __init__(self):
-        super().__init__()
-        backup_dir = self.tufrepo_dir + "_backup"
-        shutil.copytree(self.tufrepo_dir, backup_dir, dirs_exist_ok=True)
-        self.write_and_add_target('testtarget2.txt')
-        self.write_and_publish_repository(export_client=True)
-        shutil.rmtree(self.tufrepo_dir + '/')
-        # Reset the client to previous state to simulate a rollback attack.
-        shutil.copytree(backup_dir, self.tufrepo_dir, dirs_exist_ok=True)
-        shutil.rmtree(backup_dir + '/')
 
 
 class TUFTestFixtureDelegated(TUFTestFixtureSimple):
@@ -318,12 +306,13 @@ def generate_fixtures():
     TUFTestFixtureNestedDelegated()
     TUFTestFixtureUnsupportedDelegation()
     TUFTestFixtureNestedDelegatedErrors()
-    TUFTestFixtureAttackRollback()
+
     TUFTestFixtureThresholdTwo()
     TUFTestFixtureThresholdTwoAttack()
 
     # Fixtures generated with new FixtureBuilder class.
     fixtures.TUFTestFixtureSimple.build()
+    fixtures.TUFTestFixtureAttackRollback.build()
 
 
 generate_fixtures()
