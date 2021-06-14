@@ -9,6 +9,7 @@ import fixtures.TUFTestFixtureSimple
 import fixtures.TUFTestFixtureAttackRollback
 import fixtures.TUFTestFixtureDelegated
 import fixtures.TUFTestFixtureNestedDelegated
+import fixtures.TUFTestFixtureUnsupportedDelegation
 
 # This file largely derives from the TUF tutorial:
 # https://github.com/theupdateframework/tuf/blob/develop/docs/TUTORIAL.md
@@ -185,20 +186,6 @@ class TUFTestFixtureDelegated(TUFTestFixtureSimple):
             ['root', 'snapshot', 'targets', 'timestamp'])
         self.write_and_publish_repository()
 
-class TUFTestFixtureUnsupportedDelegation(TUFTestFixtureSimple):
-    # Sets up a repo using `path_hash_prefixes` which is currently not supported.
-    def __init__(self):
-        super().__init__()
-
-        # Delegate to an unclaimed target-signing key
-        (public_unclaimed_key, private_unclaimed_key) = self.write_and_import_keypair(
-            'targets_delegated')
-        self.repository.targets.delegate(
-            'unsupported_target', [public_unclaimed_key], ['unsupported_*.txt'], path_hash_prefixes= ['ab34df13'])
-        self.write_and_add_target('unsupported_target.txt', 'unsupported_target')
-        self.repository.targets('unsupported_target').load_signing_key(
-            private_unclaimed_key)
-        self.write_and_publish_repository(export_client=False)
 
 class TUFTestFixtureNestedDelegated(TUFTestFixtureDelegated):
     def __init__(self):
@@ -304,7 +291,6 @@ def generate_fixtures():
     # Fixtures generated with old method.
     # TODO: covert all fixtures to use new FixtureBuilder class and delete
     # classes above when all have been converted.
-    TUFTestFixtureUnsupportedDelegation()
     TUFTestFixtureNestedDelegatedErrors()
 
     TUFTestFixtureThresholdTwo()
@@ -315,6 +301,7 @@ def generate_fixtures():
     fixtures.TUFTestFixtureAttackRollback.build()
     fixtures.TUFTestFixtureDelegated.build()
     fixtures.TUFTestFixtureNestedDelegated.build()
+    fixtures.TUFTestFixtureUnsupportedDelegation.build()
 
 
 generate_fixtures()
