@@ -49,6 +49,7 @@ jobs:
     - name: Generate fixtures
       run: |
         pipenv run python generate_fixtures.py
+        pipenv run python  fixtures/build-all.py
         if [[ $(git status --porcelain) ]];
         then
             echo "Fixture generation produced changes!"
