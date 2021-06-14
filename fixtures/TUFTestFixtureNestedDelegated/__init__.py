@@ -39,7 +39,8 @@ def build():
     fixture.delegate('level_3_below_terminated', ['level_1_2_terminating_3_*.txt'], parent='level_2_terminating')\
         .create_target('level_1_2_terminating_3_target.txt', signing_role='level_3_below_terminated')
 
-    # Add a delegation after level_2_terminating but the path does not matches level_2_terminating which will be evaluated.
+    # Add a delegation after level_2_terminating, but the path does not match level_2_terminating,
+    # which WILL be evaluated.
     fixture.delegate('level_2_after_terminating_not_match_terminating_path', ['level_1_2a_terminating_plus_1_more_*.txt'], parent='unclaimed')\
         .create_target('level_1_2a_terminating_plus_1_more_findable.txt', signing_role='level_2_after_terminating_not_match_terminating_path')
 
