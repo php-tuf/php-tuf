@@ -25,7 +25,7 @@ def build():
         .create_target('level_1_2_target.txt', signing_role='level_2')
 
     # Create a terminating delegation
-    fixture.delegate('level_2_terminating', ['level_1_2_terminating_*.txt'], parent='unclaimed')\
+    fixture.delegate('level_2_terminating', ['level_1_2_terminating_*.txt'], parent='unclaimed', terminating=True)\
         .create_target('level_1_2_terminating_findable.txt', signing_role='level_2_terminating')
 
     # Create a delegation under non-terminating 'level_2' delegation.

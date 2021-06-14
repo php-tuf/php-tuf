@@ -2,7 +2,7 @@
  "signatures": [
   {
    "keyid": "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b",
-   "sig": "8c719e7cd6f62f0cb77131401335405d5d9d81544bdf5c7154401fdd8d1665768edda040a939f86c89e21d8d6eddc10c6bab4f226137b4949cf7a7eee1bc9703"
+   "sig": "0dbfee1ffb0ab17a1aa1cbfac021dd63af7e21d7f25ea8fd2860b7ec2c7d213be9e83832f84ab1e2e10614a19c38a536b1d8795069f94e394d300fb02f760704"
   }
  ],
  "signed": {
@@ -52,7 +52,7 @@
      "paths": [
       "level_1_2_terminating_*.txt"
      ],
-     "terminating": false,
+     "terminating": true,
      "threshold": 1
     }
    ]
