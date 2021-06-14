@@ -313,20 +313,23 @@ class UpdaterTest extends TestCase
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
     }
+
     /**
      * Tests that improperly delegated targets will produce exceptions.
      *
+     * @param string $fixturesSet
      * @param string $fileName
+     * @param array $expectedClientVersions
      *
      * @dataProvider providerDelegationErrors
      */
-    public function testDelegationErrors(string $fileName): void
+    public function testDelegationErrors(string $fixturesSet, string $fileName, array $expectedClientVersions): void
     {
-        $fixturesSet = 'TUFTestFixtureNestedDelegatedErrors';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
         $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
+        self::assertFileExists($testFilePath);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
@@ -345,12 +348,20 @@ class UpdaterTest extends TestCase
         return [
             // 'level_a.txt' is added via the 'unclaimed' role but this role has
             // `paths: ['level_1_*.txt']` which does not match the file name.
-            'no path match' => ['level_a.txt'],
+            'no path match' => [
+              'TUFTestFixtureNestedDelegatedErrors',
+              'level_a.txt',
+                [],
+            ],
             // 'level_1_3_target.txt' is added via the 'level_2' role which has
             // `paths: ['level_1_2_*.txt']`. The 'level_2' role is delegated from the
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
             // for the 'unclaimed' role but does not match for the 'level_2' role.
-            'matches parent delegation' => ['level_1_3_target.txt'],
+            'matches parent delegation' => [
+              'TUFTestFixtureNestedDelegatedErrors',
+              'level_1_3_target.txt',
+                [],
+            ],
             // 'level_2_unfindable.txt' is added via the 'level_2_error' role which has
             // `paths: ['level_2_*.txt']`. The 'level_2_error' role is delegated from the
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
@@ -358,14 +369,22 @@ class UpdaterTest extends TestCase
             // No files added via the 'level_2_error' role will be found because its
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
-            'delegated path does not match parent' => ['level_2_unfindable.txt'],
+            'delegated path does not match parent' => [
+              'TUFTestFixtureNestedDelegatedErrors',
+              'level_2_unfindable.txt',
+              [],
+            ],
             // 'level_2_after_terminating_unfindable.txt' is added via role
             // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'delegation is after terminating delegation' => ['level_2_after_terminating_unfindable.txt'],
+            'delegation is after terminating delegation' => [
+              'TUFTestFixtureNestedDelegatedErrors',
+              'level_2_after_terminating_unfindable.txt',
+              [],
+            ],
         ];
     }
 
