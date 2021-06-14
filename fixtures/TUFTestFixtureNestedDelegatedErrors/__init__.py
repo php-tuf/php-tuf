@@ -49,6 +49,6 @@ def build():
     fixture.create_target('level_2_unfindable.txt', signing_role='level_2_terminating')
 
     # Add a delegation after level_2_terminating which will not be evaluated.
-    fixture.delegate('level_2_after_terminating', ['level_2_*.txt'], parent='unclaimed')\
-        .create_target('level_2_after_terminating_unfindable.txt', signing_role='level_2_after_terminating')\
+    fixture.delegate('level_2_after_terminating_match_terminating_path', ['level_1_2_terminating_plus_1_more_*.txt'], parent='unclaimed')\
+        .create_target('level_1_2_terminating_plus_1_more_unfindable.txt', signing_role='level_2_after_terminating_match_terminating_path')\
         .publish()

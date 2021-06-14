@@ -281,10 +281,10 @@ class UpdaterTest extends TestCase
             // the terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2a_terminating_plus_1_more_findable.txt' => [
-                'root' => 6,
-                'timestamp' => 6,
-                'snapshot' => 6,
-                'targets' => 6,
+                'root' => 5,
+                'timestamp' => 5,
+                'snapshot' => 5,
+                'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => 1,
                 'level_2_terminating' => 1,
