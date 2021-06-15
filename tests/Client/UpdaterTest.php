@@ -242,6 +242,7 @@ class UpdaterTest extends TestCase
     public function providerVerifiedDelegatedDownload(): array
     {
         return [
+          // Test cases using the TUFTestFixtureNestedDelegated fixture
             'level_1_target.txt' => [
                 'TUFTestFixtureNestedDelegated',
                 'level_1_target.txt',
@@ -332,6 +333,87 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => 1,
                 ],
             ],
+            // Test cases using the 'TUFTestFixtureTerminatingDelegation' fixture set.
+            'TUFTestFixtureTerminatingDelegation targets.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'targets.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation a.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation b.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation c.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'c.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation d.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'd.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
         ];
     }
 
@@ -399,6 +481,7 @@ class UpdaterTest extends TestCase
     public function providerDelegationErrors(): array
     {
         return [
+            // Test using the TUFTestFixtureNestedDelegatedErrors fixture set.
             // 'level_a.txt' is added via the 'unclaimed' role but this role has
             // `paths: ['level_1_*.txt']` which does not match the file name.
             'no path match' => [
@@ -504,6 +587,39 @@ class UpdaterTest extends TestCase
                     'level_2_terminating' => null,
                     'level_3' => null,
                     'level_3_below_terminated' => null,
+                ],
+            ],
+            // Test using the TUFTestFixtureTerminatingDelegation fixture set.
+            'TUFTestFixtureTerminatingDelegation e.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'e.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation f.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'f.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
                 ],
             ],
         ];
