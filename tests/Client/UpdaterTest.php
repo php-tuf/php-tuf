@@ -388,9 +388,9 @@ class UpdaterTest extends TestCase
                 'level_a.txt',
                 [
                     'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     // The client does not update the 'unclaimed.json' file because
                     // the target file does not match the 'paths' property for the role.
                     'unclaimed' => 1,
@@ -410,9 +410,9 @@ class UpdaterTest extends TestCase
                 'level_1_3_target.txt',
                 [
                     'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     'unclaimed' => 3,
                     'level_2' => null,
                     'level_2_after_terminating' => null,
@@ -433,9 +433,9 @@ class UpdaterTest extends TestCase
                 'level_2_unfindable.txt',
                 [
                     'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     // The client does not update the 'unclaimed.json' file because
                     // the target file does not match the 'paths' property for the role.
                     'unclaimed' => 1,
@@ -459,9 +459,9 @@ class UpdaterTest extends TestCase
                 'level_2_after_terminating_unfindable.txt',
                 [
                     'root' => 6,
-                    'timestamp' => 6,
-                    'snapshot' => 6,
-                    'targets' => 6,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
                     // The client does not update the 'unclaimed.json' file because
                     // the target file does not match the 'paths' property for the role.
                     // @todo Update version in https://github.com/php-tuf/php-tuf/pull/216

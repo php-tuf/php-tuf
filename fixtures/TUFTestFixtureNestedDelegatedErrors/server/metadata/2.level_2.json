@@ -2,50 +2,18 @@
  "signatures": [
   {
    "keyid": "e9829d3f2fdff6d6f31002c17cf7f20cf0398e215ca0c0c44d075ccd76a26f62",
-   "sig": "fbf264663f1fc1667f2c1a003faeb3ef58609e9ff4604f67e902df166656d8914fbbf719ccea22cb72f424a7988bfefcaa33474241b2ed2969eb9f13ae5b900e"
+   "sig": "b09ea72584ed8ec3b6dac8f9422c545abd1f32e24f4120e472a49ae13c4010d1a017bcfbe0b7428e7ab8da8117a5eb253d200a32a11f5f031ba5a37ae549a600"
   }
  ],
  "signed": {
   "_type": "targets",
   "delegations": {
-   "keys": {
-    "f581c9aeff9989106aeeea35319d1d1f067149619a2ff005249d6f60560557be": {
-     "keyid_hash_algorithms": [
-      "sha256",
-      "sha512"
-     ],
-     "keytype": "ed25519",
-     "keyval": {
-      "public": "683d345a948a9baa343be4e44c076ca115da3838e72c28a06340c8ec1b3ef6be"
-     },
-     "scheme": "ed25519"
-    }
-   },
-   "roles": [
-    {
-     "keyids": [
-      "f581c9aeff9989106aeeea35319d1d1f067149619a2ff005249d6f60560557be"
-     ],
-     "name": "level_3",
-     "paths": [
-      "level_1_2_3_*.txt"
-     ],
-     "terminating": false,
-     "threshold": 1
-    }
-   ]
+   "keys": {},
+   "roles": []
   },
   "expires": "2020-04-01T07:27:10Z",
   "spec_version": "1.0.0",
   "targets": {
-   "level_1_2_target.txt": {
-    "custom": {},
-    "hashes": {
-     "sha256": "3584a7e952e1073ca6ab7281a9a0bd08039c940ff7acb630909483ec77a283e6",
-     "sha512": "5410b2ffb95a4975597acf7c99a130fcfb3c1d7b700eb496d069fc535f26ef474302327ace2e0ae0f58fa1c3cb97fc0725200b022f985daf3f76ca2608635e93"
-    },
-    "length": 30
-   },
    "level_1_3_target.txt": {
     "custom": {},
     "hashes": {

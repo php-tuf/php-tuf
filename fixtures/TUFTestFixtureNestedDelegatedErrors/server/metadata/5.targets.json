@@ -2,11 +2,11 @@
  "signatures": [
   {
    "keyid": "718fedad390b4d0d470b890781eb8c94e5a7e975aebe65fc0862246c945fce68",
-   "sig": "363ee3799094e598ce31ecfe0ae73aacba39a7aeca7f11b6880bd67f443173960c073a4142fdd6cff40d182455c7bdca96ced6801815c01a9ac1e6e9cdcc100f"
+   "sig": "8eaa3fd3b065be4a43246cbec3f6417bf350d141e3a3519502cd7148720b27ccd9f896586fcbf8b663c107fc23fc0a7e8f311ae69f094eaf5f98726b6380e70d"
   },
   {
    "keyid": "e4dae3872d28d29f7624a702bfd25f68453544d597229ee9e0a8569d1f940cf4",
-   "sig": "bbff28de564115b57a171106d67ef0f71f60a7a959a4b0847b18520ac97c060bf5ffb4f70f550facd73415fae3b36a6b042e5bfb795519e39cd10f034551ac0f"
+   "sig": "54cf8147fd4dbb5cb43f576461e6aa5401edd5d5d153660b7d4a239c537b10300dfc9cfc650e4b76623dec7f3793543a99d4ad31be62a9e248bfd3da6f07d10b"
   }
  ],
  "signed": {
@@ -41,15 +41,7 @@
   },
   "expires": "2020-04-01T07:27:10Z",
   "spec_version": "1.0.0",
-  "targets": {
-   "testtarget.txt": {
-    "hashes": {
-     "sha256": "c9e2a718ba4f180100e413382c9bee5759df61c1f2c31be0e09a03e378151371",
-     "sha512": "17dd75df5d24fb7c29cf8ad4c993e53b60933f5adf424071c8634569c756c84de863415fdc9b444ef7794875997b60615bdcdc406c6a55c105b49748d6ef392b"
-    },
-    "length": 24
-   }
-  },
+  "targets": {},
   "version": 5
  }
 }
