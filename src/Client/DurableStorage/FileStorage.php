@@ -2,13 +2,20 @@
 
 namespace Tuf\Client\DurableStorage;
 
+use Tuf\Metadata\MetadataBase;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
+use Tuf\Metadata\TimestampMetadata;
+use Tuf\StorageInterface;
+
 /**
  * Defines a simple filesystem-based storage for fetched PHP-TUF metadata.
  *
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  */
-class FileStorage implements \ArrayAccess
+class FileStorage implements \ArrayAccess, StorageInterface
 {
     /**
      * @var string $basePath
@@ -32,6 +39,39 @@ class FileStorage implements \ArrayAccess
         }
 
         $this->basePath = $basePath;
+    }
+
+    public function load(string $role): ?MetadataBase
+    {
+        $filename = "$role.json";
+
+        if (isset($this[$filename])) {
+            $json = $this[$filename];
+
+            switch ($role) {
+                case RootMetadata::TYPE:
+                    $currentMetadata = RootMetadata::createFromJson($json);
+                    break;
+                case SnapshotMetadata::TYPE:
+                    $currentMetadata = SnapshotMetadata::createFromJson($json);
+                    break;
+                case TimestampMetadata::TYPE:
+                    $currentMetadata = TimestampMetadata::createFromJson($json);
+                    break;
+                default:
+                    $currentMetadata = TargetsMetadata::createFromJson($json);
+            }
+            $currentMetadata->setIsTrusted(true);
+            return $currentMetadata;
+        }
+        return null;
+    }
+
+    public function save(MetadataBase $metadata): void
+    {
+        $metadata->ensureIsTrusted();
+        $filename = $metadata->getRole() . '.json';
+        $this[$filename] = $metadata->getSource();
     }
 
     /**
