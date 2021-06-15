@@ -318,20 +318,20 @@ class UpdaterTest extends TestCase
             // the terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2a_terminating_plus_1_more_findable.txt' => [
-              'TUFTestFixtureNestedDelegated',
-              'level_1_2a_terminating_plus_1_more_findable.txt',
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2a_terminating_plus_1_more_findable.txt',
                 [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => null,
-                'level_2_terminating' => 1,
-                'level_3' => 1,
-                'level_3_below_terminated' => 1,
-            ]
-                  ],
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_2_terminating' => 1,
+                    'level_3' => 1,
+                    'level_3_below_terminated' => 1,
+                ],
+            ],
         ];
     }
 
@@ -446,24 +446,24 @@ class UpdaterTest extends TestCase
             // No files added via the 'level_2_error' role will be found because its
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
-          'delegated path does not match parent' => [
-            'TUFTestFixtureNestedDelegatedErrors',
-            'level_2_unfindable.txt',
-            [
-              'root' => 6,
-              'timestamp' => 6,
-              'snapshot' => 6,
-              'targets' => 6,
+            'delegated path does not match parent' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_2_unfindable.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
                 // The client does not update the 'unclaimed.json' file because
                 // the target file does not match the 'paths' property for the role.
-              'unclaimed' => 1,
-              'level_2' => null,
-              'level_2_after_terminating' => null,
-              'level_2_terminating' => null,
-              'level_3' => null,
-              'level_3_below_terminated' => null,
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
             ],
-          ],
             // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
             // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
             'delegated path does not match role' => [
