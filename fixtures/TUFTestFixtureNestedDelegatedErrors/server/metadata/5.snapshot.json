@@ -2,11 +2,11 @@
  "signatures": [
   {
    "keyid": "77dfdca206c0fe1b8e55d67d21dd0e195a0998a9d2b56c6d3ee8f68d04c21e93",
-   "sig": "d890e21afc1326dafec5a84c52fe7bde09b55fed869f5175a229d1c694eaa71dae40ba036215487f0e5fb1cbd7a2a267af2ce85089d76ed147220d5aebd37f02"
+   "sig": "cf9f63a7089a944dbed177f6056beee9cd51264302346c9ae309daac0caaf484f666f2ec0e645c1076781f6aa3dbb30ecd57517c41c7dcfcbdf9d543dbb4ff02"
   },
   {
    "keyid": "9ca81f7ff17f6218246474a51b47eb035741bc472557ef5ac493e279f446b85b",
-   "sig": "7282a6f43e7592a01e2a97aa60200b1cbc8969d777926c95cd039c72814239b9f1aef2a0282a9e806573ca100b78fd0960bc8fc473a50b51ca23e19c84f9dc06"
+   "sig": "26a06907c7bb31689359043053c7c0ff2d806b9f0405f5628ced4d3018bf1de1a94f05233d196c8ec7670ac088771fe2c0477c7ff1c5baf3c3f40397db74d30f"
   }
  ],
  "signed": {
@@ -14,22 +14,19 @@
   "expires": "2020-01-08T00:00:00Z",
   "meta": {
    "level_2.json": {
+    "version": 2
+   },
+   "level_2_after_terminating.json": {
     "version": 1
    },
    "level_2_terminating.json": {
-    "version": 1
-   },
-   "level_3.json": {
-    "version": 1
-   },
-   "level_3_below_terminated.json": {
-    "version": 1
+    "version": 2
    },
    "targets.json": {
     "version": 5
    },
    "unclaimed.json": {
-    "version": 2
+    "version": 3
    }
   },
   "spec_version": "1.0.0",

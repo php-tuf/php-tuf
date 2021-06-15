@@ -2,11 +2,11 @@
  "signatures": [
   {
    "keyid": "77dfdca206c0fe1b8e55d67d21dd0e195a0998a9d2b56c6d3ee8f68d04c21e93",
-   "sig": "13ebeaec8a7921301813fccfbf50d953f0469be857fc685b483d8d5f318ce60f72fe1dcac232e7442b2bf134d9d45ed75ed9c50bef622de09bec712ddd930d08"
+   "sig": "cf9f63a7089a944dbed177f6056beee9cd51264302346c9ae309daac0caaf484f666f2ec0e645c1076781f6aa3dbb30ecd57517c41c7dcfcbdf9d543dbb4ff02"
   },
   {
    "keyid": "9ca81f7ff17f6218246474a51b47eb035741bc472557ef5ac493e279f446b85b",
-   "sig": "0fc549564ed5dc0d66b3c6e53877b96b148842330238b7618304935737190fa53b9c69b8eaac6517457470ff169acc835feb770a010ebe2b5a41100bd0809c0f"
+   "sig": "26a06907c7bb31689359043053c7c0ff2d806b9f0405f5628ced4d3018bf1de1a94f05233d196c8ec7670ac088771fe2c0477c7ff1c5baf3c3f40397db74d30f"
   }
  ],
  "signed": {
@@ -22,20 +22,14 @@
    "level_2_terminating.json": {
     "version": 2
    },
-   "level_3.json": {
-    "version": 1
-   },
-   "level_3_below_terminated.json": {
-    "version": 1
-   },
    "targets.json": {
-    "version": 6
+    "version": 5
    },
    "unclaimed.json": {
     "version": 3
    }
   },
   "spec_version": "1.0.0",
-  "version": 6
+  "version": 5
  }
 }
