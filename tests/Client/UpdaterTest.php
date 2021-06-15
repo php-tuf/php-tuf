@@ -208,97 +208,131 @@ class UpdaterTest extends TestCase
     /**
      * Tests that TUF will transparently verify downloaded target hashes for targets in delegated JSON files.
      *
+     * @param string $fixturesSet
+     *   The fixture set to test.
+     * @param string $delegatedFile
+     *   The delegated file to download.
+     * @param array $expectedFileVersions
+     *   The expected client versions after the download.
+     *
+     * @return void
      * @todo Add test coverage delegated roles that then delegate to other roles in
      *   https://github.com/php-tuf/php-tuf/issues/142
      *
      * @covers ::download
      *
-     * @return void
+     * @dataProvider providerVerifiedDelegatedDownload
+     *
      */
-    public function testVerifiedDelegatedDownload(): void
+    public function testVerifiedDelegatedDownload(string $fixturesSet, string $delegatedFile, array $expectedFileVersions): void
     {
-        $fixturesSet = 'TUFTestFixtureNestedDelegated';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
 
+        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
+        $testFileContents = file_get_contents($testFilePath);
+        self::assertNotEmpty($testFileContents);
+        $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
-        $expectedClientVersionsAfterDownloads = [
+        $this->assertClientFileVersions($expectedFileVersions);
+    }
+
+    public function providerVerifiedDelegatedDownload(): array
+    {
+        return [
             'level_1_target.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_target.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_terminating_findable.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_terminating_findable.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_3_below_non_terminating_target.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_3_below_non_terminating_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => 1,
+                ],
+            ],
+            // Roles delegated from a terminating role are evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2_terminating_3_target.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2_terminating_3_target.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                    'level_3_below_terminated' => 1,
+                ],
+            ],
+            // Roles after terminating delegation where the target path does not
+            // the terminating role are evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2a_terminating_plus_1_more_findable.txt' => [
+              'TUFTestFixtureNestedDelegated',
+              'level_1_2a_terminating_plus_1_more_findable.txt',
+                [
                 'root' => 5,
                 'timestamp' => 5,
                 'snapshot' => 5,
                 'targets' => 5,
                 'unclaimed' => 2,
                 'level_2' => null,
-                'level_3' => null,
-            ],
-            'level_1_2_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => null,
-                'level_3' => null,
-            ],
-            'level_1_2_terminating_findable.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => null,
-            ],
-            'level_1_2_3_below_non_terminating_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => 1,
-            ],
-            // Roles delegated from a terminating role are evaluated.
-            // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'level_1_2_terminating_3_target.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
                 'level_2_terminating' => 1,
                 'level_3' => 1,
                 'level_3_below_terminated' => 1,
-            ],
-            // Roles after terminating delegation where the target path does not
-            // the terminating role are evaluated.
-            // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'level_1_2a_terminating_plus_1_more_findable.txt' => [
-                'root' => 5,
-                'timestamp' => 5,
-                'snapshot' => 5,
-                'targets' => 5,
-                'unclaimed' => 2,
-                'level_2' => 1,
-                'level_2_terminating' => 1,
-                'level_3' => 1,
-                'level_3_below_terminated' => 1,
-            ],
+            ]
+                  ],
         ];
-        foreach ($expectedClientVersionsAfterDownloads as $delegatedFile => $expectedClientVersions) {
-            $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
-            $testFileContents = file_get_contents($testFilePath);
-            self::assertNotEmpty($testFileContents);
-            $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
-            $this->assertClientRepoVersions($expectedClientVersions);
-        }
     }
 
     /**
@@ -327,23 +361,31 @@ class UpdaterTest extends TestCase
         self::expectExceptionMessage("Target not found: $fileName");
         $updater->download($fileName)->wait();
     }
+
     /**
      * Tests that improperly delegated targets will produce exceptions.
      *
+     * @param string $fixturesSet
      * @param string $fileName
+     * @param array $expectedFileVersions
      *
      * @dataProvider providerDelegationErrors
      */
-    public function testDelegationErrors(string $fileName): void
+    public function testDelegationErrors(string $fixturesSet, string $fileName, array $expectedFileVersions): void
     {
-        $fixturesSet = 'TUFTestFixtureNestedDelegatedErrors';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
         $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
-        self::expectException(NotFoundException::class);
-        self::expectExceptionMessage("Target not found: $fileName");
-        $updater->download($fileName)->wait();
+        self::assertFileExists($testFilePath);
+        try {
+            $updater->download($fileName)->wait();
+        } catch (NotFoundException $exception) {
+            self::assertEquals("Target not found: $fileName", $exception->getMessage());
+            $this->assertClientFileVersions($expectedFileVersions);
+            return;
+        }
+        self::fail('NotFoundException not thrown.');
     }
 
     /**
@@ -359,12 +401,44 @@ class UpdaterTest extends TestCase
         return [
             // 'level_a.txt' is added via the 'unclaimed' role but this role has
             // `paths: ['level_1_*.txt']` which does not match the file name.
-            'no path match' => ['level_a.txt'],
+            'no path match' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_a.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does not update the 'unclaimed.json' file because
+                    // the target file does not match the 'paths' property for the role.
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
             // 'level_1_3_target.txt' is added via the 'level_2' role which has
             // `paths: ['level_1_2_*.txt']`. The 'level_2' role is delegated from the
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
             // for the 'unclaimed' role but does not match for the 'level_2' role.
-            'matches parent delegation' => ['level_1_3_target.txt'],
+            'matches parent delegation' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_1_3_target.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    'unclaimed' => 3,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
             // 'level_2_unfindable.txt' is added via the 'level_2_error' role which has
             // `paths: ['level_2_*.txt']`. The 'level_2_error' role is delegated from the
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
@@ -372,14 +446,66 @@ class UpdaterTest extends TestCase
             // No files added via the 'level_2_error' role will be found because its
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
-            'delegated path does not match parent' => ['level_2_unfindable.txt'],
+          'delegated path does not match parent' => [
+            'TUFTestFixtureNestedDelegatedErrors',
+            'level_2_unfindable.txt',
+            [
+              'root' => 6,
+              'timestamp' => 6,
+              'snapshot' => 6,
+              'targets' => 6,
+                // The client does not update the 'unclaimed.json' file because
+                // the target file does not match the 'paths' property for the role.
+              'unclaimed' => 1,
+              'level_2' => null,
+              'level_2_after_terminating' => null,
+              'level_2_terminating' => null,
+              'level_3' => null,
+              'level_3_below_terminated' => null,
+            ],
+          ],
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
+            'delegated path does not match role' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does update the 'unclaimed.json' file because
+                    // the target file does match the 'paths' property for the role.
+                    'unclaimed' => 3,
+                    'level_2' => 2,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
             // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
             // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'delegation is after terminating delegation' => ['level_1_2_terminating_plus_1_more_unfindable.txt'],
+            'delegation is after terminating delegation' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    'unclaimed' => 3,
+                    'level_2' => 2,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
         ];
     }
 
@@ -403,11 +529,11 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
 
-        $this->assertClientRepoVersions($expectedStartVersion);
+        $this->assertClientFileVersions($expectedStartVersion);
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertTrue($updater->refresh($fixturesSet));
         // Confirm the local version are updated to the expected versions.
-        $this->assertClientRepoVersions($expectedUpdatedVersions);
+        $this->assertClientFileVersions($expectedUpdatedVersions);
 
         // Create another version of the client that only starts with the root.json file.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
@@ -420,7 +546,7 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo["$role.json"]);
             }
         }
-        $this->assertClientRepoVersions($expectedStartVersion);
+        $this->assertClientFileVersions($expectedStartVersion);
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertTrue($updater->refresh());
         // Confirm that if we start with only root.json all of the files still
@@ -432,7 +558,7 @@ class UpdaterTest extends TestCase
                 $expectedUpdatedVersions[$role] = null;
             }
         }
-        $this->assertClientRepoVersions($expectedUpdatedVersions);
+        $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 
     /**
@@ -479,18 +605,20 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Asserts that files in the client repo are at expected versions.
+     * Asserts that client-side metadata files are at expected versions.
      *
-     * @param array $expectedVersions
-     *   The expected versions.
+     * @param ?int[] $expectedVersions
+     *   The expected versions. The keys are the file names, without the .json
+     *   suffix, and the values are the expected version numbers, or NULL if
+     *   the file should not be present.
      *
      * @return void
      */
-    protected function assertClientRepoVersions(array $expectedVersions): void
+    protected function assertClientFileVersions(array $expectedVersions): void
     {
         foreach ($expectedVersions as $role => $version) {
             if (is_null($version)) {
-                $this->assertNull($this->localRepo["$role.json"]);
+                $this->assertNull($this->localRepo["$role.json"], "'$role' file is null.");
                 return;
             }
             switch ($role) {
@@ -542,14 +670,14 @@ class UpdaterTest extends TestCase
         $fixturesSet = 'TUFTestFixtureDelegated';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($exception, $expectedException);
-            $this->assertClientRepoVersions($expectedUpdatedVersions);
+            $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
         $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
@@ -680,14 +808,14 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
         $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->refresh();
         } catch (RepoFileNotFound $exception) {
             $this->assertSame("File $fileName not found.", $exception->getMessage());
-            $this->assertClientRepoVersions($expectedUpdatedVersions);
+            $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
         $this->fail('No RepoFileNotFound exception thrown');
@@ -797,7 +925,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         if ($expectedException) {
             $this->expectException($expectedException);
         }
@@ -813,7 +941,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
 
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest();
         // This refresh should succeed.
         $updater->refresh();
@@ -822,7 +950,7 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
@@ -841,7 +969,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixtureSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixtureSet));
         $updater = $this->getSystemInTest();
         try {
             $updater->refresh();
@@ -859,7 +987,7 @@ class UpdaterTest extends TestCase
                 // We cannot assert the starting versions of 'targets' because it has
                 // an unsupported field and would throw an exception when validating.
             ];
-            self::assertClientRepoVersions($expectedUpdatedVersion);
+            self::assertClientFileVersions($expectedUpdatedVersion);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.
             self::assertSame($this->localRepo['targets.json'], $startingTargets);
@@ -888,7 +1016,7 @@ class UpdaterTest extends TestCase
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $this->assertClientRepoVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest();
         try {
             // No changes should be made to client repo.
@@ -896,7 +1024,7 @@ class UpdaterTest extends TestCase
             $updater->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($expectedException, $exception);
-            $this->assertClientRepoVersions($expectedUpdatedVersions);
+            $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
         $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
