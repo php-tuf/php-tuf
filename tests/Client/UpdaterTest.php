@@ -414,6 +414,48 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
+            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
+            'TUFTestFixtureTopLevelTerminating a.txt' => [
+                'TUFTestFixtureTopLevelTerminating',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation a.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation b.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
         ];
     }
 
@@ -622,6 +664,7 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
+            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
             'TUFTestFixtureTopLevelTerminating b.txt' => [
                 'TUFTestFixtureTopLevelTerminating',
                 'b.txt',
@@ -632,6 +675,35 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                     'a' => 1,
                     'b' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation c.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'c.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation d.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'd.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
                 ],
             ],
         ];
