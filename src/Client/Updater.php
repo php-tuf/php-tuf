@@ -484,7 +484,7 @@ class Updater
      *   calls to this function and should be provided by any callers.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
-     *   The target metadata with a match for the target, or null no match is
+     *   The target metadata with a match for the target, or the terminating target metadata that ends the search or null no match is
      *   found.
      */
     protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
@@ -529,17 +529,24 @@ class Updater
                 }
                 $searchedRoles[] = $delegatedRoleName;
                 // § 5.6.7.2.1
-                //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
-                if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                    return $matchingTargetMetadata;
+                // Recursively search the list of delegations in order of appearance.
+                if ($resolvedTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
+                    // If we are not at the top level 'targets' role all return $resolvedTargetMetadata
+                    // or if we are at the top level 'targets' role only return if the $resolvedTargetMetadata
+                    // if it has information about about the target.
+                    if ($targetsMetadata->getRole() !== 'targets' || $resolvedTargetMetadata->hasTarget($target)) {
+                        return $resolvedTargetMetadata;
+                    }
+                    return null;
                 }
                 if ($delegatedRole->isTerminating()) {
                     // § 5.6.7.2.2
                     // If the role is terminating then abort searching for a target.
-                    return null;
+                    return $newTargetsData;
                 }
             }
         }
+        // @todo create a test case for role that is terminating but does not delegate.
         return null;
     }
 
