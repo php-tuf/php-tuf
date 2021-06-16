@@ -542,11 +542,17 @@ class Updater
                 if ($delegatedRole->isTerminating()) {
                     // § 5.6.7.2.2
                     // If the role is terminating then abort searching for a target.
+                    // If the this is the top level targets file return null
+                    // because the target was not found.
+                    if ($targetsMetadata->getRole() === 'targets') {
+                        return null;
+                    }
                     return $newTargetsData;
                 }
             }
         }
         // @todo create a test case for role that is terminating but does not delegate.
+
         return null;
     }
 

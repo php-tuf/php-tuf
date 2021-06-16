@@ -622,6 +622,18 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
+            'TUFTestFixtureTopLevelTerminating b.txt' => [
+                'TUFTestFixtureTopLevelTerminating',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
         ];
     }
 
