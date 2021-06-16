@@ -551,8 +551,6 @@ class Updater
                 }
             }
         }
-        // @todo create a test case for role that is terminating but does not delegate.
-
         return null;
     }
 

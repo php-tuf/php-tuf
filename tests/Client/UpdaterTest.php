@@ -315,7 +315,9 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => 1,
                 ],
             ],
-            // Roles after terminating delegation where the target path does not
+            // A terminating role only has an effect if the target path matches
+            // the role, otherwise the role is not evaluated.
+            // Roles after terminating delegation where the target path does match not
             // the terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2a_terminating_plus_1_more_findable.txt' => [
