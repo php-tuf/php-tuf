@@ -1,3 +1,17 @@
+# Delegation tree
+#
+#             Targets
+#             /     \
+#            a       d
+#           / \
+#          b   c
+#
+# b is the only terminating delegation
+#
+# Roles should be evaluated in the order:
+# Targets > a > b
+#
+# Roles c and d should not be evaluated.
 from fixtures.builder import FixtureBuilder
 
 
