@@ -487,71 +487,17 @@ class Updater
      *   The target metadata with a match for the target, or the terminating target metadata that ends the search or null no match is
      *   found.
      */
-    protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
+    protected function getMetadataForTarget(string $target): ?TargetsMetadata
     {
-        if ($targetsMetadata === null) {
-            if (!empty($searchedRoles)) {
-                throw new \UnexpectedValueException('$searchedRoles should never be provided by outside calls to \Tuf\Client\Updater::getMetadataForTarget(). It is only used for recursive calls.');
-            }
-            // If no target metadata is provided then start searching with the top level targets.json file.
-            /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = $this->metadataFactory->load('targets');
-            if ($targetsMetadata->hasTarget($target)) {
-                return $targetsMetadata;
-            }
-            $searchedRoles[] = 'targets';
+        // If no target metadata is provided then start searching with the top level targets.json file.
+        /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
+        $targetsMetadata = $this->metadataFactory->load('targets');
+        if ($targetsMetadata->hasTarget($target)) {
+            return $targetsMetadata;
         }
+        $searchResultMetadata = $this->performDelegationSearch($targetsMetadata, $target, ['targets']);
 
-        $delegatedKeys = $targetsMetadata->getDelegatedKeys();
-        foreach ($delegatedKeys as $keyId => $delegatedKey) {
-            $this->signatureVerifier->addKey($keyId, $delegatedKey);
-        }
-        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->getName();
-            if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // § 5.6.7.1
-                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
-                continue;
-            }
-            if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
-                return null;
-            }
-
-            $this->signatureVerifier->addRole($delegatedRole);
-            if ($delegatedRole->matchesPath($target)) {
-                // Targets must match the path in all roles in the delegation chain, so if the path does not match,
-                // do not evaluate this role or any roles it delegates to.
-                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
-                /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-                $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
-                if ($newTargetsData->hasTarget($target)) {
-                    return $newTargetsData;
-                }
-                $searchedRoles[] = $delegatedRoleName;
-                // § 5.6.7.2.1
-                // Recursively search the list of delegations in order of appearance.
-                if ($resolvedTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                    // If we are not at the top level 'targets' role all return $resolvedTargetMetadata
-                    // or if we are at the top level 'targets' role only return if the $resolvedTargetMetadata
-                    // if it has information about about the target.
-                    if ($targetsMetadata->getRole() !== 'targets' || $resolvedTargetMetadata->hasTarget($target)) {
-                        return $resolvedTargetMetadata;
-                    }
-                    return null;
-                }
-                if ($delegatedRole->isTerminating()) {
-                    // § 5.6.7.2.2
-                    // If the role is terminating then abort searching for a target.
-                    // If this is the top level targets file return null
-                    // because the target was not found.
-                    if ($targetsMetadata->getRole() === 'targets') {
-                        return null;
-                    }
-                    return $newTargetsData;
-                }
-            }
-        }
-        return null;
+        return $searchResultMetadata ?? null;
     }
 
     /**
@@ -584,4 +530,69 @@ class Updater
     {
         return (new \DateTimeImmutable())->setTimestamp($this->clock->getCurrentTime());
     }
+
+    /**
+     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
+     * @param string $target
+     * @param array $searchedRoles
+     *
+     * @return \Tuf\Metadata\TargetsMetadata|null
+     */
+    private function performDelegationSearch(
+      TargetsMetadata $targetsMetadata,
+      string $target,
+      array $searchedRoles = []
+    ): ?TargetsMetadata {
+        if ($targetsMetadata->hasTarget($target)) {
+            return $targetsMetadata;
+        }
+
+        $delegatedKeys = $targetsMetadata->getDelegatedKeys();
+        foreach ($delegatedKeys as $keyId => $delegatedKey) {
+            $this->signatureVerifier->addKey($keyId, $delegatedKey);
+        }
+        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+            $delegatedRoleName = $delegatedRole->getName();
+            if (in_array($delegatedRoleName, $searchedRoles, true)) {
+                // § 5.6.7.1
+                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
+                continue;
+            }
+            if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
+                return null;
+            }
+
+            $this->signatureVerifier->addRole($delegatedRole);
+            if ($delegatedRole->matchesPath($target)) {
+                // Targets must match the path in all roles in the delegation chain, so if the path does not match,
+                // do not evaluate this role or any roles it delegates to.
+                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+                /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
+                $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
+                if ($newTargetsData->hasTarget($target)) {
+                    return $newTargetsData;
+                }
+                $searchedRoles[] = $delegatedRoleName;
+                // § 5.6.7.2.1
+                // Recursively search the list of delegations in order of appearance.
+                if ($resolvedTargetMetadata = $this->performDelegationSearch($newTargetsData, $target, $searchedRoles)) {
+                    // If we are not at the top level 'targets' role all return $resolvedTargetMetadata
+                    // or if we are at the top level 'targets' role only return if the $resolvedTargetMetadata
+                    // if it has information about about the target.
+                    if ($resolvedTargetMetadata->hasTarget($target)) {
+                        return $resolvedTargetMetadata;
+                    }
+                    return null;
+                }
+                if ($delegatedRole->isTerminating()) {
+                    // § 5.6.7.2.2
+                    // If the role is terminating then abort searching for a target.
+                    // If this is the top level targets file return null
+                    // because the target was not found.
+                    return $newTargetsData;
+                }
+            }
+        }
+        return null;
+}
 }
