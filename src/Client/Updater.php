@@ -496,8 +496,11 @@ class Updater
             return $targetsMetadata;
         }
         $searchResultMetadata = $this->performDelegationSearch($targetsMetadata, $target, ['targets']);
+        if ($searchResultMetadata && $searchResultMetadata->hasTarget($target)) {
+            return $searchResultMetadata;
+        }
 
-        return $searchResultMetadata ?? null;
+        return null;
     }
 
     /**
@@ -532,17 +535,13 @@ class Updater
     }
 
     /**
-     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
+     * @param \Tuf\Metadata\TargetsMetadata $targetsMetadata
      * @param string $target
      * @param array $searchedRoles
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      */
-    private function performDelegationSearch(
-      TargetsMetadata $targetsMetadata,
-      string $target,
-      array $searchedRoles = []
-    ): ?TargetsMetadata {
+    private function performDelegationSearch(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles): ?TargetsMetadata {
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
@@ -576,9 +575,6 @@ class Updater
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
                 if ($resolvedTargetMetadata = $this->performDelegationSearch($newTargetsData, $target, $searchedRoles)) {
-                    // If we are not at the top level 'targets' role all return $resolvedTargetMetadata
-                    // or if we are at the top level 'targets' role only return if the $resolvedTargetMetadata
-                    // if it has information about about the target.
                     if ($resolvedTargetMetadata->hasTarget($target)) {
                         return $resolvedTargetMetadata;
                     }
