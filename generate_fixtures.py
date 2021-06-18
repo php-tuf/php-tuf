@@ -13,7 +13,8 @@ from fixtures import (
     TUFTestFixtureThresholdTwoAttack,
     TUFTestFixtureTerminatingDelegation,
     TUFTestFixtureTopLevelTerminating,
-    TUFTestFixtureNestedTerminatingNonDelegatingDelegation
+    TUFTestFixtureNestedTerminatingNonDelegatingDelegation,
+    TUFTestFixture3LevelDelegation
 )
 
 
@@ -30,6 +31,7 @@ def generate_fixtures():
     TUFTestFixtureTerminatingDelegation.build()
     TUFTestFixtureTopLevelTerminating.build()
     TUFTestFixtureNestedTerminatingNonDelegatingDelegation.build()
+    TUFTestFixture3LevelDelegation.build()
 
 
 generate_fixtures()
