@@ -572,7 +572,9 @@ class Updater
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
                 if ($resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles)) {
-                    return $resolvedTargetMetadata;
+                    if ($resolvedTargetMetadata->hasTarget($target)) {
+                        return $resolvedTargetMetadata;
+                    }
                 }
 
                 if ($delegatedRole->isTerminating()) {
