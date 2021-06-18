@@ -560,13 +560,9 @@ class Updater
             }
 
             $this->signatureVerifier->addRole($delegatedRole);
+            // Targets must match the path in all roles in the delegation chain, so if the path does not match,
+            // do not evaluate this role or any roles it delegates to.
             if ($delegatedRole->matchesPath($target)) {
-                // Targets must match the path in all roles in the delegation chain, so if the path does not match,
-                // do not evaluate this role or any roles it delegates to.
-                if ($delegatedRole->isTerminating()) {
-                    $terminated = true;
-                }
-
                 $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
                 $delegatedTargetsMetadata = $this->metadataFactory->load($delegatedRoleName);
@@ -582,7 +578,10 @@ class Updater
                     }
                 }
 
+                // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
+                // in the delegations from $targetsMetadata.
                 if ($delegatedRole->isTerminating()) {
+                    $terminated = true;
                     // § 5.6.7.2.2
                     // If the role is terminating then abort searching for a target.
                     return $delegatedTargetsMetadata;
