@@ -820,7 +820,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             // Test cases using the 'TUFTestFixture3LevelDelegation' fixture set.
-            // A search for non existent  target should that matchs the paths
+            // A search for non existent target should that matches the paths
             // should search the complete tree.
             'TUFTestFixture3LevelDelegation z.txt' => [
                 'TUFTestFixture3LevelDelegation',
@@ -836,6 +836,24 @@ class UpdaterTest extends TestCase
                     'd' => 1,
                     'e' => 1,
                     'f' => 1,
+                ],
+            ],
+            // A search for non existent target that does match the paths
+            // should not search any of the tree.
+            'TUFTestFixture3LevelDelegation z.zip' => [
+                'TUFTestFixture3LevelDelegation',
+                'z.zip',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
                 ],
             ],
         ];
