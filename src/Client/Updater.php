@@ -487,12 +487,7 @@ class Updater
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
-        $searchResultMetadata = $this->performDelegationSearch($targetsMetadata, $target, ['targets']);
-        // Only return the result of the delegation search if it contains the target metadata.
-        if ($searchResultMetadata && $searchResultMetadata->hasTarget($target)) {
-            return $searchResultMetadata;
-        }
-        return null;
+        return $this->performDelegationSearch($targetsMetadata, $target, ['targets']);
     }
 
     /**
@@ -540,8 +535,7 @@ class Updater
      * @param bool $terminated
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
-     *   The target metadata that is the end node for search or null if the target metadata does not make any delegations.
-     *   The target metadata or may not contain information for the target.
+     *   The target metadata that contains the metadata for the target or null if the target is not found.
      */
     private function performDelegationSearch(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
@@ -556,7 +550,7 @@ class Updater
                 continue;
             }
             if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
-                return $delegatedTargetsMetadata ?? null;
+                return null;
             }
 
             $this->signatureVerifier->addRole($delegatedRole);
@@ -572,10 +566,10 @@ class Updater
                 $searchedRoles[] = $delegatedRoleName;
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
-                if ($resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles, $terminated)) {
-                    if ($terminated || $resolvedTargetMetadata->hasTarget($target)) {
-                        return $resolvedTargetMetadata;
-                    }
+                $subtreeTerminates = false;
+                $resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles, $subtreeTerminates);
+                if ($subtreeTerminates || $resolvedTargetMetadata) {
+                    return $resolvedTargetMetadata;
                 }
 
                 // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
@@ -584,10 +578,10 @@ class Updater
                     $terminated = true;
                     // § 5.6.7.2.2
                     // If the role is terminating then abort searching for a target.
-                    return $delegatedTargetsMetadata;
+                    return null;
                 }
             }
         }
-        return $delegatedTargetsMetadata ?? null;
+        return null;
     }
 }
