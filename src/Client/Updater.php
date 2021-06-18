@@ -481,12 +481,13 @@ class Updater
      */
     protected function getMetadataForTarget(string $target): ?TargetsMetadata
     {
-        // If no target metadata is provided then start searching with the top level targets.json file.
+        // Search the top level targets metadata.
         /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
         $targetsMetadata = $this->metadataFactory->load('targets');
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
+        // Recursively search any delegated roles.
         return $this->searchDelegatedRolesForTarget($targetsMetadata, $target, ['targets']);
     }
 
@@ -532,6 +533,9 @@ class Updater
      *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
      *   calls to this function and should be provided by any callers.
      * @param bool $terminated
+     *   (optional) For internal recursive calls only. This will be set to true if a terminating delegation is found in
+     *   the search.
+     *
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata that contains the metadata for the target or null if the target is not found.
