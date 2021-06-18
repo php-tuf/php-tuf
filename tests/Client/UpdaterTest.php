@@ -971,19 +971,21 @@ class UpdaterTest extends TestCase
                 $this->assertNull($this->localRepo["$role.json"], "'$role' file is null.");
                 return;
             }
+            $role_json = $this->localRepo["$role.json"];
+            $this->assertNotNull($role_json, "'$role.json' found in local repo.");
             switch ($role) {
                 case 'root':
-                    $metadata = RootMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = RootMetadata::createFromJson($role_json);
                     break;
                 case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = TimestampMetadata::createFromJson($role_json);
                     break;
                 case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = SnapshotMetadata::createFromJson($role_json);
                     break;
                 default:
                     // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = TargetsMetadata::createFromJson($role_json);
                     break;
             }
             $actualVersion = $metadata->getVersion();
