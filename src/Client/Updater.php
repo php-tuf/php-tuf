@@ -487,7 +487,7 @@ class Updater
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
-        return $this->performDelegationSearch($targetsMetadata, $target, ['targets']);
+        return $this->searchDelegatedRolesForTarget($targetsMetadata, $target, ['targets']);
     }
 
     /**
@@ -522,13 +522,12 @@ class Updater
     }
 
     /**
-     * Performs a delegation search for a target metadata object.
+     * Performs a search of delegate roles for a metadata containing information about a target.
      *
      * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
      *   The targets metadata to search.
      * @param string $target
-     *   The path of the target file. Needs to be known to the most recent
-     *   targets metadata downloaded in ::refresh().
+     *   The path of the target file.
      * @param string[] $searchedRoles
      *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
      *   calls to this function and should be provided by any callers.
@@ -537,7 +536,7 @@ class Updater
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata that contains the metadata for the target or null if the target is not found.
      */
-    private function performDelegationSearch(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
+    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
@@ -567,9 +566,9 @@ class Updater
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
                 $subtreeTerminates = false;
-                $resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles, $subtreeTerminates);
-                if ($subtreeTerminates || $resolvedTargetMetadata) {
-                    return $resolvedTargetMetadata;
+                $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $subtreeTerminates);
+                if ($subtreeTerminates || $delegatedRolesMetadataSearchResult) {
+                    return $delegatedRolesMetadataSearchResult;
                 }
 
                 // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
