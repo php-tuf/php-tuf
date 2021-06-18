@@ -537,12 +537,13 @@ class Updater
      * @param string[] $searchedRoles
      *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
      *   calls to this function and should be provided by any callers.
+     * @param bool $terminated
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata that is the end node for search or null if the target metadata does not make any delegations.
      *   The target metadata or may not contain information for the target.
      */
-    private function performDelegationSearch(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles): ?TargetsMetadata
+    private function performDelegationSearch(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
@@ -562,6 +563,10 @@ class Updater
             if ($delegatedRole->matchesPath($target)) {
                 // Targets must match the path in all roles in the delegation chain, so if the path does not match,
                 // do not evaluate this role or any roles it delegates to.
+                if ($delegatedRole->isTerminating()) {
+                    $terminated = true;
+                }
+
                 $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
                 $delegatedTargetsMetadata = $this->metadataFactory->load($delegatedRoleName);
@@ -571,8 +576,8 @@ class Updater
                 $searchedRoles[] = $delegatedRoleName;
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
-                if ($resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles)) {
-                    if ($resolvedTargetMetadata->hasTarget($target)) {
+                if ($resolvedTargetMetadata = $this->performDelegationSearch($delegatedTargetsMetadata, $target, $searchedRoles, $terminated)) {
+                    if ($terminated || $resolvedTargetMetadata->hasTarget($target)) {
                         return $resolvedTargetMetadata;
                     }
                 }
