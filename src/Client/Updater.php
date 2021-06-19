@@ -569,9 +569,8 @@ class Updater
                 $searchedRoles[] = $delegatedRoleName;
                 // § 5.6.7.2.1
                 // Recursively search the list of delegations in order of appearance.
-                $subtreeTerminates = false;
-                $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $subtreeTerminates);
-                if ($subtreeTerminates || $delegatedRolesMetadataSearchResult) {
+                $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
+                if ($terminated || $delegatedRolesMetadataSearchResult) {
                     return $delegatedRolesMetadataSearchResult;
                 }
 
