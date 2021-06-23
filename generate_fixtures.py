@@ -1,6 +1,8 @@
 # For instructions on using this script, please see the README.
 
 from unittest import mock
+import shutil
+import glob
 from dirhash import dirhash
 from fixtures import (
     TUFTestFixtureSimple,
@@ -26,6 +28,10 @@ def generate_fixtures():
     TUFTestFixtureThresholdTwoAttack.build()
 
 
+for f in glob.glob("fixtures/*/client"):
+    shutil.rmtree(f)
+for f in glob.glob("fixtures/*/server"):
+    shutil.rmtree(f)
 generate_fixtures()
 
 # Create hash of generated fixtures directory.
