@@ -21,10 +21,12 @@ use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 class UpdaterTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
+    use ProphecyTrait;
 
     /**
      * The local repo.

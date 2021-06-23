@@ -5,7 +5,8 @@
     "require-dev": {
         "phpunit/phpunit": "^8.5.8|^9",
         "symfony/phpunit-bridge": "^5",
-        "php-tuf/phpcodesniffer-standard": "dev-main"
+        "php-tuf/phpcodesniffer-standard": "dev-main",
+        "phpspec/prophecy-phpunit": "^2.0"
     },
     "license": "MIT",
     "minimum-stability": "dev",
@@ -42,7 +43,7 @@
     "scripts": {
         "phpcs": "phpcs -s --standard=PhpTuf ./src ./tests",
         "phpcbf": "phpcbf --standard=PhpTuf ./src ./tests",
-        "test": "phpunit ./tests",
+        "test": "phpunit --coverage-text ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
     }
 }

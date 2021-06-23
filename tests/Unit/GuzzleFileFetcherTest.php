@@ -13,12 +13,14 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Tuf\Client\GuzzleFileFetcher;
 use Tuf\Exception\RepoFileNotFound;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @coversDefaultClass \Tuf\Client\GuzzleFileFetcher
  */
 class GuzzleFileFetcherTest extends TestCase
 {
+    use ProphecyTrait;
     /**
      * The mocked request handler.
      *
