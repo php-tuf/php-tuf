@@ -26,7 +26,9 @@ def generate_fixtures():
     TUFTestFixtureThresholdTwoAttack.build()
 
 
-# generate_fixtures()
+generate_fixtures()
+
+# Create hash of generated fixtures directory.
 hash_file = open("fixtures-hash.txt", "w")
 n = hash_file.write("hash:" + dirhash('fixtures', 'md5'))
 hash_file.close()
