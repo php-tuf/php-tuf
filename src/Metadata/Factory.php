@@ -50,7 +50,7 @@ class Factory
                     $currentMetadata = TimestampMetadata::createFromJson($json);
                     break;
                 default:
-                    $currentMetadata = TargetsMetadata::createFromJson($json);
+                    $currentMetadata = TargetsMetadata::createFromJson($json, $role);
             }
             $currentMetadata->trust();
             return $currentMetadata;
