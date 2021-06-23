@@ -1,4 +1,5 @@
 # For instructions on using this script, please see the README.
+import os
 
 from unittest import mock
 from fixtures import (
@@ -14,15 +15,16 @@ from fixtures import (
 
 
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
-def generate_fixtures():
-    TUFTestFixtureSimple.build()
-    TUFTestFixtureAttackRollback.build()
-    TUFTestFixtureDelegated.build()
-    TUFTestFixtureNestedDelegated.build()
-    TUFTestFixtureUnsupportedDelegation.build()
-    TUFTestFixtureNestedDelegatedErrors.build()
-    TUFTestFixtureThresholdTwo.build()
-    TUFTestFixtureThresholdTwoAttack.build()
+
+def GetHashofDirs(directory, verbose=0):
+    if not os.path.exists (directory):
+        return -1
+
+    for root, dirs, files in os.walk(directory):
+        for names in files:
+            filepath = os.path.join(root, names)
+            print(filepath)
 
 
-generate_fixtures()
+
+GetHashofDirs('fixtures')
