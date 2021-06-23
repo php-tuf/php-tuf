@@ -34,8 +34,8 @@ class FactoryTest extends TestCase
 
         $metadata = $factory->load($role);
         self::assertInstanceOf($class, $metadata);
-        self::assertEquals($class::TYPE, $metadata->getType());
-        self::assertEquals($role, $metadata->getRole());
+        self::assertSame($class::TYPE, $metadata->getType());
+        self::assertSame($role, $metadata->getRole());
     }
 
     /**
