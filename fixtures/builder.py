@@ -43,12 +43,9 @@ class FixtureBuilder:
 
     def __del__(self):
         # Create a hash for the generated fixture.
+        file_contents = "hash:" + dirhash(self.dir, 'md5')
         hash_file = open(self.dir + "/hash.txt", "w")
-        file_contents = ""
-        for folder in ['client', 'server']:
-            file_contents = file_contents + folder + "-hash:" + dirhash(self.dir + "/" + folder, 'md5') + "\n"
-
-        n = hash_file.write(file_contents)
+        hash_file.write(file_contents)
         hash_file.close()
 
     def _role(self, name):
