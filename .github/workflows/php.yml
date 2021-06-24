@@ -119,11 +119,11 @@ jobs:
         run: composer validate
 
       - name: Require dependencies
-        run: 'composer require --no-update ${{ matrix.dependencies }}'
+        run: 'composer require ${{ matrix.dependencies }} --with-all-dependencies'
 
-      - name: Install dependencies
-        if: matrix.php != '8.0'
-        run: 'composer install ${{ env.COMPOSER_FLAGS }}'
+#      - name: Install dependencies
+#        if: matrix.php != '8.0'
+#        run: 'composer install ${{ env.COMPOSER_FLAGS }}'
 
       - name: Install dependencies (ignore-platform-req)
         if: matrix.php == '8.0'
