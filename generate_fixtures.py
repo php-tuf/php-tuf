@@ -3,7 +3,7 @@
 from unittest import mock
 import shutil
 import glob
-from dirhash import dirhash
+import os
 from fixtures import (
     TUFTestFixtureSimple,
     TUFTestFixtureAttackRollback,
@@ -35,6 +35,6 @@ for f in glob.glob("fixtures/*/server"):
     shutil.rmtree(f)
 # Delete has files to ensure they are generated again.
 for f in glob.glob("fixtures/*/hash.txt"):
-    shutil.rmtree(f)
+    os.remove(f)
 generate_fixtures()
 
