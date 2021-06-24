@@ -32,7 +32,7 @@ class RoleTest extends TestCase
     }
 
     /**
-     * @covers ::createFromMetadataAndName
+     * @covers ::createFromMetadata
      *
      * @param $data
      *   Invalid data.

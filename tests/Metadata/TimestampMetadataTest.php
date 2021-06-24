@@ -5,6 +5,9 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 
+/**
+ * @coversDefaultClass \Tuf\Metadata\TimestampMetadata
+ */
 class TimestampMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;

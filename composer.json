@@ -5,7 +5,8 @@
     "require-dev": {
         "phpunit/phpunit": "^8.5.8|^9",
         "symfony/phpunit-bridge": "^5",
-        "php-tuf/phpcodesniffer-standard": "dev-main"
+        "php-tuf/phpcodesniffer-standard": "dev-main",
+        "phpspec/prophecy-phpunit": "^2"
     },
     "license": "MIT",
     "minimum-stability": "dev",
@@ -40,6 +41,10 @@
         }
     },
     "scripts": {
+        "coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --coverage-text --color=always"
+        ],
         "phpcs": "phpcs -s --standard=PhpTuf ./src ./tests",
         "phpcbf": "phpcbf --standard=PhpTuf ./src ./tests",
         "test": "phpunit ./tests",

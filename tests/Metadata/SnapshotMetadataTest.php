@@ -5,6 +5,9 @@ namespace Tuf\Tests\Metadata;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\SnapshotMetadata;
 
+/**
+ * @coversDefaultClass \Tuf\Metadata\SnapshotMetadata
+ */
 class SnapshotMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
