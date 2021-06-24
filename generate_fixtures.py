@@ -33,5 +33,8 @@ for f in glob.glob("fixtures/*/client"):
     shutil.rmtree(f)
 for f in glob.glob("fixtures/*/server"):
     shutil.rmtree(f)
+# Delete has files to ensure they are generated again.
+for f in glob.glob("fixtures/*/hash.txt"):
+    shutil.rmtree(f)
 generate_fixtures()
 
