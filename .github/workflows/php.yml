@@ -74,9 +74,7 @@ jobs:
           extensions: sodium, json
           tools: composer:v2
       - uses: actions/checkout@v2
-      - run: 'composer install'
-        with:
-          composer-options: '--no-cache'
+      - run: 'composer install --no-cache'
       - name: 'Generate code coverage'
         run: 'composer run coverage'
 
