@@ -8,6 +8,7 @@ from tuf import repository_tool
 import json
 import os
 import shutil
+from dirhash import dirhash
 
 
 class FixtureBuilder:
@@ -39,6 +40,16 @@ class FixtureBuilder:
         self.add_key('timestamp')
 
         self.repository.status()
+
+    def __del__(self):
+        # Create a hash for the generated fixture.
+        hash_file = open(self.dir + "/hash.txt", "w")
+        file_contents = ""
+        for folder in ['client', 'server']:
+            file_contents = file_contents + folder + "-hash:" + dirhash(self.dir + "/" + folder, 'md5') + "\n"
+
+        n = hash_file.write(file_contents)
+        hash_file.close()
 
     def _role(self, name):
         """Loads a role object for a specific role."""

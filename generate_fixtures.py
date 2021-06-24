@@ -35,21 +35,3 @@ for f in glob.glob("fixtures/*/server"):
     shutil.rmtree(f)
 generate_fixtures()
 
-# Create a hash for each generated fixtures directory.
-hash_file = open("fixtures-hash.txt", "w")
-fixtures = [
-"TUFTestFixtureSimple",
-"TUFTestFixtureAttackRollback",
-"TUFTestFixtureDelegated",
-"TUFTestFixtureNestedDelegated",
-"TUFTestFixtureUnsupportedDelegation",
-"TUFTestFixtureNestedDelegatedErrors",
-"TUFTestFixtureThresholdTwo",
-"TUFTestFixtureThresholdTwoAttack"
-]
-file_contents = ""
-for fixture in fixtures:
-    file_contents = file_contents + fixture + "-hash:" + dirhash('fixtures/' + fixture, 'md5') + "\n"
-
-n = hash_file.write(file_contents)
-hash_file.close()
