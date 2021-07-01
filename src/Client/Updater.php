@@ -548,7 +548,7 @@ class Updater
             $delegatedRoleName = $delegatedRole->getName();
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
-                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
+                // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
                 continue;
             }
             if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {

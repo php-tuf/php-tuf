@@ -242,7 +242,7 @@ class UpdaterTest extends TestCase
     public function providerVerifiedDelegatedDownload(): array
     {
         return [
-          // Test cases using the TUFTestFixtureNestedDelegated fixture
+           // Test cases using the TUFTestFixtureNestedDelegated fixture
             'level_1_target.txt' => [
                 'TUFTestFixtureNestedDelegated',
                 'level_1_target.txt',
