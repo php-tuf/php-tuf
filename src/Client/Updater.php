@@ -523,7 +523,7 @@ class Updater
     }
 
     /**
-     * Performs a search of delegate roles for a metadata containing information about a target.
+     * Searches delegated roles for metadata concerning a specific target.
      *
      * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
      *   The targets metadata to search.
@@ -531,7 +531,6 @@ class Updater
      *   The path of the target file.
      * @param string[] $searchedRoles
      *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
-     *   calls to this function and should be provided by any callers.
      * @param bool $terminated
      *   (optional) For internal recursive calls only. This will be set to true if a terminating delegation is found in
      *   the search.
