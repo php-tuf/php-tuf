@@ -214,6 +214,8 @@ class UpdaterTest extends TestCase
      *   The delegated file to download.
      * @param array $expectedFileVersions
      *   The expected client versions after the download.
+     * @param bool $expectedResult
+     *   Whether the target should be found or not.
      *
      * @return void
      * @todo Add test coverage delegated roles that then delegate to other roles in
@@ -222,9 +224,8 @@ class UpdaterTest extends TestCase
      * @covers ::download
      *
      * @dataProvider providerVerifiedDelegatedDownload
-     *
      */
-    public function testVerifiedDelegatedDownload(string $fixturesSet, string $delegatedFile, array $expectedFileVersions): void
+    public function testVerifiedDelegatedDownload(string $fixturesSet, string $delegatedFile, array $expectedFileVersions, bool $expectedResult = false): void
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
@@ -241,80 +242,26 @@ class UpdaterTest extends TestCase
 
     public function providerVerifiedDelegatedDownload(): array
     {
-        return [
-            'level_1_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
-                'level_1_target.txt',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 2,
-                    'level_2' => null,
-                    'level_3' => null,
-                ],
-            ],
-            'level_1_2_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
-                'level_1_2_target.txt',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 2,
-                    'level_2' => 1,
-                    'level_2_terminating' => null,
-                    'level_3' => null,
-                ],
-            ],
-            'level_1_2_terminating_findable.txt' => [
-                'TUFTestFixtureNestedDelegated',
-                'level_1_2_terminating_findable.txt',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 2,
-                    'level_2' => 1,
-                    'level_2_terminating' => 1,
-                    'level_3' => null,
-                ],
-            ],
-            'level_1_2_3_below_non_terminating_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
-                'level_1_2_3_below_non_terminating_target.txt',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 2,
-                    'level_2' => 1,
-                    'level_2_terminating' => null,
-                    'level_3' => 1,
-                ],
-            ],
-            // Roles delegated from a terminating role are evaluated.
-            // See § 5.6.7.2.1 and 5.6.7.2.2.
-            'level_1_2_terminating_3_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
-                'level_1_2_terminating_3_target.txt',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 2,
-                    'level_2' => 1,
-                    'level_2_terminating' => 1,
-                    'level_3' => null,
-                    'level_3_below_terminated' => 1,
-                ],
-            ],
-        ];
+        $path = __DIR__ . '/../../fixtures/*/test_targets.json';
+        $testTargetFiles = glob($path);
+        $cases = [];
+
+        foreach ($testTargetFiles as $testTargetFile) {
+            $pathParts = explode('/', $testTargetFile);
+            $fixture = $pathParts[count($pathParts) - 2];
+            $targets = json_decode(file_get_contents($testTargetFile), true);
+            foreach ($targets as $targetInfo) {
+                $this->assertSame(['target_path', 'find', 'expected_versions'], array_keys($targetInfo));
+                $targetPath = $targetInfo['target_path'];
+                $cases["$fixture-$targetPath"] = [
+                    $fixture,
+                    $targetPath,
+                    $targetInfo['expected_versions'],
+                    $targetInfo['find'],
+                ];
+            }
+        }
+        return $cases;
     }
 
     /**
