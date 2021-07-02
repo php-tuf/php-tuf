@@ -1,0 +1,72 @@
+[
+  {
+    "target_path": "level_1_target.txt",
+    "find": true,
+    "expected_versions": {
+      "root": 5,
+      "timestamp": 5,
+      "snapshot": 5,
+      "targets": 5,
+      "unclaimed": 2,
+      "level_2": null,
+      "level_3": null
+    }
+  },
+  {
+    "target_path": "level_1_2_target.txt",
+    "find": true,
+    "expected_versions": {
+      "root": 5,
+      "timestamp": 5,
+      "snapshot": 5,
+      "targets": 5,
+      "unclaimed": 2,
+      "level_2": 1,
+      "level_2_terminating": null,
+      "level_3": null
+    }
+  },
+  {
+      "target_path": "level_1_2_terminating_findable.txt",
+      "find": true,
+      "expected_versions": {
+        "root": 5,
+        "timestamp": 5,
+        "snapshot": 5,
+        "targets": 5,
+        "unclaimed": 2,
+        "level_2": 1,
+        "level_2_terminating": 1,
+        "level_3": null
+      }
+  },
+  {
+    "target_path": "level_1_2_3_below_non_terminating_target.txt",
+    "find": true,
+    "expected_versions": {
+      "root": 5,
+      "timestamp": 5,
+      "snapshot": 5,
+      "targets": 5,
+      "unclaimed": 2,
+      "level_2": 1,
+      "level_2_terminating": null,
+      "level_3": 1
+    }
+  },
+  {
+    "target_path": "level_1_2_terminating_3_target.txt",
+    "find": true,
+    "expected_versions": {
+      "root": 5,
+      "timestamp": 5,
+      "snapshot": 5,
+      "targets": 5,
+      "unclaimed": 2,
+      "level_2": 1,
+      "level_2_terminating": 1,
+      "level_3": null,
+      "level_3_below_terminated": 1
+    }
+  }
+]
