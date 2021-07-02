@@ -477,7 +477,7 @@ class Updater
      *   The path of the target file.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
-     *   The target metadata with a match for the target or null if no match is found.
+     *   The targets metadata with information about the desired target, or null if no relevant metadata is found.
      */
     protected function getMetadataForTarget(string $target): ?TargetsMetadata
     {
