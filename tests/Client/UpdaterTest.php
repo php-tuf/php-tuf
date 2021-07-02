@@ -317,8 +317,9 @@ class UpdaterTest extends TestCase
             ],
             // A terminating role only has an effect if the target path matches
             // the role, otherwise the role is not evaluated.
-            // Roles after terminating delegation where the target path does match not
-            // the terminating role are not evaluated.
+            // Roles after (i.e., next to) a terminating delegation, where the
+            // target path does match not the terminating role, are not
+            // evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2a_terminating_plus_1_more_findable.txt' => [
                 'TUFTestFixtureNestedDelegated',
