@@ -2,7 +2,7 @@
  "signatures": [
   {
    "keyid": "05e17c1501d627b2597322f80d33aacec6f30a507552d3326a88913422b0e30b",
-   "sig": "8c719e7cd6f62f0cb77131401335405d5d9d81544bdf5c7154401fdd8d1665768edda040a939f86c89e21d8d6eddc10c6bab4f226137b4949cf7a7eee1bc9703"
+   "sig": "da4babf711a50ba821b03921ca6fbcc05dd1e693005b6b71dd390fa47d4791a6a1f279b7054006e85abf19d5c42cc9343b6fe4dca572dd80ac10692633844d0a"
   }
  ],
  "signed": {
@@ -17,6 +17,17 @@
      "keytype": "ed25519",
      "keyval": {
       "public": "e104199cda6e018d7d9044fa6225aa5dc9c2af5ee4e1c0fe6d16ad002220390d"
+     },
+     "scheme": "ed25519"
+    },
+    "75b81ec1572cc1dd55f88f13f0f0217b4e7a25f1665deed40115b612ff9c0eb8": {
+     "keyid_hash_algorithms": [
+      "sha256",
+      "sha512"
+     ],
+     "keytype": "ed25519",
+     "keyval": {
+      "public": "9b1db36a5cad80284b5f40b040621e0e444f25ee09efa5c1fd6da4499c711bd5"
      },
      "scheme": "ed25519"
     },
@@ -51,6 +62,17 @@
      "name": "level_2_terminating",
      "paths": [
       "level_1_2_terminating_*.txt"
+     ],
+     "terminating": true,
+     "threshold": 1
+    },
+    {
+     "keyids": [
+      "75b81ec1572cc1dd55f88f13f0f0217b4e7a25f1665deed40115b612ff9c0eb8"
+     ],
+     "name": "level_2_after_terminating_not_match_terminating_path",
+     "paths": [
+      "level_1_2a_terminating_plus_1_more_*.txt"
      ],
      "terminating": false,
      "threshold": 1

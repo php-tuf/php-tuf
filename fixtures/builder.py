@@ -47,9 +47,9 @@ class FixtureBuilder:
         except AttributeError:
             return self.repository.targets(name)
 
-    def delegate(self, role_name, paths, parent='targets', path_hash_prefixes=None):
+    def delegate(self, role_name, paths, parent='targets', path_hash_prefixes=None, terminating=False):
         """Creates a delegated role."""
-        self._role(parent).delegate(role_name, [], paths, path_hash_prefixes=path_hash_prefixes)
+        self._role(parent).delegate(role_name, [], paths, path_hash_prefixes=path_hash_prefixes, terminating=terminating)
         self.add_key(role_name)
         return self
 
