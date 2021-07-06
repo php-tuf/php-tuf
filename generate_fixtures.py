@@ -1,6 +1,7 @@
 # For instructions on using this script, please see the README.
 
 from unittest import mock
+
 from fixtures import (
     TUFTestFixtureSimple,
     TUFTestFixtureAttackRollback,
@@ -9,7 +10,11 @@ from fixtures import (
     TUFTestFixtureUnsupportedDelegation,
     TUFTestFixtureNestedDelegatedErrors,
     TUFTestFixtureThresholdTwo,
-    TUFTestFixtureThresholdTwoAttack
+    TUFTestFixtureThresholdTwoAttack,
+    TUFTestFixtureTerminatingDelegation,
+    TUFTestFixtureTopLevelTerminating,
+    TUFTestFixtureNestedTerminatingNonDelegatingDelegation,
+    TUFTestFixture3LevelDelegation
 )
 
 
@@ -23,6 +28,10 @@ def generate_fixtures():
     TUFTestFixtureNestedDelegatedErrors.build()
     TUFTestFixtureThresholdTwo.build()
     TUFTestFixtureThresholdTwoAttack.build()
+    TUFTestFixtureTerminatingDelegation.build()
+    TUFTestFixtureTopLevelTerminating.build()
+    TUFTestFixtureNestedTerminatingNonDelegatingDelegation.build()
+    TUFTestFixture3LevelDelegation.build()
 
 
 generate_fixtures()

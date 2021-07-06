@@ -247,6 +247,7 @@ class UpdaterTest extends TestCase
     public function providerVerifiedDelegatedDownload(): array
     {
         return [
+           // Test cases using the TUFTestFixtureNestedDelegated fixture
             'level_1_target.txt' => [
                 'TUFTestFixtureNestedDelegated',
                 'level_1_target.txt',
@@ -319,6 +320,263 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => 1,
                 ],
             ],
+            // A terminating role only has an effect if the target path matches
+            // the role, otherwise the role is not evaluated.
+            // Roles after (i.e., next to) a terminating delegation, where the
+            // target path does match not the terminating role, are not
+            // evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2a_terminating_plus_1_more_findable.txt' => [
+                'TUFTestFixtureNestedDelegated',
+                'level_1_2a_terminating_plus_1_more_findable.txt',
+                [
+                    'root' => 5,
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_2_terminating' => 1,
+                    'level_3' => 1,
+                    'level_3_below_terminated' => 1,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureTerminatingDelegation' fixture set.
+            'TUFTestFixtureTerminatingDelegation targets.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'targets.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation a.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation b.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation c.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'c.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation d.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'd.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
+            'TUFTestFixtureTopLevelTerminating a.txt' => [
+                'TUFTestFixtureTopLevelTerminating',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation a.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation b.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            // Test using the TUFTestFixture3LevelDelegation fixture set.
+            'TUFTestFixture3LevelDelegation targets.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'targets.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation a.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'a.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation b.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation c.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'c.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation d.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'd.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation e.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'e.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixture3LevelDelegation f.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'f.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => 1,
+                ],
+            ],
         ];
     }
 
@@ -363,8 +621,6 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest();
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
-        self::assertFileExists($testFilePath);
         try {
             $updater->download($fileName)->wait();
         } catch (NotFoundException $exception) {
@@ -386,6 +642,7 @@ class UpdaterTest extends TestCase
     public function providerDelegationErrors(): array
     {
         return [
+            // Test using the TUFTestFixtureNestedDelegatedErrors fixture set.
             // 'level_a.txt' is added via the 'unclaimed' role but this role has
             // `paths: ['level_1_*.txt']` which does not match the file name.
             'no path match' => [
@@ -441,8 +698,8 @@ class UpdaterTest extends TestCase
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
-                    // The client does not update the 'unclaimed.json' file because
-                    // the target file does not match the 'paths' property for the role.
+                // The client does not update the 'unclaimed.json' file because
+                // the target file does not match the 'paths' property for the role.
                     'unclaimed' => 1,
                     'level_2' => null,
                     'level_2_after_terminating' => null,
@@ -451,31 +708,158 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => null,
                 ],
             ],
-            // 'level_2_after_terminating_unfindable.txt' is added via role
-            // 'level_2_after_terminating' which is delegated from role at the same level as 'level_2_terminating'
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
+            'delegated path does not match role' => [
+                'TUFTestFixtureNestedDelegatedErrors',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
+                [
+                    'root' => 6,
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does update the 'unclaimed.json' file because
+                    // the target file does match the 'paths' property for the role.
+                    'unclaimed' => 3,
+                    'level_2' => 2,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
             //  but added after 'level_2_terminating'.
             // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'delegation is after terminating delegation' => [
                 'TUFTestFixtureNestedDelegatedErrors',
-                // @todo file file name in https://github.com/php-tuf/php-tuf/pull/216 becauses it does NOT match the
-                // 'paths' property for 'unclaimed' and therefore cannot be find not only for the reason state above.
-                'level_2_after_terminating_unfindable.txt',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
                     'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
-                    // The client does not update the 'unclaimed.json' file because
-                    // the target file does not match the 'paths' property for the role.
-                    // @todo Update version in https://github.com/php-tuf/php-tuf/pull/216
-                    'unclaimed' => 1,
-                    'level_2' => null,
+                    'unclaimed' => 3,
+                    'level_2' => 2,
                     'level_2_after_terminating' => null,
                     'level_2_terminating' => null,
                     'level_3' => null,
                     'level_3_below_terminated' => null,
+                ],
+            ],
+            // Test using the TUFTestFixtureTerminatingDelegation fixture set.
+            'TUFTestFixtureTerminatingDelegation e.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'e.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TUFTestFixtureTerminatingDelegation f.txt' => [
+                'TUFTestFixtureTerminatingDelegation',
+                'f.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
+            'TUFTestFixtureTopLevelTerminating b.txt' => [
+                'TUFTestFixtureTopLevelTerminating',
+                'b.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation c.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'c.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation d.txt' => [
+                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+                'd.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            // Test cases using the 'TUFTestFixture3LevelDelegation' fixture set.
+            // A search for non existent target should that matches the paths
+            // should search the complete tree.
+            'TUFTestFixture3LevelDelegation z.txt' => [
+                'TUFTestFixture3LevelDelegation',
+                'z.txt',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => 1,
+                ],
+            ],
+            // A search for non existent target that does match the paths
+            // should not search any of the tree.
+            'TUFTestFixture3LevelDelegation z.zip' => [
+                'TUFTestFixture3LevelDelegation',
+                'z.zip',
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
                 ],
             ],
         ];
@@ -590,22 +974,24 @@ class UpdaterTest extends TestCase
     {
         foreach ($expectedVersions as $role => $version) {
             if (is_null($version)) {
-                $this->assertNull($this->localRepo["$role.json"]);
+                $this->assertNull($this->localRepo["$role.json"], "'$role' file is null.");
                 return;
             }
+            $roleJson = $this->localRepo["$role.json"];
+            $this->assertNotNull($roleJson, "'$role.json' found in local repo.");
             switch ($role) {
                 case 'root':
-                    $metadata = RootMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = RootMetadata::createFromJson($roleJson);
                     break;
                 case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = TimestampMetadata::createFromJson($roleJson);
                     break;
                 case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = SnapshotMetadata::createFromJson($roleJson);
                     break;
                 default:
                     // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($this->localRepo["$role.json"]);
+                    $metadata = TargetsMetadata::createFromJson($roleJson);
                     break;
             }
             $actualVersion = $metadata->getVersion();
