@@ -152,12 +152,20 @@ class Updater
     }
 
     /**
+     * @todo Add docs. See python comments:
+     *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
+     *     https://github.com/php-tuf/php-tuf/issues/162
+     *@todo The Python implementation has an optional flag to "unsafely update
+     *     root if necessary". Do we need it?
+     *     https://github.com/php-tuf/php-tuf/issues/21
      * @param bool $force
      *   (optional) If false, return early if this updater has already been
      *   refreshed. Defaults to false.
      *
      * @return boolean
      *     TRUE if the data was successfully refreshed.
+     *
+     * @see https://github.com/php-tuf/php-tuf/issues/21
      *
      * @throws \Tuf\Exception\MetadataException
      *   Throw if an upated root metadata file is not valid.
@@ -167,15 +175,6 @@ class Updater
      *   Throw if a rollback attack is detected.
      * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
-     *@todo The Python implementation has an optional flag to "unsafely update
-     *     root if necessary". Do we need it?
-     *     https://github.com/php-tuf/php-tuf/issues/21
-     *
-     * @see https://github.com/php-tuf/php-tuf/issues/21
-     *
-     * @todo Add docs. See python comments:
-     *     https://github.com/theupdateframework/tuf/blob/1cf085a360aaad739e1cc62fa19a2ece270bb693/tuf/client/updater.py#L999
-     *     https://github.com/php-tuf/php-tuf/issues/162
      */
     public function refresh(bool $force = false): bool
     {
