@@ -63,7 +63,7 @@ class UniversalVerifier
      * @throws \Tuf\Exception\Attack\FreezeAttackException
      * @throws \Tuf\Exception\Attack\RollbackAttackException
      * @throws \Tuf\Exception\Attack\InvalidHashException
-     * @throws \Tuf\Exception\Attack\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      */
     public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
