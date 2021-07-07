@@ -2,7 +2,7 @@
 
 namespace Tuf\Client;
 
-use Tuf\Exception\Attack\SignatureThresholdExpception;
+use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\JsonNormalizer;
 use Tuf\Key;
 use Tuf\KeyDB;
@@ -86,7 +86,7 @@ final class SignatureVerifier
         }
 
         if (count($verifiedKeySignatures) < $needVerified) {
-            throw new SignatureThresholdExpception("Signature threshold not met on " . $metadata->getRole());
+            throw new SignatureThresholdException("Signature threshold not met on " . $metadata->getRole());
         }
     }
 

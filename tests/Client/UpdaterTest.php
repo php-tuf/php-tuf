@@ -12,7 +12,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Exception\Attack\RollbackAttackException;
-use Tuf\Exception\Attack\SignatureThresholdExpception;
+use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Metadata\RootMetadata;
@@ -1049,7 +1049,7 @@ class UpdaterTest extends TestCase
                 '3.root.json',
                 ['signed', 'newkey'],
                 'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
+                new SignatureThresholdException('Signature threshold not met on root'),
                 [
                     'root' => 2,
                     'timestamp' => 2,
@@ -1061,7 +1061,7 @@ class UpdaterTest extends TestCase
                 '4.root.json',
                 ['signed', 'newkey'],
                 'new value',
-                new SignatureThresholdExpception('Signature threshold not met on root'),
+                new SignatureThresholdException('Signature threshold not met on root'),
                 [
                     'root' => 3,
                     'timestamp' => 2,
@@ -1073,7 +1073,7 @@ class UpdaterTest extends TestCase
                 'timestamp.json',
                 ['signed', 'newkey'],
                 'new value',
-                new SignatureThresholdExpception('Signature threshold not met on timestamp'),
+                new SignatureThresholdException('Signature threshold not met on timestamp'),
                 [
                     'root' => 4,
                     'timestamp' => null,
@@ -1118,7 +1118,7 @@ class UpdaterTest extends TestCase
                 '4.targets.json',
                 ['signed', 'newvalue'],
                 'value',
-                new SignatureThresholdExpception("Signature threshold not met on targets"),
+                new SignatureThresholdException("Signature threshold not met on targets"),
                 [
                     'root' => 4,
                     'timestamp' => 4,
@@ -1130,7 +1130,7 @@ class UpdaterTest extends TestCase
                 '4.targets.json',
                 ['signed', 'version'],
                 6,
-                new SignatureThresholdExpception("Signature threshold not met on targets"),
+                new SignatureThresholdException("Signature threshold not met on targets"),
                 [
                     'root' => 4,
                     'timestamp' => 4,
@@ -1257,7 +1257,7 @@ class UpdaterTest extends TestCase
     {
         return [
             ['TUFTestFixtureThresholdTwo'],
-            ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdExpception::class],
+            ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdException::class],
         ];
     }
 

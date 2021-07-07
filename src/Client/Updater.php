@@ -174,7 +174,7 @@ class Updater
      *   Throw if a freeze attack is detected.
      * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\Attack\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
      */
     public function refresh(bool $force = false): bool
@@ -262,7 +262,7 @@ class Updater
      *   Throw if a freeze attack is detected.
      * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\Attack\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if an updated root file is not signed with the need signatures.
      *
      * @throws \Tuf\Exception\MetadataException
