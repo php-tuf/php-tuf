@@ -6,6 +6,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -22,9 +23,13 @@ use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 
+/**
+ * @coversDefaultClass \Tuf\Client\Updater
+ */
 class UpdaterTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
+    use ProphecyTrait;
 
     /**
      * The local repo.

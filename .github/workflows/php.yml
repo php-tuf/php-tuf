@@ -58,6 +58,26 @@ jobs:
             exit 0
         fi
 
+  coverage:
+    name: 'Code coverage'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4']
+    steps:
+      - name: 'Set up PHP'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php }}"
+          coverage: xdebug2
+          extensions: sodium, json
+          tools: composer:v2
+      - uses: actions/checkout@v2
+      - run: 'composer install --no-cache'
+      - name: 'Generate code coverage'
+        run: 'composer run coverage'
+
   build:
     name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
     runs-on: ${{ matrix.operating-system }}
@@ -99,11 +119,11 @@ jobs:
         run: composer validate
 
       - name: Require dependencies
-        run: 'composer require --no-update ${{ matrix.dependencies }}'
+        run: 'composer require ${{ matrix.dependencies }} --with-all-dependencies'
 
-      - name: Install dependencies
-        if: matrix.php != '8.0'
-        run: 'composer install ${{ env.COMPOSER_FLAGS }}'
+#      - name: Install dependencies
+#        if: matrix.php != '8.0'
+#        run: 'composer install ${{ env.COMPOSER_FLAGS }}'
 
       - name: Install dependencies (ignore-platform-req)
         if: matrix.php == '8.0'

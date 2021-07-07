@@ -8,7 +8,7 @@ use Tuf\Metadata\Verifier\RootVerifier;
 use Tuf\Metadata\Verifier\VerifierBase;
 
 /**
- * @covers \Tuf\Metadata\Verifier\VerifierBase
+ * @coversDefaultClass \Tuf\Metadata\Verifier\VerifierBase
  */
 class VerifierTest extends TestCase
 {
