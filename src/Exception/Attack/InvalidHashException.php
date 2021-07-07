@@ -1,6 +1,6 @@
 <?php
 
-namespace Tuf\Exception\PotentialAttackException;
+namespace Tuf\Exception\Attack;
 
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\TufException;

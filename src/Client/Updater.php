@@ -9,8 +9,8 @@ use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
-use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
-use Tuf\Exception\PotentialAttackException\InvalidHashException;
+use Tuf\Exception\Attack\DenialOfServiceAttackException;
+use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
 use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
@@ -170,11 +170,11 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdExpception
      *   Thrown if the signature threshold has not be reached.
      */
     public function refresh(bool $force = false): bool
@@ -257,16 +257,16 @@ class Updater
      * @param \Tuf\Metadata\RootMetadata $rootData
      *   The current root metadata.
      *
-     * @throws \Tuf\Exception\MetadataException
-     *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @return void
+     *@throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdExpception
      *   Thrown if an updated root file is not signed with the need signatures.
      *
-     * @return void
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
      */
     private function updateRoot(RootMetadata &$rootData): void
     {
@@ -398,7 +398,7 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   If the target has no trusted hash(es).
-     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
+     * @throws \Tuf\Exception\Attack\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
     protected function verify(string $target, StreamInterface $data): void
