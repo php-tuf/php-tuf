@@ -60,16 +60,10 @@ class KeyDB
      *
      * @return string[]
      *     An array of supported encryption key type names (e.g. 'ed25519').
-     *
-     * @see src/constants.php
      */
     public static function getSupportedKeyTypes(): array
     {
-        static $types = [];
-        if (count($types) == 0) {
-            $types = explode(" ", SUPPORTED_KEY_TYPES);
-        }
-        return $types;
+        return ['ed25519'];
     }
 
     /**
