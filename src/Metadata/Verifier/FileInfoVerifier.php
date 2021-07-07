@@ -2,7 +2,7 @@
 
 namespace Tuf\Metadata\Verifier;
 
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Metadata\FileInfoMetadataBase;
 
 /**
@@ -24,7 +24,7 @@ abstract class FileInfoVerifier extends VerifierBase
      * @param \Tuf\Metadata\FileInfoMetadataBase $untrustedMetadata
      *     The untrusted metadata.
      *
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      */
     protected function checkFileInfoVersions(FileInfoMetadataBase $untrustedMetadata): void
     {
