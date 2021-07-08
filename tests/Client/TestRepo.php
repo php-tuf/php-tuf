@@ -30,14 +30,14 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * TestRepo constructor.
      *
-     * @param string $fixturesSet
+     * @param string $fixtureName
      *   The fixtures set to use.
      */
-    public function __construct(string $fixturesSet)
+    public function __construct(string $fixtureName)
     {
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
-        $fixturesPath = static::getFixturePath($fixturesSet, 'server');
+        $fixturesPath = static::getFixturePath($fixtureName, 'server');
         $repoFiles = glob("$fixturesPath/metadata/*.json");
         $targetsPath = "$fixturesPath/targets";
         if (is_dir($targetsPath)) {
