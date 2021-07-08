@@ -15,10 +15,6 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Metadata\RootMetadata;
-use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
-use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -910,35 +906,7 @@ class UpdaterTest extends TestCase
      */
     protected function assertClientFileVersions(array $expectedVersions): void
     {
-        foreach ($expectedVersions as $role => $version) {
-            if (is_null($version)) {
-                $this->assertNull($this->localRepo["$role.json"], "'$role' file is null.");
-                return;
-            }
-            $roleJson = $this->localRepo["$role.json"];
-            $this->assertNotNull($roleJson, "'$role.json' found in local repo.");
-            switch ($role) {
-                case 'root':
-                    $metadata = RootMetadata::createFromJson($roleJson);
-                    break;
-                case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($roleJson);
-                    break;
-                case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($roleJson);
-                    break;
-                default:
-                    // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($roleJson);
-                    break;
-            }
-            $actualVersion = $metadata->getVersion();
-            $this->assertSame(
-                $expectedVersions[$role],
-                $actualVersion,
-                "Actual version of $role, '$actualVersion' does not match expected version '$version'"
-            );
-        }
+        $this->assertMetadataVersions($expectedVersions, $this->localRepo);
     }
 
     /**

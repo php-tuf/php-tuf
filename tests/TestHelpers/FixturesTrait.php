@@ -3,6 +3,10 @@
 namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
+use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\TargetsMetadata;
+use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 
 /**
@@ -156,5 +160,50 @@ trait FixturesTrait {
             Assert::assertFileExists($realpath);
         }
         return $realpath;
+    }
+
+    /**
+     * Asserts that stored metadata are at expected versions.
+     *
+     * @param ?int[] $expectedVersions
+     *   The expected versions. The keys are the file names, without the .json
+     *   suffix, and the values are the expected version numbers, or NULL if
+     *   the file should not be present.
+     * @param \ArrayAccess $storage
+     *   The durable storage for the metadata.
+     *
+     * @return void
+     */
+    protected function assertMetadataVersions(array $expectedVersions, \ArrayAccess $storage): void
+    {
+        foreach ($expectedVersions as $role => $version) {
+            if (is_null($version)) {
+                Assert::assertNull($storage["$role.json"], "'$role' file is null.");
+                return;
+            }
+            $roleJson = $storage["$role.json"];
+            Assert::assertNotNull($roleJson, "'$role.json' found in local repo.");
+            switch ($role) {
+                case 'root':
+                    $metadata = RootMetadata::createFromJson($roleJson);
+                    break;
+                case 'timestamp':
+                    $metadata = TimestampMetadata::createFromJson($roleJson);
+                    break;
+                case 'snapshot':
+                    $metadata = SnapshotMetadata::createFromJson($roleJson);
+                    break;
+                default:
+                    // Any other roles will be 'targets' or delegated targets roles.
+                    $metadata = TargetsMetadata::createFromJson($roleJson);
+                    break;
+            }
+            $actualVersion = $metadata->getVersion();
+            Assert::assertSame(
+                $expectedVersions[$role],
+                $actualVersion,
+                "Actual version of $role, '$actualVersion' does not match expected version '$version'"
+            );
+        }
     }
 }
