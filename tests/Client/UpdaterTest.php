@@ -98,6 +98,37 @@ class UpdaterTest extends TestCase
                 'level_2' => null,
                 'level_3' => null,
             ],
+            'TUFTestFixtureTerminatingDelegation' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureTopLevelTerminating' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixture3LevelDelegation' => [
+                'root' => 1,
+                'timestamp' => 1,
+                'snapshot' => 1,
+                'targets' => 1,
+            ],
+            'TUFTestFixtureNestedDelegatedErrors' => [
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
+                'unclaimed' => 1,
+            ],
         ];
         if (!isset($startVersions[$fixturesSet])) {
             throw new \UnexpectedValueException("Unknown fixture set: $fixturesSet");
@@ -138,6 +169,10 @@ class UpdaterTest extends TestCase
                 unset($this->localRepo[$fileName]);
             }
         }
+
+        $expectedStartVersions = static::getFixtureClientStartVersions($fixturesSet);
+        $this->assertClientFileVersions($expectedStartVersions);
+
         return new $updaterClass($this->testRepo, $mirrors, $this->localRepo, new TestClock());
     }
 
@@ -877,11 +912,8 @@ class UpdaterTest extends TestCase
     public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions): void
     {
         $expectedStartVersion = static::getFixtureClientStartVersions($fixturesSet);
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
 
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions($expectedStartVersion);
         $this->assertTrue($updater->refresh($fixturesSet));
         // Confirm the local version are updated to the expected versions.
         // § 5.3.8
@@ -1020,11 +1052,8 @@ class UpdaterTest extends TestCase
      */
     public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
         $fixturesSet = 'TUFTestFixtureDelegated';
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
         $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         try {
             $updater->refresh();
@@ -1167,10 +1196,7 @@ class UpdaterTest extends TestCase
      */
     public function testFileNotFoundExceptions(string $fixturesSet, string $fileName, array $expectedUpdatedVersions): void
     {
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $this->testRepo->removeRepoFile($fileName);
         try {
             $updater->refresh();
@@ -1287,7 +1313,6 @@ class UpdaterTest extends TestCase
     public function testSignatureThresholds(string $fixturesSet, string $expectedException = null)
     {
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         if ($expectedException) {
             $this->expectException($expectedException);
         }
@@ -1302,7 +1327,6 @@ class UpdaterTest extends TestCase
         $fixturesSet = 'TUFTestFixtureSimple';
 
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         // This refresh should succeed.
         $updater->refresh();
         // Put the server-side repo into an invalid state.
@@ -1328,7 +1352,6 @@ class UpdaterTest extends TestCase
         $fixtureSet = 'TUFTestFixtureUnsupportedDelegation';
         $updater = $this->getSystemInTest($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixtureSet));
         try {
             $updater->refresh();
         } catch (MetadataException $exception) {
@@ -1373,7 +1396,6 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $updater = $this->getSystemInTest($fixturesSet);
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         try {
             // No changes should be made to client repo.
             $this->localRepo->setExceptionOnChange();
