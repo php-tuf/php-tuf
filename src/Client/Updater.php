@@ -414,6 +414,7 @@ class Updater
 
         $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
+            // § 5.7.2
             throw new MetadataException("No trusted hashes are available for '$target'");
         }
         foreach ($hashes as $algo => $hash) {
@@ -551,6 +552,7 @@ class Updater
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
                 continue;
             }
+            // § 5.6.7.1
             if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
                 return null;
             }

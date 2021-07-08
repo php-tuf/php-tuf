@@ -221,6 +221,8 @@ class UpdaterTest extends TestCase
      *
      * @covers ::download
      *
+     * § 5.7.3
+     *
      * @dataProvider providerVerifiedDelegatedDownload
      *
      */
@@ -577,6 +579,8 @@ class UpdaterTest extends TestCase
 
     /**
      * Tests for enforcement of maximum number of roles limit.
+     *
+     * § 5.6.7.1
      */
     public function testMaximumRoles(): void
     {
@@ -610,6 +614,11 @@ class UpdaterTest extends TestCase
      * @param array $expectedFileVersions
      *
      * @dataProvider providerDelegationErrors
+     *
+     * § 5.6.7.2.1
+     * § 5.6.7.2.2
+     * § 5.6.7.2.3
+     * § 5.7.2
      */
     public function testDelegationErrors(string $fixturesSet, string $fileName, array $expectedFileVersions): void
     {
@@ -884,6 +893,10 @@ class UpdaterTest extends TestCase
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertTrue($updater->refresh($fixturesSet));
         // Confirm the local version are updated to the expected versions.
+        // § 5.3.8
+        // § 5.4.5
+        // § 5.5.7
+        // § 5.6.6
         $this->assertClientFileVersions($expectedUpdatedVersions);
 
         // Create another version of the client that only starts with the root.json file.
@@ -1046,6 +1059,7 @@ class UpdaterTest extends TestCase
     {
         return static::getKeyedArray([
             [
+                // § 5.3.4
                 '3.root.json',
                 ['signed', 'newkey'],
                 'new value',
@@ -1058,6 +1072,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
+                // § 5.3.4
                 '4.root.json',
                 ['signed', 'newkey'],
                 'new value',
@@ -1070,6 +1085,8 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
+                // § 5.3.11
+                // § 5.4.2
                 'timestamp.json',
                 ['signed', 'newkey'],
                 'new value',
@@ -1087,6 +1104,8 @@ class UpdaterTest extends TestCase
             // fixtures contains the optional 'hashes' metadata for the snapshot.json files, and this
             // is checked before the file signatures and the file version number. The order of checking
             // is specified in § 5.5.
+            // § 5.3.11
+            // § 5.5.2
             [
                 '4.snapshot.json',
                 ['signed', 'newkey'],
@@ -1099,6 +1118,8 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                 ],
             ],
+            // § 5.3.11
+            // § 5.5.2
             [
                 '4.snapshot.json',
                 ['signed', 'version'],
@@ -1114,6 +1135,7 @@ class UpdaterTest extends TestCase
             // For targets.json files, adding a new key or changing the existing version number
             // will result in a SignatureThresholdException because currently the test
             // fixtures do not contain hashes for targets.json files in snapshot.json.
+            // § 5.6.3
             [
                 '4.targets.json',
                 ['signed', 'newvalue'],
@@ -1126,6 +1148,7 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                 ],
             ],
+            // § 5.6.3
             [
                 '4.targets.json',
                 ['signed', 'version'],
@@ -1183,6 +1206,7 @@ class UpdaterTest extends TestCase
     public function providerFileNotFoundExceptions(): array
     {
         return static::getKeyedArray([
+            // § 5.3.11
             [
                 'TUFTestFixtureDelegated',
                 'timestamp.json',
@@ -1193,6 +1217,7 @@ class UpdaterTest extends TestCase
                     'targets' => 4,
                 ],
             ],
+            // § 5.3.11
             [
                 'TUFTestFixtureDelegated',
                 '4.snapshot.json',
@@ -1257,6 +1282,7 @@ class UpdaterTest extends TestCase
     {
         return [
             ['TUFTestFixtureThresholdTwo'],
+            // § 5.4.2
             ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdException::class],
         ];
     }
@@ -1391,6 +1417,8 @@ class UpdaterTest extends TestCase
     public function providerAttackRepoException(): array
     {
         return [
+            // § 5.4.3
+            // § 5.4.4
             [
                 'TUFTestFixtureAttackRollback',
                 new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),

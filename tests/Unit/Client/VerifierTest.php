@@ -94,6 +94,8 @@ class VerifierTest extends TestCase
      * Tests that the correct exception is thrown in case of a rollback attack
      * where the incoming metadata does not match the expected version.
      *
+     * § 5.3.5
+     *
      * @covers ::checkRollbackAttack
      *
      * @return void
@@ -161,6 +163,9 @@ class VerifierTest extends TestCase
     /**
      * Tests that the correct exception is thrown when the update is expired.
      *
+     * § 5.3.10
+     * § 5.4.4
+     * § 5.5.6
      * @covers ::checkFreezeAttack
      *
      * @return void
