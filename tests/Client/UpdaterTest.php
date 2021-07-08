@@ -137,10 +137,15 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Returns a memory-based updater populated with the test fixtures.
+     * Returns a memory-based updater populated with a specific test fixture.
+     *
+     * This will initialize $this->testRepo to fetch server-side metadata from
+     * the fixture, and $this->localRepo to interact with the fixture's
+     * client-side metadata. Both are kept in memory only, and will not cause
+     * any permanent side effects.
      *
      * @param string $fixturesSet
-     *     The fixtures set to use.
+     *     The name of the fixture to use.
      *
      * @return Updater
      *     The test updater, which uses the 'current' test fixtures in the
