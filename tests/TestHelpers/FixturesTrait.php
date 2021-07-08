@@ -12,8 +12,8 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 /**
  * Contains methods for safely interacting with the test fixtures.
  */
-trait FixturesTrait {
-
+trait FixturesTrait
+{
     /**
      * The initial client-side metadata versions for all fixtures.
      *
@@ -31,7 +31,7 @@ trait FixturesTrait {
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
-            'unsupported_target' => NULL,
+            'unsupported_target' => null,
             // We cannot assert the starting versions of 'targets' because it
             // has an unsupported field and would throw an exception when
             // validating.
@@ -66,8 +66,8 @@ trait FixturesTrait {
             'snapshot' => 2,
             'targets' => 2,
             'unclaimed' => 1,
-            'level_2' => NULL,
-            'level_3' => NULL,
+            'level_2' => null,
+            'level_3' => null,
         ],
         'TUFTestFixtureTerminatingDelegation' => [
             'root' => 1,
