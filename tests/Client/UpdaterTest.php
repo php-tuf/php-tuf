@@ -127,6 +127,8 @@ class UpdaterTest extends TestCase
             ],
         ];
 
+        $this->testRepo = new TestRepo($fixturesSet);
+
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'client/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
@@ -149,7 +151,6 @@ class UpdaterTest extends TestCase
     {
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
 
         $testFilePath = static::getFixturesRealPath($fixturesSet, 'server/targets/testtarget.txt', false);
@@ -229,7 +230,6 @@ class UpdaterTest extends TestCase
     public function testVerifiedDelegatedDownload(string $fixturesSet, string $delegatedFile, array $expectedFileVersions): void
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
 
         $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
@@ -589,7 +589,6 @@ class UpdaterTest extends TestCase
 
         // Ensure the file can found if the maximum role limit is 100.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
         $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
@@ -599,7 +598,6 @@ class UpdaterTest extends TestCase
 
         // Ensure the file can not found if the maximum role limit is 3.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet, LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
@@ -623,7 +621,6 @@ class UpdaterTest extends TestCase
     public function testDelegationErrors(string $fixturesSet, string $fileName, array $expectedFileVersions): void
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->download($fileName)->wait();
@@ -887,7 +884,6 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
 
         $this->assertClientFileVersions($expectedStartVersion);
         $updater = $this->getSystemInTest($fixturesSet);
@@ -901,7 +897,6 @@ class UpdaterTest extends TestCase
 
         // Create another version of the client that only starts with the root.json file.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         foreach (array_keys($expectedStartVersion) as $role) {
             if ($role !== 'root') {
                 // Change the expectation that client will not start with any files other than root.json.
@@ -1035,10 +1030,9 @@ class UpdaterTest extends TestCase
         // side-effects.
         $fixturesSet = 'TUFTestFixtureDelegated';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientFileVersions(static::getFixtureClientStartVersions('TUFTestFixtureDelegated'));
-        $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         $updater = $this->getSystemInTest($fixturesSet);
+        $this->testRepo->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         try {
             $updater->refresh();
         } catch (TufException $exception) {
@@ -1183,10 +1177,9 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
-        $this->testRepo->removeRepoFile($fileName);
         $updater = $this->getSystemInTest($fixturesSet);
+        $this->testRepo->removeRepoFile($fileName);
         try {
             $updater->refresh();
         } catch (RepoFileNotFound $exception) {
@@ -1302,7 +1295,6 @@ class UpdaterTest extends TestCase
     public function testSignatureThresholds(string $fixturesSet, string $expectedException = null)
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         if ($expectedException) {
@@ -1318,7 +1310,6 @@ class UpdaterTest extends TestCase
     {
         $fixturesSet = 'TUFTestFixtureSimple';
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
 
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest($fixturesSet);
@@ -1346,7 +1337,6 @@ class UpdaterTest extends TestCase
     {
         $fixtureSet = 'TUFTestFixtureUnsupportedDelegation';
         $this->localRepo = $this->memoryStorageFromFixture($fixtureSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixtureSet));
         $updater = $this->getSystemInTest($fixtureSet);
@@ -1394,7 +1384,6 @@ class UpdaterTest extends TestCase
         // Use the memory storage used so tests can write without permanent
         // side-effects.
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
-        $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
         $updater = $this->getSystemInTest($fixturesSet);
         try {
