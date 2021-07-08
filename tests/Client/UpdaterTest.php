@@ -113,7 +113,7 @@ class UpdaterTest extends TestCase
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $this->serverStorage->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -126,7 +126,7 @@ class UpdaterTest extends TestCase
         // whether or not the stream's length is known.
         $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(1024);
-        $this->serverStorage->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
@@ -139,7 +139,7 @@ class UpdaterTest extends TestCase
         $stream->rewind()->shouldBeCalledOnce();
         $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
         $stream->eof()->willReturn(false);
-        $this->serverStorage->repoFilesContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
