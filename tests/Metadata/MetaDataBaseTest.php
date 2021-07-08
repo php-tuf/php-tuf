@@ -64,7 +64,7 @@ abstract class MetadataBaseTest extends TestCase
      * Tests for valid metadata.
      *
      * @param string $validJson
-     *   The valid json key from $localRepo.
+     *   The valid json key from $this->clientStorage.
      *
      * @return void
      *
@@ -419,7 +419,7 @@ abstract class MetadataBaseTest extends TestCase
      * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
      *
      * @param string $validJson
-     *   The valid json key from $localRepo.
+     *   The valid json key from $this->clientStorage.
      *
      * @return void
      *
