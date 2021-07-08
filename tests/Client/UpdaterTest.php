@@ -116,7 +116,7 @@ class UpdaterTest extends TestCase
      *     client/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(string $fixturesSet = 'TUFTestFixtureDelegated', string $updaterClass = TestUpdater::class): Updater
+    protected function getSystemInTest(string $fixturesSet, string $updaterClass = TestUpdater::class): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -230,7 +230,7 @@ class UpdaterTest extends TestCase
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
 
         $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
         $testFileContents = file_get_contents($testFilePath);
@@ -624,7 +624,7 @@ class UpdaterTest extends TestCase
     {
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         try {
             $updater->download($fileName)->wait();
         } catch (NotFoundException $exception) {
@@ -1321,7 +1321,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
 
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         // This refresh should succeed.
         $updater->refresh();
         // Put the server-side repo into an invalid state.
@@ -1349,7 +1349,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixtureSet);
         $startingTargets = $this->localRepo['targets.json'];
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixtureSet));
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixtureSet);
         try {
             $updater->refresh();
         } catch (MetadataException $exception) {
@@ -1396,7 +1396,7 @@ class UpdaterTest extends TestCase
         $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
         $this->testRepo = new TestRepo($fixturesSet);
         $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
-        $updater = $this->getSystemInTest();
+        $updater = $this->getSystemInTest($fixturesSet);
         try {
             // No changes should be made to client repo.
             $this->localRepo->setExceptionOnChange();
