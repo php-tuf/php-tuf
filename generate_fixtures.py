@@ -14,7 +14,8 @@ from fixtures import (
     TUFTestFixtureTerminatingDelegation,
     TUFTestFixtureTopLevelTerminating,
     TUFTestFixtureNestedTerminatingNonDelegatingDelegation,
-    TUFTestFixture3LevelDelegation
+    TUFTestFixture3LevelDelegation,
+    RotatedKeys
 )
 
 
@@ -32,6 +33,7 @@ def generate_fixtures():
     TUFTestFixtureTopLevelTerminating.build()
     TUFTestFixtureNestedTerminatingNonDelegatingDelegation.build()
     TUFTestFixture3LevelDelegation.build()
+    RotatedKeys.build()
 
 
 generate_fixtures()
