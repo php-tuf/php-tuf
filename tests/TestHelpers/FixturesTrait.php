@@ -155,8 +155,7 @@ trait FixturesTrait
 
         if ($isDir) {
             Assert::assertDirectoryExists($realpath);
-        }
-        else {
+        } else {
             Assert::assertFileExists($realpath);
         }
         return $realpath;
