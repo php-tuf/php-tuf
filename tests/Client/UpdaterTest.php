@@ -19,14 +19,14 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 class UpdaterTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
     use FixturesTrait;
+    use UtilsTrait;
 
     /**
      * The local repo.
@@ -67,7 +67,7 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
+        $this->localRepo = $this->loadFixtureIntoMemory($fixturesSet);
         $this->testRepo = new TestRepo($fixturesSet);
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.

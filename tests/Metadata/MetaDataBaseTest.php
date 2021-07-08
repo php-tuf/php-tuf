@@ -6,8 +6,8 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
 use Tuf\Tests\TestHelpers\FixturesTrait;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
@@ -15,7 +15,7 @@ use Tuf\Tests\TestHelpers\FixturesTrait;
 abstract class MetadataBaseTest extends TestCase
 {
     use FixturesTrait;
-    use MemoryStorageLoaderTrait;
+    use UtilsTrait;
 
     /**
      * @var \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
@@ -42,7 +42,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'client/metadata/current');
+        $this->localRepo = $this->loadFixtureIntoMemory('TUFTestFixtureDelegated');
     }
 
     /**

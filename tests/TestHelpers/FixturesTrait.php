@@ -3,6 +3,7 @@
 namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
+use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 
 /**
  * Contains methods for safely interacting with the test fixtures.
@@ -97,6 +98,39 @@ trait FixturesTrait {
         ],
     ];
 
+
+    /**
+     * Uses test fixtures at a given path to populate a memory storage backend.
+     *
+     * @param string $fixtureName
+     *     The name of the fixture to use.
+     * @param string $path
+     *     The relative path (within the fixtures directory) for the client
+     *     data.
+     *
+     * @return MemoryStorage
+     *     Memory storage containing the test client data.
+     */
+    private function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): MemoryStorage
+    {
+        $storage = new MemoryStorage();
+
+        // Loop through and load files in the given path.
+        $fsIterator = new \FilesystemIterator(
+            static::getFixturePath($fixtureName, $path, true),
+            \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
+        );
+        foreach ($fsIterator as $filename => $info) {
+            // Only load JSON files.
+            /** @var $info \SplFileInfo */
+            if ($info->isFile() && preg_match("|\.json$|", $filename)) {
+                $storage[$filename] = file_get_contents($info->getRealPath());
+            }
+        }
+
+        return $storage;
+    }
+
     /**
      * Gets the real path of repository fixtures.
      *
@@ -110,11 +144,8 @@ trait FixturesTrait {
      * @return string
      *   The path.
      */
-    private static function getFixturePath(
-        string $fixtureName,
-        string $subPath = '',
-        bool $isDir = TRUE
-    ): string {
+    private static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
         $realpath = realpath(__DIR__ . "/../../fixtures/$fixtureName/$subPath");
         Assert::assertNotEmpty($realpath);
 
