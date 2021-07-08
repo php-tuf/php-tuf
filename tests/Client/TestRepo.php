@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\Utils;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -16,6 +17,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 class TestRepo implements RepoFileFetcherInterface
 {
+    use FixturesTrait;
     use UtilsTrait;
 
     /**
@@ -35,7 +37,7 @@ class TestRepo implements RepoFileFetcherInterface
     {
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
-        $fixturesPath = static::getFixturesRealPath($fixturesSet, 'server');
+        $fixturesPath = static::getFixturePath($fixturesSet, 'server');
         $repoFiles = glob("$fixturesPath/metadata/*.json");
         $targetsPath = "$fixturesPath/targets";
         if (is_dir($targetsPath)) {

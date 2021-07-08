@@ -15,16 +15,14 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Metadata\RootMetadata;
-use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
-use Tuf\Metadata\TimestampMetadata;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 class UpdaterTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
+    use FixturesTrait;
+    use UtilsTrait;
 
     /**
      * The local repo.
@@ -37,104 +35,6 @@ class UpdaterTest extends TestCase
      * @var \Tuf\Tests\Client\TestRepo
      */
     protected $testRepo;
-
-    /**
-     * Gets the metadata start versions for a fixture set.
-     *
-     * @param string $fixturesSet
-     *   The fixture set name.
-     *
-     * @return int[]
-     *   The expected metadata start versions for the fixture set.
-     */
-    private static function getFixtureClientStartVersions(string $fixturesSet): array
-    {
-        $startVersions = [
-            'TUFTestFixtureDelegated' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-                'unclaimed' => 1,
-            ],
-            'TUFTestFixtureUnsupportedDelegation' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'unsupported_target' => null,
-              // We cannot assert the starting versions of 'targets' because it has
-              // an unsupported field and would throw an exception when validating.
-            ],
-            'TUFTestFixtureSimple' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureAttackRollback' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-            ],
-            'TUFTestFixtureThresholdTwo' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureThresholdTwoAttack' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureNestedDelegated' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-                'unclaimed' => 1,
-                'level_2' => null,
-                'level_3' => null,
-            ],
-            'TUFTestFixtureTerminatingDelegation' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureTopLevelTerminating' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixture3LevelDelegation' => [
-                'root' => 1,
-                'timestamp' => 1,
-                'snapshot' => 1,
-                'targets' => 1,
-            ],
-            'TUFTestFixtureNestedDelegatedErrors' => [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-                'unclaimed' => 1,
-            ],
-        ];
-        if (!isset($startVersions[$fixturesSet])) {
-            throw new \UnexpectedValueException("Unknown fixture set: $fixturesSet");
-        }
-        return $startVersions[$fixturesSet];
-    }
 
     /**
      * Returns a memory-based updater populated with a specific test fixture.
@@ -163,11 +63,11 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        $this->localRepo = $this->memoryStorageFromFixture($fixturesSet, 'client/metadata/current');
+        $this->localRepo = static::loadFixtureIntoMemory($fixturesSet);
         $this->testRepo = new TestRepo($fixturesSet);
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'client/metadata/current'));
+        $fixtureFiles = scandir(static::getFixturePath($fixturesSet, 'client/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -175,7 +75,7 @@ class UpdaterTest extends TestCase
             }
         }
 
-        $expectedStartVersions = static::getFixtureClientStartVersions($fixturesSet);
+        $expectedStartVersions = static::$initialMetadataVersions[$fixturesSet];
         $this->assertClientFileVersions($expectedStartVersions);
 
         return new $updaterClass($this->testRepo, $mirrors, $this->localRepo, new TestClock());
@@ -193,7 +93,7 @@ class UpdaterTest extends TestCase
         $fixturesSet = 'TUFTestFixtureSimple';
         $updater = $this->getSystemInTest($fixturesSet);
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, 'server/targets/testtarget.txt', false);
+        $testFilePath = static::getFixturePath($fixturesSet, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
@@ -271,7 +171,7 @@ class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest($fixturesSet);
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
+        $testFilePath = static::getFixturePath($fixturesSet, "server/targets/$delegatedFile", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
@@ -628,7 +528,7 @@ class UpdaterTest extends TestCase
 
         // Ensure the file can found if the maximum role limit is 100.
         $updater = $this->getSystemInTest($fixturesSet);
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
+        $testFilePath = static::getFixturePath($fixturesSet, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
@@ -916,7 +816,7 @@ class UpdaterTest extends TestCase
      */
     public function testRefreshRepository(string $fixturesSet, array $expectedUpdatedVersions): void
     {
-        $expectedStartVersion = static::getFixtureClientStartVersions($fixturesSet);
+        $expectedStartVersion = static::$initialMetadataVersions[$fixturesSet];
 
         $updater = $this->getSystemInTest($fixturesSet);
         $this->assertTrue($updater->refresh($fixturesSet));
@@ -1006,35 +906,7 @@ class UpdaterTest extends TestCase
      */
     protected function assertClientFileVersions(array $expectedVersions): void
     {
-        foreach ($expectedVersions as $role => $version) {
-            if (is_null($version)) {
-                $this->assertNull($this->localRepo["$role.json"], "'$role' file is null.");
-                return;
-            }
-            $roleJson = $this->localRepo["$role.json"];
-            $this->assertNotNull($roleJson, "'$role.json' found in local repo.");
-            switch ($role) {
-                case 'root':
-                    $metadata = RootMetadata::createFromJson($roleJson);
-                    break;
-                case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($roleJson);
-                    break;
-                case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($roleJson);
-                    break;
-                default:
-                    // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($roleJson);
-                    break;
-            }
-            $actualVersion = $metadata->getVersion();
-            $this->assertSame(
-                $expectedVersions[$role],
-                $actualVersion,
-                "Actual version of $role, '$actualVersion' does not match expected version '$version'"
-            );
-        }
+        static::assertMetadataVersions($expectedVersions, $this->localRepo);
     }
 
     /**
@@ -1339,7 +1211,7 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions(static::getFixtureClientStartVersions($fixturesSet));
+        $this->assertClientFileVersions(static::$initialMetadataVersions[$fixturesSet]);
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
