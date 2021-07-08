@@ -116,7 +116,7 @@ class UpdaterTest extends TestCase
      *     client/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(string $fixturesSet, string $updaterClass = TestUpdater::class): Updater
+    protected function getSystemInTest(string $fixturesSet, string $updaterClass = Updater::class): Updater
     {
         $mirrors = [
             'mirror1' => [
