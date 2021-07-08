@@ -7,12 +7,14 @@ use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
  */
 abstract class MetadataBaseTest extends TestCase
 {
+    use FixturesTrait;
     use MemoryStorageLoaderTrait;
 
     /**
@@ -68,7 +70,6 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testValidMetadata(string $validJson): void
     {
-        $this->expectNotToPerformAssertions();
         static::callCreateFromJson($this->localRepo[$validJson]);
     }
 
@@ -81,7 +82,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('TUFTestFixtureDelegated', 'client/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -152,8 +153,6 @@ abstract class MetadataBaseTest extends TestCase
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        } else {
-            $this->expectNotToPerformAssertions();
         }
         static::callCreateFromJson(json_encode($metadata));
     }
@@ -179,8 +178,6 @@ abstract class MetadataBaseTest extends TestCase
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        } else {
-            $this->expectNotToPerformAssertions();
         }
         static::callCreateFromJson(json_encode($metadata));
     }
@@ -407,7 +404,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
-        $realPath = static::getFixturesRealPath('TUFTestFixtureDelegated', "client/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturePath('TUFTestFixtureDelegated', "client/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];

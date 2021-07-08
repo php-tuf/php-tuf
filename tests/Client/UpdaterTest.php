@@ -20,11 +20,13 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 
 class UpdaterTest extends TestCase
 {
     use MemoryStorageLoaderTrait;
+    use FixturesTrait;
 
     /**
      * The local repo.
@@ -167,7 +169,7 @@ class UpdaterTest extends TestCase
         $this->testRepo = new TestRepo($fixturesSet);
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir(static::getFixturesRealPath($fixturesSet, 'client/metadata/current'));
+        $fixtureFiles = scandir(static::getFixturePath($fixturesSet, 'client/metadata/current'));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
@@ -193,7 +195,7 @@ class UpdaterTest extends TestCase
         $fixturesSet = 'TUFTestFixtureSimple';
         $updater = $this->getSystemInTest($fixturesSet);
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, 'server/targets/testtarget.txt', false);
+        $testFilePath = static::getFixturePath($fixturesSet, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
@@ -271,7 +273,7 @@ class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest($fixturesSet);
 
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$delegatedFile", false);
+        $testFilePath = static::getFixturePath($fixturesSet, "server/targets/$delegatedFile", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
@@ -628,7 +630,7 @@ class UpdaterTest extends TestCase
 
         // Ensure the file can found if the maximum role limit is 100.
         $updater = $this->getSystemInTest($fixturesSet);
-        $testFilePath = static::getFixturesRealPath($fixturesSet, "server/targets/$fileName", false);
+        $testFilePath = static::getFixturePath($fixturesSet, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());

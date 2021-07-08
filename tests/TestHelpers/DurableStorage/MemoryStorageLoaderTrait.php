@@ -3,6 +3,7 @@
 
 namespace Tuf\Tests\TestHelpers\DurableStorage;
 
+use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -12,6 +13,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 trait MemoryStorageLoaderTrait
 {
+    use FixturesTrait;
     use UtilsTrait;
 
     /**
@@ -33,7 +35,7 @@ trait MemoryStorageLoaderTrait
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator(
-            static::getFixturesRealPath($fixturesSet, $path, true),
+            static::getFixturePath($fixturesSet, $path, true),
             \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
         );
         foreach ($fsIterator as $filename => $info) {
