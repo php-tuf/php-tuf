@@ -31,7 +31,7 @@ class FactoryTest extends TestCase
      */
     public function testLoad(string $class, string $role): void
     {
-        $localRepo = $this->loadFixtureIntoMemory('TUFTestFixtureDelegated');
+        $localRepo = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
         $factory = new Factory($localRepo);
 
         $metadata = $factory->load($role);

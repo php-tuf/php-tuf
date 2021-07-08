@@ -42,7 +42,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->loadFixtureIntoMemory('TUFTestFixtureDelegated');
+        $this->localRepo = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
     }
 
     /**

@@ -63,7 +63,7 @@ class UpdaterTest extends TestCase
             ],
         ];
 
-        $this->localRepo = $this->loadFixtureIntoMemory($fixturesSet);
+        $this->localRepo = static::loadFixtureIntoMemory($fixturesSet);
         $this->testRepo = new TestRepo($fixturesSet);
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
@@ -906,7 +906,7 @@ class UpdaterTest extends TestCase
      */
     protected function assertClientFileVersions(array $expectedVersions): void
     {
-        $this->assertMetadataVersions($expectedVersions, $this->localRepo);
+        static::assertMetadataVersions($expectedVersions, $this->localRepo);
     }
 
     /**

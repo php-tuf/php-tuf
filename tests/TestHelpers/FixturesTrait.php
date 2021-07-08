@@ -102,20 +102,19 @@ trait FixturesTrait
         ],
     ];
 
-
     /**
      * Uses test fixtures at a given path to populate a memory storage backend.
      *
      * @param string $fixtureName
      *     The name of the fixture to use.
      * @param string $path
-     *     The relative path (within the fixtures directory) for the client
-     *     data.
+     *     An optional relative sub-path within the fixture's directory.
+     *     Defaults to the directory containing client metadata.
      *
      * @return MemoryStorage
-     *     Memory storage containing the test client data.
+     *     Memory storage containing the test data.
      */
-    private function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): MemoryStorage
+    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): MemoryStorage
     {
         $storage = new MemoryStorage();
 
@@ -173,7 +172,7 @@ trait FixturesTrait
      *
      * @return void
      */
-    protected function assertMetadataVersions(array $expectedVersions, \ArrayAccess $storage): void
+    private static function assertMetadataVersions(array $expectedVersions, \ArrayAccess $storage): void
     {
         foreach ($expectedVersions as $role => $version) {
             if (is_null($version)) {
