@@ -180,7 +180,7 @@ trait FixturesTrait
                 return;
             }
             $roleJson = $storage["$role.json"];
-            Assert::assertNotNull($roleJson, "'$role.json' found in local repo.");
+            Assert::assertNotNull($roleJson, "'$role.json' not found in local repo.");
             switch ($role) {
                 case 'root':
                     $metadata = RootMetadata::createFromJson($roleJson);

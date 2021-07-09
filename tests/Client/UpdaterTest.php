@@ -813,6 +813,34 @@ class UpdaterTest extends TestCase
     }
 
     /**
+     * Tests that key rotation is correctly handled.
+     */
+    public function testKeyRotation(): void
+    {
+        $updater = $this->getSystemInTest('TUFTestFixtureSimple');
+        // Ensure there is no timestamp metadata to download, so that
+        // Updater::updateTimestamp() errors out. That's fine in this case,
+        // because we're not trying to complete the update -- we're trying to
+        // test that Updater::updateRoot() doesn't incorrectly think that the
+        // keys have been rotated, and therefore delete the local timestamp.json
+        // and snapshot.json.
+        $this->serverStorage->removeRepoFile('timestamp.json');
+        try {
+            $updater->refresh();
+            $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
+        } catch (RepoFileNotFound $e) {
+            // No need to do anything here. If something went wrong, the
+            // client-side metadata will be at an incorrect version, or missing.
+        }
+        $this->assertClientFileVersions([
+            'root' => 2,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
+    }
+
+    /**
      * Tests refreshing the repository.
      *
      * @param string $fixtureName
