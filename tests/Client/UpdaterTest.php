@@ -813,34 +813,6 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that key rotation is correctly handled.
-     */
-    public function testKeyRotation(): void
-    {
-        $updater = $this->getSystemInTest('TUFTestFixtureSimple');
-        // Ensure there is no timestamp metadata to download, so that
-        // Updater::updateTimestamp() errors out. That's fine in this case,
-        // because we're not trying to complete the update -- we're trying to
-        // test that Updater::updateRoot() doesn't incorrectly think that the
-        // keys have been rotated, and therefore delete the local timestamp.json
-        // and snapshot.json.
-        $this->serverStorage->removeRepoFile('timestamp.json');
-        try {
-            $updater->refresh();
-            $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
-        } catch (RepoFileNotFound $e) {
-            // No need to do anything here. If something went wrong, the
-            // client-side metadata will be at an incorrect version, or missing.
-        }
-        $this->assertClientFileVersions([
-            'root' => 2,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ]);
-    }
-
-    /**
      * Tests refreshing the repository.
      *
      * @param string $fixtureName
@@ -1112,15 +1084,17 @@ class UpdaterTest extends TestCase
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
         $updater = $this->getSystemInTest($fixtureName);
+        // Depending on which file is removed from the server, the update
+        // process will error out at various points. That's fine, because we're
+        // not trying to complete the refresh.
         $this->serverStorage->removeRepoFile($fileName);
         try {
             $updater->refresh();
+            $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
             $this->assertSame("File $fileName not found.", $exception->getMessage());
-            $this->assertClientFileVersions($expectedUpdatedVersions);
-            return;
         }
-        $this->fail('No RepoFileNotFound exception thrown');
+        $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 
     /**
@@ -1166,6 +1140,10 @@ class UpdaterTest extends TestCase
             ],
             [
                 'TUFTestFixtureSimple',
+                // Deleting timestamp.json and 1.snapshot.json from the server will cause Updater::updateTimestamp()
+                // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
+                // the refresh. This will implicitly check that Updater::updateRoot() doesn't erroneously think that
+                // keys have been rotated, and therefore delete the local timestamp.json and snapshot.json.
                 'timestamp.json',
                 [
                     'root' => 2,
