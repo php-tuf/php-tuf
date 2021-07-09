@@ -935,9 +935,9 @@ class UpdaterTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerRefreshException
+     * @dataProvider providerExceptionForInvalidMetadata
      */
-    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
+    public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
         $fixtureName = 'TUFTestFixtureDelegated';
         $updater = $this->getSystemInTest($fixtureName);
@@ -953,12 +953,12 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Data provider for testRefreshException().
+     * Data provider for testExceptionForInvalidMetadata().
      *
      * @return mixed[]
-     *   The test cases for testRefreshException().
+     *   The test cases for testExceptionForInvalidMetadata().
      */
-    public function providerRefreshException(): array
+    public function providerExceptionForInvalidMetadata(): array
     {
         return static::getKeyedArray([
             [
@@ -1092,7 +1092,8 @@ class UpdaterTest extends TestCase
             $updater->refresh();
             $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
-            $this->assertSame("File $fileName not found.", $exception->getMessage());
+            // We don't have to do anything with this exception; we just wanted
+            // be sure it got thrown.
         }
         $this->assertClientFileVersions($expectedUpdatedVersions);
     }
@@ -1322,5 +1323,63 @@ class UpdaterTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    public function providerKeyRotation(): array
+    {
+        return [
+            'not rotated' => [
+                'PublishedTwice',
+                [
+                    'root' => 2,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            'timestamp rotated' => [
+                'PublishedTwiceWithRotatedKeys_timestamp',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ]
+            ],
+            'snapshot rotated' => [
+                'PublishedTwiceWithRotatedKeys_snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ]
+            ],
+        ];
+    }
+
+    /**
+     * Tests that the updater correctly handles key rotation.
+     *
+     * @param string $fixtureName
+     *   The name of the fixture to test with.
+     * @param array $expectedUpdatedVersions
+     *   The expected client-side versions of the TUF metadata after refresh.
+     *
+     * @dataProvider providerKeyRotation
+     */
+    public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
+    {
+        $updater = $this->getSystemInTest($fixtureName);
+        // This will purposefully cause the refresh to fail, immediately after
+        // updating the root metadata.
+        $this->serverStorage->removeRepoFile('timestamp.json');
+        try {
+            $updater->refresh();
+            $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
+        } catch (RepoFileNotFound $e) {
+            // We don't need to do anything with this exception.
+        }
+        $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 }
