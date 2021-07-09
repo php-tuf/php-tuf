@@ -883,7 +883,7 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureSimple',
                 [
-                    'root' => 2,
+                    'root' => 1,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1146,7 +1146,7 @@ class UpdaterTest extends TestCase
                 // keys have been rotated, and therefore delete the local timestamp.json and snapshot.json.
                 'timestamp.json',
                 [
-                    'root' => 2,
+                    'root' => 1,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1156,7 +1156,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 '1.snapshot.json',
                 [
-                    'root' => 2,
+                    'root' => 1,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1166,7 +1166,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 '1.targets.json',
                 [
-                    'root' => 2,
+                    'root' => 1,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1227,12 +1227,7 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions([
-            'root' => 2,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ]);
+        $this->assertClientFileVersions(static::$initialMetadataVersions[$fixtureName]);
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
