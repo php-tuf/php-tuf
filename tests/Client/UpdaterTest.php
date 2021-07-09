@@ -54,7 +54,7 @@ class UpdaterTest extends TestCase
      *     client/metadata/current/ directory and a localhost HTTP
      *     mirror.
      */
-    protected function getSystemInTest(string $fixtureName, string $updaterClass = TestUpdater::class): Updater
+    protected function getSystemInTest(string $fixtureName, string $updaterClass = Updater::class): Updater
     {
         $mirrors = [
             'mirror1' => [
@@ -80,7 +80,15 @@ class UpdaterTest extends TestCase
         $expectedStartVersions = static::$initialMetadataVersions[$fixtureName];
         $this->assertClientFileVersions($expectedStartVersions);
 
-        return new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage, new TestClock());
+        $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
+        // Force the updater to use our test clock so that, like supervillains,
+        // we control what time it is.
+        $reflector = new \ReflectionObject($updater);
+        $property = $reflector->getProperty('clock');
+        $property->setAccessible(true);
+        $property->setValue($updater, new TestClock());
+
+        return $updater;
     }
 
     /**
