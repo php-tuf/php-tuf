@@ -42,7 +42,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function testGetHashesAndLength(): void
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
 
@@ -71,7 +71,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function testHasTarget(): void
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
 
@@ -134,7 +134,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function testGetDelegatedKeys(): void
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         /** @var \Tuf\Metadata\TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
@@ -154,7 +154,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function testGetDelegatedRoles(): void
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         /** @var TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
         $json = json_decode($json, true);
@@ -184,7 +184,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     {
         parent::testGetRole();
         // Confirm that if a role name is specified this will be returned.
-        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson], 'other_role');
+        $metadata = static::callCreateFromJson($this->clientStorage[$this->validJson], 'other_role');
         $this->assertSame('other_role', $metadata->getRole());
     }
 
@@ -195,7 +195,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function testKeyidHashAlgorithms()
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         $data = json_decode($json, true);
         $keyId = key($data['signed']['delegations']['keys']);
         $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';

@@ -19,7 +19,7 @@ trait UntrustedExceptionTrait
      */
     public function testUntrustedException(string $method, array $args = []): void
     {
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->clientStorage[$this->validJson], true);
         $metadata = static::callCreateFromJson(json_encode($data));
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Cannot use untrusted '{$this->expectedType}'. metadata.");
