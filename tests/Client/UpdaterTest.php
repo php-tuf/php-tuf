@@ -19,6 +19,9 @@ use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
+/**
+ * @coversDefaultClass \Tuf\Client\Updater
+ */
 class UpdaterTest extends TestCase
 {
     use FixturesTrait;
@@ -1093,7 +1096,8 @@ class UpdaterTest extends TestCase
             $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
             // We don't have to do anything with this exception; we just wanted
-            // be sure it got thrown.
+            // be sure it got thrown. Since the exception is thrown by TestRepo,
+            // there's no point in asserting that its message is as expected.
         }
         $this->assertClientFileVersions($expectedUpdatedVersions);
     }
@@ -1145,6 +1149,7 @@ class UpdaterTest extends TestCase
                 // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
                 // the refresh. This will implicitly check that Updater::updateRoot() doesn't erroneously think that
                 // keys have been rotated, and therefore delete the local timestamp.json and snapshot.json.
+                // @see ::testKeyRotation()
                 'timestamp.json',
                 [
                     'root' => 1,
@@ -1337,6 +1342,8 @@ class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
+            // We expect the timestamp and snapshot metadata to be deleted from the client if either the
+            // timestamp or snapshot roles' keys have been rotated.
             'timestamp rotated' => [
                 'PublishedTwiceWithRotatedKeys_timestamp',
                 [
@@ -1359,7 +1366,7 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that the updater correctly handles key rotation.
+     * Tests that the updater correctly handles key rotation (§ 5.3.11)
      *
      * @param string $fixtureName
      *   The name of the fixture to test with.
@@ -1367,6 +1374,9 @@ class UpdaterTest extends TestCase
      *   The expected client-side versions of the TUF metadata after refresh.
      *
      * @dataProvider providerKeyRotation
+     *
+     * @covers ::hasRotatedKeys
+     * @covers ::updateRoot
      */
     public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
     {
