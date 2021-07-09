@@ -1344,7 +1344,7 @@ class UpdaterTest extends TestCase
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
-                ]
+                ],
             ],
             'snapshot rotated' => [
                 'PublishedTwiceWithRotatedKeys_snapshot',
@@ -1353,7 +1353,7 @@ class UpdaterTest extends TestCase
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
-                ]
+                ],
             ],
         ];
     }
