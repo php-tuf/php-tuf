@@ -911,7 +911,7 @@ class UpdaterTest extends TestCase
             [
                 'TUFTestFixtureSimple',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1168,7 +1168,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 'timestamp.json',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1178,7 +1178,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 '1.snapshot.json',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1188,7 +1188,7 @@ class UpdaterTest extends TestCase
                 'TUFTestFixtureSimple',
                 '1.targets.json',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -1249,7 +1249,12 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions(static::$initialMetadataVersions[$fixtureName]);
+        $this->assertClientFileVersions([
+            'root' => 2,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
