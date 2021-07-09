@@ -8,14 +8,16 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\Factory
  */
 class FactoryTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
+    use FixturesTrait;
+    use UtilsTrait;
 
     /**
      * @covers ::load
@@ -29,8 +31,8 @@ class FactoryTest extends TestCase
      */
     public function testLoad(string $class, string $role): void
     {
-        $localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'client/metadata/current');
-        $factory = new Factory($localRepo);
+        $clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
+        $factory = new Factory($clientStorage);
 
         $metadata = $factory->load($role);
         self::assertInstanceOf($class, $metadata);

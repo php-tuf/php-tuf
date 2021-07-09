@@ -6,19 +6,23 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
 use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorageLoaderTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * @coversDefaultClass \Tuf\Metadata\MetadataBase
  */
 abstract class MetadataBaseTest extends TestCase
 {
-    use MemoryStorageLoaderTrait;
+    use FixturesTrait;
+    use UtilsTrait;
 
     /**
+     * The client-side metadata storage.
+     *
      * @var \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
      */
-    protected $localRepo;
+    protected $clientStorage;
 
     /**
      * The valid json file.
@@ -40,7 +44,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->localRepo = $this->memoryStorageFromFixture('TUFTestFixtureDelegated', 'client/metadata/current');
+        $this->clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
     }
 
     /**
@@ -60,7 +64,7 @@ abstract class MetadataBaseTest extends TestCase
      * Tests for valid metadata.
      *
      * @param string $validJson
-     *   The valid json key from $localRepo.
+     *   The valid json key from $this->clientStorage.
      *
      * @return void
      *
@@ -68,8 +72,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testValidMetadata(string $validJson): void
     {
-        $this->expectNotToPerformAssertions();
-        static::callCreateFromJson($this->localRepo[$validJson]);
+        static::callCreateFromJson($this->clientStorage[$validJson]);
     }
 
     /**
@@ -81,7 +84,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturesRealPath('TUFTestFixtureDelegated', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('TUFTestFixtureDelegated', 'client/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -100,7 +103,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testInvalidType(): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         $metadata['signed']['_type'] = 'invalid_type_value';
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
@@ -116,7 +119,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testGetType(): void
     {
-        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
+        $metadata = static::callCreateFromJson($this->clientStorage[$this->validJson]);
         $this->assertSame($metadata->getType(), $this->expectedType);
     }
 
@@ -127,7 +130,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testGetRole(): void
     {
-        $metadata = static::callCreateFromJson($this->localRepo[$this->validJson]);
+        $metadata = static::callCreateFromJson($this->clientStorage[$this->validJson]);
         $this->assertSame($this->expectedType, $metadata->getRole());
     }
 
@@ -145,15 +148,13 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testExpires(string $expires, bool $valid): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        } else {
-            $this->expectNotToPerformAssertions();
         }
         static::callCreateFromJson(json_encode($metadata));
     }
@@ -172,15 +173,13 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testSpecVersion(string $version, bool $valid): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
             $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        } else {
-            $this->expectNotToPerformAssertions();
         }
         static::callCreateFromJson(json_encode($metadata));
     }
@@ -201,7 +200,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testMissingField(string $expectedField, string $exception = null): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         $keys = explode(':', $expectedField);
         $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
@@ -229,7 +228,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testOptionalFields(string $optionalField, $value): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         static::nestedChange(explode(':', $optionalField), $metadata, $value);
         $json = json_encode($metadata);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
@@ -283,7 +282,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testInvalidField(string $expectedField, string $expectedType): void
     {
-        $metadata = json_decode($this->localRepo[$this->validJson], true);
+        $metadata = json_decode($this->clientStorage[$this->validJson], true);
         $keys = explode(':', $expectedField);
 
         switch ($expectedType) {
@@ -407,7 +406,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
-        $realPath = static::getFixturesRealPath('TUFTestFixtureDelegated', "client/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturePath('TUFTestFixtureDelegated', "client/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
@@ -420,7 +419,7 @@ abstract class MetadataBaseTest extends TestCase
      * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
      *
      * @param string $validJson
-     *   The valid json key from $localRepo.
+     *   The valid json key from $this->clientStorage.
      *
      * @return void
      *
@@ -428,7 +427,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testNormalization(string $validJson): void
     {
-        $contents = $this->localRepo[$validJson];
+        $contents = $this->clientStorage[$validJson];
         $json = json_decode($contents);
         $metadata = static::callCreateFromJson($contents);
         $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metadata->getSigned()));

@@ -10,28 +10,6 @@ trait UtilsTrait
 {
 
     /**
-     * Gets the real path of repository fixtures.
-     *
-     * @param string $fixturesSet
-     *   The fixtures set to use.
-     * @param string $path
-     *   The path.
-     * @param boolean $isDir
-     *   Whether $path is expected to be a directory.
-     *
-     * @return string
-     *   The path.
-     */
-    public static function getFixturesRealPath(string $fixturesSet, string $path = '', bool $isDir = true): string
-    {
-        $realpath = realpath(__DIR__ . "/../../fixtures/$fixturesSet/$path");
-        if ($realpath === false || ($isDir && !is_dir($realpath))) {
-            throw new \RuntimeException("Repository fixtures directory not found at $path");
-        }
-        return $realpath;
-    }
-
-    /**
      * Helper methods for dataProvider methods to return keyed arrays.
      *
      * @param array $providedData

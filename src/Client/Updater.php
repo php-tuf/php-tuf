@@ -123,17 +123,15 @@ class Updater
      *     as in to disk or a database. Values written for a given repository
      *     should be exposed to future instantiations of the Updater that
      *     interact with the same repository.
-     * @param Clock $clock
-     *     A clock, injected for time to be controllable in tests.
      *
      *
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, \ArrayAccess $durableStorage, Clock $clock = null)
+    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, \ArrayAccess $durableStorage)
     {
         $this->repoFileFetcher = $repoFileFetcher;
         $this->mirrors = $mirrors;
         $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
-        $this->clock = $clock ?: new Clock();
+        $this->clock = new Clock();
         $this->metadataFactory = new MetadataFactory($this->durableStorage);
     }
 

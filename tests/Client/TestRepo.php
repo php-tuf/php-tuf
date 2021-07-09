@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\Utils;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -16,6 +17,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 class TestRepo implements RepoFileFetcherInterface
 {
+    use FixturesTrait;
     use UtilsTrait;
 
     /**
@@ -23,19 +25,19 @@ class TestRepo implements RepoFileFetcherInterface
      *
      * @var string[]
      */
-    public $repoFilesContents = [];
+    public $fileContents = [];
 
     /**
      * TestRepo constructor.
      *
-     * @param string $fixturesSet
+     * @param string $fixtureName
      *   The fixtures set to use.
      */
-    public function __construct(string $fixturesSet)
+    public function __construct(string $fixtureName)
     {
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
-        $fixturesPath = static::getFixturesRealPath($fixturesSet, 'server');
+        $fixturesPath = static::getFixturePath($fixtureName, 'server');
         $repoFiles = glob("$fixturesPath/metadata/*.json");
         $targetsPath = "$fixturesPath/targets";
         if (is_dir($targetsPath)) {
@@ -43,10 +45,10 @@ class TestRepo implements RepoFileFetcherInterface
         }
         foreach ($repoFiles as $repoFile) {
             $baseName = basename($repoFile);
-            if (isset($this->repoFilesContents[$baseName])) {
+            if (isset($this->fileContents[$baseName])) {
                 throw new \UnexpectedValueException("For testing fixtures target files should not use metadata file names");
             }
-            $this->repoFilesContents[$baseName] = file_get_contents($repoFile);
+            $this->fileContents[$baseName] = file_get_contents($repoFile);
         }
     }
 
@@ -71,16 +73,16 @@ class TestRepo implements RepoFileFetcherInterface
      */
     protected function fetchFile(string $fileName): PromiseInterface
     {
-        if (empty($this->repoFilesContents[$fileName])) {
+        if (empty($this->fileContents[$fileName])) {
             return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
         }
         // Allow test code to directly set the returned promise so that the
         // underlying streams can be mocked.
-        $contents = $this->repoFilesContents[$fileName];
+        $contents = $this->fileContents[$fileName];
         if ($contents instanceof PromiseInterface) {
             return $contents;
         }
-        $stream = Utils::streamFor($this->repoFilesContents[$fileName]);
+        $stream = Utils::streamFor($this->fileContents[$fileName]);
         return new FulfilledPromise($stream);
     }
 
@@ -110,9 +112,9 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function setRepoFileNestedValue(string $fileName, array $keys, $newValue): void
     {
-        $json = json_decode($this->repoFilesContents[$fileName], true);
+        $json = json_decode($this->fileContents[$fileName], true);
         static::nestedChange($keys, $json, $newValue);
-        $this->repoFilesContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
+        $this->fileContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
     }
 
     /**
@@ -125,6 +127,6 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function removeRepoFile(string $fileName): void
     {
-        unset($this->repoFilesContents[$fileName]);
+        unset($this->fileContents[$fileName]);
     }
 }
