@@ -149,12 +149,12 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests that TUF will transparently verify downloaded target hashes for targets in delegated JSON files.
+     * Tests that TUF transparently verifies targets signed by delegated roles.
      *
      * @param string $fixtureName
      *   The name of the fixture to test with.
-     * @param string $delegatedFile
-     *   The delegated file to download.
+     * @param string $target
+     *   The target file to download.
      * @param array $expectedFileVersions
      *   The expected client versions after the download.
      *
@@ -169,14 +169,14 @@ class UpdaterTest extends TestCase
      * @dataProvider providerVerifiedDelegatedDownload
      *
      */
-    public function testVerifiedDelegatedDownload(string $fixtureName, string $delegatedFile, array $expectedFileVersions): void
+    public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
         $updater = $this->getSystemInTest($fixtureName);
 
-        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$delegatedFile", false);
+        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->download($delegatedFile)->wait()->getContents());
+        $this->assertSame($testFileContents, $updater->download($target)->wait()->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
         $this->assertClientFileVersions($expectedFileVersions);
