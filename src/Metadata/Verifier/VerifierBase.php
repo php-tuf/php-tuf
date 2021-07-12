@@ -4,8 +4,8 @@ namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\FormatException;
-use Tuf\Exception\PotentialAttackException\FreezeAttackException;
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Exception\Attack\FreezeAttackException;
+use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 
 /**
@@ -60,10 +60,10 @@ abstract class VerifierBase
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata to verify.
      *
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
-     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\FreezeAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\InvalidHashException
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      */
     abstract public function verify(MetadataBase $untrustedMetadata): void;
 
@@ -78,7 +78,7 @@ abstract class VerifierBase
      *
      * @return void
      *
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
@@ -106,7 +106,7 @@ abstract class VerifierBase
      *
      * @return void
      *
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException Thrown if a potential freeze attack is detected.
+     * @throws \Tuf\Exception\Attack\FreezeAttackException Thrown if a potential freeze attack is detected.
      */
     protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeImmutable $expiration): void
     {

@@ -4,6 +4,7 @@ from unittest import mock
 import shutil
 import glob
 import os
+
 from fixtures import (
     TUFTestFixtureSimple,
     TUFTestFixtureAttackRollback,
@@ -12,7 +13,12 @@ from fixtures import (
     TUFTestFixtureUnsupportedDelegation,
     TUFTestFixtureNestedDelegatedErrors,
     TUFTestFixtureThresholdTwo,
-    TUFTestFixtureThresholdTwoAttack
+    TUFTestFixtureThresholdTwoAttack,
+    TUFTestFixtureTerminatingDelegation,
+    TUFTestFixtureTopLevelTerminating,
+    TUFTestFixtureNestedTerminatingNonDelegatingDelegation,
+    TUFTestFixture3LevelDelegation,
+    PublishedTwice
 )
 
 
@@ -26,6 +32,13 @@ def generate_fixtures():
     TUFTestFixtureNestedDelegatedErrors.build()
     TUFTestFixtureThresholdTwo.build()
     TUFTestFixtureThresholdTwoAttack.build()
+    TUFTestFixtureTerminatingDelegation.build()
+    TUFTestFixtureTopLevelTerminating.build()
+    TUFTestFixtureNestedTerminatingNonDelegatingDelegation.build()
+    TUFTestFixture3LevelDelegation.build()
+    PublishedTwice.build()
+    PublishedTwice.build(rotate_keys='timestamp')
+    PublishedTwice.build(rotate_keys='snapshot')
 
 
 # Remove all previous fixtures.

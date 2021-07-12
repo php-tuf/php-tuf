@@ -19,7 +19,7 @@ class JsonNormalizerTest extends TestCase
      */
     public function testSort(): void
     {
-        $fixturesDirectory = __DIR__ . '/../../non_repo_fixtures';
+        $fixturesDirectory = __DIR__ . '/../../fixtures/json';
         $sortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/sorted.json"));
         $unsortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/unsorted.json"));
         $normalizedFromUnsorted = JsonNormalizer::asNormalizedJson($unsortedData);

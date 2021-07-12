@@ -62,7 +62,7 @@ class VerifierTest extends TestCase
      */
     public function testCheckRollbackAttackAttack(): void
     {
-        $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectException('\Tuf\Exception\Attack\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
 
         // The incoming version is lower than the local version, so this should
@@ -94,13 +94,15 @@ class VerifierTest extends TestCase
      * Tests that the correct exception is thrown in case of a rollback attack
      * where the incoming metadata does not match the expected version.
      *
+     * § 5.3.5
+     *
      * @covers ::checkRollbackAttack
      *
      * @return void
      */
     public function testCheckRollbackAttackAttackExpectedVersion(): void
     {
-        $this->expectException('\Tuf\Exception\PotentialAttackException\RollbackAttackException');
+        $this->expectException('\Tuf\Exception\Attack\RollbackAttackException');
         $this->expectExceptionMessage('Remote \'root\' metadata version "$2" does not the expected version "$3"');
 
         // The incoming version is lower than the local version, so this should
@@ -161,13 +163,16 @@ class VerifierTest extends TestCase
     /**
      * Tests that the correct exception is thrown when the update is expired.
      *
+     * § 5.3.10
+     * § 5.4.4
+     * § 5.5.6
      * @covers ::checkFreezeAttack
      *
      * @return void
      */
     public function testCheckFreezeAttackAttack(): void
     {
-        $this->expectException('\Tuf\Exception\PotentialAttackException\FreezeAttackException');
+        $this->expectException('\Tuf\Exception\Attack\FreezeAttackException');
 
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
