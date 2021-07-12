@@ -45,9 +45,10 @@ class FixtureBuilder:
         # Create a hash for the generated fixture. Generate the hash before
         # we open the `hash.txt` file because the empty file will affect the
         # hash of directory.
-        hash = dirhash(self.dir, 'sha256')
+        hashes = 'client:' + dirhash(self.dir + '/client', 'sha256')
+        hashes += "\nserver:" + dirhash(self.dir + '/server', 'sha256')
         with open(self.dir + "/hash.txt", "w") as hash_file:
-            hash_file.write(hash)
+            hash_file.write(hashes)
 
     def _role(self, name):
         """Loads a role object for a specific role."""
