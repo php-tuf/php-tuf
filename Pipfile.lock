@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e306a58a9f2188e20a15fe6d617e3dfd7265cb8e40203bf612c351c91cc3a2b0"
+            "sha256": "d0ad73d9c6415ebd42f6e4ee3672a1fc123d4d9a77db181672af9349a3469450"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,14 @@
         ]
     },
     "default": {
+        "attrs": {
+            "hashes": [
+                "sha256:149e90d6d8ac20db7a955ad60cf0e6881a3f20d37096140088356da6c716b0b1",
+                "sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
+            "version": "==21.2.0"
+        },
         "certifi": {
             "hashes": [
                 "sha256:5930595817496dd21bb8dc35dad090f1c2cd0adfaf21204bf6732ca5d8ee34d3",
@@ -94,6 +102,14 @@
             "index": "pypi",
             "version": "==3.3.2"
         },
+        "dirhash": {
+            "hashes": [
+                "sha256:31bf8192fbb6e09a2a7ff4de31b9eb127c58545af22125ca1fa67c91c8e2d898",
+                "sha256:b77ef0407e9fdb4fe63631601cb6732183131c5e5d805942c37ae19455b9d25c"
+            ],
+            "index": "pypi",
+            "version": "==0.2.1"
+        },
         "flake8": {
             "hashes": [
                 "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b",
@@ -125,6 +141,13 @@
                 "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"
             ],
             "version": "==0.6.1"
+        },
+        "pathspec": {
+            "hashes": [
+                "sha256:86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd",
+                "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"
+            ],
+            "version": "==0.8.1"
         },
         "pycodestyle": {
             "hashes": [
@@ -189,6 +212,12 @@
             ],
             "index": "pypi",
             "version": "==2.24.0"
+        },
+        "scantree": {
+            "hashes": [
+                "sha256:2a8b163de0e4b2f9e4f37f8caf3f0b265172bbf174111e1bebc7955581895b39"
+            ],
+            "version": "==0.0.1"
         },
         "securesystemslib": {
             "hashes": [
