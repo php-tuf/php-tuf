@@ -19,6 +19,9 @@ use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
+/**
+ * @coversDefaultClass \Tuf\Client\Updater
+ */
 class UpdaterTest extends TestCase
 {
     use FixturesTrait;
@@ -935,9 +938,9 @@ class UpdaterTest extends TestCase
      *
      * @return void
      *
-     * @dataProvider providerRefreshException
+     * @dataProvider providerExceptionForInvalidMetadata
      */
-    public function testRefreshException(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
+    public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
         $fixtureName = 'TUFTestFixtureDelegated';
         $updater = $this->getSystemInTest($fixtureName);
@@ -953,12 +956,12 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Data provider for testRefreshException().
+     * Data provider for testExceptionForInvalidMetadata().
      *
      * @return mixed[]
-     *   The test cases for testRefreshException().
+     *   The test cases for testExceptionForInvalidMetadata().
      */
-    public function providerRefreshException(): array
+    public function providerExceptionForInvalidMetadata(): array
     {
         return static::getKeyedArray([
             [
@@ -1084,15 +1087,19 @@ class UpdaterTest extends TestCase
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
         $updater = $this->getSystemInTest($fixtureName);
+        // Depending on which file is removed from the server, the update
+        // process will error out at various points. That's fine, because we're
+        // not trying to complete the refresh.
         $this->serverStorage->removeRepoFile($fileName);
         try {
             $updater->refresh();
+            $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
-            $this->assertSame("File $fileName not found.", $exception->getMessage());
-            $this->assertClientFileVersions($expectedUpdatedVersions);
-            return;
+            // We don't have to do anything with this exception; we just wanted
+            // be sure it got thrown. Since the exception is thrown by TestRepo,
+            // there's no point in asserting that its message is as expected.
         }
-        $this->fail('No RepoFileNotFound exception thrown');
+        $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 
     /**
@@ -1138,6 +1145,11 @@ class UpdaterTest extends TestCase
             ],
             [
                 'TUFTestFixtureSimple',
+                // Deleting timestamp.json and 1.snapshot.json from the server will cause Updater::updateTimestamp()
+                // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
+                // the refresh. This will implicitly check that Updater::updateRoot() doesn't erroneously think that
+                // keys have been rotated, and therefore delete the local timestamp.json and snapshot.json.
+                // @see ::testKeyRotation()
                 'timestamp.json',
                 [
                     'root' => 1,
@@ -1316,5 +1328,68 @@ class UpdaterTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    public function providerKeyRotation(): array
+    {
+        return [
+            'not rotated' => [
+                'PublishedTwice',
+                [
+                    'root' => 2,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            // We expect the timestamp and snapshot metadata to be deleted from the client if either the
+            // timestamp or snapshot roles' keys have been rotated.
+            'timestamp rotated' => [
+                'PublishedTwiceWithRotatedKeys_timestamp',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+            ],
+            'snapshot rotated' => [
+                'PublishedTwiceWithRotatedKeys_snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Tests that the updater correctly handles key rotation (§ 5.3.11)
+     *
+     * @param string $fixtureName
+     *   The name of the fixture to test with.
+     * @param array $expectedUpdatedVersions
+     *   The expected client-side versions of the TUF metadata after refresh.
+     *
+     * @dataProvider providerKeyRotation
+     *
+     * @covers ::hasRotatedKeys
+     * @covers ::updateRoot
+     */
+    public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
+    {
+        $updater = $this->getSystemInTest($fixtureName);
+        // This will purposefully cause the refresh to fail, immediately after
+        // updating the root metadata.
+        $this->serverStorage->removeRepoFile('timestamp.json');
+        try {
+            $updater->refresh();
+            $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
+        } catch (RepoFileNotFound $e) {
+            // We don't need to do anything with this exception.
+        }
+        $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 }

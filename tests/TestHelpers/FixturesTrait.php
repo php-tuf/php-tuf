@@ -100,6 +100,24 @@ trait FixturesTrait
             'targets' => 2,
             'unclaimed' => 1,
         ],
+        'PublishedTwice' => [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ],
+        'PublishedTwiceWithRotatedKeys_timestamp' => [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ],
+        'PublishedTwiceWithRotatedKeys_snapshot' => [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ],
     ];
 
     /**
@@ -180,7 +198,7 @@ trait FixturesTrait
                 return;
             }
             $roleJson = $storage["$role.json"];
-            Assert::assertNotNull($roleJson, "'$role.json' found in local repo.");
+            Assert::assertNotNull($roleJson, "'$role.json' not found in local repo.");
             switch ($role) {
                 case 'root':
                     $metadata = RootMetadata::createFromJson($roleJson);

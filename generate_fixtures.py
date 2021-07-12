@@ -14,7 +14,8 @@ from fixtures import (
     TUFTestFixtureTerminatingDelegation,
     TUFTestFixtureTopLevelTerminating,
     TUFTestFixtureNestedTerminatingNonDelegatingDelegation,
-    TUFTestFixture3LevelDelegation
+    TUFTestFixture3LevelDelegation,
+    PublishedTwice
 )
 
 
@@ -32,6 +33,9 @@ def generate_fixtures():
     TUFTestFixtureTopLevelTerminating.build()
     TUFTestFixtureNestedTerminatingNonDelegatingDelegation.build()
     TUFTestFixture3LevelDelegation.build()
+    PublishedTwice.build()
+    PublishedTwice.build(rotate_keys='timestamp')
+    PublishedTwice.build(rotate_keys='snapshot')
 
 
 generate_fixtures()
