@@ -42,9 +42,7 @@ class FixtureBuilder:
         self.repository.status()
 
     def __del__(self):
-        # Create a hash for the generated fixture. Generate the hash before
-        # we open the `hash.txt` file because the empty file will affect the
-        # hash of directory.
+        # Create a hash for the generated fixture.
         with open(self.dir + "/hash.txt", "w") as hash_file:
             hash_file.write(dirhash(self.dir, 'sha256', ignore=["__init__.py", "hash.txt"]))
 
