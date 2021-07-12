@@ -46,7 +46,7 @@ class FixtureBuilder:
         # we open the `hash.txt` file because the empty file will affect the
         # hash of directory.
         with open(self.dir + "/hash.txt", "w") as hash_file:
-            hash_file.write(dirhash(self.dir, 'sha256', ignore=["__init.py", "hash.txt"]))
+            hash_file.write(dirhash(self.dir, 'sha256', ignore=["__init__.py", "hash.txt"]))
 
     def _role(self, name):
         """Loads a role object for a specific role."""
