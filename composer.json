@@ -17,7 +17,8 @@
         "symfony/validator": "^4.4 || ^5",
         "guzzlehttp/guzzle": "^6.5 || ^7.2",
         "myclabs/deep-copy": "^1.10.2",
-        "guzzlehttp/psr7": "^1.7"
+        "guzzlehttp/psr7": "^1.7",
+        "joomla/http": "^2.0"
     },
     "suggest": {
         "ext-libsodium": "Provides faster verification of updates"
