@@ -17,7 +17,7 @@ interface RepoFileFetcherInterface
      * @param integer $maxBytes
      *   The maximum number of bytes to download.
      *
-     * @return \Psr\Http\Message\StreamInterface
+     * @return StreamInterface
      *   A promise representing the eventual result of the operation. If
      *   successful, the promise should wrap around an instance of
      *   \Psr\Http\Message\StreamInterface, which provides a stream of the
@@ -33,7 +33,7 @@ interface RepoFileFetcherInterface
      * @param integer $maxBytes
      *   The maximum number of bytes to download.
      *
-     * @return \Psr\Http\Message\StreamInterface
+     * @return StreamInterface
      *   A promise representing the eventual result of the operation. If
      *   successful, the promise should wrap around an instance of
      *   \Psr\Http\Message\StreamInterface, which provides a stream of the
