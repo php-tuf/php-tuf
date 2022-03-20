@@ -92,7 +92,9 @@ class JHttpFileFetcher
     public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): StreamInterface
     {
         $location = $url ?: $this->targetsPrefix . $fileName;
-        return $this->fetchFile($location, $maxBytes, $options);
+		$responseBody = $this->fetchFile($location, $maxBytes, $options);
+		
+        return $responseBody->getContents();
     }
 
     /**
