@@ -345,12 +345,11 @@ class Updater
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
-            ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
-                $this->checkLength($data, $maxBytes, $fileName);
-                return $data;
-            })
-            ->wait();
+        $data = $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes);
+
+        $this->checkLength($data, $maxBytes, $fileName);
+
+        return $data;
     }
 
     /**
@@ -447,31 +446,31 @@ class Updater
      * @param mixed ...$extra
      *   Additional arguments to pass to the file fetcher.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface
-     *   A promise representing the eventual verified result of the download
+     * @return StreamInterface
+     *   A stream representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target, ...$extra): PromiseInterface
+    public function download(string $target, ...$extra): StreamInterface
     {
         $this->refresh();
 
         $targetsMetadata = $this->getMetadataForTarget($target);
-        if ($targetsMetadata === null) {
-            return new RejectedPromise(new NotFoundException($target, 'Target'));
-        }
 
         // If the target isn't known, immediately return a rejected promise.
-        try {
-            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
-        } catch (NotFoundException $e) {
-            return new RejectedPromise($e);
+        if ($targetsMetadata === null) {
+            new NotFoundException($target, 'Target')
         }
 
-        return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target) {
-                $this->verify($target, $stream);
-                return $stream;
-            });
+        // Check the target length against the max download size
+        $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+
+        // Perform download
+        $stream = $this->repoFileFetcher->fetchTarget($target, $length, ...$extra);
+
+        // Perform verification
+        $this->verify($target, $stream);
+
+        return $stream;
     }
 
     /**
