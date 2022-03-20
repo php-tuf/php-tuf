@@ -11,7 +11,7 @@ use Tuf\Exception\RepoFileNotFound;
 /**
  * Defines a file fetcher that uses joomla/http to read a file over HTTPS.
  */
-class HttpFileFetcher
+class HttpFileFetcher implements RepoFileFetcherInterface
 {
 	/**
 	 * The HTTP client.
