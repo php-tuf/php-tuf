@@ -119,18 +119,17 @@ class HttpFileFetcher implements RepoFileFetcherInterface
                 throw new DownloadSizeException("$url exceeded $maxBytes bytes");
             }
         };
-	    $this->client->setOption('CURLOPT_PROGRESSFUNCTION', $progress);
+
+		$this->client->setOption('CURLOPT_PROGRESSFUNCTION', $progress);
 	    $response = $this->client->get($url, $headers);
+
+		$response->getBody()->rewind();
 
 		if ($response->getStatusCode() === 404) {
 			throw new RepoFileNotFound();
 		}
 
-	    if (302 == $response->code && !empty($headers['location']))
-	    {
-		    return $this->fetchFile($headers['location'],  $maxBytes,  $headers);
-	    }
-		elseif ($response->getStatusCode() !== 200) {
+	    if ($response->getStatusCode() !== 200) {
 			throw new \RuntimeException($response->getBody()->getContents(), $response->getStatusCode());
 		}
 
