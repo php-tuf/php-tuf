@@ -11,7 +11,7 @@ use Tuf\Exception\RepoFileNotFound;
 /**
  * Defines a file fetcher that uses joomla/http to read a file over HTTPS.
  */
-class JHttpFileFetcher
+class HttpFileFetcher
 {
 	/**
 	 * The HTTP client.
@@ -35,7 +35,7 @@ class JHttpFileFetcher
     private $targetsPrefix;
 
     /**
-     * JHttpFileFetcher constructor.
+     * HttpFileFetcher constructor.
      * @param \Joomla\Http\Http $client
      *   The HTTP client.
      * @param string $metadataPrefix
@@ -92,9 +92,7 @@ class JHttpFileFetcher
     public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): StreamInterface
     {
         $location = $url ?: $this->targetsPrefix . $fileName;
-		$responseBody = $this->fetchFile($location, $maxBytes, $options);
-		
-        return $responseBody->getContents();
+	    return $this->fetchFile($location, $maxBytes, $options);
     }
 
     /**
@@ -121,14 +119,18 @@ class JHttpFileFetcher
                 throw new DownloadSizeException("$url exceeded $maxBytes bytes");
             }
         };
-
+	    $this->client->setOption('CURLOPT_PROGRESSFUNCTION', $progress);
 	    $response = $this->client->get($url, $headers);
 
 		if ($response->getStatusCode() === 404) {
 			throw new RepoFileNotFound();
 		}
 
-	    if ($response->getStatusCode() !== 200) {
+	    if (302 == $response->code && !empty($headers['location']))
+	    {
+		    return $this->fetchFile($headers['location'],  $maxBytes,  $headers);
+	    }
+		elseif ($response->getStatusCode() !== 200) {
 			throw new \RuntimeException($response->getBody()->getContents(), $response->getStatusCode());
 		}
 
@@ -141,7 +143,9 @@ class JHttpFileFetcher
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
-            return $this->fetchMetadata($fileName, $maxBytes)->wait();
+			$responseBody = $this->fetchMetadata($fileName, $maxBytes);
+
+	        return $responseBody->getContents();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
