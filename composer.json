@@ -1,5 +1,5 @@
 {
-    "name": "php-tuf/php-tuf",
+    "name": "MagnusSinger/php-tuf",
     "description": "PHP implementation of The Update Framework (TUF)",
     "type": "library",
     "require-dev": {
