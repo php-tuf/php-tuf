@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
@@ -76,9 +77,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
+    public function fetchMetadata(string $fileName, int $maxBytes): StreamInterface
     {
-        return $this->fetchFile($this->metadataPrefix . $fileName, $maxBytes);
+        return $this->fetchFile($this->metadataPrefix . $fileName, $maxBytes)->wait();
     }
 
     /**
@@ -91,10 +92,10 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *   (optional) An arbitrary URL from which the target should be downloaded.
      *   If passed, takes precedence over $fileName.
      */
-    public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): PromiseInterface
+    public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): StreamInterface
     {
         $location = $url ?: $this->targetsPrefix . $fileName;
-        return $this->fetchFile($location, $maxBytes, $options);
+        return $this->fetchFile($location, $maxBytes, $options)->wait();
     }
 
     /**
@@ -164,7 +165,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
-            return $this->fetchMetadata($fileName, $maxBytes)->wait();
+            return $this->fetchMetadata($fileName, $maxBytes);
         } catch (RepoFileNotFound $exception) {
             return null;
         }

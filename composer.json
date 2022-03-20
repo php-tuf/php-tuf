@@ -44,5 +44,10 @@
         "phpcbf": "phpcbf --standard=PhpTuf ./src ./tests",
         "test": "phpunit ./tests",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": false
+        }
     }
 }
