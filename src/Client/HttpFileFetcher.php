@@ -2,27 +2,23 @@
 
 namespace Tuf\Client;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\RequestOptions;
-use Psr\Http\Message\ResponseInterface;
+use Joomla\Http\Http;
+use Joomla\Http\HttpFactory;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
 /**
- * Defines a file fetcher that uses Guzzle to read a file over HTTPS.
+ * Defines a file fetcher that uses joomla/http to read a file over HTTPS.
  */
-class GuzzleFileFetcher implements RepoFileFetcherInterface
+class HttpFileFetcher implements RepoFileFetcherInterface
 {
-    /**
-     * The HTTP client.
-     *
-     * @var \GuzzleHttp\ClientInterface
-     */
-    private $client;
+	/**
+	 * The HTTP client.
+	 *
+	 * @var \Joomla\Http\Http
+	 */
+	private $client;
 
     /**
      * The path prefix for metadata.
@@ -39,18 +35,17 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     private $targetsPrefix;
 
     /**
-     * GuzzleFileFetcher constructor.
-     *
-     * @param \GuzzleHttp\ClientInterface $client
+     * HttpFileFetcher constructor.
+     * @param \Joomla\Http\Http $client
      *   The HTTP client.
      * @param string $metadataPrefix
      *   The path prefix for metadata.
      * @param string $targetsPrefix
      *   The path prefix for targets.
      */
-    public function __construct(ClientInterface $client, string $metadataPrefix, string $targetsPrefix)
+    public function __construct(Http $client, string $metadataPrefix, string $targetsPrefix)
     {
-        $this->client = $client;
+		$this->client = $client;
         $this->metadataPrefix = $metadataPrefix;
         $this->targetsPrefix = $targetsPrefix;
     }
@@ -70,7 +65,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public static function createFromUri(string $baseUri, string $metadataPrefix = '/metadata/', string $targetsPrefix = '/targets/'): self
     {
-        $client = new Client(['base_uri' => $baseUri]);
+        $httpFactory = new HttpFactory();
+		$client = $httpFactory->getHttp([], 'curl');
+
         return new static($client, $metadataPrefix, $targetsPrefix);
     }
 
@@ -79,7 +76,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      */
     public function fetchMetadata(string $fileName, int $maxBytes): StreamInterface
     {
-        return $this->fetchFile($this->metadataPrefix . $fileName, $maxBytes)->wait();
+        return $this->fetchFile($this->metadataPrefix . $fileName, $maxBytes);
     }
 
     /**
@@ -95,7 +92,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): StreamInterface
     {
         $location = $url ?: $this->targetsPrefix . $fileName;
-        return $this->fetchFile($location, $maxBytes, $options)->wait();
+	    return $this->fetchFile($location, $maxBytes, $options);
     }
 
     /**
@@ -109,10 +106,10 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
      *   (optional) Additional request options to pass to the Guzzle client.
      *   See \GuzzleHttp\RequestOptions.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface
+     * @return \Psr\Http\Message\StreamInterface
      *   A promise representing the eventual result of the operation.
      */
-    protected function fetchFile(string $url, int $maxBytes, array $options = []): PromiseInterface
+    protected function fetchFile(string $url, int $maxBytes, array $headers = []): StreamInterface
     {
         // Create a progress callback to abort the download if it exceeds
         // $maxBytes. This will only work with cURL, so we also verify the
@@ -122,42 +119,22 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
                 throw new DownloadSizeException("$url exceeded $maxBytes bytes");
             }
         };
-        $options += [RequestOptions::PROGRESS => $progress];
 
-        return $this->client->requestAsync('GET', $url, $options)
-            ->then(
-                function (ResponseInterface $response) {
-                    return new ResponseStream($response);
-                },
-                $this->onRejected($url)
-            );
-    }
+		$this->client->setOption('CURLOPT_PROGRESSFUNCTION', $progress);
+	    $response = $this->client->get($url, $headers);
 
-    /**
-     * Creates a callback function for when the promise is rejected.
-     *
-     * @param string $fileName
-     *   The file name being fetched from the remote repo.
-     *
-     * @return \Closure
-     *   The callback function.
-     */
-    private function onRejected(string $fileName): \Closure
-    {
-        return function (\Throwable $e) use ($fileName) {
-            if ($e instanceof ClientException) {
-                if ($e->getCode() === 404) {
-                    throw new RepoFileNotFound("$fileName not found", 0, $e);
-                } else {
-                    // Re-throwing the original exception will blow away the
-                    // backtrace, so wrap the exception in a more generic one to aid
-                    // in debugging.
-                    throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-                }
-            }
-            throw $e;
-        };
-    }
+		$response->getBody()->rewind();
+
+		if ($response->getStatusCode() === 404) {
+			throw new RepoFileNotFound();
+		}
+
+	    if ($response->getStatusCode() !== 200) {
+			throw new \RuntimeException($response->getBody()->getContents(), $response->getStatusCode());
+		}
+
+	    return $response->getBody();
+	}
 
     /**
      * {@inheritDoc}
@@ -165,7 +142,9 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
-            return $this->fetchMetadata($fileName, $maxBytes);
+			$responseBody = $this->fetchMetadata($fileName, $maxBytes);
+
+	        return $responseBody->getContents();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
