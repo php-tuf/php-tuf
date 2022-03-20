@@ -48,7 +48,7 @@ class TargetsMetadata extends MetadataBase
     protected static function getSignedCollectionOptions(): array
     {
         $options = parent::getSignedCollectionOptions();
-        $options['fields']['delegations'] = new Required([
+        $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
                     new Type('\ArrayObject'),
