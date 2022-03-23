@@ -213,7 +213,7 @@ class Updater
             $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
             $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
             // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+            $this->durableStorage['snapshot_json'] = $newSnapshotContents;
         } else {
             // @todo Add support for not using consistent snapshots in
             //    https://github.com/php-tuf/php-tuf/issues/97
@@ -244,7 +244,7 @@ class Updater
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
         // § 5.4.5: Persist timestamp metadata
-        $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $this->durableStorage['timestamp_json'] = $newTimestampContents;
 
         return $newTimestampData;
     }
@@ -291,7 +291,7 @@ class Updater
             $rootData = $nextRoot;
 
             // § 5.3.8
-            $this->durableStorage['root.json'] = $nextRootContents;
+            $this->durableStorage['root_json'] = $nextRootContents;
             // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
         }
@@ -303,7 +303,7 @@ class Updater
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
-            unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
+            unset($this->durableStorage['timestamp_json'], $this->durableStorage['snapshot_json']);
         }
         // § 5.3.12 needs no action because we currently require consistent
         // snapshots.
@@ -511,7 +511,7 @@ class Updater
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
-        $this->durableStorage["$role.json"] = $newTargetsContent;
+        $this->durableStorage[$role . "_json"] = $newTargetsContent;
     }
 
     /**

@@ -36,7 +36,7 @@ class Factory
      */
     public function load(string $role): ?MetadataBase
     {
-        $fileName = "$role.json";
+        $fileName = $role . "_json";
         if (isset($this->storage[$fileName])) {
             $json = $this->storage[$fileName];
             switch ($role) {
