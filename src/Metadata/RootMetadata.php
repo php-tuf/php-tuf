@@ -41,10 +41,6 @@ class RootMetadata extends MetadataBase
             'root' => new Required($roleConstraints),
             'mirror' => new Optional($roleConstraints),
         ]);
-        $options['fields']['consistent_snapshot'] = new Required([
-            new Type('boolean'),
-            new EqualTo(true),
-        ]);
         return $options;
     }
 
