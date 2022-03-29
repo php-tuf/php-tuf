@@ -210,24 +210,17 @@ class Updater
         if ($rootData->supportsConsistentSnapshots()) {
             // § 5.5.1
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+            $newSnapshotContents = $this->fetchFile("snapshot.json");
         }
+        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
+        // § 5.5.7
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
-        if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetsMetadata('targets');
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $this->fetchAndVerifyTargetsMetadata('targets');
+
         $this->isRefreshed = true;
         return true;
     }
@@ -508,7 +501,11 @@ class Updater
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
-        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        if ($rootData->supportsConsistentSnapshots()) {
+            $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        } else {
+            $newTargetsContent = $this->fetchFile("$role.json");
+        }
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
