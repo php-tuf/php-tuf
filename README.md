@@ -1,6 +1,6 @@
 # PHP-TUF
 
-![build](https://github.com/php-tuf/php-tuf/actions/workflows/php.yml/badge.svg)
+![build](https://github.com/php-tuf/php-tuf/actions/workflows/build.yml/badge.svg)
 
 ## IMPORTANT
 PHP-TUF is in a pre-release state and is not considered a complete or secure version of the TUF framework.
