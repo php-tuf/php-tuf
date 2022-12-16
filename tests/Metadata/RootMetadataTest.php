@@ -118,8 +118,8 @@ class RootMetadataTest extends MetadataBaseTest
             ],
         ];
         $data[] = [
-          'signed:consistent_snapshot',
-          true,
+            'signed:consistent_snapshot',
+            true,
         ];
         return static::getKeyedArray($data, 0);
     }
