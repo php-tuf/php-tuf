@@ -103,7 +103,13 @@ class Updater
      */
     protected $universalVerifier;
 
-    /**
+  /**
+   * The root metadata.
+   * @var \Tuf\Metadata\MetadataBase|null
+   */
+  private $rootMetadata;
+
+  /**
      * Updater constructor.
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
@@ -192,13 +198,13 @@ class Updater
 
         // § 5.2
         /** @var \Tuf\Metadata\RootMetadata $rootData */
-        $rootData = $this->metadataFactory->load('root');
+        $this->loadRootMeta();
 
-        $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
+        $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($this->rootMetadata);
         $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
 
         // § 5.3
-        $this->updateRoot($rootData);
+        $this->updateRoot($this->rootMetadata);
 
         // § 5.4
         $newTimestampData = $this->updateTimestamp();
@@ -207,7 +213,7 @@ class Updater
         $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
-        if ($rootData->supportsConsistentSnapshots()) {
+        if ($this->rootMetadata->supportsConsistentSnapshots()) {
             // § 5.5.1
             $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
         } else {
@@ -500,8 +506,11 @@ class Updater
     {
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        if (empty($this->rootMetadata)) {
+          throw new \LogicException("root metadata not set.");
+        }
         // § 5.6.1
-        if ($rootData->supportsConsistentSnapshots()) {
+        if ($this->rootMetadata->supportsConsistentSnapshots()) {
             $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
         } else {
             $newTargetsContent = $this->fetchFile("$role.json");
@@ -587,4 +596,9 @@ class Updater
         }
         return null;
     }
+
+  private function loadRootMeta() {
+    $this->rootMetadata = $this->metadataFactory->load('root');
+  }
+
 }
