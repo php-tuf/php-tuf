@@ -46,7 +46,6 @@ class RootMetadataTest extends MetadataBaseTest
         $data[] = ['signed:roles'];
         $data[] = ['signed:roles:targets:keyids'];
         $data[] = ['signed:roles:targets:threshold'];
-        $data[] = ['signed:consistent_snapshot'];
         return static::getKeyedArray($data);
     }
 
@@ -118,6 +117,10 @@ class RootMetadataTest extends MetadataBaseTest
                 'threshold' => 1,
             ],
         ];
+        $data[] = [
+          'signed:consistent_snapshot',
+          true,
+        ];
         return static::getKeyedArray($data, 0);
     }
 
@@ -145,9 +148,6 @@ class RootMetadataTest extends MetadataBaseTest
     public function testSupportsConsistentSnapshots(): void
     {
         $data = json_decode($this->clientStorage[$this->validJson], true);
-        // Currently we only support consistent snapshots.
-        // @todo Add support for not using consistent snapshots in
-        //    https://github.com/php-tuf/php-tuf/issues/97
         foreach ([true] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
@@ -155,14 +155,6 @@ class RootMetadataTest extends MetadataBaseTest
             $metadata->trust();
             $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
-
-        // Ensure we get an error if consistent snapshots are not being used.
-        $data['signed']['consistent_snapshot'] = false;
-        self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][consistent_snapshot]:", '/');
-        $expectedMessage .= '.* This value should be equal to true';
-        self::expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($data));
     }
 
     /**
