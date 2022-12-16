@@ -107,7 +107,7 @@ class Updater
    * The root metadata.
    * @var \Tuf\Metadata\MetadataBase|null
    */
-  private $rootMetadata;
+    private $rootMetadata;
 
   /**
      * Updater constructor.
@@ -507,7 +507,7 @@ class Updater
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         if (empty($this->rootMetadata)) {
-          throw new \LogicException("root metadata not set.");
+            throw new \LogicException("root metadata not set.");
         }
         // § 5.6.1
         if ($this->rootMetadata->supportsConsistentSnapshots()) {
@@ -597,8 +597,8 @@ class Updater
         return null;
     }
 
-  private function loadRootMeta() {
-    $this->rootMetadata = $this->metadataFactory->load('root');
-  }
-
+    private function loadRootMeta()
+    {
+        $this->rootMetadata = $this->metadataFactory->load('root');
+    }
 }
