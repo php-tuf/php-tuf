@@ -43,7 +43,6 @@ class RootMetadata extends MetadataBase
         ]);
         $options['fields']['consistent_snapshot'] = new Optional([
             new Type('boolean'),
-            new EqualTo(true),
         ]);
         return $options;
     }
