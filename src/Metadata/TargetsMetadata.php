@@ -48,7 +48,7 @@ class TargetsMetadata extends MetadataBase
     protected static function getSignedCollectionOptions(): array
     {
         $options = parent::getSignedCollectionOptions();
-        $options['fields']['delegations'] = new Required([
+        $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
                     new Type('\ArrayObject'),
@@ -185,6 +185,9 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedKeys(): array
     {
         $keys = [];
+        if (!isset($this->getSigned()['delegations'])) {
+            return $keys;
+        }
         foreach ($this->getSigned()['delegations']['keys'] as $keyId => $keyInfo) {
             $keys[$keyId] = Key::createFromMetadata($keyInfo);
         }
@@ -200,6 +203,9 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedRoles(): array
     {
         $roles = [];
+        if (!isset($this->getSigned()['delegations'])) {
+            return $roles;
+        }
         foreach ($this->getSigned()['delegations']['roles'] as $roleInfo) {
             $role = DelegatedRole::createFromMetadata($roleInfo);
             $roles[$role->getName()] = $role;
