@@ -75,8 +75,8 @@ jobs:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
         php: ['8.0', '8.1', '8.2']
         dependencies:
-          - 'symfony/validator:^4.4'
-          - 'symfony/validator:^5'
+          - '"symfony/validator:^4.4"'
+          - '"symfony/validator:^5"'
         experimental: [false]
         include:
           - operating-system: ubuntu-latest
