@@ -78,7 +78,7 @@ jobs:
         # See https://github.com/composer/composer/issues/10943
         dependencies:
           - 'symfony/validator:~4.4'
-          - 'symfony/validator:~5'
+          - 'symfony/validator:~5.0'
         experimental: [false]
         include:
           - operating-system: ubuntu-latest
