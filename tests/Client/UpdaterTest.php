@@ -6,6 +6,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -25,6 +26,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
 class UpdaterTest extends TestCase
 {
     use FixturesTrait;
+    use ProphecyTrait;
     use UtilsTrait;
 
     /**

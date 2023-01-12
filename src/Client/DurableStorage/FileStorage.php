@@ -51,7 +51,7 @@ class FileStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return file_exists($this->pathWithBasePath($offset));
     }
@@ -59,7 +59,7 @@ class FileStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return file_get_contents($this->pathWithBasePath($offset));
     }
@@ -67,7 +67,7 @@ class FileStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         file_put_contents($this->pathWithBasePath($offset), $value);
     }
@@ -75,7 +75,7 @@ class FileStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         @unlink($this->pathWithBasePath($offset));
     }
