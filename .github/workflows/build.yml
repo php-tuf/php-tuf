@@ -77,7 +77,6 @@ jobs:
         dependencies:
           - 'symfony/validator:^4.4'
           - 'symfony/validator:^5'
-          - 'guzzlehttp/guzzle:^7.2'
         experimental: [false]
         include:
           - operating-system: ubuntu-latest
