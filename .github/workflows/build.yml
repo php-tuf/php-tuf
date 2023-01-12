@@ -59,7 +59,7 @@ jobs:
             exit 0
         fi
     - name: Store fixtures as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: fixtures
         path: fixtures.tar.gz
