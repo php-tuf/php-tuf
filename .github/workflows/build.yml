@@ -126,10 +126,9 @@ jobs:
         run: composer phpcs
 
       - name: Download fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures
-          path: fixtures.tar.gz
 
       - name: Extract fixtures
         run: tar -x -z -f fixtures.tar.gz
@@ -162,10 +161,9 @@ jobs:
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
       - name: Download fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures
-          path: fixtures.tar.gz
 
       - name: Extract fixtures
         run: tar -x -z -f fixtures.tar.gz
