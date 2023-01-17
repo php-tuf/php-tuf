@@ -114,12 +114,7 @@ jobs:
         run: 'composer require --no-update ${{ matrix.dependencies }}'
 
       - name: Install dependencies
-        if: matrix.php != '8.0'
         run: 'composer install ${{ env.COMPOSER_FLAGS }}'
-
-      - name: Install dependencies (ignore-platform-req)
-        if: matrix.php == '8.0'
-        run: 'composer install ${{ env.COMPOSER_FLAGS }} --ignore-platform-req=php'
 
       - name: PHP linting
         if: matrix.operating-system != 'windows-latest'
