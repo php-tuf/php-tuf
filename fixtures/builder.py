@@ -130,9 +130,9 @@ class FixtureBuilder:
 
         return self
 
-    def publish(self, with_client=False):
+    def publish(self, with_client=False, consistent=True):
         """Writes the TUF metadata to disk."""
-        self.repository.writeall(consistent_snapshot=True)
+        self.repository.writeall(consistent_snapshot=consistent)
 
         staging_dir = os.path.join(self._server_dir, 'metadata.staged')
         live_dir = os.path.join(self._server_dir, 'metadata')
