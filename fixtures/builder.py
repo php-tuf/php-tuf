@@ -130,9 +130,9 @@ class FixtureBuilder:
 
         return self
 
-    def publish(self, with_client=False):
+    def publish(self, with_client=False, consistent=True):
         """Writes the TUF metadata to disk."""
-        self.repository.writeall(consistent_snapshot=True)
+        self.repository.writeall(consistent_snapshot=consistent)
 
         staging_dir = os.path.join(self._server_dir, 'metadata.staged')
         live_dir = os.path.join(self._server_dir, 'metadata')
@@ -182,3 +182,61 @@ class FixtureBuilder:
             signatures.append(signature.to_dict())
 
         return signatures
+
+
+class ConsistencyVariantFixtureBuilder:
+
+    def __init__(self, name):
+        self.fixtures = [
+            FixtureBuilder(os.path.join(name, 'consistent')),
+            FixtureBuilder(os.path.join(name, 'inconsistent'))
+        ]
+
+    def delegate(self, role_name, paths, parent='targets', path_hash_prefixes=None, terminating=False):
+        for fixture in self.fixtures:
+            fixture.delegate(role_name, paths, parent, path_hash_prefixes, terminating)
+        return self
+
+    def add_key(self, role_name):
+        for fixture in self.fixtures:
+            fixture.add_key(role_name)
+        return self
+
+    def revoke_key(self, role_name, key_index=0):
+        for fixture in self.fixtures:
+            fixture.revoke_key(role_name, key_index)
+        return self
+
+    def invalidate(self):
+        for fixture in self.fixtures:
+            fixture.invalidate()
+        return self
+
+    def add_target(self, filename, signing_role='targets'):
+        for fixture in self.fixtures:
+            fixture.add_target(filename, signing_role)
+        return self
+
+    def create_target(self, filename, contents=None, signing_role='targets'):
+        for fixture in self.fixtures:
+            fixture.create_target(filename, contents, signing_role)
+        return self
+
+    def publish(self, with_client=False):
+        self.fixtures[0].publish(with_client, consistent=True)
+        self.fixtures[1].publish(with_client, consistent=False)
+        return self
+
+    def read(self, filename):
+        return [
+            self.fixtures[0].read(filename),
+            self.fixtures[1].read(filename)
+        ]
+
+    def write(self, filename, data):
+        for fixture in self.fixtures:
+            fixture.write(filename, data)
+
+    def write_signed(self, filename, data, signing_role):
+        for fixture in self.fixtures:
+            fixture.write_signed(filename, data, signing_role)

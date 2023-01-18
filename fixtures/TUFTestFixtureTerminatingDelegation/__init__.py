@@ -14,11 +14,11 @@
 # Targets > a > b > c > d
 #
 # Roles e and d should not be evaluated.
-from fixtures.builder import FixtureBuilder
+from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    FixtureBuilder('TUFTestFixtureTerminatingDelegation')\
+    ConsistencyVariantFixtureBuilder('TUFTestFixtureTerminatingDelegation')\
         .publish(with_client=True)\
         .create_target('targets.txt')\
         .delegate('a', ['*.txt'])\
