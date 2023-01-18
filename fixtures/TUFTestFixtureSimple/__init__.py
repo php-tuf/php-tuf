@@ -4,12 +4,12 @@ import os
 
 
 def build():
-    name = os.path.join('TUFTestFixtureSimple', 'consistent')
-    FixtureBuilder(name)\
-        .create_target('testtarget.txt')\
-        .publish(with_client=True, consistent=True)
-
-    name = os.path.join('TUFTestFixtureSimple', 'inconsistent')
-    FixtureBuilder(name)\
-        .create_target('testtarget.txt')\
-        .publish(with_client=True, consistent=False)
+    variants = {
+        'consistent': True,
+        'inconsistent': False
+    }
+    for suffix, consistent in variants.items():
+        name = os.path.join('TUFTestFixtureSimple', suffix)
+        FixtureBuilder(name)\
+            .create_target('testtarget.txt')\
+            .publish(with_client=True, consistent=consistent)
