@@ -13,11 +13,11 @@
 # Roles should be evaluated in the order:
 # Targets > a > b > c > d > e > f
 
-from fixtures.builder import FixtureBuilder
+from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    FixtureBuilder('TUFTestFixture3LevelDelegation')\
+    ConsistencyVariantFixtureBuilder('TUFTestFixture3LevelDelegation')\
         .publish(with_client=True)\
         .create_target('targets.txt')\
         .delegate('a', ['*.txt'])\

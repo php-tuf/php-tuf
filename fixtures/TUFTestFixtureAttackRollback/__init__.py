@@ -1,20 +1,14 @@
-from fixtures.builder import FixtureBuilder
+from fixtures.builder import ConsistencyVariantFixtureBuilder
 
-import os
 import shutil
 
 
 def build():
-    variants = {
-        'consistent': True,
-        'inconsistent': False
-    }
-    for suffix, consistent in variants.items():
-        name = os.path.join('TUFTestFixtureAttackRollback', suffix)
-        fixture = FixtureBuilder(name)\
-            .create_target('testtarget.txt')\
-            .publish(with_client=True, consistent=consistent)
+    builder = ConsistencyVariantFixtureBuilder('TUFTestFixtureAttackRollback')\
+        .create_target('testtarget.txt')\
+        .publish(with_client=True)
 
+    for fixture in builder.fixtures:
         server_dir = fixture._server_dir
         backup_dir = server_dir + '_backup'
         shutil.copytree(server_dir, backup_dir, dirs_exist_ok=True)
