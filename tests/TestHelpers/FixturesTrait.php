@@ -20,14 +20,14 @@ trait FixturesTrait
      * @var array[]
      */
     private static $initialMetadataVersions = [
-        'TUFTestFixtureDelegated' => [
+        'Delegated' => [
             'root' => 2,
             'timestamp' => 2,
             'snapshot' => 2,
             'targets' => 2,
             'unclaimed' => 1,
         ],
-        'TUFTestFixtureUnsupportedDelegation' => [
+        'UnsupportedDelegation' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
@@ -36,31 +36,31 @@ trait FixturesTrait
             // has an unsupported field and would throw an exception when
             // validating.
         ],
-        'TUFTestFixtureSimple' => [
+        'Simple' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureAttackRollback' => [
+        'AttackRollback' => [
             'root' => 2,
             'timestamp' => 2,
             'snapshot' => 2,
             'targets' => 2,
         ],
-        'TUFTestFixtureThresholdTwo' => [
+        'ThresholdTwo' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureThresholdTwoAttack' => [
+        'ThresholdTwoAttack' => [
             'root' => 2,
             'timestamp' => 2,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureNestedDelegated' => [
+        'NestedDelegated' => [
             'root' => 2,
             'timestamp' => 2,
             'snapshot' => 2,
@@ -69,31 +69,31 @@ trait FixturesTrait
             'level_2' => null,
             'level_3' => null,
         ],
-        'TUFTestFixtureTerminatingDelegation' => [
+        'TerminatingDelegation' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureTopLevelTerminating' => [
+        'TopLevelTerminating' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' => [
+        'NestedTerminatingNonDelegatingDelegation' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixture3LevelDelegation' => [
+        '3LevelDelegation' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,
             'targets' => 1,
         ],
-        'TUFTestFixtureNestedDelegatedErrors' => [
+        'NestedDelegatedErrors' => [
             'root' => 2,
             'timestamp' => 2,
             'snapshot' => 2,

@@ -2,6 +2,6 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    ConsistencyVariantFixtureBuilder('TUFTestFixtureSimple')\
+    ConsistencyVariantFixtureBuilder('Simple')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)

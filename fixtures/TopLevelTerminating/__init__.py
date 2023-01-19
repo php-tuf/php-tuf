@@ -14,7 +14,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    ConsistencyVariantFixtureBuilder('TUFTestFixtureTopLevelTerminating')\
+    ConsistencyVariantFixtureBuilder('TopLevelTerminating')\
         .publish(with_client=True)\
         .create_target('targets.txt')\
         .delegate('a', ['*.txt'], terminating=True)\
