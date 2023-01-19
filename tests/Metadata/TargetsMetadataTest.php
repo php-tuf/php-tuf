@@ -86,7 +86,6 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
-        $data[] = ['signed:delegations'];
         $data[] = ['signed:delegations:keys'];
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'keys']);
         $data[] = ["signed:delegations:keys:$firstKey:keytype"];
