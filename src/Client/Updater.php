@@ -218,11 +218,8 @@ class Updater
         $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
-        if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetsMetadata('targets');
-        } else {
-            // @todo Add support for not using consistent snapshots.
-        }
+        $this->fetchAndVerifyTargetsMetadata('targets');
+
         $this->isRefreshed = true;
         return true;
     }
@@ -500,10 +497,16 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
+        /** @var RootMetadata $rootMetadata */
+        $rootMetadata = $this->metadataFactory->load('root');
+
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
-        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
+            ? "$targetsVersion.$role.json"
+            : "$role.json";
+        $newTargetsContent = $this->fetchFile($targetsFileName);
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
