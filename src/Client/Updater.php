@@ -215,18 +215,14 @@ class Updater
             // § 5.5.7
             $this->durableStorage['snapshot.json'] = $newSnapshotContents;
         } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+            // @todo Add support for not using consistent snapshots.
         }
 
         // § 5.6
         if ($rootData->supportsConsistentSnapshots()) {
             $this->fetchAndVerifyTargetsMetadata('targets');
         } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
+            // @todo Add support for not using consistent snapshots.
         }
         $this->isRefreshed = true;
         return true;
