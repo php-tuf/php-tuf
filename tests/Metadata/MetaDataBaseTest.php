@@ -228,9 +228,27 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testOptionalFields(string $optionalField, $value): void
     {
+        $optionalField = explode(':', $optionalField);
+
         $metadata = json_decode($this->clientStorage[$this->validJson], true);
-        static::nestedChange(explode(':', $optionalField), $metadata, $value);
-        $json = json_encode($metadata);
+        static::nestedChange($optionalField, $metadata, $value);
+        $this->assertDataIsValid($metadata);
+
+        // If the field is truly optional, we should be able to delete it.
+        $this->nestedUnset($optionalField, $metadata);
+        $this->assertDataIsValid($metadata);
+    }
+
+    /**
+     * Asserts that a metadata object can be created from JSON-encoded data.
+     *
+     * @param array $data
+     *   The data which will be encoded as JSON and used to create the metadata
+     *   object.
+     */
+    private function assertDataIsValid(array $data): void
+    {
+        $json = json_encode($data);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
     }
 
