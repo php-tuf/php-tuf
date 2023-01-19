@@ -3,7 +3,7 @@ Contains a class to help build fixtures programmatically.
 """
 
 from securesystemslib import formats, signer
-from tuf import repository_tool
+from tuf import repository_tool, roledb
 
 import json
 import os
@@ -73,7 +73,7 @@ class FixtureBuilder:
         self._keys[role_name]['public'].append(public_key)
         self._keys[role_name]['private'].append(private_key)
 
-        self.repository.mark_dirty([role_name])
+        self._mark_dirty(role_name)
 
         return self
 
@@ -83,7 +83,18 @@ class FixtureBuilder:
         self._role(role_name).remove_verification_key(public_key)
         self._keys[role_name]['private'].pop(key_index)
 
+        self._mark_dirty(role_name)
+
         return self
+
+    def _mark_dirty(self, role_name):
+        """Marks a role as dirty, along with its parent role."""
+        self.repository.mark_dirty([role_name])
+
+        if role_name in roledb.TOP_LEVEL_ROLES:
+            self.repository.mark_dirty(['root'])
+        else:
+            self.repository.mark_dirty(['targets'])
 
     def _import_key(self, role_name):
         """Loads a key pair from the keys/ directory."""
@@ -100,8 +111,8 @@ class FixtureBuilder:
         )
 
     def invalidate(self):
-        """Marks the four main TUF roles as dirty."""
-        self.repository.mark_dirty(['root', 'snapshot', 'timestamp', 'targets'])
+        """Marks the four top-level TUF roles as dirty."""
+        self.repository.mark_dirty(roledb.TOP_LEVEL_ROLES)
         return self
 
     def add_target(self, filename, signing_role='targets'):
