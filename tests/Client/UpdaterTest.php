@@ -82,7 +82,7 @@ class UpdaterTest extends TestCase
             }
         }
 
-        $expectedStartVersions = static::$initialMetadataVersions[$fixtureName];
+        $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
         $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
@@ -831,7 +831,7 @@ class UpdaterTest extends TestCase
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
-        $expectedStartVersion = static::$initialMetadataVersions[$fixtureName];
+        $expectedStartVersion = static::getClientStartVersions($fixtureName);
 
         $updater = $this->getSystemInTest($fixtureName);
         $this->assertTrue($updater->refresh($fixtureName));
@@ -1235,7 +1235,7 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions(static::$initialMetadataVersions[$fixtureName]);
+        $this->assertClientFileVersions(static::getClientStartVersions($fixtureName));
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
