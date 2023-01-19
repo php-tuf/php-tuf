@@ -87,7 +87,7 @@ trait FixturesTrait
             'snapshot' => 1,
             'targets' => 1,
         ],
-        '3LevelDelegation' => [
+        'ThreeLevelDelegation' => [
             'root' => 1,
             'timestamp' => 1,
             'snapshot' => 1,

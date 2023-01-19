@@ -17,7 +17,7 @@ from fixtures import (
     TerminatingDelegation,
     TopLevelTerminating,
     NestedTerminatingNonDelegatingDelegation,
-    3LevelDelegation,
+    ThreeLevelDelegation,
     PublishedTwice
 )
 
@@ -35,7 +35,7 @@ def generate_fixtures():
     TerminatingDelegation.build()
     TopLevelTerminating.build()
     NestedTerminatingNonDelegatingDelegation.build()
-    3LevelDelegation.build()
+    ThreeLevelDelegation.build()
     PublishedTwice.build()
     PublishedTwice.build(rotate_keys='timestamp')
     PublishedTwice.build(rotate_keys='snapshot')

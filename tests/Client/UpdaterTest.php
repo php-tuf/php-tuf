@@ -415,9 +415,9 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            // Test using the 3LevelDelegation fixture set.
-            '3LevelDelegation targets.txt' => [
-                '3LevelDelegation',
+            // Test using the ThreeLevelDelegation fixture set.
+            'ThreeLevelDelegation targets.txt' => [
+                'ThreeLevelDelegation',
                 'targets.txt',
                 [
                     'root' => 2,
@@ -432,8 +432,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation a.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation a.txt' => [
+                'ThreeLevelDelegation',
                 'a.txt',
                 [
                     'root' => 2,
@@ -448,8 +448,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation b.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation b.txt' => [
+                'ThreeLevelDelegation',
                 'b.txt',
                 [
                     'root' => 2,
@@ -464,8 +464,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation c.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation c.txt' => [
+                'ThreeLevelDelegation',
                 'c.txt',
                 [
                     'root' => 2,
@@ -480,8 +480,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation d.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation d.txt' => [
+                'ThreeLevelDelegation',
                 'd.txt',
                 [
                     'root' => 2,
@@ -496,8 +496,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation e.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation e.txt' => [
+                'ThreeLevelDelegation',
                 'e.txt',
                 [
                     'root' => 2,
@@ -512,8 +512,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            '3LevelDelegation f.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation f.txt' => [
+                'ThreeLevelDelegation',
                 'f.txt',
                 [
                     'root' => 2,
@@ -777,11 +777,11 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            // Test cases using the '3LevelDelegation' fixture set.
+            // Test cases using the 'ThreeLevelDelegation' fixture set.
             // A search for non existent target should that matches the paths
             // should search the complete tree.
-            '3LevelDelegation z.txt' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation z.txt' => [
+                'ThreeLevelDelegation',
                 'z.txt',
                 [
                     'root' => 2,
@@ -798,8 +798,8 @@ class UpdaterTest extends TestCase
             ],
             // A search for non existent target that does match the paths
             // should not search any of the tree.
-            '3LevelDelegation z.zip' => [
-                '3LevelDelegation',
+            'ThreeLevelDelegation z.zip' => [
+                'ThreeLevelDelegation',
                 'z.zip',
                 [
                     'root' => 2,
