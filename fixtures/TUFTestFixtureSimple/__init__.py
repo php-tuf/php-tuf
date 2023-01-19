@@ -1,7 +1,7 @@
-from fixtures.builder import FixtureBuilder
+from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    FixtureBuilder('TUFTestFixtureSimple')\
+    ConsistencyVariantFixtureBuilder('TUFTestFixtureSimple')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)

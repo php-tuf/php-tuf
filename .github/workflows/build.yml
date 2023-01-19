@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    # Run this workflow at 3 AM UTC every day.
+    - cron: '0 3 * * *'
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
@@ -55,13 +58,14 @@ jobs:
             git status
             exit 1
         else
+            tar -c -z -f fixtures.tar.gz fixtures
             exit 0
         fi
     - name: Store fixtures as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: fixtures
-        path: fixtures/
+        path: fixtures.tar.gz
         retention-days: 5
 
   build:
@@ -73,12 +77,13 @@ jobs:
       max-parallel: 10
       matrix:
         operating-system: [ubuntu-latest, macos-latest, windows-latest]
-        php: ['7.4', '7.3', '7.2']
+        php: ['8.0', '8.1', '8.2']
+        # We need to use the ~ operator to prevent weirdness on Windows.
+        # See https://github.com/composer/composer/issues/10943
         dependencies:
-          - 'symfony/validator:^4.4'
-          - 'symfony/validator:^5'
-          - 'guzzlehttp/guzzle:^6.5'
-          - 'guzzlehttp/guzzle:^7.2'
+          - 'symfony/validator:~4.4'
+          - 'symfony/validator:~5.0'
+          - 'symfony/validator:~6.0'
         experimental: [false]
         include:
           - operating-system: ubuntu-latest
@@ -109,12 +114,7 @@ jobs:
         run: 'composer require --no-update ${{ matrix.dependencies }}'
 
       - name: Install dependencies
-        if: matrix.php != '8.0'
         run: 'composer install ${{ env.COMPOSER_FLAGS }}'
-
-      - name: Install dependencies (ignore-platform-req)
-        if: matrix.php == '8.0'
-        run: 'composer install ${{ env.COMPOSER_FLAGS }} --ignore-platform-req=php'
 
       - name: PHP linting
         if: matrix.operating-system != 'windows-latest'
@@ -124,10 +124,12 @@ jobs:
         run: composer phpcs
 
       - name: Download fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures
-          path: fixtures
+
+      - name: Extract fixtures
+        run: tar -x -z -f fixtures.tar.gz
 
       - name: Run test suite
         run: composer test
@@ -141,7 +143,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.2'
+          php-version: '8.0'
           tools: composer:v2
 
       - name: Setup problem matchers for PHP
@@ -157,10 +159,12 @@ jobs:
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
       - name: Download fixtures
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: fixtures
-          path: fixtures
+
+      - name: Extract fixtures
+        run: tar -x -z -f fixtures.tar.gz
 
       - name: Run test suite
         run: composer test

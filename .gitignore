@@ -1,6 +1,6 @@
 metadata.staged/
-fixtures/*/client
-fixtures/*/server
+fixtures/**/client
+fixtures/**/server
 venv/
 
 /vendor/

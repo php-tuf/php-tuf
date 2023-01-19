@@ -28,7 +28,7 @@ Composer project. Contributing projects:
 The PHP-TUF client is designed to provide TUF verification to PHP applications
 for target signatures.
 
-- Minimum required PHP version: 7.2
+- Minimum required PHP version: 8.0
 - Requires `ext-json`
 - The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
   cryptography library; however, installing `ext-sodium` is recommended for

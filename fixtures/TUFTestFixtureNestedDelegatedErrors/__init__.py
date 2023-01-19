@@ -1,8 +1,8 @@
-from fixtures.builder import FixtureBuilder
+from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    fixture = FixtureBuilder('TUFTestFixtureNestedDelegatedErrors')\
+    fixture = ConsistencyVariantFixtureBuilder('TUFTestFixtureNestedDelegatedErrors')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)\
         .delegate('unclaimed', ['level_1_*.txt'])\

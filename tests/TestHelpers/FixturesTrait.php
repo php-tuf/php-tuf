@@ -167,7 +167,7 @@ trait FixturesTrait
      */
     private static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
     {
-        $realpath = realpath(__DIR__ . "/../../fixtures/$fixtureName/$subPath");
+        $realpath = realpath(__DIR__ . "/../../fixtures/$fixtureName/consistent/$subPath");
         Assert::assertNotEmpty($realpath);
 
         if ($isDir) {
