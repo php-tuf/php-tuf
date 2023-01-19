@@ -15,110 +15,21 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 trait FixturesTrait
 {
     /**
-     * The initial client-side metadata versions for all fixtures.
+     * Returns the initial client-side metadata versions for a fixture.
      *
-     * @var array[]
+     * @param string $fixtureName
+     *
+     * @return array
      */
-    private static $initialMetadataVersions = [
-        'Delegated' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-        ],
-        'UnsupportedDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'unsupported_target' => null,
-            // We cannot assert the starting versions of 'targets' because it
-            // has an unsupported field and would throw an exception when
-            // validating.
-        ],
-        'Simple' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'AttackRollback' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-        ],
-        'ThresholdTwo' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'ThresholdTwoAttack' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'NestedDelegated' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-            'level_2' => null,
-            'level_3' => null,
-        ],
-        'TerminatingDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TopLevelTerminating' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'NestedTerminatingNonDelegatingDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'ThreeLevelDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'NestedDelegatedErrors' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-        ],
-        'PublishedTwice' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'PublishedTwiceWithRotatedKeys_timestamp' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'PublishedTwiceWithRotatedKeys_snapshot' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-    ];
+    private static function getClientStartVersions(string $fixtureName): array
+    {
+        $path = static::getFixturePath($fixtureName, 'client_versions.ini', false);
+
+        $map = function (string $value): mixed {
+            return is_numeric($value) ? (int) $value : null;
+        };
+        return array_map($map, parse_ini_file($path));
+    }
 
     /**
      * Uses test fixtures at a given path to populate a memory storage backend.
