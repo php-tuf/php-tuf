@@ -2,7 +2,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    fixture = ConsistencyVariantFixtureBuilder('TUFTestFixtureNestedDelegated')\
+    fixture = ConsistencyVariantFixtureBuilder('NestedDelegated')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)\
         .delegate('unclaimed', ['level_1_*.txt'])\
@@ -35,7 +35,7 @@ def build():
     # Add a delegation below the 'level_2_terminating' role.
     # Delegations from a terminating role are evaluated but delegations after a terminating delegation
     # are not.
-    # See TUFTestFixtureNestedDelegatedErrors
+    # See NestedDelegatedErrors
     fixture.delegate('level_3_below_terminated', ['level_1_2_terminating_3_*.txt'], parent='level_2_terminating')\
         .create_target('level_1_2_terminating_3_target.txt', signing_role='level_3_below_terminated')
 

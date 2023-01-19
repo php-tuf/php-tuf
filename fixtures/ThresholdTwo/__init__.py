@@ -2,7 +2,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    builder = ConsistencyVariantFixtureBuilder('TUFTestFixtureThresholdTwo')\
+    builder = ConsistencyVariantFixtureBuilder('ThresholdTwo')\
         .add_key('timestamp')
     for fixture in builder.fixtures:
         fixture._role('timestamp').threshold = 2

@@ -3,7 +3,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 def build():
     # Set up a repo using `path_hash_prefixes`, which is currently not supported.
-    fixture = ConsistencyVariantFixtureBuilder('TUFTestFixtureUnsupportedDelegation')\
+    fixture = ConsistencyVariantFixtureBuilder('UnsupportedDelegation')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)
 

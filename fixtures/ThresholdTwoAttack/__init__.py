@@ -13,7 +13,7 @@ def _build(consistent):
     else:
         suffix = 'inconsistent'
 
-    name = os.path.join('TUFTestFixtureThresholdTwoAttack', suffix)
+    name = os.path.join('ThresholdTwoAttack', suffix)
 
     fixture = FixtureBuilder(name)\
         .add_key('timestamp')

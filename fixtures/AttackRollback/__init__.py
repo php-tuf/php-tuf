@@ -4,7 +4,7 @@ import shutil
 
 
 def build():
-    builder = ConsistencyVariantFixtureBuilder('TUFTestFixtureAttackRollback')\
+    builder = ConsistencyVariantFixtureBuilder('AttackRollback')\
         .create_target('testtarget.txt')\
         .publish(with_client=True)
 

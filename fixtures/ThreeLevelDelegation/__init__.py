@@ -17,7 +17,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    ConsistencyVariantFixtureBuilder('TUFTestFixture3LevelDelegation')\
+    ConsistencyVariantFixtureBuilder('ThreeLevelDelegation')\
         .publish(with_client=True)\
         .create_target('targets.txt')\
         .delegate('a', ['*.txt'])\
