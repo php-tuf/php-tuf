@@ -24,7 +24,7 @@ trait FixturesTrait
     private static function getClientStartVersions(string $fixtureName): array
     {
         $path = static::getFixturePath($fixtureName, 'client_versions.ini', false);
-        return array_map(fn ($value) => is_numeric($value) ? (int) $value : null, parse_ini_file($path));
+        return parse_ini_file($path, false, INI_SCANNER_TYPED);
     }
 
     /**
