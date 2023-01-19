@@ -18,8 +18,11 @@ trait FixturesTrait
      * Returns the initial client-side metadata versions for a fixture.
      *
      * @param string $fixtureName
+     *     The name of the fixture to use.
      *
      * @return array
+     *   The expected versions of the initial client-side metadata, keyed by
+     *   role.
      */
     private static function getClientStartVersions(string $fixtureName): array
     {
