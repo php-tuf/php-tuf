@@ -207,16 +207,15 @@ class Updater
         $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
-        if ($rootData->supportsConsistentSnapshots()) {
-            // § 5.5.1
-            $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        } else {
-            // @todo Add support for not using consistent snapshots.
-        }
+        $snapshotFileName = $rootData->supportsConsistentSnapshots()
+            ? "$snapShotVersion.snapshot.json"
+            : "snapshot.json";
+        // § 5.5.1
+        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
+        // § 5.5.7
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
         if ($rootData->supportsConsistentSnapshots()) {
