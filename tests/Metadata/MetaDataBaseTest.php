@@ -44,7 +44,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
+        $this->clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated/consistent');
     }
 
     /**
@@ -84,7 +84,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturePath('TUFTestFixtureDelegated', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('TUFTestFixtureDelegated/consistent', 'client/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);

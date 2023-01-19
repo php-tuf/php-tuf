@@ -31,7 +31,7 @@ class FactoryTest extends TestCase
      */
     public function testLoad(string $class, string $role): void
     {
-        $clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated');
+        $clientStorage = static::loadFixtureIntoMemory('TUFTestFixtureDelegated/consistent');
         $factory = new Factory($clientStorage);
 
         $metadata = $factory->load($role);
