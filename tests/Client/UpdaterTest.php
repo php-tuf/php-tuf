@@ -204,7 +204,320 @@ abstract class UpdaterTest extends TestCase
         $this->assertClientFileVersions($expectedFileVersions);
     }
 
-    abstract public function providerVerifiedDelegatedDownload(): array;
+    public function providerVerifiedDelegatedDownload(): array
+    {
+        return [
+            // Test cases using the NestedDelegated fixture
+            'level_1_target.txt' => [
+                'NestedDelegated',
+                'level_1_target.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_target.txt' => [
+                'NestedDelegated',
+                'level_1_2_target.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_terminating_findable.txt' => [
+                'NestedDelegated',
+                'level_1_2_terminating_findable.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                ],
+            ],
+            'level_1_2_3_below_non_terminating_target.txt' => [
+                'NestedDelegated',
+                'level_1_2_3_below_non_terminating_target.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => null,
+                    'level_3' => 1,
+                ],
+            ],
+            // Roles delegated from a terminating role are evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2_terminating_3_target.txt' => [
+                'NestedDelegated',
+                'level_1_2_terminating_3_target.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => 1,
+                    'level_2_terminating' => 1,
+                    'level_3' => null,
+                    'level_3_below_terminated' => 1,
+                ],
+            ],
+            // A terminating role only has an effect if the target path matches
+            // the role, otherwise the role is not evaluated.
+            // Roles after (i.e., next to) a terminating delegation, where the
+            // target path does match not the terminating role, are not
+            // evaluated.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'level_1_2a_terminating_plus_1_more_findable.txt' => [
+                'NestedDelegated',
+                'level_1_2a_terminating_plus_1_more_findable.txt',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 2,
+                    'level_2' => null,
+                    'level_2_terminating' => 1,
+                    'level_3' => 1,
+                    'level_3_below_terminated' => 1,
+                ],
+            ],
+            // Test cases using the 'TerminatingDelegation' fixture set.
+            'TerminatingDelegation targets.txt' => [
+                'TerminatingDelegation',
+                'targets.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TerminatingDelegation a.txt' => [
+                'TerminatingDelegation',
+                'a.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TerminatingDelegation b.txt' => [
+                'TerminatingDelegation',
+                'b.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TerminatingDelegation c.txt' => [
+                'TerminatingDelegation',
+                'c.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TerminatingDelegation d.txt' => [
+                'TerminatingDelegation',
+                'd.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            // Test cases using the 'TopLevelTerminating' fixture set.
+            'TopLevelTerminating a.txt' => [
+                'TopLevelTerminating',
+                'a.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
+            // Test cases using the 'NestedTerminatingNonDelegatingDelegation' fixture set.
+            'NestedTerminatingNonDelegatingDelegation a.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
+                'a.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'NestedTerminatingNonDelegatingDelegation b.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
+                'b.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            // Test using the ThreeLevelDelegation fixture set.
+            'ThreeLevelDelegation targets.txt' => [
+                'ThreeLevelDelegation',
+                'targets.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation a.txt' => [
+                'ThreeLevelDelegation',
+                'a.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation b.txt' => [
+                'ThreeLevelDelegation',
+                'b.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation c.txt' => [
+                'ThreeLevelDelegation',
+                'c.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation d.txt' => [
+                'ThreeLevelDelegation',
+                'd.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation e.txt' => [
+                'ThreeLevelDelegation',
+                'e.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => null,
+                ],
+            ],
+            'ThreeLevelDelegation f.txt' => [
+                'ThreeLevelDelegation',
+                'f.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => 1,
+                ],
+            ],
+        ];
+    }
 
     /**
      * Tests for enforcement of maximum number of roles limit.
@@ -266,7 +579,219 @@ abstract class UpdaterTest extends TestCase
      *
      * @return \string[][]
      */
-    abstract public function providerDelegationErrors(): array;
+    public function providerDelegationErrors(): array
+    {
+        return [
+            // Test using the NestedDelegatedErrors fixture set.
+            // 'level_a.txt' is added via the 'unclaimed' role but this role has
+            // `paths: ['level_1_*.txt']` which does not match the file name.
+            'no path match' => [
+                'NestedDelegatedErrors',
+                'level_a.txt',
+                [
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does not update the 'unclaimed.json' file because
+                    // the target file does not match the 'paths' property for the role.
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // 'level_1_3_target.txt' is added via the 'level_2' role which has
+            // `paths: ['level_1_2_*.txt']`. The 'level_2' role is delegated from the
+            // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
+            // for the 'unclaimed' role but does not match for the 'level_2' role.
+            'matches parent delegation' => [
+                'NestedDelegatedErrors',
+                'level_1_3_target.txt',
+                [
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    'unclaimed' => 3,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // 'level_2_unfindable.txt' is added via the 'level_2_error' role which has
+            // `paths: ['level_2_*.txt']`. The 'level_2_error' role is delegated from the
+            // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
+            // for the 'level_2_error' role but does not match for the 'unclaimed' role.
+            // No files added via the 'level_2_error' role will be found because its
+            // 'paths' property is incompatible with the its parent delegation's
+            // 'paths' property.
+            'delegated path does not match parent' => [
+                'NestedDelegatedErrors',
+                'level_2_unfindable.txt',
+                [
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does not update the 'unclaimed.json' file because
+                    // the target file does not match the 'paths' property for the role.
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
+            'delegated path does not match role' => [
+                'NestedDelegatedErrors',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
+                [
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    // The client does update the 'unclaimed.json' file because
+                    // the target file does match the 'paths' property for the role.
+                    'unclaimed' => 3,
+                    'level_2' => 2,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
+            // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
+            //  but added after 'level_2_terminating'.
+            // Because 'level_2_terminating' is a terminating role its own delegations are evaluated but no other
+            // delegations are evaluated after it.
+            // See § 5.6.7.2.1 and 5.6.7.2.2.
+            'delegation is after terminating delegation' => [
+                'NestedDelegatedErrors',
+                'level_1_2_terminating_plus_1_more_unfindable.txt',
+                [
+                    'timestamp' => 6,
+                    'snapshot' => 6,
+                    'targets' => 6,
+                    'unclaimed' => 3,
+                    'level_2' => 2,
+                    'level_2_after_terminating' => null,
+                    'level_2_terminating' => null,
+                    'level_3' => null,
+                    'level_3_below_terminated' => null,
+                ],
+            ],
+            // Test using the TerminatingDelegation fixture set.
+            'TerminatingDelegation e.txt' => [
+                'TerminatingDelegation',
+                'e.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            'TerminatingDelegation f.txt' => [
+                'TerminatingDelegation',
+                'f.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+            // Test cases using the 'TopLevelTerminating' fixture set.
+            'TopLevelTerminating b.txt' => [
+                'TopLevelTerminating',
+                'b.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => null,
+                ],
+            ],
+            // Test cases using the 'NestedTerminatingNonDelegatingDelegation' fixture set.
+            'NestedTerminatingNonDelegatingDelegation c.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
+                'c.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            'NestedTerminatingNonDelegatingDelegation d.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
+                'd.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => null,
+                    'd' => null,
+                ],
+            ],
+            // Test cases using the 'ThreeLevelDelegation' fixture set.
+            // A search for non existent target should that matches the paths
+            // should search the complete tree.
+            'ThreeLevelDelegation z.txt' => [
+                'ThreeLevelDelegation',
+                'z.txt',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => 1,
+                    'b' => 1,
+                    'c' => 1,
+                    'd' => 1,
+                    'e' => 1,
+                    'f' => 1,
+                ],
+            ],
+            // A search for non existent target that does match the paths
+            // should not search any of the tree.
+            'ThreeLevelDelegation z.zip' => [
+                'ThreeLevelDelegation',
+                'z.zip',
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                    'a' => null,
+                    'b' => null,
+                    'c' => null,
+                    'd' => null,
+                    'e' => null,
+                    'f' => null,
+                ],
+            ],
+        ];
+    }
 
     /**
      * Tests refreshing the repository.
@@ -276,9 +801,9 @@ abstract class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected updated versions.
      *
-     * @return void
-     *
      * @dataProvider providerRefreshRepository
+     *
+     * @testdox Refresh $fixtureName repository
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
@@ -323,7 +848,40 @@ abstract class UpdaterTest extends TestCase
      * @return mixed[]
      *   The data set for testRefreshRepository().
      */
-    abstract public function providerRefreshRepository();
+    public function providerRefreshRepository(): array
+    {
+        return [
+            'Delegated' => [
+                'Delegated',
+                [
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 4,
+                    'unclaimed' => 1,
+                ],
+            ],
+            'Simple' => [
+                'Simple',
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            'NestedDelegated' => [
+                'NestedDelegated',
+                [
+                    'timestamp' => 5,
+                    'snapshot' => 5,
+                    'targets' => 5,
+                    'unclaimed' => 1,
+                    'level_2' => null,
+                    'level_3' => null,
+                ],
+            ],
+        ];
+    }
 
     /**
      * Asserts that client-side metadata files are at expected versions.
@@ -391,9 +949,9 @@ abstract class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected updated versions.
      *
-     * @return void
-     *
      * @dataProvider providerFileNotFoundExceptions
+     *
+     * @testdox Deleting $fileName from $fixtureName raises an exception
      */
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
@@ -419,7 +977,75 @@ abstract class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testFileNotFoundExceptions().
      */
-    abstract public function providerFileNotFoundExceptions(): array;
+    public function providerFileNotFoundExceptions(): array
+    {
+        return [
+            // § 5.3.11
+            'timestamp.json in Delegated' => [
+                'Delegated',
+                'timestamp.json',
+                [
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 4,
+                ],
+            ],
+            // § 5.3.11
+            'snapshot.json in Delegated' => [
+                'Delegated',
+                'snapshot.json',
+                [
+                    'timestamp' => 4,
+                    'snapshot' => null,
+                    'targets' => 4,
+                ],
+            ],
+            'targets.json in Delegated' => [
+                'Delegated',
+                'targets.json',
+                [
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
+                ],
+            ],
+            'timestamp.json in Simple' => [
+                'Simple',
+                // Deleting timestamp.json and 1.snapshot.json from the server will cause Updater::updateTimestamp()
+                // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
+                // the refresh. This will implicitly check that Updater::updateRoot() doesn't erroneously think that
+                // keys have been rotated, and therefore delete the local timestamp.json and snapshot.json.
+                // @see ::testKeyRotation()
+                'timestamp.json',
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            'snapshot.json in Simple' => [
+                'Simple',
+                'snapshot.json',
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            'targets.json in Simple' => [
+                'Simple',
+                'targets.json',
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+        ];
+    }
 
 
     /**
@@ -459,9 +1085,9 @@ abstract class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests forcing a refresh from the server.
+     * Tests forcing a refresh when the server is in an invalid state.
      */
-    public function testUpdateRefresh(): void
+    public function testRefreshFromServerInInvalidState(): void
     {
         $fixtureName = 'Simple';
 
@@ -481,7 +1107,20 @@ abstract class UpdaterTest extends TestCase
         $updater->refresh(true);
     }
 
-    abstract public function providerUnsupportedRepo(): array;
+    public function providerUnsupportedRepo(): array
+    {
+        return [
+            [
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'unsupported_target' => null,
+                    // We cannot assert the starting versions of 'targets' because it has
+                    // an unsupported field and would throw an exception when validating.
+                ],
+            ],
+        ];
+    }
 
     /**
      * Tests that an exceptions for an repo with an unsupported field.
@@ -564,7 +1203,39 @@ abstract class UpdaterTest extends TestCase
         ];
     }
 
-    abstract public function providerKeyRotation(): array;
+    public function providerKeyRotation(): array
+    {
+        return [
+            'no keys rotated' => [
+                'PublishedTwice',
+                [
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+            ],
+            // We expect the timestamp and snapshot metadata to be deleted from the client if either the
+            // timestamp or snapshot roles' keys have been rotated.
+            'timestamp rotated' => [
+                'PublishedTwiceWithRotatedKeys_timestamp',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+            ],
+            'snapshot rotated' => [
+                'PublishedTwiceWithRotatedKeys_snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+            ],
+        ];
+    }
 
     /**
      * Tests that the updater correctly handles key rotation (§ 5.3.11)
