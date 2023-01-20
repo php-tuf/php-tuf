@@ -822,16 +822,14 @@ class UpdaterTest extends TestCase
      *
      * @param string $fixtureName
      *   The fixtures set to use.
-     * @param array $expectedUpdatedVersions
-     *   The expected updated versions.
-     *
-     * @return void
      *
      * @dataProvider providerRefreshRepository
      */
-    public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
+    public function testRefreshRepository(string $fixtureName): void
     {
-        $expectedStartVersion = static::getVersions($fixtureName)['start'];
+        $expectedVersions = static::getVersions($fixtureName);
+        $expectedStartVersion = $expectedVersions['start'];
+        $expectedUpdatedVersions = $expectedVersions['updated'];
 
         $updater = $this->getSystemInTest($fixtureName);
         $this->assertTrue($updater->refresh($fixtureName));
@@ -875,37 +873,9 @@ class UpdaterTest extends TestCase
     public function providerRefreshRepository(): array
     {
         return static::getKeyedArray([
-            [
-                'Delegated',
-                [
-                    'root' => 4,
-                    'timestamp' => 4,
-                    'snapshot' => 4,
-                    'targets' => 4,
-                    'unclaimed' => 1,
-                ],
-            ],
-            [
-                'Simple',
-                [
-                    'root' => 1,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
-            ],
-            [
-                'NestedDelegated',
-                [
-                    'root' => 5,
-                    'timestamp' => 5,
-                    'snapshot' => 5,
-                    'targets' => 5,
-                    'unclaimed' => 1,
-                    'level_2' => null,
-                    'level_3' => null,
-                ],
-            ],
+            ['Delegated'],
+            ['Simple'],
+            ['NestedDelegated'],
         ], 0);
     }
 

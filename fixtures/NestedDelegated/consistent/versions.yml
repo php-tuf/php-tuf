@@ -6,3 +6,11 @@ start:
   unclaimed: 1
   level_2: null
   level_3: null
+updated:
+  root: 5
+  timestamp: 5
+  snapshot: 5
+  targets: 5
+  unclaimed: 1
+  level_2: null
+  level_3: null

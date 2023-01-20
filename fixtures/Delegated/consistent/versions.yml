@@ -4,3 +4,9 @@ start:
   snapshot: 2
   targets: 2
   unclaimed: 1
+updated:
+  root: 4
+  timestamp: 4
+  snapshot: 4
+  targets: 4
+  unclaimed: 1

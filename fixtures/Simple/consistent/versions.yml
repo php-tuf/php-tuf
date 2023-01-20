@@ -3,3 +3,8 @@ start:
   timestamp: 1
   snapshot: 1
   targets: 1
+updated:
+  root: 1
+  timestamp: 1
+  snapshot: 1
+  targets: 1
