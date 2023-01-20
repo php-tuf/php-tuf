@@ -1285,14 +1285,10 @@ class UpdaterTest extends TestCase
      *   The fixtures set.
      * @param \Exception $expectedException
      *   The expected exception.
-     * @param array $expectedUpdatedVersions
-     *   The expected repo file version after refresh attempt.
-     *
-     * @return void
      *
      * @dataProvider providerAttackRepoException
      */
-    public function testAttackRepoException(string $fixtureName, \Exception $expectedException, array $expectedUpdatedVersions): void
+    public function testAttackRepoException(string $fixtureName, \Exception $expectedException): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
@@ -1303,6 +1299,7 @@ class UpdaterTest extends TestCase
             $updater->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($expectedException, $exception);
+            $expectedUpdatedVersions = static::getVersions($fixtureName)['updated'];
             $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
@@ -1322,12 +1319,6 @@ class UpdaterTest extends TestCase
             [
                 'AttackRollback',
                 new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
-                [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
             ],
         ];
     }
