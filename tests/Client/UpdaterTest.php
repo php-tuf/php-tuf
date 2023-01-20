@@ -1255,7 +1255,7 @@ class UpdaterTest extends TestCase
      *
      * @return void
      */
-    public function testUnsupportedRepo(): void
+    public function testUnsupportedRepo(bool $consistent = true): void
     {
         $fixtureSet = 'UnsupportedDelegation';
         $updater = $this->getSystemInTest($fixtureSet);
@@ -1269,7 +1269,7 @@ class UpdaterTest extends TestCase
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
             $expectedUpdatedVersion = [
-                'root' => 2,
+                'root' => $consistent ? 2 : 1,
                 'timestamp' => 2,
                 'snapshot' => 2,
                 'unsupported_target' => null,
