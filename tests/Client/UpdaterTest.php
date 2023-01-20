@@ -1245,8 +1245,6 @@ class UpdaterTest extends TestCase
 
     /**
      * Tests that an exceptions for an repo with an unsupported field.
-     *
-     * @return void
      */
     public function testUnsupportedRepo(): void
     {
@@ -1261,14 +1259,7 @@ class UpdaterTest extends TestCase
             self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
-            $expectedUpdatedVersion = [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'unsupported_target' => null,
-                // We cannot assert the starting versions of 'targets' because it has
-                // an unsupported field and would throw an exception when validating.
-            ];
+            $expectedUpdatedVersion = static::getVersions($fixtureSet)['updated'];
             self::assertClientFileVersions($expectedUpdatedVersion);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.

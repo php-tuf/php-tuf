@@ -5,3 +5,10 @@ start:
   unsupported_target: null
   # We don't have an initial version of the `targets` role because it has an unsupported
   # field and would throw an exception when validating.
+updated:
+  root: 2
+  timestamp: 2
+  snapshot: 2
+  unsupported_target: null
+  # We don't have an updated version of the `targets` role because it has an unsupported
+  # field and would throw an exception when validating.
