@@ -44,7 +44,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->clientStorage = static::loadFixtureIntoMemory('Delegated');
+        $this->clientStorage = static::loadFixtureIntoMemory('Delegated/consistent');
     }
 
     /**
@@ -84,7 +84,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturePath('Delegated', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('Delegated/consistent', 'client/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -424,7 +424,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
-        $realPath = static::getFixturePath('Delegated', "client/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturePath('Delegated/consistent', "client/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];

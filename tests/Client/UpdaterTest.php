@@ -25,7 +25,9 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 class UpdaterTest extends TestCase
 {
-    use FixturesTrait;
+    use FixturesTrait {
+        getFixturePath as traitGetFixturePath;
+    }
     use ProphecyTrait;
     use UtilsTrait;
 
@@ -42,6 +44,11 @@ class UpdaterTest extends TestCase
      * @var \Tuf\Tests\Client\TestRepo
      */
     protected $serverStorage;
+
+    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
+        return static::traitGetFixturePath($fixtureName, "consistent/$subPath", $isDir);
+    }
 
     /**
      * Returns a memory-based updater populated with a specific test fixture.
