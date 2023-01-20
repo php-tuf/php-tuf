@@ -71,7 +71,7 @@ class UpdaterTest extends TestCase
         ];
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepo($fixtureName);
+        $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
