@@ -6,14 +6,14 @@ use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\MetadataException;
 
 /**
- * Runs UpdaterTest's test cases on the fixtures without consistent snapshots.
+ * Runs UpdaterTest's test cases on the fixtures with consistent snapshots.
  */
-class InconsistentFixturesUpdaterTest extends UpdaterTest
+class ConsistentFixturesUpdaterTest extends UpdaterTest
 {
     /**
      * {@inheritdoc}
      */
-    protected const FIXTURE_VARIANT = 'inconsistent';
+    protected const FIXTURE_VARIANT = 'consistent';
 
     /**
      * {@inheritdoc}
@@ -24,7 +24,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             [
                 'Delegated',
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 4,
@@ -43,7 +43,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             [
                 'NestedDelegated',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -75,6 +75,19 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 ],
             ],
             [
+                // § 5.3.4
+                '4.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdException('Signature threshold not met on root'),
+                [
+                    'root' => 3,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            [
                 // § 5.3.11
                 // § 5.4.2
                 'timestamp.json',
@@ -82,7 +95,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'new value',
                 new SignatureThresholdException('Signature threshold not met on timestamp'),
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -97,12 +110,12 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             // § 5.3.11
             // § 5.5.2
             [
-                'snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'newkey'],
                 'new value',
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 2,
@@ -111,12 +124,12 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             // § 5.3.11
             // § 5.5.2
             [
-                'snapshot.json',
+                '4.snapshot.json',
                 ['signed', 'version'],
                 6,
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 2,
@@ -127,12 +140,12 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             // fixtures do not contain hashes for targets.json files in snapshot.json.
             // § 5.6.3
             [
-                'targets.json',
+                '4.targets.json',
                 ['signed', 'newvalue'],
                 'value',
                 new SignatureThresholdException("Signature threshold not met on targets"),
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
@@ -140,12 +153,12 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             ],
             // § 5.6.3
             [
-                'targets.json',
+                '4.targets.json',
                 ['signed', 'version'],
                 6,
                 new SignatureThresholdException("Signature threshold not met on targets"),
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
@@ -165,7 +178,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_target.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -178,7 +191,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_2_target.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -192,7 +205,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_2_terminating_findable.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -206,7 +219,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_2_3_below_non_terminating_target.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -222,7 +235,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_2_terminating_3_target.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -243,7 +256,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegated',
                 'level_1_2a_terminating_plus_1_more_findable.txt',
                 [
-                    'root' => 3,
+                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -259,7 +272,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'targets.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -275,7 +288,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'a.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -291,7 +304,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'b.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -307,7 +320,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'c.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -323,7 +336,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'd.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -340,7 +353,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TopLevelTerminating',
                 'a.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -353,7 +366,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedTerminatingNonDelegatingDelegation',
                 'a.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -367,7 +380,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedTerminatingNonDelegatingDelegation',
                 'b.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -382,7 +395,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'targets.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -398,7 +411,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'a.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -414,7 +427,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'b.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -430,7 +443,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'c.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -446,7 +459,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'd.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -462,7 +475,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'e.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -478,7 +491,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'f.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -506,7 +519,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegatedErrors',
                 'level_a.txt',
                 [
-                    'root' => 3,
+                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -528,7 +541,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegatedErrors',
                 'level_1_3_target.txt',
                 [
-                    'root' => 3,
+                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -551,7 +564,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegatedErrors',
                 'level_2_unfindable.txt',
                 [
-                    'root' => 3,
+                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -571,7 +584,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
-                    'root' => 3,
+                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -595,7 +608,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
-                    'root' => 3,
+                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -612,7 +625,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'e.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -628,7 +641,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TerminatingDelegation',
                 'f.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -645,7 +658,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'TopLevelTerminating',
                 'b.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -658,7 +671,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedTerminatingNonDelegatingDelegation',
                 'c.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -672,7 +685,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'NestedTerminatingNonDelegatingDelegation',
                 'd.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -689,7 +702,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'z.txt',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -707,7 +720,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'ThreeLevelDelegation',
                 'z.zip',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -731,7 +744,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             'not rotated' => [
                 'PublishedTwice',
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
@@ -771,7 +784,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
                 'Delegated',
                 'timestamp.json',
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 4,
@@ -780,9 +793,9 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             // § 5.3.11
             [
                 'Delegated',
-                'snapshot.json',
+                '4.snapshot.json',
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 4,
@@ -790,9 +803,9 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             ],
             [
                 'Delegated',
-                'targets.json',
+                '4.targets.json',
                 [
-                    'root' => 3,
+                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
@@ -815,7 +828,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             ],
             [
                 'Simple',
-                'snapshot.json',
+                '1.snapshot.json',
                 [
                     'root' => 1,
                     'timestamp' => 1,
@@ -825,7 +838,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
             ],
             [
                 'Simple',
-                'targets.json',
+                '1.targets.json',
                 [
                     'root' => 1,
                     'timestamp' => 1,
@@ -844,7 +857,7 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
         return [
             [
                 [
-                    'root' => 1,
+                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'unsupported_target' => null,
