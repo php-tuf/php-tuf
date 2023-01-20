@@ -10,7 +10,7 @@
         "phpspec/prophecy-phpunit": "^2",
         "guzzlehttp/guzzle": "^6.5 || ^7.2",
         "guzzlehttp/psr7": "^1.7",
-        "ext-yaml": "*"
+        "symfony/yaml": "^6"
     },
     "license": "MIT",
     "minimum-stability": "dev",

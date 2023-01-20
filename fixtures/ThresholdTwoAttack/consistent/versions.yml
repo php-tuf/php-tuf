@@ -1,0 +1,5 @@
+start:
+  root: 2
+  timestamp: 2
+  snapshot: 1
+  targets: 1

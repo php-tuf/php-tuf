@@ -3,6 +3,7 @@
 namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
+use Symfony\Component\Yaml\Yaml;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -26,8 +27,8 @@ trait FixturesTrait
      */
     private static function getClientStartVersions(string $fixtureName): array
     {
-        $path = static::getFixturePath($fixtureName, 'client_versions.ini', false);
-        return parse_ini_file($path, false, INI_SCANNER_TYPED);
+        $path = static::getFixturePath($fixtureName, 'versions.yml', false);
+        return Yaml::parseFile($path)['start'];
     }
 
     /**

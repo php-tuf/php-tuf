@@ -44,7 +44,7 @@ class FixtureBuilder:
     def __del__(self):
         # Create a hash for the generated fixture.
         with open(self.dir + "/hash.txt", "w") as hash_file:
-            hash_file.write(dirhash(self.dir, 'sha256', ignore=["__init__.py", "client_versions.ini", "hash.txt"]))
+            hash_file.write(dirhash(self.dir, 'sha256', ignore=["__init__.py", "versions.yml", "hash.txt"]))
 
     def _role(self, name):
         """Loads a role object for a specific role."""
