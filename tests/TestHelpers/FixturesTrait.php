@@ -15,110 +15,20 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 trait FixturesTrait
 {
     /**
-     * The initial client-side metadata versions for all fixtures.
+     * Returns the initial client-side metadata versions for a fixture.
      *
-     * @var array[]
+     * @param string $fixtureName
+     *     The name of the fixture to use.
+     *
+     * @return array
+     *   The expected versions of the initial client-side metadata, keyed by
+     *   role.
      */
-    private static $initialMetadataVersions = [
-        'TUFTestFixtureDelegated' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-        ],
-        'TUFTestFixtureUnsupportedDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'unsupported_target' => null,
-            // We cannot assert the starting versions of 'targets' because it
-            // has an unsupported field and would throw an exception when
-            // validating.
-        ],
-        'TUFTestFixtureSimple' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureAttackRollback' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-        ],
-        'TUFTestFixtureThresholdTwo' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureThresholdTwoAttack' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureNestedDelegated' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-            'level_2' => null,
-            'level_3' => null,
-        ],
-        'TUFTestFixtureTerminatingDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureTopLevelTerminating' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixture3LevelDelegation' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'TUFTestFixtureNestedDelegatedErrors' => [
-            'root' => 2,
-            'timestamp' => 2,
-            'snapshot' => 2,
-            'targets' => 2,
-            'unclaimed' => 1,
-        ],
-        'PublishedTwice' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'PublishedTwiceWithRotatedKeys_timestamp' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-        'PublishedTwiceWithRotatedKeys_snapshot' => [
-            'root' => 1,
-            'timestamp' => 1,
-            'snapshot' => 1,
-            'targets' => 1,
-        ],
-    ];
+    private static function getClientStartVersions(string $fixtureName): array
+    {
+        $path = static::getFixturePath($fixtureName, 'client_versions.ini', false);
+        return parse_ini_file($path, false, INI_SCANNER_TYPED);
+    }
 
     /**
      * Uses test fixtures at a given path to populate a memory storage backend.

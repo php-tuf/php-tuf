@@ -134,6 +134,9 @@ jobs:
       - name: Run test suite
         run: composer test
 
+      - name: Check dependencies for known security vulnerabilities
+        run: composer audit
+
   build-lowest-version:
     name: Build lowest version
     needs: fixtures

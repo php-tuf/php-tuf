@@ -82,7 +82,7 @@ class UpdaterTest extends TestCase
             }
         }
 
-        $expectedStartVersions = static::$initialMetadataVersions[$fixtureName];
+        $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
         $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
@@ -105,7 +105,7 @@ class UpdaterTest extends TestCase
      */
     public function testVerifiedDownload(): void
     {
-        $fixtureName = 'TUFTestFixtureSimple';
+        $fixtureName = 'Simple';
         $updater = $this->getSystemInTest($fixtureName);
 
         $testFilePath = static::getFixturePath($fixtureName, 'server/targets/testtarget.txt', false);
@@ -198,9 +198,9 @@ class UpdaterTest extends TestCase
     public function providerVerifiedDelegatedDownload(): array
     {
         return [
-           // Test cases using the TUFTestFixtureNestedDelegated fixture
+           // Test cases using the NestedDelegated fixture
             'level_1_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_target.txt',
                 [
                     'root' => 5,
@@ -213,7 +213,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             'level_1_2_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_2_target.txt',
                 [
                     'root' => 5,
@@ -227,7 +227,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             'level_1_2_terminating_findable.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_2_terminating_findable.txt',
                 [
                     'root' => 5,
@@ -241,7 +241,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             'level_1_2_3_below_non_terminating_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_2_3_below_non_terminating_target.txt',
                 [
                     'root' => 5,
@@ -257,7 +257,7 @@ class UpdaterTest extends TestCase
             // Roles delegated from a terminating role are evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2_terminating_3_target.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_2_terminating_3_target.txt',
                 [
                     'root' => 5,
@@ -278,7 +278,7 @@ class UpdaterTest extends TestCase
             // evaluated.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'level_1_2a_terminating_plus_1_more_findable.txt' => [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 'level_1_2a_terminating_plus_1_more_findable.txt',
                 [
                     'root' => 5,
@@ -292,9 +292,9 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => 1,
                 ],
             ],
-            // Test cases using the 'TUFTestFixtureTerminatingDelegation' fixture set.
-            'TUFTestFixtureTerminatingDelegation targets.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            // Test cases using the 'TerminatingDelegation' fixture set.
+            'TerminatingDelegation targets.txt' => [
+                'TerminatingDelegation',
                 'targets.txt',
                 [
                     'root' => 2,
@@ -309,8 +309,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixtureTerminatingDelegation a.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            'TerminatingDelegation a.txt' => [
+                'TerminatingDelegation',
                 'a.txt',
                 [
                     'root' => 2,
@@ -325,8 +325,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixtureTerminatingDelegation b.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            'TerminatingDelegation b.txt' => [
+                'TerminatingDelegation',
                 'b.txt',
                 [
                     'root' => 2,
@@ -341,8 +341,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixtureTerminatingDelegation c.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            'TerminatingDelegation c.txt' => [
+                'TerminatingDelegation',
                 'c.txt',
                 [
                     'root' => 2,
@@ -357,8 +357,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixtureTerminatingDelegation d.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            'TerminatingDelegation d.txt' => [
+                'TerminatingDelegation',
                 'd.txt',
                 [
                     'root' => 2,
@@ -373,9 +373,9 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
-            'TUFTestFixtureTopLevelTerminating a.txt' => [
-                'TUFTestFixtureTopLevelTerminating',
+            // Test cases using the 'TopLevelTerminating' fixture set.
+            'TopLevelTerminating a.txt' => [
+                'TopLevelTerminating',
                 'a.txt',
                 [
                     'root' => 2,
@@ -386,9 +386,9 @@ class UpdaterTest extends TestCase
                     'b' => null,
                 ],
             ],
-            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
-            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation a.txt' => [
-                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+            // Test cases using the 'NestedTerminatingNonDelegatingDelegation' fixture set.
+            'NestedTerminatingNonDelegatingDelegation a.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
                 'a.txt',
                 [
                     'root' => 2,
@@ -401,8 +401,8 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation b.txt' => [
-                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+            'NestedTerminatingNonDelegatingDelegation b.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
                 'b.txt',
                 [
                     'root' => 2,
@@ -415,9 +415,9 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            // Test using the TUFTestFixture3LevelDelegation fixture set.
-            'TUFTestFixture3LevelDelegation targets.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            // Test using the ThreeLevelDelegation fixture set.
+            'ThreeLevelDelegation targets.txt' => [
+                'ThreeLevelDelegation',
                 'targets.txt',
                 [
                     'root' => 2,
@@ -432,8 +432,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation a.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation a.txt' => [
+                'ThreeLevelDelegation',
                 'a.txt',
                 [
                     'root' => 2,
@@ -448,8 +448,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation b.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation b.txt' => [
+                'ThreeLevelDelegation',
                 'b.txt',
                 [
                     'root' => 2,
@@ -464,8 +464,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation c.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation c.txt' => [
+                'ThreeLevelDelegation',
                 'c.txt',
                 [
                     'root' => 2,
@@ -480,8 +480,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation d.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation d.txt' => [
+                'ThreeLevelDelegation',
                 'd.txt',
                 [
                     'root' => 2,
@@ -496,8 +496,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation e.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation e.txt' => [
+                'ThreeLevelDelegation',
                 'e.txt',
                 [
                     'root' => 2,
@@ -512,8 +512,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixture3LevelDelegation f.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation f.txt' => [
+                'ThreeLevelDelegation',
                 'f.txt',
                 [
                     'root' => 2,
@@ -538,7 +538,7 @@ class UpdaterTest extends TestCase
      */
     public function testMaximumRoles(): void
     {
-        $fixtureName = 'TUFTestFixtureNestedDelegated';
+        $fixtureName = 'NestedDelegated';
         $fileName = 'level_1_2_terminating_3_target.txt';
 
         // Ensure the file can found if the maximum role limit is 100.
@@ -587,18 +587,18 @@ class UpdaterTest extends TestCase
      * Data provider for testDelegationErrors().
      *
      * The files used in these test cases are setup in the Python class
-     * generate_fixtures.TUFTestFixtureNestedDelegatedErrors().
+     * generate_fixtures.NestedDelegatedErrors().
      *
      * @return \string[][]
      */
     public function providerDelegationErrors(): array
     {
         return [
-            // Test using the TUFTestFixtureNestedDelegatedErrors fixture set.
+            // Test using the NestedDelegatedErrors fixture set.
             // 'level_a.txt' is added via the 'unclaimed' role but this role has
             // `paths: ['level_1_*.txt']` which does not match the file name.
             'no path match' => [
-                'TUFTestFixtureNestedDelegatedErrors',
+                'NestedDelegatedErrors',
                 'level_a.txt',
                 [
                     'root' => 6,
@@ -620,7 +620,7 @@ class UpdaterTest extends TestCase
             // 'unclaimed' role which has `paths: ['level_1_*.txt']`. The file matches
             // for the 'unclaimed' role but does not match for the 'level_2' role.
             'matches parent delegation' => [
-                'TUFTestFixtureNestedDelegatedErrors',
+                'NestedDelegatedErrors',
                 'level_1_3_target.txt',
                 [
                     'root' => 6,
@@ -643,7 +643,7 @@ class UpdaterTest extends TestCase
             // 'paths' property is incompatible with the its parent delegation's
             // 'paths' property.
             'delegated path does not match parent' => [
-                'TUFTestFixtureNestedDelegatedErrors',
+                'NestedDelegatedErrors',
                 'level_2_unfindable.txt',
                 [
                     'root' => 6,
@@ -663,7 +663,7 @@ class UpdaterTest extends TestCase
             // 'level_1_2_terminating_plus_1_more_unfindable.txt' is added via role
             // 'level_2_after_terminating_match_terminating_path' which is delegated from role at the same level as 'level_2_terminating'
             'delegated path does not match role' => [
-                'TUFTestFixtureNestedDelegatedErrors',
+                'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
                     'root' => 6,
@@ -687,7 +687,7 @@ class UpdaterTest extends TestCase
             // delegations are evaluated after it.
             // See § 5.6.7.2.1 and 5.6.7.2.2.
             'delegation is after terminating delegation' => [
-                'TUFTestFixtureNestedDelegatedErrors',
+                'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
                     'root' => 6,
@@ -702,9 +702,9 @@ class UpdaterTest extends TestCase
                     'level_3_below_terminated' => null,
                 ],
             ],
-            // Test using the TUFTestFixtureTerminatingDelegation fixture set.
-            'TUFTestFixtureTerminatingDelegation e.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            // Test using the TerminatingDelegation fixture set.
+            'TerminatingDelegation e.txt' => [
+                'TerminatingDelegation',
                 'e.txt',
                 [
                     'root' => 2,
@@ -719,8 +719,8 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            'TUFTestFixtureTerminatingDelegation f.txt' => [
-                'TUFTestFixtureTerminatingDelegation',
+            'TerminatingDelegation f.txt' => [
+                'TerminatingDelegation',
                 'f.txt',
                 [
                     'root' => 2,
@@ -735,9 +735,9 @@ class UpdaterTest extends TestCase
                     'f' => null,
                 ],
             ],
-            // Test cases using the 'TUFTestFixtureTopLevelTerminating' fixture set.
-            'TUFTestFixtureTopLevelTerminating b.txt' => [
-                'TUFTestFixtureTopLevelTerminating',
+            // Test cases using the 'TopLevelTerminating' fixture set.
+            'TopLevelTerminating b.txt' => [
+                'TopLevelTerminating',
                 'b.txt',
                 [
                     'root' => 2,
@@ -748,9 +748,9 @@ class UpdaterTest extends TestCase
                     'b' => null,
                 ],
             ],
-            // Test cases using the 'TUFTestFixtureNestedTerminatingNonDelegatingDelegation' fixture set.
-            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation c.txt' => [
-                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+            // Test cases using the 'NestedTerminatingNonDelegatingDelegation' fixture set.
+            'NestedTerminatingNonDelegatingDelegation c.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
                 'c.txt',
                 [
                     'root' => 2,
@@ -763,8 +763,8 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            'TUFTestFixtureNestedTerminatingNonDelegatingDelegation d.txt' => [
-                'TUFTestFixtureNestedTerminatingNonDelegatingDelegation',
+            'NestedTerminatingNonDelegatingDelegation d.txt' => [
+                'NestedTerminatingNonDelegatingDelegation',
                 'd.txt',
                 [
                     'root' => 2,
@@ -777,11 +777,11 @@ class UpdaterTest extends TestCase
                     'd' => null,
                 ],
             ],
-            // Test cases using the 'TUFTestFixture3LevelDelegation' fixture set.
+            // Test cases using the 'ThreeLevelDelegation' fixture set.
             // A search for non existent target should that matches the paths
             // should search the complete tree.
-            'TUFTestFixture3LevelDelegation z.txt' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation z.txt' => [
+                'ThreeLevelDelegation',
                 'z.txt',
                 [
                     'root' => 2,
@@ -798,8 +798,8 @@ class UpdaterTest extends TestCase
             ],
             // A search for non existent target that does match the paths
             // should not search any of the tree.
-            'TUFTestFixture3LevelDelegation z.zip' => [
-                'TUFTestFixture3LevelDelegation',
+            'ThreeLevelDelegation z.zip' => [
+                'ThreeLevelDelegation',
                 'z.zip',
                 [
                     'root' => 2,
@@ -831,7 +831,7 @@ class UpdaterTest extends TestCase
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
-        $expectedStartVersion = static::$initialMetadataVersions[$fixtureName];
+        $expectedStartVersion = static::getClientStartVersions($fixtureName);
 
         $updater = $this->getSystemInTest($fixtureName);
         $this->assertTrue($updater->refresh($fixtureName));
@@ -876,7 +876,7 @@ class UpdaterTest extends TestCase
     {
         return static::getKeyedArray([
             [
-                'TUFTestFixtureDelegated',
+                'Delegated',
                 [
                     'root' => 4,
                     'timestamp' => 4,
@@ -886,7 +886,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureSimple',
+                'Simple',
                 [
                     'root' => 1,
                     'timestamp' => 1,
@@ -895,7 +895,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureNestedDelegated',
+                'NestedDelegated',
                 [
                     'root' => 5,
                     'timestamp' => 5,
@@ -944,7 +944,7 @@ class UpdaterTest extends TestCase
      */
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
-        $fixtureName = 'TUFTestFixtureDelegated';
+        $fixtureName = 'Delegated';
         $updater = $this->getSystemInTest($fixtureName);
         $this->serverStorage->setRepoFileNestedValue($fileToChange, $keys, $newValue);
         try {
@@ -1115,7 +1115,7 @@ class UpdaterTest extends TestCase
         return static::getKeyedArray([
             // § 5.3.11
             [
-                'TUFTestFixtureDelegated',
+                'Delegated',
                 'timestamp.json',
                 [
                     'root' => 4,
@@ -1126,7 +1126,7 @@ class UpdaterTest extends TestCase
             ],
             // § 5.3.11
             [
-                'TUFTestFixtureDelegated',
+                'Delegated',
                 '4.snapshot.json',
                 [
                     'root' => 4,
@@ -1136,7 +1136,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureDelegated',
+                'Delegated',
                 '4.targets.json',
                 [
                     'root' => 4,
@@ -1146,7 +1146,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureSimple',
+                'Simple',
                 // Deleting timestamp.json and 1.snapshot.json from the server will cause Updater::updateTimestamp()
                 // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
                 // the refresh. This will implicitly check that Updater::updateRoot() doesn't erroneously think that
@@ -1161,7 +1161,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureSimple',
+                'Simple',
                 '1.snapshot.json',
                 [
                     'root' => 1,
@@ -1171,7 +1171,7 @@ class UpdaterTest extends TestCase
                 ],
             ],
             [
-                'TUFTestFixtureSimple',
+                'Simple',
                 '1.targets.json',
                 [
                     'root' => 1,
@@ -1193,9 +1193,9 @@ class UpdaterTest extends TestCase
     public function providerTestSignatureThresholds():array
     {
         return [
-            ['TUFTestFixtureThresholdTwo'],
+            ['ThresholdTwo'],
             // § 5.4.2
-            ['TUFTestFixtureThresholdTwoAttack', SignatureThresholdException::class],
+            ['ThresholdTwoAttack', SignatureThresholdException::class],
         ];
     }
 
@@ -1225,7 +1225,7 @@ class UpdaterTest extends TestCase
      */
     public function testUpdateRefresh(): void
     {
-        $fixtureName = 'TUFTestFixtureSimple';
+        $fixtureName = 'Simple';
 
         $updater = $this->getSystemInTest($fixtureName);
         // This refresh should succeed.
@@ -1235,7 +1235,7 @@ class UpdaterTest extends TestCase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions(static::$initialMetadataVersions[$fixtureName]);
+        $this->assertClientFileVersions(static::getClientStartVersions($fixtureName));
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
@@ -1250,7 +1250,7 @@ class UpdaterTest extends TestCase
      */
     public function testUnsupportedRepo(): void
     {
-        $fixtureSet = 'TUFTestFixtureUnsupportedDelegation';
+        $fixtureSet = 'UnsupportedDelegation';
         $updater = $this->getSystemInTest($fixtureSet);
         $startingTargets = $this->clientStorage['targets.json'];
         try {
@@ -1320,7 +1320,7 @@ class UpdaterTest extends TestCase
             // § 5.4.3
             // § 5.4.4
             [
-                'TUFTestFixtureAttackRollback',
+                'AttackRollback',
                 new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
                 [
                     'root' => 2,
