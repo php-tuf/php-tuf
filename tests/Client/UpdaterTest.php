@@ -1337,32 +1337,12 @@ class UpdaterTest extends TestCase
         return [
             'not rotated' => [
                 'PublishedTwice',
-                [
-                    'root' => 2,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
             ],
-            // We expect the timestamp and snapshot metadata to be deleted from the client if either the
-            // timestamp or snapshot roles' keys have been rotated.
             'timestamp rotated' => [
                 'PublishedTwiceWithRotatedKeys_timestamp',
-                [
-                    'root' => 2,
-                    'timestamp' => null,
-                    'snapshot' => null,
-                    'targets' => 1,
-                ],
             ],
             'snapshot rotated' => [
                 'PublishedTwiceWithRotatedKeys_snapshot',
-                [
-                    'root' => 2,
-                    'timestamp' => null,
-                    'snapshot' => null,
-                    'targets' => 1,
-                ],
             ],
         ];
     }
@@ -1372,15 +1352,13 @@ class UpdaterTest extends TestCase
      *
      * @param string $fixtureName
      *   The name of the fixture to test with.
-     * @param array $expectedUpdatedVersions
-     *   The expected client-side versions of the TUF metadata after refresh.
      *
      * @dataProvider providerKeyRotation
      *
      * @covers ::hasRotatedKeys
      * @covers ::updateRoot
      */
-    public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
+    public function testKeyRotation(string $fixtureName): void
     {
         $updater = $this->getSystemInTest($fixtureName);
         // This will purposefully cause the refresh to fail, immediately after
@@ -1392,6 +1370,7 @@ class UpdaterTest extends TestCase
         } catch (RepoFileNotFound $e) {
             // We don't need to do anything with this exception.
         }
+        $expectedUpdatedVersions = static::getVersions($fixtureName)['updated'];
         $this->assertClientFileVersions($expectedUpdatedVersions);
     }
 }

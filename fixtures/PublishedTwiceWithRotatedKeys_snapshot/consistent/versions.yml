@@ -3,3 +3,10 @@ start:
   timestamp: 1
   snapshot: 1
   targets: 1
+updated:
+  root: 2
+  # We expect the timestamp and snapshot metadata to be deleted from the client if the
+  # snapshot role's keys have been rotated.
+  timestamp: null
+  snapshot: null
+  targets: 1
