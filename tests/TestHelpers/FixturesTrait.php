@@ -16,19 +16,21 @@ use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 trait FixturesTrait
 {
     /**
-     * Returns the initial client-side metadata versions for a fixture.
+     * Returns the expected metadata versions for a fixture.
      *
      * @param string $fixtureName
-     *     The name of the fixture to use.
+     *   The name of the fixture to use.
      *
-     * @return array
-     *   The expected versions of the initial client-side metadata, keyed by
-     *   role.
+     * @return array[]
+     *   An array with two elements: 'start' and 'updated'. The 'start' array
+     *   contains the expected versions of the initial client-side metadata,
+     *   keyed by role. The 'updated' array contains the expected versions of
+     *   the client-side metadata after a successful update, keyed by role.
      */
-    private static function getClientStartVersions(string $fixtureName): array
+    private static function getVersions(string $fixtureName): array
     {
-        $path = static::getFixturePath($fixtureName, 'versions.yml', false);
-        return Yaml::parseFile($path)['start'];
+        $file = static::getFixturePath($fixtureName, 'versions.yml', false);
+        return Yaml::parseFile($file);
     }
 
     /**
