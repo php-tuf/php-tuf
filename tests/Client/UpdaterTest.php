@@ -1240,56 +1240,28 @@ abstract class UpdaterTest extends TestCase
 
     /**
      * Tests that exceptions are thrown when a repo is in a rollback attack state.
-     *
-     * @param string $fixtureName
-     *   The fixtures set.
-     * @param \Exception $expectedException
-     *   The expected exception.
-     * @param array $expectedUpdatedVersions
-     *   The expected repo file version after refresh attempt.
-     *
-     * @return void
-     *
-     * @dataProvider providerAttackRepoException
      */
-    public function testAttackRepoException(string $fixtureName, \Exception $expectedException, array $expectedUpdatedVersions): void
+    public function testRollbackAttackDetection(): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $updater = $this->getSystemInTest($fixtureName);
+        $updater = $this->getSystemInTest('AttackRollback');
         try {
             // No changes should be made to client repo.
             $this->clientStorage->setExceptionOnChange();
-            $updater->refresh();
-        } catch (TufException $exception) {
-            $this->assertEquals($expectedException, $exception);
-            $this->assertClientFileVersions($expectedUpdatedVersions);
-            return;
-        }
-        $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
-    }
-
-    /**
-     * Data provider for testAttackRepoException().
-     * @return array[]
-     *   The test cases.
-     */
-    public function providerAttackRepoException(): array
-    {
-        return [
             // § 5.4.3
             // § 5.4.4
-            [
-                'AttackRollback',
-                new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
-                [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
-            ],
-        ];
+            $updater->refresh();
+            $this->fail('No exception thrown.');
+        } catch (RollbackAttackException $exception) {
+            $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
+            $this->assertClientFileVersions([
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
+            ]);
+        }
     }
 
     public function providerKeyRotation(): array
