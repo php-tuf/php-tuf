@@ -7,6 +7,8 @@ use Tuf\Exception\MetadataException;
 
 /**
  * Runs UpdaterTest's test cases on the fixtures without consistent snapshots.
+ *
+ * @testdox Updater with non-consistent snapshots
  */
 class InconsistentFixturesUpdaterTest extends UpdaterTest
 {

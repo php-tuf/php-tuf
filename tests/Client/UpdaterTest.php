@@ -180,7 +180,6 @@ abstract class UpdaterTest extends TestCase
      * @param array $expectedFileVersions
      *   The expected client versions after the download.
      *
-     * @return void
      * @todo Add test coverage delegated roles that then delegate to other roles in
      *   https://github.com/php-tuf/php-tuf/issues/142
      *
@@ -190,6 +189,7 @@ abstract class UpdaterTest extends TestCase
      *
      * @dataProvider providerVerifiedDelegatedDownload
      *
+     * @testdox Verify delegated target $target from $fixtureName
      */
     public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
@@ -524,7 +524,7 @@ abstract class UpdaterTest extends TestCase
      *
      * § 5.6.7.1
      */
-    public function testMaximumRoles(): void
+    public function testRoleDownloadsAreLimited(): void
     {
         $fixtureName = 'NestedDelegated';
         $fileName = 'level_1_2_terminating_3_target.txt';
@@ -912,9 +912,9 @@ abstract class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected repo file version after refresh attempt.
      *
-     * @return void
-     *
      * @dataProvider providerExceptionForInvalidMetadata
+     *
+     * @testdox Invalid metadata in $fileToChange raises an exception
      */
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
