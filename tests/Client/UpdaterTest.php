@@ -937,7 +937,96 @@ abstract class UpdaterTest extends TestCase
      * @return mixed[]
      *   The test cases for testExceptionForInvalidMetadata().
      */
-    abstract public function providerExceptionForInvalidMetadata(): array;
+    public function providerExceptionForInvalidMetadata(): array
+    {
+        return [
+            'add key to root.json' => [
+                // § 5.3.4
+                '3.root.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdException('Signature threshold not met on root'),
+                [
+                    'root' => 2,
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            'add key to timestamp.json' => [
+                // § 5.3.11
+                // § 5.4.2
+                'timestamp.json',
+                ['signed', 'newkey'],
+                'new value',
+                new SignatureThresholdException('Signature threshold not met on timestamp'),
+                [
+                    'timestamp' => null,
+                    'snapshot' => 2,
+                    'targets' => 2,
+                ],
+            ],
+            // For snapshot.json files, adding a new key or changing the existing version number
+            // will result in a MetadataException indicating that the contents hash does not match
+            // the hashes specified in the timestamp.json. This is because timestamp.json in the test
+            // fixtures contains the optional 'hashes' metadata for the snapshot.json files, and this
+            // is checked before the file signatures and the file version number. The order of checking
+            // is specified in § 5.5.
+            // § 5.3.11
+            // § 5.5.2
+            'add key to snapshot.json' => [
+                'snapshot.json',
+                ['signed', 'newkey'],
+                'new value',
+                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
+                [
+                    'timestamp' => 4,
+                    'snapshot' => null,
+                    'targets' => 2,
+                ],
+            ],
+            // § 5.3.11
+            // § 5.5.2
+            'change version in snapshot.json' => [
+                'snapshot.json',
+                ['signed', 'version'],
+                6,
+                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
+                [
+                    'timestamp' => 4,
+                    'snapshot' => null,
+                    'targets' => 2,
+                ],
+            ],
+            // For targets.json files, adding a new key or changing the existing version number
+            // will result in a SignatureThresholdException because currently the test
+            // fixtures do not contain hashes for targets.json files in snapshot.json.
+            // § 5.6.3
+            'add key to targets.json' => [
+                'targets.json',
+                ['signed', 'newvalue'],
+                'value',
+                new SignatureThresholdException("Signature threshold not met on targets"),
+                [
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
+                ],
+            ],
+            // § 5.6.3
+            'change version in targets.json' => [
+                'targets.json',
+                ['signed', 'version'],
+                6,
+                new SignatureThresholdException("Signature threshold not met on targets"),
+                [
+                    'timestamp' => 4,
+                    'snapshot' => 4,
+                    'targets' => 2,
+                ],
+            ],
+        ];
+    }
 
     /**
      * Tests that if a file is missing from the repo an exception is thrown.

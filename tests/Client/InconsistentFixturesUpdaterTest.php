@@ -2,9 +2,6 @@
 
 namespace Tuf\Tests\Client;
 
-use Tuf\Exception\Attack\SignatureThresholdException;
-use Tuf\Exception\MetadataException;
-
 /**
  * Runs UpdaterTest's test cases on the fixtures without consistent snapshots.
  *
@@ -33,98 +30,13 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
      */
     public function providerExceptionForInvalidMetadata(): array
     {
-        return static::getKeyedArray([
-            [
-                // § 5.3.4
-                '3.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdException('Signature threshold not met on root'),
-                [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
-            ],
-            [
-                // § 5.3.11
-                // § 5.4.2
-                'timestamp.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdException('Signature threshold not met on timestamp'),
-                [
-                    'root' => 3,
-                    'timestamp' => null,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
-            ],
-            // For snapshot.json files, adding a new key or changing the existing version number
-            // will result in a MetadataException indicating that the contents hash does not match
-            // the hashes specified in the timestamp.json. This is because timestamp.json in the test
-            // fixtures contains the optional 'hashes' metadata for the snapshot.json files, and this
-            // is checked before the file signatures and the file version number. The order of checking
-            // is specified in § 5.5.
-            // § 5.3.11
-            // § 5.5.2
-            [
-                'snapshot.json',
-                ['signed', 'newkey'],
-                'new value',
-                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
-                [
-                    'root' => 3,
-                    'timestamp' => 4,
-                    'snapshot' => null,
-                    'targets' => 2,
-                ],
-            ],
-            // § 5.3.11
-            // § 5.5.2
-            [
-                'snapshot.json',
-                ['signed', 'version'],
-                6,
-                new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
-                [
-                    'root' => 3,
-                    'timestamp' => 4,
-                    'snapshot' => null,
-                    'targets' => 2,
-                ],
-            ],
-            // For targets.json files, adding a new key or changing the existing version number
-            // will result in a SignatureThresholdException because currently the test
-            // fixtures do not contain hashes for targets.json files in snapshot.json.
-            // § 5.6.3
-            [
-                'targets.json',
-                ['signed', 'newvalue'],
-                'value',
-                new SignatureThresholdException("Signature threshold not met on targets"),
-                [
-                    'root' => 3,
-                    'timestamp' => 4,
-                    'snapshot' => 4,
-                    'targets' => 2,
-                ],
-            ],
-            // § 5.6.3
-            [
-                'targets.json',
-                ['signed', 'version'],
-                6,
-                new SignatureThresholdException("Signature threshold not met on targets"),
-                [
-                    'root' => 3,
-                    'timestamp' => 4,
-                    'snapshot' => 4,
-                    'targets' => 2,
-                ],
-            ],
-        ]);
+        $data = parent::providerExceptionForInvalidMetadata();
+        $data['add key to timestamp.json'][4]['root'] = 3;
+        $data['add key to snapshot.json'][4]['root'] = 3;
+        $data['change version in snapshot.json'][4]['root'] = 3;
+        $data['add key to targets.json'][4]['root'] = 3;
+        $data['change version in targets.json'][4]['root'] = 3;
+        return $data;
     }
 
     /**
