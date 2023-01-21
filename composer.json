@@ -45,7 +45,7 @@
     "scripts": {
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
-        "test": "phpunit ./tests",
+        "test": "phpunit --testdox",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
     }
 }
