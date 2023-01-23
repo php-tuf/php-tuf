@@ -46,7 +46,6 @@ class RootMetadataTest extends MetadataBaseTest
         $data[] = ['signed:roles'];
         $data[] = ['signed:roles:targets:keyids'];
         $data[] = ['signed:roles:targets:threshold'];
-        $data[] = ['signed:consistent_snapshot'];
         return static::getKeyedArray($data);
     }
 
@@ -84,7 +83,7 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->clientStorage[$this->validJson], true);
         unset($data['signed']['roles'][$missingRole]);
         static::callCreateFromJson(json_encode($data));
     }
@@ -118,6 +117,7 @@ class RootMetadataTest extends MetadataBaseTest
                 'threshold' => 1,
             ],
         ];
+        $data[] = ['signed:consistent_snapshot', true];
         return static::getKeyedArray($data, 0);
     }
 
@@ -132,7 +132,7 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->localRepo[$this->validJson], true);
+        $data = json_decode($this->clientStorage[$this->validJson], true);
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
         static::callCreateFromJson(json_encode($data));
     }
@@ -144,25 +144,14 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testSupportsConsistentSnapshots(): void
     {
-        $data = json_decode($this->localRepo[$this->validJson], true);
-        // Currently we only support consistent snapshots.
-        // @todo Add support for not using consistent snapshots in
-        //    https://github.com/php-tuf/php-tuf/issues/97
-        foreach ([true] as $value) {
+        $data = json_decode($this->clientStorage[$this->validJson], true);
+        foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
             $metadata = static::callCreateFromJson(json_encode($data));
             $metadata->trust();
             $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
-
-        // Ensure we get an error if consistent snapshots are not being used.
-        $data['signed']['consistent_snapshot'] = false;
-        self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][consistent_snapshot]:", '/');
-        $expectedMessage .= '.* This value should be equal to true';
-        self::expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($data));
     }
 
     /**
@@ -185,7 +174,7 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testGetRoles(): void
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         $data = json_decode($json, true);
         /** @var \Tuf\Metadata\RootMetadata $metadata */
         $metadata = static::callCreateFromJson($json);
@@ -210,7 +199,7 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testKeyidHashAlgorithms()
     {
-        $json = $this->localRepo[$this->validJson];
+        $json = $this->clientStorage[$this->validJson];
         $data = json_decode($json, true);
         $keyId = key($data['signed']['keys']);
         $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';

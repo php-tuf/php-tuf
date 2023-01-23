@@ -55,7 +55,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         $this->throwIfInvalidOffset($offset);
         return $this->backend->offsetExists($offset);
@@ -64,7 +64,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         $this->throwIfInvalidOffset($offset);
         return $this->backend->offsetGet($offset);
@@ -73,7 +73,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->throwIfInvalidOffset($offset);
         // @todo Consider enforcing an application-configurable maximum length
@@ -88,7 +88,7 @@ class DurableStorageAccessValidator implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $this->throwIfInvalidOffset($offset);
         $this->backend->offsetUnset($offset);

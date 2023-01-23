@@ -72,6 +72,18 @@ class Role
     }
 
     /**
+     * Checks if this role's key IDs match another role's.
+     *
+     * @param \Tuf\Role $other
+     *
+     * @return bool
+     */
+    public function keysMatch(Role $other): bool
+    {
+        return $this->keyIds === $other->keyIds;
+    }
+
+    /**
      * Gets the role name.
      *
      * @return string

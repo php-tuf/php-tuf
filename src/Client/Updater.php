@@ -9,8 +9,8 @@ use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
-use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
-use Tuf\Exception\PotentialAttackException\InvalidHashException;
+use Tuf\Exception\Attack\DenialOfServiceAttackException;
+use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
 use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
@@ -170,11 +170,11 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
      */
     public function refresh(bool $force = false): bool
@@ -207,27 +207,19 @@ class Updater
         $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
-        if ($rootData->supportsConsistentSnapshots()) {
-            // § 5.5.1
-            $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $snapshotFileName = $rootData->supportsConsistentSnapshots()
+            ? "$snapShotVersion.snapshot.json"
+            : "snapshot.json";
+        // § 5.5.1
+        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
+        // § 5.5.7
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
-        if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetsMetadata('targets');
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $this->fetchAndVerifyTargetsMetadata('targets');
+
         $this->isRefreshed = true;
         return true;
     }
@@ -257,16 +249,16 @@ class Updater
      * @param \Tuf\Metadata\RootMetadata $rootData
      *   The current root metadata.
      *
-     * @throws \Tuf\Exception\MetadataException
-     *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @return void
+     *@throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if an updated root file is not signed with the need signatures.
      *
-     * @return void
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
      */
     private function updateRoot(RootMetadata &$rootData): void
     {
@@ -326,7 +318,10 @@ class Updater
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
-        return $previousRole !== $newRole;
+        if ($previousRole && $newRole) {
+            return !$previousRole->keysMatch($newRole);
+        }
+        return false;
     }
 
     /**
@@ -398,7 +393,7 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   If the target has no trusted hash(es).
-     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
+     * @throws \Tuf\Exception\Attack\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
     protected function verify(string $target, StreamInterface $data): void
@@ -414,6 +409,7 @@ class Updater
 
         $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
+            // § 5.7.2
             throw new MetadataException("No trusted hashes are available for '$target'");
         }
         foreach ($hashes as $algo => $hash) {
@@ -471,78 +467,24 @@ class Updater
     }
 
     /**
-     * Gets a target metadata object that contains the specified target.
+     * Gets a target metadata object that contains the specified target, if any.
      *
      * @param string $target
-     *   The path of the target file. Needs to be known to the most recent
-     *   targets metadata downloaded in ::refresh().
-     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
-     *   The targets metadata to search or null. If null then the search will
-     *   start at the top level 'targets.json' file.
-     * @param string[] $searchedRoles
-     *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
-     *   calls to this function and should be provided by any callers.
+     *   The path of the target file.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
-     *   The target metadata with a match for the target, or null no match is
-     *   found.
+     *   The targets metadata with information about the desired target, or null if no relevant metadata is found.
      */
-    protected function getMetadataForTarget(string $target, ?TargetsMetadata $targetsMetadata = null, array $searchedRoles = []): ?TargetsMetadata
+    protected function getMetadataForTarget(string $target): ?TargetsMetadata
     {
-        if ($targetsMetadata === null) {
-            if (!empty($searchedRoles)) {
-                throw new \UnexpectedValueException('$searchedRoles should never be provided by outside calls to \Tuf\Client\Updater::getMetadataForTarget(). It is only used for recursive calls.');
-            }
-            // If no target metadata is provided then start searching with the top level targets.json file.
-            /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-            $targetsMetadata = $this->metadataFactory->load('targets');
-            if ($targetsMetadata->hasTarget($target)) {
-                return $targetsMetadata;
-            }
-            $searchedRoles[] = 'targets';
+        // Search the top level targets metadata.
+        /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
+        $targetsMetadata = $this->metadataFactory->load('targets');
+        if ($targetsMetadata->hasTarget($target)) {
+            return $targetsMetadata;
         }
-
-        $delegatedKeys = $targetsMetadata->getDelegatedKeys();
-        foreach ($delegatedKeys as $keyId => $delegatedKey) {
-            $this->signatureVerifier->addKey($keyId, $delegatedKey);
-        }
-        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->getName();
-            if (in_array($delegatedRoleName, $searchedRoles, true)) {
-                // § 5.6.7.1
-                // If this role has been visited before, then skip this role (so that cycles in the delegation graph are avoided).
-                continue;
-            }
-            if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
-                return null;
-            }
-
-            $this->signatureVerifier->addRole($delegatedRole);
-            if (!$delegatedRole->matchesPath($target)) {
-                // Targets must match the path in all roles in the delegation chain so if the path does not match
-                // do not evaluate this role or any roles it delegates to.
-                continue;
-            }
-
-            $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
-            /** @var \Tuf\Metadata\TargetsMetadata $newTargetsData */
-            $newTargetsData = $this->metadataFactory->load($delegatedRoleName);
-            if ($newTargetsData->hasTarget($target)) {
-                return $newTargetsData;
-            }
-            $searchedRoles[] = $delegatedRole;
-            // § 5.6.7.2.1
-            //  If the current delegation is a multi-role delegation, recursively visit each role, and check that each has signed exactly the same non-custom metadata (i.e., length and hashes) about the target (or the lack of any such metadata).
-            if ($matchingTargetMetadata = $this->getMetadataForTarget($target, $newTargetsData, $searchedRoles)) {
-                return $matchingTargetMetadata;
-            }
-            if ($delegatedRole->isTerminating()) {
-                // § 5.6.7.2.2
-                // If the role is terminating then abort searching for a target.
-                return null;
-            }
-        }
-        return null;
+        // Recursively search any delegated roles.
+        return $this->searchDelegatedRolesForTarget($targetsMetadata, $target, ['targets']);
     }
 
     /**
@@ -555,10 +497,16 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
+        /** @var RootMetadata $rootMetadata */
+        $rootMetadata = $this->metadataFactory->load('root');
+
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
-        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
+            ? "$targetsVersion.$role.json"
+            : "$role.json";
+        $newTargetsContent = $this->fetchFile($targetsFileName);
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
@@ -574,5 +522,70 @@ class Updater
     private function getUpdateStartTime(): \DateTimeImmutable
     {
         return (new \DateTimeImmutable())->setTimestamp($this->clock->getCurrentTime());
+    }
+
+    /**
+     * Searches delegated roles for metadata concerning a specific target.
+     *
+     * @param \Tuf\Metadata\TargetsMetadata|null $targetsMetadata
+     *   The targets metadata to search.
+     * @param string $target
+     *   The path of the target file.
+     * @param string[] $searchedRoles
+     *   The roles that have already been searched. This is for internal use only and should not be passed by calling code.
+     * @param bool $terminated
+     *   (optional) For internal recursive calls only. This will be set to true if a terminating delegation is found in
+     *   the search.
+     *
+     *
+     * @return \Tuf\Metadata\TargetsMetadata|null
+     *   The target metadata that contains the metadata for the target or null if the target is not found.
+     */
+    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
+    {
+        foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
+            $this->signatureVerifier->addKey($keyId, $delegatedKey);
+        }
+        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+            $delegatedRoleName = $delegatedRole->getName();
+            if (in_array($delegatedRoleName, $searchedRoles, true)) {
+                // § 5.6.7.1
+                // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
+                continue;
+            }
+            // § 5.6.7.1
+            if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
+                return null;
+            }
+
+            $this->signatureVerifier->addRole($delegatedRole);
+            // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
+            // do not evaluate this role or any roles it delegates to.
+            if ($delegatedRole->matchesPath($target)) {
+                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+                /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
+                $delegatedTargetsMetadata = $this->metadataFactory->load($delegatedRoleName);
+                if ($delegatedTargetsMetadata->hasTarget($target)) {
+                    return $delegatedTargetsMetadata;
+                }
+                $searchedRoles[] = $delegatedRoleName;
+                // § 5.6.7.2.1
+                // Recursively search the list of delegations in order of appearance.
+                $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
+                if ($terminated || $delegatedRolesMetadataSearchResult) {
+                    return $delegatedRolesMetadataSearchResult;
+                }
+
+                // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
+                // in the delegations from $targetsMetadata.
+                if ($delegatedRole->isTerminating()) {
+                    $terminated = true;
+                    // § 5.6.7.2.2
+                    // If the role is terminating then abort searching for a target.
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -3,7 +3,7 @@
 namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\TimestampMetadata;
 

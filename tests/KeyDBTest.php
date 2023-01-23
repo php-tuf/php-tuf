@@ -5,14 +5,14 @@ namespace Tuf\Tests;
 use PHPUnit\Framework\TestCase;
 use Tuf\KeyDB;
 use Tuf\Metadata\RootMetadata;
-use Tuf\Tests\TestHelpers\UtilsTrait;
+use Tuf\Tests\TestHelpers\FixturesTrait;
 
 /**
  * @coversDefaultClass \Tuf\KeyDB
  */
 class KeyDBTest extends TestCase
 {
-    use UtilsTrait;
+    use FixturesTrait;
     /**
      * @covers ::createFromRootMetadata
      *
@@ -20,8 +20,8 @@ class KeyDBTest extends TestCase
      */
     public function testCreateFromRootMetadata(): void
     {
-        $rootJsonPath = static::getFixturesRealPath(
-            'TUFTestFixtureDelegated',
+        $rootJsonPath = static::getFixturePath(
+            'Delegated/consistent',
             'client/metadata/current/2.root.json',
             false
         );
