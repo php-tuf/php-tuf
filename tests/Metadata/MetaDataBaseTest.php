@@ -361,7 +361,10 @@ abstract class MetadataBaseTest extends TestCase
     {
         return [
             ['1', false],
-            ['1.0', false],
+            ['1.0', true],
+            ['1.9', true],
+            ['1.99', true],
+            ['1.999', true],
             ['2.00', false],
             ['1.0.a', false],
             ['1.0.1', true],
