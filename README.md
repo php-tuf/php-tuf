@@ -76,11 +76,11 @@ compliance:
 
 ### Test fixtures generation
 
-1. Run the following command:
+Run the following command:
 
        composer fixtures
 
-2. Fixtures should appear in `fixtures/`.
+Fixtures should appear in `fixtures/`.
 
 ### Running the PHP-TUF tests
 
