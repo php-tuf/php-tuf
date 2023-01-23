@@ -216,7 +216,7 @@ class Updater
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
-        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+        $this->durableStorage->setSnapshot($newSnapshotData);
 
         // § 5.6
         $this->fetchAndVerifyTargetsMetadata('targets');
@@ -237,7 +237,7 @@ class Updater
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
         // § 5.4.5: Persist timestamp metadata
-        $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $this->durableStorage->setTimestamp($newTimestampData);
 
         return $newTimestampData;
     }
@@ -284,7 +284,7 @@ class Updater
             $rootData = $nextRoot;
 
             // § 5.3.8
-            $this->durableStorage['root.json'] = $nextRootContents;
+            $this->durableStorage->setRoot($nextRoot);
             // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
         }
@@ -296,7 +296,8 @@ class Updater
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
-            unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
+            $this->durableStorage->delete(TimestampMetadata::TYPE);
+            $this->durableStorage->delete(SnapshotMetadata::TYPE);
         }
         // § 5.3.12 needs no action because we currently require consistent
         // snapshots.
@@ -511,7 +512,7 @@ class Updater
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
-        $this->durableStorage["$role.json"] = $newTargetsContent;
+        $this->durableStorage->setTargets($newTargetsData);
     }
 
     /**
