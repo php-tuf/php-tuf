@@ -5,7 +5,6 @@ namespace Tuf\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
-use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
