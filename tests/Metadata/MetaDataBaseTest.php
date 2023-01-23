@@ -44,7 +44,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->clientStorage = static::loadFixtureIntoMemory('Delegated');
+        $this->clientStorage = static::loadFixtureIntoMemory('Delegated/consistent');
     }
 
     /**
@@ -84,7 +84,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturePath('Delegated', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('Delegated/consistent', 'client/metadata/current');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
@@ -228,9 +228,27 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function testOptionalFields(string $optionalField, $value): void
     {
+        $optionalField = explode(':', $optionalField);
+
         $metadata = json_decode($this->clientStorage[$this->validJson], true);
-        static::nestedChange(explode(':', $optionalField), $metadata, $value);
-        $json = json_encode($metadata);
+        static::nestedChange($optionalField, $metadata, $value);
+        $this->assertDataIsValid($metadata);
+
+        // If the field is truly optional, we should be able to delete it.
+        $this->nestedUnset($optionalField, $metadata);
+        $this->assertDataIsValid($metadata);
+    }
+
+    /**
+     * Asserts that a metadata object can be created from JSON-encoded data.
+     *
+     * @param array $data
+     *   The data which will be encoded as JSON and used to create the metadata
+     *   object.
+     */
+    private function assertDataIsValid(array $data): void
+    {
+        $json = json_encode($data);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
     }
 
@@ -406,7 +424,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
-        $realPath = static::getFixturePath('Delegated', "client/metadata/current/$fixtureName", false);
+        $realPath = static::getFixturePath('Delegated/consistent', "client/metadata/current/$fixtureName", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];

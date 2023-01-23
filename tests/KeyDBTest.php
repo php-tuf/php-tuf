@@ -21,7 +21,7 @@ class KeyDBTest extends TestCase
     public function testCreateFromRootMetadata(): void
     {
         $rootJsonPath = static::getFixturePath(
-            'Delegated',
+            'Delegated/consistent',
             'client/metadata/current/2.root.json',
             false
         );

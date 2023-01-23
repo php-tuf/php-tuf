@@ -207,27 +207,19 @@ class Updater
         $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
-        if ($rootData->supportsConsistentSnapshots()) {
-            // § 5.5.1
-            $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $snapshotFileName = $rootData->supportsConsistentSnapshots()
+            ? "$snapShotVersion.snapshot.json"
+            : "snapshot.json";
+        // § 5.5.1
+        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
+        // § 5.5.7
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
-        if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetsMetadata('targets');
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $this->fetchAndVerifyTargetsMetadata('targets');
+
         $this->isRefreshed = true;
         return true;
     }
@@ -505,10 +497,16 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
+        /** @var RootMetadata $rootMetadata */
+        $rootMetadata = $this->metadataFactory->load('root');
+
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
-        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
+            ? "$targetsVersion.$role.json"
+            : "$role.json";
+        $newTargetsContent = $this->fetchFile($targetsFileName);
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6

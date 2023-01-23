@@ -23,9 +23,11 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
 /**
  * @coversDefaultClass \Tuf\Client\Updater
  */
-class UpdaterTest extends TestCase
+abstract class UpdaterTest extends TestCase
 {
-    use FixturesTrait;
+    use FixturesTrait {
+        getFixturePath as getFixturePathFromTrait;
+    }
     use ProphecyTrait;
     use UtilsTrait;
 
@@ -42,6 +44,13 @@ class UpdaterTest extends TestCase
      * @var \Tuf\Tests\Client\TestRepo
      */
     protected $serverStorage;
+
+    protected const FIXTURE_VARIANT = '';
+
+    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
+        return static::getFixturePathFromTrait($fixtureName, static::FIXTURE_VARIANT . "/$subPath", $isDir);
+    }
 
     /**
      * Returns a memory-based updater populated with a specific test fixture.
@@ -71,7 +80,7 @@ class UpdaterTest extends TestCase
         ];
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepo($fixtureName);
+        $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
@@ -171,7 +180,6 @@ class UpdaterTest extends TestCase
      * @param array $expectedFileVersions
      *   The expected client versions after the download.
      *
-     * @return void
      * @todo Add test coverage delegated roles that then delegate to other roles in
      *   https://github.com/php-tuf/php-tuf/issues/142
      *
@@ -181,6 +189,7 @@ class UpdaterTest extends TestCase
      *
      * @dataProvider providerVerifiedDelegatedDownload
      *
+     * @testdox Verify delegated target $target from $fixtureName
      */
     public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
@@ -198,12 +207,11 @@ class UpdaterTest extends TestCase
     public function providerVerifiedDelegatedDownload(): array
     {
         return [
-           // Test cases using the NestedDelegated fixture
+            // Test cases using the NestedDelegated fixture
             'level_1_target.txt' => [
                 'NestedDelegated',
                 'level_1_target.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -216,7 +224,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegated',
                 'level_1_2_target.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -230,7 +237,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegated',
                 'level_1_2_terminating_findable.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -244,7 +250,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegated',
                 'level_1_2_3_below_non_terminating_target.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -260,7 +265,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegated',
                 'level_1_2_terminating_3_target.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -281,7 +285,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegated',
                 'level_1_2a_terminating_plus_1_more_findable.txt',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -297,7 +300,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'targets.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -313,7 +315,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'a.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -329,7 +330,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'b.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -345,7 +345,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'c.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -361,7 +360,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'd.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -378,7 +376,6 @@ class UpdaterTest extends TestCase
                 'TopLevelTerminating',
                 'a.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -391,7 +388,6 @@ class UpdaterTest extends TestCase
                 'NestedTerminatingNonDelegatingDelegation',
                 'a.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -405,7 +401,6 @@ class UpdaterTest extends TestCase
                 'NestedTerminatingNonDelegatingDelegation',
                 'b.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -420,7 +415,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'targets.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -436,7 +430,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'a.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -452,7 +445,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'b.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -468,7 +460,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'c.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -484,7 +475,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'd.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -500,7 +490,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'e.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -516,7 +505,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'f.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -536,7 +524,7 @@ class UpdaterTest extends TestCase
      *
      * § 5.6.7.1
      */
-    public function testMaximumRoles(): void
+    public function testRoleDownloadsAreLimited(): void
     {
         $fixtureName = 'NestedDelegated';
         $fileName = 'level_1_2_terminating_3_target.txt';
@@ -601,7 +589,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegatedErrors',
                 'level_a.txt',
                 [
-                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -623,7 +610,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegatedErrors',
                 'level_1_3_target.txt',
                 [
-                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -646,12 +632,11 @@ class UpdaterTest extends TestCase
                 'NestedDelegatedErrors',
                 'level_2_unfindable.txt',
                 [
-                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
-                // The client does not update the 'unclaimed.json' file because
-                // the target file does not match the 'paths' property for the role.
+                    // The client does not update the 'unclaimed.json' file because
+                    // the target file does not match the 'paths' property for the role.
                     'unclaimed' => 1,
                     'level_2' => null,
                     'level_2_after_terminating' => null,
@@ -666,7 +651,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
-                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -690,7 +674,6 @@ class UpdaterTest extends TestCase
                 'NestedDelegatedErrors',
                 'level_1_2_terminating_plus_1_more_unfindable.txt',
                 [
-                    'root' => 6,
                     'timestamp' => 6,
                     'snapshot' => 6,
                     'targets' => 6,
@@ -707,7 +690,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'e.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -723,7 +705,6 @@ class UpdaterTest extends TestCase
                 'TerminatingDelegation',
                 'f.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -740,7 +721,6 @@ class UpdaterTest extends TestCase
                 'TopLevelTerminating',
                 'b.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -753,7 +733,6 @@ class UpdaterTest extends TestCase
                 'NestedTerminatingNonDelegatingDelegation',
                 'c.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -767,7 +746,6 @@ class UpdaterTest extends TestCase
                 'NestedTerminatingNonDelegatingDelegation',
                 'd.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -784,7 +762,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'z.txt',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -802,7 +779,6 @@ class UpdaterTest extends TestCase
                 'ThreeLevelDelegation',
                 'z.zip',
                 [
-                    'root' => 2,
                     'timestamp' => 2,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -825,9 +801,9 @@ class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected updated versions.
      *
-     * @return void
-     *
      * @dataProvider providerRefreshRepository
+     *
+     * @testdox Refresh $fixtureName repository
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
@@ -874,18 +850,17 @@ class UpdaterTest extends TestCase
      */
     public function providerRefreshRepository(): array
     {
-        return static::getKeyedArray([
-            [
+        return [
+            'Delegated' => [
                 'Delegated',
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 4,
                     'unclaimed' => 1,
                 ],
             ],
-            [
+            'Simple' => [
                 'Simple',
                 [
                     'root' => 1,
@@ -894,10 +869,9 @@ class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
-            [
+            'NestedDelegated' => [
                 'NestedDelegated',
                 [
-                    'root' => 5,
                     'timestamp' => 5,
                     'snapshot' => 5,
                     'targets' => 5,
@@ -906,7 +880,7 @@ class UpdaterTest extends TestCase
                     'level_3' => null,
                 ],
             ],
-        ], 0);
+        ];
     }
 
     /**
@@ -938,9 +912,9 @@ class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected repo file version after refresh attempt.
      *
-     * @return void
-     *
      * @dataProvider providerExceptionForInvalidMetadata
+     *
+     * @testdox Invalid metadata in $fileToChange raises an exception
      */
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
@@ -965,8 +939,8 @@ class UpdaterTest extends TestCase
      */
     public function providerExceptionForInvalidMetadata(): array
     {
-        return static::getKeyedArray([
-            [
+        return [
+            'add key to root.json' => [
                 // § 5.3.4
                 '3.root.json',
                 ['signed', 'newkey'],
@@ -979,20 +953,7 @@ class UpdaterTest extends TestCase
                     'targets' => 2,
                 ],
             ],
-            [
-                // § 5.3.4
-                '4.root.json',
-                ['signed', 'newkey'],
-                'new value',
-                new SignatureThresholdException('Signature threshold not met on root'),
-                [
-                    'root' => 3,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
-            ],
-            [
+            'add key to timestamp.json' => [
                 // § 5.3.11
                 // § 5.4.2
                 'timestamp.json',
@@ -1000,7 +961,6 @@ class UpdaterTest extends TestCase
                 'new value',
                 new SignatureThresholdException('Signature threshold not met on timestamp'),
                 [
-                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => 2,
                     'targets' => 2,
@@ -1014,13 +974,12 @@ class UpdaterTest extends TestCase
             // is specified in § 5.5.
             // § 5.3.11
             // § 5.5.2
-            [
-                '4.snapshot.json',
+            'add key to snapshot.json' => [
+                'snapshot.json',
                 ['signed', 'newkey'],
                 'new value',
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 2,
@@ -1028,13 +987,12 @@ class UpdaterTest extends TestCase
             ],
             // § 5.3.11
             // § 5.5.2
-            [
-                '4.snapshot.json',
+            'change version in snapshot.json' => [
+                'snapshot.json',
                 ['signed', 'version'],
                 6,
                 new MetadataException("The 'snapshot' contents does not match hash 'sha256' specified in the 'timestamp' metadata."),
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 2,
@@ -1044,32 +1002,30 @@ class UpdaterTest extends TestCase
             // will result in a SignatureThresholdException because currently the test
             // fixtures do not contain hashes for targets.json files in snapshot.json.
             // § 5.6.3
-            [
-                '4.targets.json',
+            'add key to targets.json' => [
+                'targets.json',
                 ['signed', 'newvalue'],
                 'value',
                 new SignatureThresholdException("Signature threshold not met on targets"),
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
                 ],
             ],
             // § 5.6.3
-            [
-                '4.targets.json',
+            'change version in targets.json' => [
+                'targets.json',
                 ['signed', 'version'],
                 6,
                 new SignatureThresholdException("Signature threshold not met on targets"),
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
                 ],
             ],
-        ]);
+        ];
     }
 
     /**
@@ -1082,9 +1038,9 @@ class UpdaterTest extends TestCase
      * @param array $expectedUpdatedVersions
      *   The expected updated versions.
      *
-     * @return void
-     *
      * @dataProvider providerFileNotFoundExceptions
+     *
+     * @testdox Deleting $fileName from $fixtureName raises an exception
      */
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
@@ -1112,40 +1068,37 @@ class UpdaterTest extends TestCase
      */
     public function providerFileNotFoundExceptions(): array
     {
-        return static::getKeyedArray([
+        return [
             // § 5.3.11
-            [
+            'timestamp.json in Delegated' => [
                 'Delegated',
                 'timestamp.json',
                 [
-                    'root' => 4,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 4,
                 ],
             ],
             // § 5.3.11
-            [
+            'snapshot.json in Delegated' => [
                 'Delegated',
-                '4.snapshot.json',
+                'snapshot.json',
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => null,
                     'targets' => 4,
                 ],
             ],
-            [
+            'targets.json in Delegated' => [
                 'Delegated',
-                '4.targets.json',
+                'targets.json',
                 [
-                    'root' => 4,
                     'timestamp' => 4,
                     'snapshot' => 4,
                     'targets' => 2,
                 ],
             ],
-            [
+            'timestamp.json in Simple' => [
                 'Simple',
                 // Deleting timestamp.json and 1.snapshot.json from the server will cause Updater::updateTimestamp()
                 // and Updater::refresh() to error out. That's fine in these cases, because we're not trying to finish
@@ -1160,9 +1113,9 @@ class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
-            [
+            'snapshot.json in Simple' => [
                 'Simple',
-                '1.snapshot.json',
+                'snapshot.json',
                 [
                     'root' => 1,
                     'timestamp' => 1,
@@ -1170,9 +1123,9 @@ class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
-            [
+            'targets.json in Simple' => [
                 'Simple',
-                '1.targets.json',
+                'targets.json',
                 [
                     'root' => 1,
                     'timestamp' => 1,
@@ -1180,7 +1133,7 @@ class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
-        ]);
+        ];
     }
 
 
@@ -1221,9 +1174,9 @@ class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests forcing a refresh from the server.
+     * Tests forcing a refresh when the server is in an invalid state.
      */
-    public function testUpdateRefresh(): void
+    public function testRefreshFromServerInInvalidState(): void
     {
         $fixtureName = 'Simple';
 
@@ -1243,12 +1196,27 @@ class UpdaterTest extends TestCase
         $updater->refresh(true);
     }
 
+    public function providerUnsupportedRepo(): array
+    {
+        return [
+            [
+                [
+                    'timestamp' => 2,
+                    'snapshot' => 2,
+                    'unsupported_target' => null,
+                    // We cannot assert the starting versions of 'targets' because it has
+                    // an unsupported field and would throw an exception when validating.
+                ],
+            ],
+        ];
+    }
+
     /**
      * Tests that an exceptions for an repo with an unsupported field.
      *
-     * @return void
+     * @dataProvider providerUnsupportedRepo
      */
-    public function testUnsupportedRepo(): void
+    public function testUnsupportedRepo(array $expectedUpdatedVersion): void
     {
         $fixtureSet = 'UnsupportedDelegation';
         $updater = $this->getSystemInTest($fixtureSet);
@@ -1261,14 +1229,6 @@ class UpdaterTest extends TestCase
             self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
-            $expectedUpdatedVersion = [
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'unsupported_target' => null,
-                // We cannot assert the starting versions of 'targets' because it has
-                // an unsupported field and would throw an exception when validating.
-            ];
             self::assertClientFileVersions($expectedUpdatedVersion);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.
@@ -1280,65 +1240,36 @@ class UpdaterTest extends TestCase
 
     /**
      * Tests that exceptions are thrown when a repo is in a rollback attack state.
-     *
-     * @param string $fixtureName
-     *   The fixtures set.
-     * @param \Exception $expectedException
-     *   The expected exception.
-     * @param array $expectedUpdatedVersions
-     *   The expected repo file version after refresh attempt.
-     *
-     * @return void
-     *
-     * @dataProvider providerAttackRepoException
      */
-    public function testAttackRepoException(string $fixtureName, \Exception $expectedException, array $expectedUpdatedVersions): void
+    public function testRollbackAttackDetection(): void
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $updater = $this->getSystemInTest($fixtureName);
+        $updater = $this->getSystemInTest('AttackRollback');
         try {
             // No changes should be made to client repo.
             $this->clientStorage->setExceptionOnChange();
-            $updater->refresh();
-        } catch (TufException $exception) {
-            $this->assertEquals($expectedException, $exception);
-            $this->assertClientFileVersions($expectedUpdatedVersions);
-            return;
-        }
-        $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
-    }
-
-    /**
-     * Data provider for testAttackRepoException().
-     * @return array[]
-     *   The test cases.
-     */
-    public function providerAttackRepoException(): array
-    {
-        return [
             // § 5.4.3
             // § 5.4.4
-            [
-                'AttackRollback',
-                new RollbackAttackException('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"'),
-                [
-                    'root' => 2,
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'targets' => 2,
-                ],
-            ],
-        ];
+            $updater->refresh();
+            $this->fail('No exception thrown.');
+        } catch (RollbackAttackException $exception) {
+            $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
+            $this->assertClientFileVersions([
+                'root' => 2,
+                'timestamp' => 2,
+                'snapshot' => 2,
+                'targets' => 2,
+            ]);
+        }
     }
 
     public function providerKeyRotation(): array
     {
         return [
-            'not rotated' => [
+            'no keys rotated' => [
                 'PublishedTwice',
                 [
-                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
