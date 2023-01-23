@@ -76,16 +76,11 @@ compliance:
 
 ### Test fixtures generation
 
-1. Install the Python TUF implementation and enable the pipenv:
+Run the following command:
 
-       pipenv install
-       pipenv shell
+       composer fixtures
 
-1. Initialize the repository and add/sign a target:
-
-       python generate_fixtures.py
-
-1. Fixtures should appear in `fixtures/`.
+Fixtures should appear in `fixtures/`.
 
 ### Running the PHP-TUF tests
 
