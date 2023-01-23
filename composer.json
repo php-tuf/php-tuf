@@ -43,6 +43,10 @@
         }
     },
     "scripts": {
+        "fixtures": [
+            "pipenv install",
+            "pipenv run python generate_fixtures.py"
+        ],
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
         "test": "phpunit --testdox",
