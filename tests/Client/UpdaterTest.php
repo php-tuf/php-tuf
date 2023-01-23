@@ -21,7 +21,7 @@ use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
- * @coversDefaultClass \Tuf\Client\Updater
+ * Base class for testing the client update workflow.
  */
 abstract class UpdaterTest extends TestCase
 {

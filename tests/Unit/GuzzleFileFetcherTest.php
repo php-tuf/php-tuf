@@ -148,7 +148,7 @@ class GuzzleFileFetcherTest extends TestCase
      *
      * @dataProvider providerFileIfExistsError
      *
-     * @covers ::providerFileIfExists
+     * @covers ::fetchMetadataIfExists
      */
     public function testFetchFileIfExistsError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
