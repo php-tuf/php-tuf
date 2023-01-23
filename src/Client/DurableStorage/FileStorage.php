@@ -2,13 +2,15 @@
 
 namespace Tuf\Client\DurableStorage;
 
+use Tuf\Metadata\StorageBase;
+
 /**
  * Defines a simple filesystem-based storage for fetched PHP-TUF metadata.
  *
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  */
-class FileStorage implements \ArrayAccess
+class FileStorage extends StorageBase implements \ArrayAccess
 {
     /**
      * @var string $basePath
@@ -54,6 +56,21 @@ class FileStorage implements \ArrayAccess
     public function offsetExists($offset): bool
     {
         return file_exists($this->pathWithBasePath($offset));
+    }
+
+    protected function read(string $name): ?string
+    {
+        return isset($this["$name.json"]) ? $this["$name.json"] : null;
+    }
+
+    protected function write(string $name, string $data): void
+    {
+        $this["$name.json"] = $data;
+    }
+
+    public function delete(string $name): void
+    {
+        unset($this["$name.json"]);
     }
 
     /**

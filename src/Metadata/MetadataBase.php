@@ -222,11 +222,12 @@ abstract class MetadataBase
     /**
      * Sets the metadata as trusted.
      *
-     * @return void
+     * @return $this
      */
-    public function trust(): void
+    public function trust(): static
     {
         $this->isTrusted = true;
+        return $this;
     }
 
     /**
