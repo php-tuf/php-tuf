@@ -15,6 +15,7 @@ use Tuf\Helper\Clock;
 use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\StorageInterface;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Metadata\Verifier\UniversalVerifier;
@@ -53,7 +54,7 @@ class Updater
      *
      * @var \ArrayAccess
      */
-    protected $durableStorage;
+    protected StorageInterface $durableStorage;
 
     /**
      * The repo file fetcher.
@@ -126,11 +127,11 @@ class Updater
      *
      *
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, \ArrayAccess $durableStorage)
+    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $durableStorage)
     {
         $this->repoFileFetcher = $repoFileFetcher;
         $this->mirrors = $mirrors;
-        $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
+        $this->durableStorage = $durableStorage;
         $this->clock = new Clock();
         $this->metadataFactory = new MetadataFactory($this->durableStorage);
     }
