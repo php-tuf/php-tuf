@@ -43,6 +43,10 @@
         }
     },
     "scripts": {
+        "coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --coverage-text --color=always --testdox"
+        ],
         "fixtures": [
             "pipenv install",
             "pipenv run python generate_fixtures.py"
