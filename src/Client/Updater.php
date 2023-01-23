@@ -192,7 +192,7 @@ class Updater
 
         // § 5.2
         /** @var \Tuf\Metadata\RootMetadata $rootData */
-        $rootData = $this->metadataFactory->load('root');
+        $rootData = $this->durableStorage->getRoot();
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
         $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
@@ -480,7 +480,7 @@ class Updater
     {
         // Search the top level targets metadata.
         /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-        $targetsMetadata = $this->metadataFactory->load('targets');
+        $targetsMetadata = $this->durableStorage->getTargets();
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
@@ -499,9 +499,9 @@ class Updater
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
         /** @var RootMetadata $rootMetadata */
-        $rootMetadata = $this->metadataFactory->load('root');
+        $rootMetadata = $this->durableStorage->getRoot();
 
-        $newSnapshotData = $this->metadataFactory->load('snapshot');
+        $newSnapshotData = $this->durableStorage->getSnapshot();
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
         $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
@@ -565,7 +565,7 @@ class Updater
             if ($delegatedRole->matchesPath($target)) {
                 $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-                $delegatedTargetsMetadata = $this->metadataFactory->load($delegatedRoleName);
+                $delegatedTargetsMetadata = $this->durableStorage->getTargets($delegatedRoleName);
                 if ($delegatedTargetsMetadata->hasTarget($target)) {
                     return $delegatedTargetsMetadata;
                 }
