@@ -60,16 +60,10 @@ class KeyDB
      *
      * @return string[]
      *     An array of supported encryption key type names (e.g. 'ed25519').
-     *
-     * @see src/constants.php
      */
     public static function getSupportedKeyTypes(): array
     {
-        static $types = [];
-        if (count($types) == 0) {
-            $types = explode(" ", SUPPORTED_KEY_TYPES);
-        }
-        return $types;
+        return ['ed25519'];
     }
 
     /**
@@ -97,7 +91,7 @@ class KeyDB
         if (! in_array($key->getType(), self::getSupportedKeyTypes(), true)) {
             // @todo Convert this to a log line as per Python.
             // https://github.com/php-tuf/php-tuf/issues/160
-            throw new InvalidKeyException("Root metadata file contains an unsupported key type: \"${keyMeta['keytype']}\"");
+            throw new InvalidKeyException("Root metadata file contains an unsupported key type: \"{$keyMeta['keytype']}\"");
         }
         // Per TUF specification 4.3, Clients MUST calculate each KEYID to
         // verify this is correct for the associated key.

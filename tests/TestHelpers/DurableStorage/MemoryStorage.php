@@ -40,7 +40,7 @@ class MemoryStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if ($this->exceptionOnChange) {
             throw new \LogicException("Unexpected attempt to change client storage.");
@@ -55,7 +55,7 @@ class MemoryStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->container[$offset]);
     }
@@ -63,7 +63,7 @@ class MemoryStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if ($this->exceptionOnChange) {
             throw new \LogicException("Unexpected attempt to change client storage.");
@@ -74,7 +74,7 @@ class MemoryStorage implements \ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return isset($this->container[$offset]) ? $this->container[$offset] : null;
     }

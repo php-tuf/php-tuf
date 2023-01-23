@@ -9,8 +9,8 @@ use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
-use Tuf\Exception\PotentialAttackException\DenialOfServiceAttackException;
-use Tuf\Exception\PotentialAttackException\InvalidHashException;
+use Tuf\Exception\Attack\DenialOfServiceAttackException;
+use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
 use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
@@ -170,11 +170,11 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
      */
     public function refresh(bool $force = false): bool
@@ -207,27 +207,19 @@ class Updater
         $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
-        if ($rootData->supportsConsistentSnapshots()) {
-            // § 5.5.1
-            $newSnapshotContents = $this->fetchFile("$snapShotVersion.snapshot.json");
-            $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
-            $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
-            // § 5.5.7
-            $this->durableStorage['snapshot.json'] = $newSnapshotContents;
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $snapshotFileName = $rootData->supportsConsistentSnapshots()
+            ? "$snapShotVersion.snapshot.json"
+            : "snapshot.json";
+        // § 5.5.1
+        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
+        // § 5.5.7
+        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
 
         // § 5.6
-        if ($rootData->supportsConsistentSnapshots()) {
-            $this->fetchAndVerifyTargetsMetadata('targets');
-        } else {
-            // @todo Add support for not using consistent snapshots in
-            //    https://github.com/php-tuf/php-tuf/issues/97
-            throw new \UnexpectedValueException("Currently only repos using consistent snapshots are supported.");
-        }
+        $this->fetchAndVerifyTargetsMetadata('targets');
+
         $this->isRefreshed = true;
         return true;
     }
@@ -257,16 +249,16 @@ class Updater
      * @param \Tuf\Metadata\RootMetadata $rootData
      *   The current root metadata.
      *
-     * @throws \Tuf\Exception\MetadataException
-     *   Throw if an upated root metadata file is not valid.
-     * @throws \Tuf\Exception\PotentialAttackException\FreezeAttackException
+     * @return void
+     *@throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      *   Throw if a rollback attack is detected.
-     * @throws \Tuf\Exception\PotentialAttackException\SignatureThresholdExpception
+     * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if an updated root file is not signed with the need signatures.
      *
-     * @return void
+     * @throws \Tuf\Exception\MetadataException
+     *   Throw if an upated root metadata file is not valid.
      */
     private function updateRoot(RootMetadata &$rootData): void
     {
@@ -326,7 +318,10 @@ class Updater
     {
         $previousRole = $previousRootData->getRoles()[$role] ?? null;
         $newRole = $newRootData->getRoles()[$role] ?? null;
-        return $previousRole !== $newRole;
+        if ($previousRole && $newRole) {
+            return !$previousRole->keysMatch($newRole);
+        }
+        return false;
     }
 
     /**
@@ -398,7 +393,7 @@ class Updater
      *
      * @throws \Tuf\Exception\MetadataException
      *   If the target has no trusted hash(es).
-     * @throws \Tuf\Exception\PotentialAttackException\InvalidHashException
+     * @throws \Tuf\Exception\Attack\InvalidHashException
      *   If the data stream does not match the known hash(es) for the target.
      */
     protected function verify(string $target, StreamInterface $data): void
@@ -414,6 +409,7 @@ class Updater
 
         $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
+            // § 5.7.2
             throw new MetadataException("No trusted hashes are available for '$target'");
         }
         foreach ($hashes as $algo => $hash) {
@@ -501,10 +497,16 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
+        /** @var RootMetadata $rootMetadata */
+        $rootMetadata = $this->metadataFactory->load('root');
+
         $newSnapshotData = $this->metadataFactory->load('snapshot');
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
-        $newTargetsContent = $this->fetchFile("$targetsVersion.$role.json");
+        $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
+            ? "$targetsVersion.$role.json"
+            : "$role.json";
+        $newTargetsContent = $this->fetchFile($targetsFileName);
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
@@ -551,6 +553,7 @@ class Updater
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
                 continue;
             }
+            // § 5.6.7.1
             if (count($searchedRoles) > static::MAXIMUM_TARGET_ROLES) {
                 return null;
             }

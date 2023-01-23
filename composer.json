@@ -3,41 +3,43 @@
     "description": "PHP implementation of The Update Framework (TUF)",
     "type": "library",
     "require-dev": {
-        "phpunit/phpunit": "^8.5.8|^9",
+        "phpunit/phpunit": "^9",
         "symfony/phpunit-bridge": "^5",
-        "php-tuf/phpcodesniffer-standard": "dev-main",
-        "phpspec/prophecy-phpunit": "^2"
+        "squizlabs/php_codesniffer": "^3.7",
+        "slevomat/coding-standard": "^8.2",
+        "phpspec/prophecy-phpunit": "^2",
+        "guzzlehttp/guzzle": "^6.5 || ^7.2",
+        "guzzlehttp/psr7": "^1.7"
     },
     "license": "MIT",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.2.5",
+        "php": "^8",
         "ext-json": "*",
         "paragonie/sodium_compat": "^1.13",
-        "symfony/validator": "^4.4 || ^5",
-        "guzzlehttp/guzzle": "^6.5 || ^7.2",
+        "symfony/validator": "^4.4 || ^5 || ^6",
         "myclabs/deep-copy": "^1.10.2",
-        "guzzlehttp/psr7": "^1.7"
+        "guzzlehttp/promises": "^1.5",
+        "psr/http-message": "^1"
     },
     "suggest": {
-        "ext-libsodium": "Provides faster verification of updates"
+        "ext-sodium": "Provides faster verification of updates",
+        "guzzlehttp/guzzle": "Required package if GuzzleFileFetcher shall be used"
     },
     "autoload": {
         "psr-4": {
             "Tuf\\": "src/"
-        },
-        "files": ["src/constants.php"]
+        }
     },
     "autoload-dev": {
         "psr-4": {
             "Tuf\\Tests\\": "tests/"
         }
     },
-    "repositories": {
-        "php-tuf/phpcodesniffer-standard": {
-            "type": "git",
-            "url": "https://github.com/php-tuf/phpcodesniffer-standard"
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     },
     "scripts": {
@@ -45,9 +47,13 @@
             "@putenv XDEBUG_MODE=coverage",
             "phpunit --coverage-text --color=always"
         ],
-        "phpcs": "phpcs -s --standard=PhpTuf ./src ./tests",
-        "phpcbf": "phpcbf --standard=PhpTuf ./src ./tests",
-        "test": "phpunit ./tests",
+        "fixtures": [
+            "pipenv install",
+            "pipenv run python generate_fixtures.py"
+        ],
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "test": "phpunit --testdox",
         "lint": "find src -name '*.php' -exec php -l {} \\;"
     }
 }

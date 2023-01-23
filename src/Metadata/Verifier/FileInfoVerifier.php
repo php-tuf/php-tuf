@@ -2,7 +2,7 @@
 
 namespace Tuf\Metadata\Verifier;
 
-use Tuf\Exception\PotentialAttackException\RollbackAttackException;
+use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Metadata\FileInfoMetadataBase;
 
 /**
@@ -24,7 +24,7 @@ abstract class FileInfoVerifier extends VerifierBase
      * @param \Tuf\Metadata\FileInfoMetadataBase $untrustedMetadata
      *     The untrusted metadata.
      *
-     * @throws \Tuf\Exception\PotentialAttackException\RollbackAttackException
+     * @throws \Tuf\Exception\Attack\RollbackAttackException
      */
     protected function checkFileInfoVersions(FileInfoMetadataBase $untrustedMetadata): void
     {
@@ -38,8 +38,8 @@ abstract class FileInfoVerifier extends VerifierBase
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
             if ($remoteFileInfo = $untrustedMetadata->getFileMetaInfo($fileName, true)) {
                 if ($remoteFileInfo['version'] < $localFileInfo['version']) {
-                    $message = "Remote $type metadata file '$fileName' version \"${$remoteFileInfo['version']}\" " .
-                      "is less than previously seen  version \"${$localFileInfo['version']}\"";
+                    $message = "Remote $type metadata file '$fileName' version \"{$remoteFileInfo['version']}\" " .
+                      "is less than previously seen  version \"{$localFileInfo['version']}\"";
                     throw new RollbackAttackException($message);
                 }
             }

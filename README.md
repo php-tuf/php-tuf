@@ -1,5 +1,7 @@
 # PHP-TUF
 
+![build](https://github.com/php-tuf/php-tuf/actions/workflows/build.yml/badge.svg)
+
 ## IMPORTANT
 PHP-TUF is in a pre-release state and is not considered a complete or secure version of the TUF framework.
 It should currently only be used for testing, development and feedback.
@@ -26,7 +28,7 @@ Composer project. Contributing projects:
 The PHP-TUF client is designed to provide TUF verification to PHP applications
 for target signatures.
 
-- Minimum required PHP version: 7.2
+- Minimum required PHP version: 8.0
 - Requires `ext-json`
 - The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
   cryptography library; however, installing `ext-sodium` is recommended for
@@ -74,16 +76,11 @@ compliance:
 
 ### Test fixtures generation
 
-1. Install the Python TUF implementation and enable the pipenv:
+Run the following command:
 
-       pipenv install
-       pipenv shell
+       composer fixtures
 
-1. Initialize the repository and add/sign a target:
-
-       python generate_fixtures.py
-
-1. Fixtures should appear in `fixtures/`.
+Fixtures should appear in `fixtures/`.
 
 ### Running the PHP-TUF tests
 
