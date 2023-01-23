@@ -3,6 +3,8 @@
 
 namespace Tuf\Tests\TestHelpers\DurableStorage;
 
+use Tuf\Metadata\StorageBase;
+
 /**
  * Class MemoryStorage
  *
@@ -10,7 +12,7 @@ namespace Tuf\Tests\TestHelpers\DurableStorage;
  * Brought to you by https://www.php.net/manual/en/class.arrayaccess and
  * the letters c,t,r,l and v.
  */
-class MemoryStorage implements \ArrayAccess
+class MemoryStorage extends StorageBase implements \ArrayAccess
 {
     private $container = [];
 
@@ -29,12 +31,19 @@ class MemoryStorage implements \ArrayAccess
         $this->exceptionOnChange = $exceptionOnChange;
     }
 
-    /**
-     * Constructs a new MemoryStorage instance.
-     */
-    public function __construct()
+    protected function read(string $name): ?string
     {
-        $this->container = [];
+        return isset($this["$name.json"]) ? $this["$name.json"] : null;
+    }
+
+    protected function write(string $name, string $data): void
+    {
+        $this["$name.json"] = $data;
+    }
+
+    public function delete(string $name): void
+    {
+        unset($this["$name.json"]);
     }
 
     /**
