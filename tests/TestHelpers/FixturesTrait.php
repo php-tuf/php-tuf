@@ -3,10 +3,7 @@
 namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
-use Tuf\Metadata\RootMetadata;
-use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
-use Tuf\Metadata\TimestampMetadata;
+use Tuf\Metadata\StorageInterface;
 use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
 
 /**
@@ -100,30 +97,31 @@ trait FixturesTrait
      *
      * @return void
      */
-    private static function assertMetadataVersions(array $expectedVersions, \ArrayAccess $storage): void
+    private static function assertMetadataVersions(array $expectedVersions, StorageInterface $storage): void
     {
         foreach ($expectedVersions as $role => $version) {
-            if (is_null($version)) {
-                Assert::assertNull($storage["$role.json"], "'$role' file is null.");
-                return;
-            }
-            $roleJson = $storage["$role.json"];
-            Assert::assertNotNull($roleJson, "'$role.json' not found in local repo.");
             switch ($role) {
                 case 'root':
-                    $metadata = RootMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getRoot();
                     break;
                 case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getTimestamp();
                     break;
                 case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getSnapshot();
                     break;
                 default:
                     // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getTargets($role);
                     break;
             }
+
+            if (is_null($version)) {
+                Assert::assertNull($metadata, "'$role' file is null.");
+                return;
+            }
+            Assert::assertNotNull($metadata, "'$role.json' not found in local repo.");
+
             $actualVersion = $metadata->getVersion();
             Assert::assertSame(
                 $expectedVersions[$role],
