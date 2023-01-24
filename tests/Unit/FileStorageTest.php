@@ -68,31 +68,31 @@ class FileStorageTest extends TestCase
             'root' => [
                 RootMetadata::class,
                 'root',
-                'setRoot',
+                'saveRoot',
                 'root.json',
             ],
             'timestamp' => [
                 TimestampMetadata::class,
                 'timestamp',
-                'setTimestamp',
+                'saveTimestamp',
                 'timestamp.json',
             ],
             'snapshot' => [
                 SnapshotMetadata::class,
                 'snapshot',
-                'setSnapshot',
+                'saveSnapshot',
                 'snapshot.json',
             ],
             'targets' => [
                 TargetsMetadata::class,
                 'targets',
-                'setTargets',
+                'saveTargets',
                 'targets.json',
             ],
             'delegated role' => [
                 TargetsMetadata::class,
                 'delegated',
-                'setTargets',
+                'saveTargets',
                 'delegated.json',
             ],
         ];
@@ -101,10 +101,10 @@ class FileStorageTest extends TestCase
     /**
      * Tests storing metadata with a FileStorage object.
      *
-     * @covers ::setRoot
-     * @covers ::setTimestamp
-     * @covers ::setSnapshot
-     * @covers ::setTargets
+     * @covers ::saveRoot
+     * @covers ::saveTimestamp
+     * @covers ::saveSnapshot
+     * @covers ::saveTargets
      * @covers ::delete
      *
      * @dataProvider providerMetadataStorage

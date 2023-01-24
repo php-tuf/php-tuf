@@ -24,7 +24,7 @@ interface StorageInterface
      * @param \Tuf\Metadata\RootMetadata $metadata
      *   The root metadata to persist. Must be trusted.
      */
-    public function setRoot(RootMetadata $metadata): void;
+    public function saveRoot(RootMetadata $metadata): void;
 
     /**
      * Loads trusted timestamp metadata.
@@ -40,7 +40,7 @@ interface StorageInterface
      * @param \Tuf\Metadata\TimestampMetadata $metadata
      *   The timestamp metadata to persist. Must be trusted.
      */
-    public function setTimestamp(TimestampMetadata $metadata): void;
+    public function saveTimestamp(TimestampMetadata $metadata): void;
 
     /**
      * Loads trusted snapshot metadata.
@@ -56,7 +56,7 @@ interface StorageInterface
      * @param \Tuf\Metadata\SnapshotMetadata $metadata
      *   The snapshot metadata to persist. Must be trusted.
      */
-    public function setSnapshot(SnapshotMetadata $metadata): void;
+    public function saveSnapshot(SnapshotMetadata $metadata): void;
 
     /**
      * Loads trusted targets metadata for a specific role.
@@ -76,7 +76,7 @@ interface StorageInterface
      *   The targets metadata to persist. Can be for the root `targets` role
      *   or a delegated role, but must be trusted in any case.
      */
-    public function setTargets(TargetsMetadata $metadata): void;
+    public function saveTargets(TargetsMetadata $metadata): void;
 
     /**
      * Deletes stored metadata.

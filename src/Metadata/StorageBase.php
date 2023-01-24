@@ -45,7 +45,7 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function setRoot(RootMetadata $metadata): void
+    public function saveRoot(RootMetadata $metadata): void
     {
         $metadata->ensureIsTrusted();
         $this->write(RootMetadata::TYPE, $metadata->getSource());
@@ -63,7 +63,7 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function setTimestamp(TimestampMetadata $metadata): void
+    public function saveTimestamp(TimestampMetadata $metadata): void
     {
         $metadata->ensureIsTrusted();
         $this->write(TimestampMetadata::TYPE, $metadata->getSource());
@@ -81,7 +81,7 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function setSnapshot(SnapshotMetadata $metadata): void
+    public function saveSnapshot(SnapshotMetadata $metadata): void
     {
         $metadata->ensureIsTrusted();
         $this->write(SnapshotMetadata::TYPE, $metadata->getSource());
@@ -99,7 +99,7 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function setTargets(TargetsMetadata $metadata): void
+    public function saveTargets(TargetsMetadata $metadata): void
     {
         $metadata->ensureIsTrusted();
         $this->write($metadata->getRole(), $metadata->getSource());
