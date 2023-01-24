@@ -39,30 +39,30 @@ class FileStorage extends StorageBase
     /**
      * Returns a full path for an item in the storage.
      *
-     * @param mixed $offset
-     *     The ArrayAccess offset for the item.
+     * @param string $name
+     *   The name of the item.
      *
      * @return string
-     *     The full path for the item in the storage.
+     *   The full path for the item in the storage.
      */
-    protected function pathWithBasePath($offset): string
+    protected function toPath(string $name): string
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $offset;
+        return $this->basePath . DIRECTORY_SEPARATOR . $name . '.json';
     }
 
     protected function read(string $name): ?string
     {
-        $path = $this->pathWithBasePath("$name.json");
+        $path = $this->toPath($name);
         return file_exists($path) ? file_get_contents($path) : null;
     }
 
     protected function write(string $name, string $data): void
     {
-        file_put_contents($this->pathWithBasePath("$name.json"), $data);
+        file_put_contents($this->toPath($name), $data);
     }
 
     public function delete(string $name): void
     {
-        @unlink($this->pathWithBasePath("$name.json"));
+        @unlink($this->toPath($name));
     }
 }
