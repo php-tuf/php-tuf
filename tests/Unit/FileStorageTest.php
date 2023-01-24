@@ -20,9 +20,7 @@ class FileStorageTest extends TestCase
     /**
      * Tests creating a FileStorage object with an invalid directory.
      *
-     * @return void
-     *
-     * @covers ::pathWithBasePath
+     * @covers ::__construct
      */
     public function testCreateWithInvalidDirectory(): void
     {
@@ -34,14 +32,34 @@ class FileStorageTest extends TestCase
 
     /**
      * @covers ::getRoot
+     * @covers ::getTimestamp
+     * @covers ::getSnapshot
+     * @covers ::getTargets
      */
-    public function testExceptionIfRootMetadataDoesNotExist(): void
+    public function testLoadTrustedMetadata(): void
     {
-        $storage = new FileStorage(sys_get_temp_dir());
+        $storage = new FileStorage(__DIR__ . '/../../fixtures/Delegated/consistent/client/metadata/current');
 
-        $this->expectException('LogicException');
-        $this->expectExceptionMessage('Could not load root metadata.');
-        $storage->getRoot();
+        $metadata = $storage->getRoot();
+        $this->assertInstanceOf(RootMetadata::class, $metadata);
+        $metadata->ensureIsTrusted();
+
+        $metadata = $storage->getTimestamp();
+        $this->assertInstanceOf(TimestampMetadata::class, $metadata);
+        $metadata->ensureIsTrusted();
+
+        $metadata = $storage->getSnapshot();
+        $this->assertInstanceOf(SnapshotMetadata::class, $metadata);
+        $metadata->ensureIsTrusted();
+
+        $metadata = $storage->getTargets();
+        $this->assertInstanceOf(TargetsMetadata::class, $metadata);
+        $metadata->ensureIsTrusted();
+
+        $metadata = $storage->getTargets('unclaimed');
+        $this->assertInstanceOf(TargetsMetadata::class, $metadata);
+        $metadata->ensureIsTrusted();
+        $this->assertSame('unclaimed', $metadata->getRole());
     }
 
     public function providerMetadataStorage(): array
@@ -91,9 +109,9 @@ class FileStorageTest extends TestCase
      *
      * @dataProvider providerMetadataStorage
      *
-     * @testdox Storing $_dataName metadata
+     * @testdox Writing and deleting $_dataName metadata
      */
-    public function testMetadataStorage(string $metadataClass, string $role, string $methodToCall, string $expectedFileName): void
+    public function testWriteMetadata(string $metadataClass, string $role, string $methodToCall, string $expectedFileName): void
     {
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
@@ -110,5 +128,14 @@ class FileStorageTest extends TestCase
 
         $storage->delete($role);
         $this->assertFileDoesNotExist($filePath);
+
+        // Trying to load non-existent metadata should return null, except for
+        // root metadata, which throws an exception.
+        $this->assertNull($storage->getTimestamp());
+        $this->assertNull($storage->getSnapshot());
+        $this->assertNull($storage->getTargets());
+        $this->expectException('LogicException');
+        $this->expectExceptionMessage('Could not load root metadata.');
+        $storage->getRoot();
     }
 }
