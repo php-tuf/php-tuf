@@ -11,7 +11,6 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
-use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\StorageInterface;

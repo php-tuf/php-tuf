@@ -3,7 +3,6 @@
 namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
-use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -16,9 +15,9 @@ use Tuf\Metadata\TimestampMetadata;
 class UniversalVerifier
 {
     /**
-     * The trusted metadata factory.
+     * The durable metadata storage.
      *
-     * @var MetadataFactory
+     * @var \Tuf\Metadata\StorageInterface
      */
     private $storage;
 
