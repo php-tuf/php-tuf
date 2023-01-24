@@ -5,7 +5,7 @@ namespace Tuf\Tests\TestHelpers\DurableStorage;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
+ * @coversDefaultClass \Tuf\Tests\TestHelpers\DurableStorage\TestStorage
  */
 class MemoryStorageTest extends TestCase
 {
@@ -17,7 +17,7 @@ class MemoryStorageTest extends TestCase
      */
     public function testSetExceptionOnChange(): void
     {
-        $storage = new MemoryStorage();
+        $storage = new TestStorage();
         $storage->write('test_key', 'value');
         $storage->setExceptionOnChange();
         self::assertSame('value', $storage->read('test_key'));

@@ -1,22 +1,33 @@
 <?php
 
-
 namespace Tuf\Tests\TestHelpers\DurableStorage;
 
 use Tuf\Metadata\StorageBase;
 
 /**
- * Class MemoryStorage
- *
- * Provides a trivial implementation of \ArrayAccess for testing.
- * Brought to you by https://www.php.net/manual/en/class.arrayaccess and
- * the letters c,t,r,l and v.
+ * Defines a memory storage for trusted TUF metadata, used for testing.
  */
-class MemoryStorage extends StorageBase
+class TestStorage extends StorageBase
 {
     private $container = [];
 
     private $exceptionOnChange = false;
+
+    public static function createFromDirectory(string $dir): static
+    {
+        $storage = new static();
+
+        // Loop through and load files in the given path.
+        $fsIterator = new \FilesystemIterator($dir, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME);
+        foreach ($fsIterator as $filename => $info) {
+            // Only load JSON files.
+            /** @var $info \SplFileInfo */
+            if ($info->isFile() && str_ends_with($filename , '.json')) {
+                $storage->write($info->getBasename('.json'), file_get_contents($info->getRealPath()));
+            }
+        }
+        return $storage;
+    }
 
     /**
      * Sets whether an exception should be thrown if an call to change storage is made.

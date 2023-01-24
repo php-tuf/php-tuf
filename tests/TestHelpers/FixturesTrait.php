@@ -4,7 +4,7 @@ namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
 use Tuf\Metadata\StorageInterface;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
+use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 
 /**
  * Contains methods for safely interacting with the test fixtures.
@@ -36,27 +36,13 @@ trait FixturesTrait
      *     An optional relative sub-path within the fixture's directory.
      *     Defaults to the directory containing client metadata.
      *
-     * @return MemoryStorage
+     * @return TestStorage
      *     Memory storage containing the test data.
      */
-    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): MemoryStorage
+    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): TestStorage
     {
-        $storage = new MemoryStorage();
-
-        // Loop through and load files in the given path.
-        $fsIterator = new \FilesystemIterator(
-            static::getFixturePath($fixtureName, $path, true),
-            \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
-        );
-        foreach ($fsIterator as $filename => $info) {
-            // Only load JSON files.
-            /** @var $info \SplFileInfo */
-            if ($info->isFile() && preg_match("|\.json$|", $filename)) {
-                $storage->write(basename($filename, '.json'), file_get_contents($info->getRealPath()));
-            }
-        }
-
-        return $storage;
+        $path = static::getFixturePath($fixtureName, $path, true);
+        return TestStorage::createFromDirectory($path);
     }
 
     /**

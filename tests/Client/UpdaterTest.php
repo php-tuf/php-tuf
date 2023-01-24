@@ -34,7 +34,7 @@ abstract class UpdaterTest extends TestCase
     /**
      * The client-side metadata storage.
      *
-     * @var \Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage
+     * @var \Tuf\Tests\TestHelpers\DurableStorage\TestStorage
      */
     protected $clientStorage;
 
