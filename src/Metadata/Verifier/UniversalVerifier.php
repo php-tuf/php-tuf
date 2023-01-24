@@ -19,7 +19,7 @@ class UniversalVerifier
      *
      * @var \Tuf\Metadata\StorageInterface
      */
-    private $storage;
+    private StorageInterface $storage;
 
     /**
      * The signature verifier.
@@ -67,27 +67,19 @@ class UniversalVerifier
      */
     public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
-        switch ($role) {
-            case RootMetadata::TYPE:
-                $trustedMetadata = $this->storage->getRoot();
-                $verifier = new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
-                break;
-            case SnapshotMetadata::TYPE:
-                $trustedMetadata = $this->storage->getSnapshot();
-                /** @var \Tuf\Metadata\TimestampMetadata $timestampMetadata */
-                $timestampMetadata = $this->storage->getTimestamp();
-                $verifier = new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $timestampMetadata);
-                break;
-            case TimestampMetadata::TYPE:
-                $trustedMetadata = $this->storage->getTimestamp();
-                $verifier = new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
-                break;
-            default:
-                /** @var \Tuf\Metadata\SnapshotMetadata $snapshotMetadata */
-                $snapshotMetadata = $this->storage->getSnapshot();
-                $trustedMetadata = $this->storage->getTargets($role);
-                $verifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
-        }
+        $verifier = match ($role) {
+            RootMetadata::TYPE =>
+                new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getRoot()),
+
+            SnapshotMetadata::TYPE =>
+                new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getSnapshot(), $this->storage->getTimestamp()),
+
+            TimestampMetadata::TYPE =>
+                new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getTimestamp()),
+
+            default =>
+                new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getTargets($role), $this->storage->getSnapshot()),
+        };
         $verifier->verify($untrustedMetadata);
         // If the verifier didn't throw an exception, we can trust this metadata.
         $untrustedMetadata->trust();
