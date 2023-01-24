@@ -6,6 +6,8 @@ namespace Tuf\Tests\Client;
  * Runs UpdaterTest's test cases on the fixtures without consistent snapshots.
  *
  * @testdox Updater with non-consistent snapshots
+ *
+ * @coversDefaultClass \Tuf\Client\Updater
  */
 class InconsistentFixturesUpdaterTest extends UpdaterTest
 {

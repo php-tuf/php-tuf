@@ -8,6 +8,8 @@ use Tuf\Exception\Attack\SignatureThresholdException;
  * Runs UpdaterTest's test cases on the fixtures with consistent snapshots.
  *
  * @testdox Updater with consistent snapshots
+ *
+ * @coversDefaultClass \Tuf\Client\Updater
  */
 class ConsistentFixturesUpdaterTest extends UpdaterTest
 {

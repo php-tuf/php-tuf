@@ -8,7 +8,7 @@ use Tuf\Metadata\Verifier\RootVerifier;
 use Tuf\Metadata\Verifier\VerifierBase;
 
 /**
- * @covers \Tuf\Metadata\Verifier\VerifierBase
+ * @coversDefaultClass \Tuf\Metadata\Verifier\VerifierBase
  */
 class VerifierTest extends TestCase
 {
@@ -60,7 +60,7 @@ class VerifierTest extends TestCase
      *
      * @return void
      */
-    public function testCheckRollbackAttackAttack(): void
+    public function testCheckRollbackAttack(): void
     {
         $this->expectException('\Tuf\Exception\Attack\RollbackAttackException');
         $this->expectExceptionMessage('Remote any metadata version "$1" is less than previously seen any version "$2"');
