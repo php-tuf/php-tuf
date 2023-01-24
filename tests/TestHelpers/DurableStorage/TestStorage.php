@@ -22,7 +22,7 @@ class TestStorage extends StorageBase
         foreach ($fsIterator as $filename => $info) {
             // Only load JSON files.
             /** @var $info \SplFileInfo */
-            if ($info->isFile() && str_ends_with($filename , '.json')) {
+            if ($info->isFile() && str_ends_with($filename, '.json')) {
                 $storage->write($info->getBasename('.json'), file_get_contents($info->getRealPath()));
             }
         }
