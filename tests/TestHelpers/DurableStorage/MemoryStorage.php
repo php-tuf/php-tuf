@@ -33,7 +33,7 @@ class MemoryStorage extends StorageBase
 
     public function read(string $name): ?string
     {
-        return $this->container["$name.json"] ?? null;
+        return $this->container[$name] ?? null;
     }
 
     public function write(string $name, string $data): void
@@ -41,7 +41,7 @@ class MemoryStorage extends StorageBase
         if ($this->exceptionOnChange) {
             throw new \LogicException("Unexpected attempt to change client storage.");
         }
-        $this->container["$name.json"] = $data;
+        $this->container[$name] = $data;
     }
 
     public function delete(string $name): void
@@ -49,6 +49,6 @@ class MemoryStorage extends StorageBase
         if ($this->exceptionOnChange) {
             throw new \LogicException("Unexpected attempt to change client storage.");
         }
-        unset($this->container["$name.json"]);
+        unset($this->container[$name]);
     }
 }
