@@ -31,7 +31,7 @@ class MemoryStorage extends StorageBase implements \ArrayAccess
         $this->exceptionOnChange = $exceptionOnChange;
     }
 
-    protected function read(string $name): ?string
+    public function read(string $name): ?string
     {
         return isset($this["$name.json"]) ? $this["$name.json"] : null;
     }

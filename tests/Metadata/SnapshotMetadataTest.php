@@ -13,7 +13,7 @@ class SnapshotMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $validJson = '1.snapshot.json';
+    protected $validJson = '1.snapshot';
 
     /**
      * {@inheritdoc}

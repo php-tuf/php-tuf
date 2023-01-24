@@ -87,7 +87,7 @@ abstract class UpdaterTest extends TestCase
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
             if (preg_match('/.*\..*\.json/', $fileName)) {
-                unset($this->clientStorage[$fileName]);
+                $this->clientStorage->delete(basename($fileName, '.json'));
             }
         }
 
@@ -825,7 +825,7 @@ abstract class UpdaterTest extends TestCase
                 // Change the expectation that client will not start with any files other than root.json.
                 $expectedStartVersion[$role] = null;
                 // Remove all files except root.json.
-                unset($this->clientStorage["$role.json"]);
+                $this->clientStorage->delete($role);
             }
         }
         $this->assertClientFileVersions($expectedStartVersion);
@@ -1220,7 +1220,7 @@ abstract class UpdaterTest extends TestCase
     {
         $fixtureSet = 'UnsupportedDelegation';
         $updater = $this->getSystemInTest($fixtureSet);
-        $startingTargets = $this->clientStorage['targets.json'];
+        $startingTargets = $this->clientStorage->read('targets');
         try {
             $updater->refresh();
         } catch (MetadataException $exception) {
@@ -1232,7 +1232,7 @@ abstract class UpdaterTest extends TestCase
             self::assertClientFileVersions($expectedUpdatedVersion);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.
-            self::assertSame($this->clientStorage['targets.json'], $startingTargets);
+            self::assertSame($this->clientStorage->read('targets'), $startingTargets);
             return;
         }
         $this->fail('No exception thrown.');
