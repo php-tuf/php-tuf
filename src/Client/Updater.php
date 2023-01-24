@@ -90,13 +90,6 @@ class Updater
     private $metadataExpiration;
 
     /**
-     * The trusted metadata factory.
-     *
-     * @var \Tuf\Metadata\Factory
-     */
-    protected $metadataFactory;
-
-    /**
      * The verifier factory.
      *
      * @var \Tuf\Metadata\Verifier\UniversalVerifier
@@ -132,7 +125,6 @@ class Updater
         $this->mirrors = $mirrors;
         $this->durableStorage = $durableStorage;
         $this->clock = new Clock();
-        $this->metadataFactory = new MetadataFactory($this->durableStorage);
     }
 
     /**
@@ -195,7 +187,7 @@ class Updater
         $rootData = $this->durableStorage->getRoot();
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
-        $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
+        $this->universalVerifier = new UniversalVerifier($this->durableStorage, $this->signatureVerifier, $this->metadataExpiration);
 
         // § 5.3
         $this->updateRoot($rootData);
