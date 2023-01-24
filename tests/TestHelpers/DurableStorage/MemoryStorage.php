@@ -12,7 +12,7 @@ use Tuf\Metadata\StorageBase;
  * Brought to you by https://www.php.net/manual/en/class.arrayaccess and
  * the letters c,t,r,l and v.
  */
-class MemoryStorage extends StorageBase implements \ArrayAccess
+class MemoryStorage extends StorageBase
 {
     private $container = [];
 
@@ -33,58 +33,22 @@ class MemoryStorage extends StorageBase implements \ArrayAccess
 
     public function read(string $name): ?string
     {
-        return isset($this["$name.json"]) ? $this["$name.json"] : null;
+        return $this->container["$name.json"] ?? null;
     }
 
-    protected function write(string $name, string $data): void
+    public function write(string $name, string $data): void
     {
-        $this["$name.json"] = $data;
+        if ($this->exceptionOnChange) {
+            throw new \LogicException("Unexpected attempt to change client storage.");
+        }
+        $this->container["$name.json"] = $data;
     }
 
     public function delete(string $name): void
     {
-        unset($this["$name.json"]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetSet($offset, $value): void
-    {
         if ($this->exceptionOnChange) {
             throw new \LogicException("Unexpected attempt to change client storage.");
         }
-        if (is_null($offset)) {
-            $this->container[] = $value;
-        } else {
-            $this->container[$offset] = $value;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset): bool
-    {
-        return isset($this->container[$offset]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetUnset($offset): void
-    {
-        if ($this->exceptionOnChange) {
-            throw new \LogicException("Unexpected attempt to change client storage.");
-        }
-        unset($this->container[$offset]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetGet($offset): mixed
-    {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
+        unset($this->container["$name.json"]);
     }
 }

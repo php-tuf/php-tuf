@@ -52,7 +52,7 @@ trait FixturesTrait
             // Only load JSON files.
             /** @var $info \SplFileInfo */
             if ($info->isFile() && preg_match("|\.json$|", $filename)) {
-                $storage[$filename] = file_get_contents($info->getRealPath());
+                $storage->write(basename($filename, '.json'), file_get_contents($info->getRealPath()));
             }
         }
 

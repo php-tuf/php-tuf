@@ -18,18 +18,17 @@ class MemoryStorageTest extends TestCase
     public function testSetExceptionOnChange(): void
     {
         $storage = new MemoryStorage();
-        $storage->offsetSet('test_key', 'value');
+        $storage->write('test_key', 'value');
         $storage->setExceptionOnChange();
-        self::assertTrue($storage->offsetExists('test_key'));
-        self::assertSame('value', $storage->offsetGet('test_key'));
+        self::assertSame('value', $storage->read('test_key'));
         try {
-            $storage->offsetSet('test_key', 'value');
+            $storage->write('test_key', 'value');
             $this->fail('No exception on set');
         } catch (\LogicException $logicException) {
             // Assert no change was made.
-            self::assertSame('value', $storage->offsetGet('test_key'));
+            self::assertSame('value', $storage->read('test_key'));
             $this->expectException(\LogicException::class);
-            $storage->offsetUnset('test_key');
+            $storage->delete('test_key');
         }
     }
 }

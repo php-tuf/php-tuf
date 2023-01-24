@@ -10,7 +10,7 @@ use Tuf\Metadata\StorageBase;
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  */
-class FileStorage extends StorageBase implements \ArrayAccess
+class FileStorage extends StorageBase
 {
     /**
      * @var string $basePath
@@ -50,50 +50,19 @@ class FileStorage extends StorageBase implements \ArrayAccess
         return $this->basePath . DIRECTORY_SEPARATOR . $offset;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset): bool
-    {
-        return file_exists($this->pathWithBasePath($offset));
-    }
-
     protected function read(string $name): ?string
     {
-        return isset($this["$name.json"]) ? $this["$name.json"] : null;
+        $path = $this->pathWithBasePath("$name.json");
+        return file_exists($path) ? file_get_contents($path) : null;
     }
 
     protected function write(string $name, string $data): void
     {
-        $this["$name.json"] = $data;
+        file_put_contents($this->pathWithBasePath("$name.json"), $data);
     }
 
     public function delete(string $name): void
     {
-        unset($this["$name.json"]);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetGet($offset): mixed
-    {
-        return file_get_contents($this->pathWithBasePath($offset));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetSet($offset, $value): void
-    {
-        file_put_contents($this->pathWithBasePath($offset), $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetUnset($offset): void
-    {
-        @unlink($this->pathWithBasePath($offset));
+        @unlink($this->pathWithBasePath("$name.json"));
     }
 }
