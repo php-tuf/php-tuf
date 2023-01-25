@@ -135,15 +135,15 @@ abstract class MetadataBase
         return [
             'fields' => [
                 '_type' => [
-                    new EqualTo(['value' => static::TYPE]),
-                    new Type(['type' => 'string']),
+                    new EqualTo(static::TYPE),
+                    new Type('string'),
                 ],
                 'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
                 // We only expect to work with major version 1.
                 'spec_version' => [
                     new NotBlank(),
-                    new Type(['type' => 'string']),
-                    new Regex(['pattern' => '/^1\.[0-9]+\.[0-9]+$/']),
+                    new Type('string'),
+                    new Regex('/^1\.[0-9]+\.[0-9]+$/'),
                 ],
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
