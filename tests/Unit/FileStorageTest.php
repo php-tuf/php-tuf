@@ -56,6 +56,7 @@ class FileStorageTest extends TestCase
         $metadata = $storage->getTargets();
         $this->assertInstanceOf(TargetsMetadata::class, $metadata);
         $metadata->ensureIsTrusted();
+        $this->assertSame('targets', $metadata->getRole());
 
         $metadata = $storage->getTargets('unclaimed');
         $this->assertInstanceOf(TargetsMetadata::class, $metadata);
