@@ -25,6 +25,8 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public $fileContents = [];
 
+    public array $fetchMetadataArguments = [];
+
     /**
      * TestRepo constructor.
      *
@@ -55,6 +57,7 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
+        $this->fetchMetadataArguments[] = func_get_args();
         return $this->fetchFile($fileName);
     }
 
