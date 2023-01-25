@@ -75,13 +75,6 @@ abstract class StorageBase implements StorageInterface
     public function save(MetadataBase $metadata): void
     {
         $metadata->ensureIsTrusted();
-
-        if ($metadata instanceof RootMetadata || $metadata instanceof TimestampMetadata || $metadata instanceof SnapshotMetadata) {
-            $this->write($metadata::TYPE, $metadata->getSource());
-        } elseif ($metadata instanceof TargetsMetadata) {
-            $this->write($metadata->getRole(), $metadata->getSource());
-        } else {
-            throw new \InvalidArgumentException("Cannot save unsupported metadata type.");
-        }
+        $this->write($metadata->getRole(), $metadata->getSource());
     }
 }

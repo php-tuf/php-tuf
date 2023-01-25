@@ -132,17 +132,4 @@ class FileStorageTest extends TestCase
         $this->expectExceptionMessage('Could not load root metadata.');
         $storage->getRoot();
     }
-
-    /**
-     * Tests that saving an unsupported metadata object raises an exception.
-     */
-    public function testSaveInvalidMetadataType(): void
-    {
-        $storage = new FileStorage(sys_get_temp_dir());
-        $metadata = $this->prophesize(MetadataBase::class)->reveal();
-
-        $this->expectException('InvalidArgumentException');
-        $this->expectExceptionMessage('Cannot save unsupported metadata type.');
-        $storage->save($metadata);
-    }
 }
