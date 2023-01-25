@@ -4,6 +4,7 @@ namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\Constraints\Collection;
@@ -28,16 +29,25 @@ class SnapshotMetadata extends FileInfoMetadataBase
             new All([
                 new Collection(
                     [
-                        'fields' => static::getVersionConstraints(),
-                        // These fields are mentioned in the specification as optional but the Python library does not
-                        // add these fields. Since we use the Python library for our fixtures we cannot create test
+                        'fields' => static::getMetaPathConstraints(),
+                        // This field is mentioned in the specification as optional but the Python library does not
+                        // add it. Since we use the Python library for our fixtures we cannot create test
                         // fixtures that have these fields specified.
-                        'unsupportedFields' => ['length', 'hashes'],
+                        'unsupportedFields' => ['hashes'],
                         'allowExtraFields' => true,
                     ]
                 ),
             ]),
         ]);
         return $options;
+    }
+
+    private static function getMetaPathConstraints(): array
+    {
+        $fields = static::getVersionConstraints();
+        $fields['length'] = new Optional([
+            new Type('integer'),
+        ]);
+        return $fields;
     }
 }
