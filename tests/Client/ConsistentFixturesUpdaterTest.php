@@ -146,4 +146,17 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
         $data[0][0]['root'] = 2;
         return $data;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function providerTimestampAndSnapshotLength(): array
+    {
+        $data = parent::providerTimestampAndSnapshotLength();
+        $data['unknown snapshot length'][1] = '1.snapshot.json';
+        $data['unknown targets length'][1] = '1.targets.json';
+        $data['known snapshot length'][1] = '1.snapshot.json';
+        $data['known targets length'][1] = '1.targets.json';
+        return $data;
+    }
 }

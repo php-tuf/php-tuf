@@ -1325,4 +1325,47 @@ abstract class UpdaterTest extends TestCase
         }
         $this->assertClientFileVersions($expectedUpdatedVersions);
     }
+
+    public function providerTimestampAndSnapshotLength(): array
+    {
+        return [
+            'unknown snapshot length' => [
+                'NoLengths',
+                'snapshot.json',
+                Updater::MAXIMUM_DOWNLOAD_BYTES,
+            ],
+            'unknown targets length' => [
+                'NoLengths',
+                'targets.json',
+                Updater::MAXIMUM_DOWNLOAD_BYTES,
+            ],
+            'known snapshot length' => [
+                'PublishedTwice',
+                'snapshot.json',
+                450,
+            ],
+            'known targets length' => [
+                'PublishedTwice',
+                'targets.json',
+                441,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider providerTimestampAndSnapshotLength
+     */
+    public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
+    {
+        $this->getSystemInTest($fixtureName)->refresh();
+
+        $fetchMetadataArguments = [];
+        foreach ($this->serverStorage->fetchMetadataArguments as [$fileName, $maxBytes]) {
+            $fetchMetadataArguments[$fileName] = $maxBytes;
+        }
+        // The length of the timestamp metadata is never known in advance, so it
+        // is always downloaded with the maximum length.
+        $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
+        $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
+    }
 }
