@@ -15,7 +15,7 @@ class TimestampMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $validJson = '1.timestamp.json';
+    protected $validJson = '1.timestamp';
 
     /**
      * {@inheritdoc}

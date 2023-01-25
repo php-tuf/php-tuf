@@ -3,11 +3,8 @@
 namespace Tuf\Tests\TestHelpers;
 
 use PHPUnit\Framework\Assert;
-use Tuf\Metadata\RootMetadata;
-use Tuf\Metadata\SnapshotMetadata;
-use Tuf\Metadata\TargetsMetadata;
-use Tuf\Metadata\TimestampMetadata;
-use Tuf\Tests\TestHelpers\DurableStorage\MemoryStorage;
+use Tuf\Metadata\StorageInterface;
+use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 
 /**
  * Contains methods for safely interacting with the test fixtures.
@@ -39,27 +36,13 @@ trait FixturesTrait
      *     An optional relative sub-path within the fixture's directory.
      *     Defaults to the directory containing client metadata.
      *
-     * @return MemoryStorage
+     * @return TestStorage
      *     Memory storage containing the test data.
      */
-    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): MemoryStorage
+    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): TestStorage
     {
-        $storage = new MemoryStorage();
-
-        // Loop through and load files in the given path.
-        $fsIterator = new \FilesystemIterator(
-            static::getFixturePath($fixtureName, $path, true),
-            \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME
-        );
-        foreach ($fsIterator as $filename => $info) {
-            // Only load JSON files.
-            /** @var $info \SplFileInfo */
-            if ($info->isFile() && preg_match("|\.json$|", $filename)) {
-                $storage[$filename] = file_get_contents($info->getRealPath());
-            }
-        }
-
-        return $storage;
+        $path = static::getFixturePath($fixtureName, $path, true);
+        return TestStorage::createFromDirectory($path);
     }
 
     /**
@@ -100,30 +83,31 @@ trait FixturesTrait
      *
      * @return void
      */
-    private static function assertMetadataVersions(array $expectedVersions, \ArrayAccess $storage): void
+    private static function assertMetadataVersions(array $expectedVersions, StorageInterface $storage): void
     {
         foreach ($expectedVersions as $role => $version) {
-            if (is_null($version)) {
-                Assert::assertNull($storage["$role.json"], "'$role' file is null.");
-                return;
-            }
-            $roleJson = $storage["$role.json"];
-            Assert::assertNotNull($roleJson, "'$role.json' not found in local repo.");
             switch ($role) {
                 case 'root':
-                    $metadata = RootMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getRoot();
                     break;
                 case 'timestamp':
-                    $metadata = TimestampMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getTimestamp();
                     break;
                 case 'snapshot':
-                    $metadata = SnapshotMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getSnapshot();
                     break;
                 default:
                     // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = TargetsMetadata::createFromJson($roleJson);
+                    $metadata = $storage->getTargets($role);
                     break;
             }
+
+            if (is_null($version)) {
+                Assert::assertNull($metadata, "'$role' file is null.");
+                return;
+            }
+            Assert::assertNotNull($metadata, "'$role.json' not found in local repo.");
+
             $actualVersion = $metadata->getVersion();
             Assert::assertSame(
                 $expectedVersions[$role],

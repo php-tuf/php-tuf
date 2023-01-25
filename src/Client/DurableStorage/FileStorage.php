@@ -2,13 +2,15 @@
 
 namespace Tuf\Client\DurableStorage;
 
+use Tuf\Metadata\StorageBase;
+
 /**
  * Defines a simple filesystem-based storage for fetched PHP-TUF metadata.
  *
  * Applications might want to provide an alternative implementation with
  * better performance and error handling.
  */
-class FileStorage implements \ArrayAccess
+class FileStorage extends StorageBase
 {
     /**
      * @var string $basePath
@@ -37,46 +39,30 @@ class FileStorage implements \ArrayAccess
     /**
      * Returns a full path for an item in the storage.
      *
-     * @param mixed $offset
-     *     The ArrayAccess offset for the item.
+     * @param string $name
+     *   The name of the item.
      *
      * @return string
-     *     The full path for the item in the storage.
+     *   The full path for the item in the storage.
      */
-    protected function pathWithBasePath($offset): string
+    protected function toPath(string $name): string
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $offset;
+        return $this->basePath . DIRECTORY_SEPARATOR . $name . '.json';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetExists($offset): bool
+    protected function read(string $name): ?string
     {
-        return file_exists($this->pathWithBasePath($offset));
+        $path = $this->toPath($name);
+        return file_exists($path) ? file_get_contents($path) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetGet($offset): mixed
+    protected function write(string $name, string $data): void
     {
-        return file_get_contents($this->pathWithBasePath($offset));
+        file_put_contents($this->toPath($name), $data);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetSet($offset, $value): void
+    public function delete(string $name): void
     {
-        file_put_contents($this->pathWithBasePath($offset), $value);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function offsetUnset($offset): void
-    {
-        @unlink($this->pathWithBasePath($offset));
+        @unlink($this->toPath($name));
     }
 }

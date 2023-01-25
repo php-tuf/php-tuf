@@ -3,10 +3,10 @@
 namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
-use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\StorageInterface;
 use Tuf\Metadata\TimestampMetadata;
 
 /**
@@ -15,11 +15,11 @@ use Tuf\Metadata\TimestampMetadata;
 class UniversalVerifier
 {
     /**
-     * The trusted metadata factory.
+     * The durable metadata storage.
      *
-     * @var MetadataFactory
+     * @var \Tuf\Metadata\StorageInterface
      */
-    private $metadataFactory;
+    private StorageInterface $storage;
 
     /**
      * The signature verifier.
@@ -38,16 +38,16 @@ class UniversalVerifier
     /**
      * Factory constructor.
      *
-     * @param \Tuf\Metadata\Factory $metadataFactory
-     *   The trusted metadata factory.
+     * @param \Tuf\Metadata\StorageInterface $storage
+     *   The durable metadata storage.
      * @param \Tuf\Client\SignatureVerifier $signatureVerifier
      *   The signature verifier.
      * @param \DateTimeImmutable $metadataExpiration
      *   The time beyond which untrusted metadata will be considered expired.
      */
-    public function __construct(MetadataFactory $metadataFactory, SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration)
+    public function __construct(StorageInterface $storage, SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration)
     {
-        $this->metadataFactory = $metadataFactory;
+        $this->storage = $storage;
         $this->signatureVerifier = $signatureVerifier;
         $this->metadataExpiration = $metadataExpiration;
     }
@@ -67,24 +67,19 @@ class UniversalVerifier
      */
     public function verify(string $role, MetadataBase $untrustedMetadata): void
     {
-        $trustedMetadata = $this->metadataFactory->load($role);
-        switch ($role) {
-            case RootMetadata::TYPE:
-                $verifier = new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
-                break;
-            case SnapshotMetadata::TYPE:
-                /** @var \Tuf\Metadata\TimestampMetadata $timestampMetadata */
-                $timestampMetadata = $this->metadataFactory->load(TimestampMetadata::TYPE);
-                $verifier = new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $timestampMetadata);
-                break;
-            case TimestampMetadata::TYPE:
-                $verifier = new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata);
-                break;
-            default:
-                /** @var \Tuf\Metadata\SnapshotMetadata $snapshotMetadata */
-                $snapshotMetadata = $this->metadataFactory->load(SnapshotMetadata::TYPE);
-                $verifier = new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $trustedMetadata, $snapshotMetadata);
-        }
+        $verifier = match ($role) {
+            RootMetadata::TYPE =>
+                new RootVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getRoot()),
+
+            SnapshotMetadata::TYPE =>
+                new SnapshotVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getSnapshot(), $this->storage->getTimestamp()),
+
+            TimestampMetadata::TYPE =>
+                new TimestampVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getTimestamp()),
+
+            default =>
+                new TargetsVerifier($this->signatureVerifier, $this->metadataExpiration, $this->storage->getTargets($role), $this->storage->getSnapshot()),
+        };
         $verifier->verify($untrustedMetadata);
         // If the verifier didn't throw an exception, we can trust this metadata.
         $untrustedMetadata->trust();

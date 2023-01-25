@@ -5,16 +5,15 @@ namespace Tuf\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
-use Tuf\Client\DurableStorage\DurableStorageAccessValidator;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
-use Tuf\Metadata\Factory as MetadataFactory;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
+use Tuf\Metadata\StorageInterface;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Metadata\Verifier\UniversalVerifier;
@@ -51,9 +50,9 @@ class Updater
     /**
      * The permanent storage (e.g., filesystem storage) for the client metadata.
      *
-     * @var \ArrayAccess
+     * @var \Tuf\Metadata\StorageInterface
      */
-    protected $durableStorage;
+    protected StorageInterface $storage;
 
     /**
      * The repo file fetcher.
@@ -90,13 +89,6 @@ class Updater
     private $metadataExpiration;
 
     /**
-     * The trusted metadata factory.
-     *
-     * @var \Tuf\Metadata\Factory
-     */
-    protected $metadataFactory;
-
-    /**
      * The verifier factory.
      *
      * @var \Tuf\Metadata\Verifier\UniversalVerifier
@@ -118,37 +110,16 @@ class Updater
      *       (the actual update data that has been signed).
      *     - confined_target_dirs: (array) @todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
-     * @param \ArrayAccess $durableStorage
-     *     An implementation of \ArrayAccess that stores its contents durably,
-     *     as in to disk or a database. Values written for a given repository
-     *     should be exposed to future instantiations of the Updater that
-     *     interact with the same repository.
-     *
-     *
+     *  @param \Tuf\Metadata\StorageInterface $storage
+     *     The storage backend for trusted metadata. Should be available to
+     *     future instances of Updater that interact with the same repository.
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, \ArrayAccess $durableStorage)
+    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $storage)
     {
         $this->repoFileFetcher = $repoFileFetcher;
         $this->mirrors = $mirrors;
-        $this->durableStorage = new DurableStorageAccessValidator($durableStorage);
+        $this->storage = $storage;
         $this->clock = new Clock();
-        $this->metadataFactory = new MetadataFactory($this->durableStorage);
-    }
-
-    /**
-     * Gets the type for the file name.
-     *
-     * @param string $fileName
-     *   The file name.
-     *
-     * @return string
-     *   The type.
-     */
-    private static function getFileNameType(string $fileName): string
-    {
-        $parts = explode('.', $fileName);
-        array_pop($parts);
-        return array_pop($parts);
     }
 
     /**
@@ -192,10 +163,10 @@ class Updater
 
         // § 5.2
         /** @var \Tuf\Metadata\RootMetadata $rootData */
-        $rootData = $this->metadataFactory->load('root');
+        $rootData = $this->storage->getRoot();
 
         $this->signatureVerifier = SignatureVerifier::createFromRootMetadata($rootData);
-        $this->universalVerifier = new UniversalVerifier($this->metadataFactory, $this->signatureVerifier, $this->metadataExpiration);
+        $this->universalVerifier = new UniversalVerifier($this->storage, $this->signatureVerifier, $this->metadataExpiration);
 
         // § 5.3
         $this->updateRoot($rootData);
@@ -215,7 +186,7 @@ class Updater
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
-        $this->durableStorage['snapshot.json'] = $newSnapshotContents;
+        $this->storage->save($newSnapshotData);
 
         // § 5.6
         $this->fetchAndVerifyTargetsMetadata('targets');
@@ -236,7 +207,7 @@ class Updater
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
         // § 5.4.5: Persist timestamp metadata
-        $this->durableStorage['timestamp.json'] = $newTimestampContents;
+        $this->storage->save($newTimestampData);
 
         return $newTimestampData;
     }
@@ -283,7 +254,7 @@ class Updater
             $rootData = $nextRoot;
 
             // § 5.3.8
-            $this->durableStorage['root.json'] = $nextRootContents;
+            $this->storage->save($nextRoot);
             // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
         }
@@ -295,7 +266,8 @@ class Updater
         if ($rootsDownloaded &&
            (static::hasRotatedKeys($originalRootData, $rootData, 'timestamp')
            || static::hasRotatedKeys($originalRootData, $rootData, 'snapshot'))) {
-            unset($this->durableStorage['timestamp.json'], $this->durableStorage['snapshot.json']);
+            $this->storage->delete(TimestampMetadata::TYPE);
+            $this->storage->delete(SnapshotMetadata::TYPE);
         }
         // § 5.3.12 needs no action because we currently require consistent
         // snapshots.
@@ -479,7 +451,7 @@ class Updater
     {
         // Search the top level targets metadata.
         /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
-        $targetsMetadata = $this->metadataFactory->load('targets');
+        $targetsMetadata = $this->storage->getTargets();
         if ($targetsMetadata->hasTarget($target)) {
             return $targetsMetadata;
         }
@@ -498,9 +470,9 @@ class Updater
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
         /** @var RootMetadata $rootMetadata */
-        $rootMetadata = $this->metadataFactory->load('root');
+        $rootMetadata = $this->storage->getRoot();
 
-        $newSnapshotData = $this->metadataFactory->load('snapshot');
+        $newSnapshotData = $this->storage->getSnapshot();
         $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
         // § 5.6.1
         $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
@@ -510,7 +482,7 @@ class Updater
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
-        $this->durableStorage["$role.json"] = $newTargetsContent;
+        $this->storage->save($newTargetsData);
     }
 
     /**
@@ -564,7 +536,7 @@ class Updater
             if ($delegatedRole->matchesPath($target)) {
                 $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-                $delegatedTargetsMetadata = $this->metadataFactory->load($delegatedRoleName);
+                $delegatedTargetsMetadata = $this->storage->getTargets($delegatedRoleName);
                 if ($delegatedTargetsMetadata->hasTarget($target)) {
                     return $delegatedTargetsMetadata;
                 }

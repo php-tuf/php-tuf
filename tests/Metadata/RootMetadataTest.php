@@ -16,7 +16,7 @@ class RootMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected $validJson = '1.root.json';
+    protected $validJson = '1.root';
 
     /**
      * {@inheritdoc}
@@ -39,7 +39,7 @@ class RootMetadataTest extends MetadataBaseTest
         $data = parent::providerExpectedField();
 
         $data[] = ['signed:keys'];
-        $firstKey = $this->getFixtureNestedArrayFirstKey('1.root.json', ['signed', 'keys']);
+        $firstKey = $this->getFixtureNestedArrayFirstKey('1.root', ['signed', 'keys']);
         $data[] = ["signed:keys:$firstKey:keytype"];
         $data[] = ["signed:keys:$firstKey:keyval"];
         $data[] = ["signed:keys:$firstKey:scheme"];
@@ -83,7 +83,7 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->clientStorage[$this->validJson], true);
+        $data = json_decode($this->clientStorage->read($this->validJson), true);
         unset($data['signed']['roles'][$missingRole]);
         static::callCreateFromJson(json_encode($data));
     }
@@ -132,7 +132,7 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->clientStorage[$this->validJson], true);
+        $data = json_decode($this->clientStorage->read($this->validJson), true);
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
         static::callCreateFromJson(json_encode($data));
     }
@@ -144,7 +144,7 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testSupportsConsistentSnapshots(): void
     {
-        $data = json_decode($this->clientStorage[$this->validJson], true);
+        $data = json_decode($this->clientStorage->read($this->validJson), true);
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
@@ -174,7 +174,7 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testGetRoles(): void
     {
-        $json = $this->clientStorage[$this->validJson];
+        $json = $this->clientStorage->read($this->validJson);
         $data = json_decode($json, true);
         /** @var \Tuf\Metadata\RootMetadata $metadata */
         $metadata = static::callCreateFromJson($json);
@@ -199,7 +199,7 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testKeyidHashAlgorithms()
     {
-        $json = $this->clientStorage[$this->validJson];
+        $json = $this->clientStorage->read($this->validJson);
         $data = json_decode($json, true);
         $keyId = key($data['signed']['keys']);
         $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
