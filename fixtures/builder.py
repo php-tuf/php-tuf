@@ -13,7 +13,7 @@ from dirhash import dirhash
 
 class FixtureBuilder:
 
-    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': True }):
+    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': False }):
         self.dir = os.path.join(os.path.dirname(__file__), name)
 
         # The index of the next key pair (in the keys/ directory) to use when initializing
@@ -197,7 +197,7 @@ class FixtureBuilder:
 
 class ConsistencyVariantFixtureBuilder:
 
-    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': True }):
+    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': False }):
         self.fixtures = [
             FixtureBuilder(os.path.join(name, 'consistent'), tuf_arguments),
             FixtureBuilder(os.path.join(name, 'inconsistent'), tuf_arguments)
