@@ -19,7 +19,7 @@ class TestStorage extends StorageBase
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator($dir, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME);
-        foreach ($fsIterator as $filename => $info) {
+        foreach ($fsIterator as $info) {
             // Only load JSON files.
             /** @var $info \SplFileInfo */
             if ($info->isFile() && $info->getExtension() === 'json') {
