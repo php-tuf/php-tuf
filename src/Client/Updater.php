@@ -111,10 +111,8 @@ class Updater
      *     - confined_target_dirs: (array) @todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      *  @param \Tuf\Metadata\StorageInterface $storage
-     *     An implementation of \ArrayAccess that stores its contents durably,
-     *     as in to disk or a database. Values written for a given repository
-     *     should be exposed to future instantiations of the Updater that
-     *     interact with the same repository.
+     *     The storage backend for trusted metadata. Should be available to
+     *     future instances of Updater that interact with the same repository.
      */
     public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $storage)
     {
