@@ -108,11 +108,11 @@ abstract class MetadataBase
                     new Collection([
                         'keyid' => [
                             new NotBlank(),
-                            new Type(['type' => 'string']),
+                            new Type('string'),
                         ],
                         'sig' => [
                             new NotBlank(),
-                            new Type(['type' => 'string']),
+                            new Type('string'),
                         ],
                     ]),
                 ]),
