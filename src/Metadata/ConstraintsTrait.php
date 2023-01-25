@@ -135,7 +135,7 @@ trait ConstraintsTrait
             // is passed on from a setting in the Python `securesystemslib`
             // library.
             'keyid_hash_algorithms' => new Optional([
-                new EqualTo(["sha256", "sha512"]),
+                new EqualTo(['value' => ["sha256", "sha512"]]),
             ]),
             'keytype' => [
                 new Type('string'),
