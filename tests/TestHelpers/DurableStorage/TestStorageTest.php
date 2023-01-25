@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @coversDefaultClass \Tuf\Tests\TestHelpers\DurableStorage\TestStorage
  */
-class MemoryStorageTest extends TestCase
+class TestStorageTest extends TestCase
 {
 
     /**
