@@ -30,7 +30,7 @@ class FixtureBuilder:
         if os.path.isdir(self._server_dir):
             shutil.rmtree(self._server_dir)
 
-        self.repository = repository_tool.create_new_repository(self._server_dir, name)
+        self.repository = repository_tool.create_new_repository(self._server_dir, name, use_snapshot_length=True)
         self.repository.status()
 
         # Initialize the basic TUF roles.
