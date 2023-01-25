@@ -45,28 +45,10 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function saveRoot(RootMetadata $metadata): void
-    {
-        $metadata->ensureIsTrusted();
-        $this->write(RootMetadata::TYPE, $metadata->getSource());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getTimestamp(): ?TimestampMetadata
     {
         $data = $this->read(TimestampMetadata::TYPE);
         return $data ? TimestampMetadata::createFromJson($data)->trust() : null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function saveTimestamp(TimestampMetadata $metadata): void
-    {
-        $metadata->ensureIsTrusted();
-        $this->write(TimestampMetadata::TYPE, $metadata->getSource());
     }
 
     /**
@@ -81,15 +63,6 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function saveSnapshot(SnapshotMetadata $metadata): void
-    {
-        $metadata->ensureIsTrusted();
-        $this->write(SnapshotMetadata::TYPE, $metadata->getSource());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getTargets(string $role = 'targets'): ?TargetsMetadata
     {
         $data = $this->read($role);
@@ -99,9 +72,16 @@ abstract class StorageBase implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function saveTargets(TargetsMetadata $metadata): void
+    public function save(MetadataBase $metadata): void
     {
         $metadata->ensureIsTrusted();
-        $this->write($metadata->getRole(), $metadata->getSource());
+
+        if ($metadata instanceof RootMetadata || $metadata instanceof TimestampMetadata || $metadata instanceof SnapshotMetadata) {
+            $this->write($metadata::TYPE, $metadata->getSource());
+        } elseif ($metadata instanceof TargetsMetadata) {
+            $this->write($metadata->getRole(), $metadata->getSource());
+        } else {
+            throw new \InvalidArgumentException("Cannot save unsupported metadata type.");
+        }
     }
 }

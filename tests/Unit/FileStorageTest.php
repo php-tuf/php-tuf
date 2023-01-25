@@ -5,6 +5,7 @@ namespace Tuf\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\DurableStorage\FileStorage;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -68,31 +69,26 @@ class FileStorageTest extends TestCase
             'root' => [
                 RootMetadata::class,
                 'root',
-                'saveRoot',
                 'root.json',
             ],
             'timestamp' => [
                 TimestampMetadata::class,
                 'timestamp',
-                'saveTimestamp',
                 'timestamp.json',
             ],
             'snapshot' => [
                 SnapshotMetadata::class,
                 'snapshot',
-                'saveSnapshot',
                 'snapshot.json',
             ],
             'targets' => [
                 TargetsMetadata::class,
                 'targets',
-                'saveTargets',
                 'targets.json',
             ],
             'delegated role' => [
                 TargetsMetadata::class,
                 'delegated',
-                'saveTargets',
                 'delegated.json',
             ],
         ];
@@ -101,17 +97,14 @@ class FileStorageTest extends TestCase
     /**
      * Tests storing metadata with a FileStorage object.
      *
-     * @covers ::saveRoot
-     * @covers ::saveTimestamp
-     * @covers ::saveSnapshot
-     * @covers ::saveTargets
+     * @covers ::save
      * @covers ::delete
      *
      * @dataProvider providerMetadataStorage
      *
      * @testdox Writing and deleting $_dataName metadata
      */
-    public function testWriteMetadata(string $metadataClass, string $role, string $methodToCall, string $expectedFileName): void
+    public function testWriteMetadata(string $metadataClass, string $role, string $expectedFileName): void
     {
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
@@ -120,7 +113,7 @@ class FileStorageTest extends TestCase
         $metadata->getRole()->willReturn($role);
         $metadata->getSource()->willReturn("From hell's heart, I refactor thee!");
         $metadata->ensureIsTrusted()->shouldBeCalled();
-        $storage->$methodToCall($metadata->reveal());
+        $storage->save($metadata->reveal());
 
         $filePath = $dir . '/' . $expectedFileName;
         $this->assertFileExists($filePath);
@@ -137,5 +130,18 @@ class FileStorageTest extends TestCase
         $this->expectException('LogicException');
         $this->expectExceptionMessage('Could not load root metadata.');
         $storage->getRoot();
+    }
+
+    /**
+     * Tests that saving an unsupported metadata object raises an exception.
+     */
+    public function testSaveInvalidMetadataType(): void
+    {
+        $storage = new FileStorage(sys_get_temp_dir());
+        $metadata = $this->prophesize(MetadataBase::class)->reveal();
+
+        $this->expectException('InvalidArgumentException');
+        $this->expectExceptionMessage('Cannot save unsupported metadata type.');
+        $storage->save($metadata);
     }
 }

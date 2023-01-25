@@ -188,7 +188,7 @@ class Updater
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
-        $this->storage->saveSnapshot($newSnapshotData);
+        $this->storage->save($newSnapshotData);
 
         // § 5.6
         $this->fetchAndVerifyTargetsMetadata('targets');
@@ -209,7 +209,7 @@ class Updater
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
         // § 5.4.5: Persist timestamp metadata
-        $this->storage->saveTimestamp($newTimestampData);
+        $this->storage->save($newTimestampData);
 
         return $newTimestampData;
     }
@@ -256,7 +256,7 @@ class Updater
             $rootData = $nextRoot;
 
             // § 5.3.8
-            $this->storage->saveRoot($nextRoot);
+            $this->storage->save($nextRoot);
             // § 5.3.9: repeat from § 5.3.2.
             $nextVersion = $rootData->getVersion() + 1;
         }
@@ -484,7 +484,7 @@ class Updater
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
-        $this->storage->saveTargets($newTargetsData);
+        $this->storage->save($newTargetsData);
     }
 
     /**
