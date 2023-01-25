@@ -175,14 +175,13 @@ class Updater
         $newTimestampData = $this->updateTimestamp();
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
-        $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
         $snapshotFileName = $rootData->supportsConsistentSnapshots()
-            ? "$snapShotVersion.snapshot.json"
+            ? $snapshotInfo['version'] . ".snapshot.json"
             : "snapshot.json";
         // § 5.5.1
-        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotContents = $this->fetchFile($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
