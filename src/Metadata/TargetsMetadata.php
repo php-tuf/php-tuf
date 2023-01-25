@@ -62,17 +62,17 @@ class TargetsMetadata extends MetadataBase
                         'fields' => [
                             'name' => [
                                 new NotBlank(),
-                                new Type(['type' => 'string']),
+                                new Type('string'),
                             ],
                             'paths' => [
-                                new Type(['type' => 'array']),
+                                new Type('array'),
                                 new All([
-                                    new Type(['type' => 'string']),
+                                    new Type('string'),
                                     new NotBlank(),
                                 ]),
                             ],
                             'terminating' => [
-                                new Type(['type' => 'boolean']),
+                                new Type('boolean'),
                             ],
                         ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
                         // @todo Support 'path_hash_prefixes' in
@@ -86,7 +86,7 @@ class TargetsMetadata extends MetadataBase
             new All([
                 new Collection([
                     'length' => [
-                        new Type(['type' => 'integer']),
+                        new Type('integer'),
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([

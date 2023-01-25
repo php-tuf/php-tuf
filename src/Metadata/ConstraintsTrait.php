@@ -60,7 +60,7 @@ trait ConstraintsTrait
                 new Type('\ArrayObject'),
               // The keys for 'hashes is not know but they all must be strings.
                 new All([
-                    new Type(['type' => 'string']),
+                    new Type('string'),
                     new NotBlank(),
                 ]),
             ],
@@ -77,7 +77,7 @@ trait ConstraintsTrait
     {
         return [
             'version' => [
-                new Type(['type' => 'integer']),
+                new Type('integer'),
                 new GreaterThanOrEqual(1),
             ],
         ];
@@ -93,7 +93,7 @@ trait ConstraintsTrait
     {
         return [
             'threshold' => [
-                new Type(['type' => 'integer']),
+                new Type('integer'),
                 new GreaterThanOrEqual(1),
             ],
         ];
@@ -109,10 +109,10 @@ trait ConstraintsTrait
         return [
             'keyids' => [
                 new Count(['min' => 1]),
-                new Type(['type' => 'array']),
+                new Type('array'),
                 // The keys for 'hashes is not know but they all must be strings.
                 new All([
-                    new Type(['type' => 'string']),
+                    new Type('string'),
                     new NotBlank(),
                 ]),
             ],
@@ -138,20 +138,20 @@ trait ConstraintsTrait
                 new EqualTo(['value' => ["sha256", "sha512"]]),
             ]),
             'keytype' => [
-                new Type(['type' => 'string']),
+                new Type('string'),
                 new NotBlank(),
             ],
             'keyval' => [
                 new Type('\ArrayObject'),
                 new Collection([
                     'public' => [
-                        new Type(['type' => 'string']),
+                        new Type('string'),
                         new NotBlank(),
                     ],
                 ]),
             ],
             'scheme' => [
-                new Type(['type' => 'string']),
+                new Type('string'),
                 new NotBlank(),
             ],
         ]);

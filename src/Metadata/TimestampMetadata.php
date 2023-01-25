@@ -28,7 +28,7 @@ class TimestampMetadata extends FileInfoMetadataBase
             new All([
                 new Collection([
                     'length' => [
-                        new Type(['type' => 'integer']),
+                        new Type('integer'),
                         new GreaterThanOrEqual(1),
                     ],
                 ] + static::getHashesConstraints() + static::getVersionConstraints()),
