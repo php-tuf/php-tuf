@@ -19,7 +19,7 @@ from fixtures import (
     NestedTerminatingNonDelegatingDelegation,
     ThreeLevelDelegation,
     PublishedTwice,
-    KnownLengths
+    TargetsLengthNoSnapshotLength
 )
 
 
@@ -40,7 +40,7 @@ def generate_fixtures():
     PublishedTwice.build()
     PublishedTwice.build(rotate_keys='timestamp')
     PublishedTwice.build(rotate_keys='snapshot')
-    KnownLengths.build()
+    TargetsLengthNoSnapshotLength.build()
 
 
 # Remove all previous fixtures.

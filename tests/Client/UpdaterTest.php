@@ -1330,22 +1330,22 @@ abstract class UpdaterTest extends TestCase
     {
         return [
             'unknown snapshot length' => [
-                'PublishedTwice',
+                'TargetsLengthNoSnapshotLength',
                 'snapshot.json',
                 Updater::MAXIMUM_DOWNLOAD_BYTES,
             ],
             'unknown targets length' => [
-                'PublishedTwice',
+                'Simple',
                 'targets.json',
                 Updater::MAXIMUM_DOWNLOAD_BYTES,
             ],
             'known snapshot length' => [
-                'KnownLengths',
+                'Simple',
                 'snapshot.json',
-                450,
+                431,
             ],
             'known targets length' => [
-                'KnownLengths',
+                'TargetsLengthNoSnapshotLength',
                 'targets.json',
                 441,
             ],
