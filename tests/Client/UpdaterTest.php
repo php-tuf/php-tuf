@@ -1368,4 +1368,41 @@ abstract class UpdaterTest extends TestCase
         $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
         $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
     }
+
+    public function providerMetadataTooBig(): array
+    {
+        return [
+            'snapshot.json too big' => [
+                'Simple',
+                'timestamp.json',
+                'snapshot.json',
+            ],
+            'targets.json too big' => [
+                'TargetsLengthNoSnapshotLength',
+                'snapshot.json',
+                'targets.json',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider providerMetadataTooBig
+     *
+     * @testdox $fileToChange is bigger than stated in $authorityFile
+     */
+    public function testMetadataFileTooBig(string $fixtureName, string $authorityFile, string $fileToChange): void
+    {
+        $updater = $this->getSystemInTest($fixtureName);
+
+        $authorityData = json_decode($this->serverStorage->fileContents[$authorityFile], true);
+        // Even if consistent snapshots are used, the authority file does not
+        // use the version prefix when referring to the file to change.
+        $fileToChangeKey = ltrim($fileToChange, '.0123456789');
+        $knownLength = $authorityData['signed']['meta'][$fileToChangeKey]['length'];
+        $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
+
+        $this->expectException(DownloadSizeException::class);
+        $this->expectExceptionMessage("$fileToChange exceeded $knownLength bytes");
+        $updater->refresh();
+    }
 }

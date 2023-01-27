@@ -19,8 +19,7 @@ from fixtures import (
     NestedTerminatingNonDelegatingDelegation,
     ThreeLevelDelegation,
     PublishedTwice,
-    TargetsLengthNoSnapshotLength,
-    MetadataFileTooBig
+    TargetsLengthNoSnapshotLength
 )
 
 
@@ -42,8 +41,6 @@ def generate_fixtures():
     PublishedTwice.build(rotate_keys='timestamp')
     PublishedTwice.build(rotate_keys='snapshot')
     TargetsLengthNoSnapshotLength.build()
-    MetadataFileTooBig.build(file='snapshot', authority='timestamp')
-    MetadataFileTooBig.build(file='targets', authority='snapshot')
 
 
 # Remove all previous fixtures.
