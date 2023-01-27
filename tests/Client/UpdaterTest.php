@@ -1388,7 +1388,7 @@ abstract class UpdaterTest extends TestCase
     /**
      * @dataProvider providerMetadataTooBig
      *
-     * @testdox $fileToChange is bigger than stated in $authorityFile
+     * @testdox Exception if $fileToChange is bigger than stated in $authorityFile
      */
     public function testMetadataFileTooBig(string $fixtureName, string $authorityFile, string $fileToChange): void
     {
