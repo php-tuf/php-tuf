@@ -55,6 +55,16 @@ class SnapshotMetadataTest extends MetadataBaseTest
     }
 
     /**
+     * {@inheritdoc }
+     */
+    public function providerOptionalFields(): array
+    {
+        $data = parent::providerOptionalFields();
+        $data[] = ['signed:meta:targets.json:length', 999];
+        return static::getKeyedArray($data);
+    }
+
+    /**
      * Data provider for testUnsupportedFields().
      *
      * @return array[]
@@ -63,7 +73,6 @@ class SnapshotMetadataTest extends MetadataBaseTest
     public function providerUnsupportedFields(): array
     {
         $cases = [
-            'length' => [['signed', 'meta', 'targets.json', 'length'], 1],
             'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
         ];
         foreach ($cases as $fieldName => &$case) {

@@ -1325,4 +1325,84 @@ abstract class UpdaterTest extends TestCase
         }
         $this->assertClientFileVersions($expectedUpdatedVersions);
     }
+
+    public function providerTimestampAndSnapshotLength(): array
+    {
+        return [
+            'unknown snapshot length' => [
+                'TargetsLengthNoSnapshotLength',
+                'snapshot.json',
+                Updater::MAXIMUM_DOWNLOAD_BYTES,
+            ],
+            'unknown targets length' => [
+                'Simple',
+                'targets.json',
+                Updater::MAXIMUM_DOWNLOAD_BYTES,
+            ],
+            'known snapshot length' => [
+                'Simple',
+                'snapshot.json',
+                431,
+            ],
+            'known targets length' => [
+                'TargetsLengthNoSnapshotLength',
+                'targets.json',
+                441,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider providerTimestampAndSnapshotLength
+     */
+    public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
+    {
+        $this->getSystemInTest($fixtureName)->refresh();
+
+        $fetchMetadataArguments = [];
+        foreach ($this->serverStorage->fetchMetadataArguments as [$fileName, $maxBytes]) {
+            $fetchMetadataArguments[$fileName] = $maxBytes;
+        }
+        // The length of the timestamp metadata is never known in advance, so it
+        // is always downloaded with the maximum length.
+        $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
+        $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
+    }
+
+    public function providerMetadataTooBig(): array
+    {
+        return [
+            'snapshot.json too big' => [
+                'Simple',
+                'timestamp.json',
+                'snapshot.json',
+            ],
+            'targets.json too big' => [
+                'TargetsLengthNoSnapshotLength',
+                'snapshot.json',
+                'targets.json',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider providerMetadataTooBig
+     *
+     * @testdox Exception if $fileToChange is bigger than stated in $authorityFile
+     */
+    public function testMetadataFileTooBig(string $fixtureName, string $authorityFile, string $fileToChange): void
+    {
+        $updater = $this->getSystemInTest($fixtureName);
+
+        $authorityData = json_decode($this->serverStorage->fileContents[$authorityFile], true);
+        // Even if consistent snapshots are used, the authority file does not
+        // use the version prefix when referring to the file to change.
+        $fileToChangeKey = ltrim($fileToChange, '.0123456789');
+        $knownLength = $authorityData['signed']['meta'][$fileToChangeKey]['length'];
+        $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
+
+        $this->expectException(DownloadSizeException::class);
+        $this->expectExceptionMessage("$fileToChange exceeded $knownLength bytes");
+        $updater->refresh();
+    }
 }

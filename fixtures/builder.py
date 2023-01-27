@@ -13,7 +13,7 @@ from dirhash import dirhash
 
 class FixtureBuilder:
 
-    def __init__(self, name):
+    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': False }):
         self.dir = os.path.join(os.path.dirname(__file__), name)
 
         # The index of the next key pair (in the keys/ directory) to use when initializing
@@ -30,7 +30,7 @@ class FixtureBuilder:
         if os.path.isdir(self._server_dir):
             shutil.rmtree(self._server_dir)
 
-        self.repository = repository_tool.create_new_repository(self._server_dir, name)
+        self.repository = repository_tool.create_new_repository(self._server_dir, name, **tuf_arguments)
         self.repository.status()
 
         # Initialize the basic TUF roles.
@@ -197,10 +197,10 @@ class FixtureBuilder:
 
 class ConsistencyVariantFixtureBuilder:
 
-    def __init__(self, name):
+    def __init__(self, name, tuf_arguments={ 'use_snapshot_length': False }):
         self.fixtures = [
-            FixtureBuilder(os.path.join(name, 'consistent')),
-            FixtureBuilder(os.path.join(name, 'inconsistent'))
+            FixtureBuilder(os.path.join(name, 'consistent'), tuf_arguments),
+            FixtureBuilder(os.path.join(name, 'inconsistent'), tuf_arguments)
         ]
 
     def delegate(self, role_name, paths, parent='targets', path_hash_prefixes=None, terminating=False):

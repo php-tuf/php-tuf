@@ -175,14 +175,13 @@ class Updater
         $newTimestampData = $this->updateTimestamp();
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
-        $snapShotVersion = $snapshotInfo['version'];
 
         // § 5.5
         $snapshotFileName = $rootData->supportsConsistentSnapshots()
-            ? "$snapShotVersion.snapshot.json"
+            ? $snapshotInfo['version'] . ".snapshot.json"
             : "snapshot.json";
         // § 5.5.1
-        $newSnapshotContents = $this->fetchFile($snapshotFileName);
+        $newSnapshotContents = $this->fetchFile($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
@@ -469,16 +468,12 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): void
     {
-        /** @var RootMetadata $rootMetadata */
-        $rootMetadata = $this->storage->getRoot();
-
-        $newSnapshotData = $this->storage->getSnapshot();
-        $targetsVersion = $newSnapshotData->getFileMetaInfo("$role.json")['version'];
+        $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
-        $targetsFileName = $rootMetadata->supportsConsistentSnapshots()
-            ? "$targetsVersion.$role.json"
+        $targetsFileName = $this->storage->getRoot()->supportsConsistentSnapshots()
+            ? $fileInfo['version'] . ".$role.json"
             : "$role.json";
-        $newTargetsContent = $this->fetchFile($targetsFileName);
+        $newTargetsContent = $this->fetchFile($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6

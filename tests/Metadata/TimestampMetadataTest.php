@@ -31,6 +31,16 @@ class TimestampMetadataTest extends MetadataBaseTest
     }
 
     /**
+     * {@inheritdoc }
+     */
+    public function providerOptionalFields(): array
+    {
+        $data = parent::providerOptionalFields();
+        $data[] = ['signed:meta:snapshot.json:length', 999];
+        return static::getKeyedArray($data);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function providerExpectedField(): array
@@ -39,7 +49,6 @@ class TimestampMetadataTest extends MetadataBaseTest
         $data[] = ['signed:meta'];
         $data[] = ['signed:meta:snapshot.json', 'This collection should contain 1 element or more.'];
         $data[] = ['signed:meta:snapshot.json:version'];
-        $data[] = ['signed:meta:snapshot.json:length'];
         $data[] = ['signed:meta:snapshot.json:hashes'];
         return $data;
     }

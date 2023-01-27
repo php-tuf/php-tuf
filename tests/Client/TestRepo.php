@@ -26,6 +26,16 @@ class TestRepo implements RepoFileFetcherInterface
     public $fileContents = [];
 
     /**
+     * The arguments ::fetchMetadata() was called with.
+     *
+     * This is used by tests to confirm that fetchMetadata was called by the
+     * updater with the expected file names and maximum download lengths.
+     *
+     * @var array[]
+     */
+    public array $fetchMetadataArguments = [];
+
+    /**
      * TestRepo constructor.
      *
      * @param string $basePath
@@ -55,6 +65,7 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
+        $this->fetchMetadataArguments[] = func_get_args();
         return $this->fetchFile($fileName);
     }
 
