@@ -1405,4 +1405,20 @@ abstract class UpdaterTest extends TestCase
         $this->expectExceptionMessage("$fileToChange exceeded $knownLength bytes");
         $updater->refresh();
     }
+
+    public function testSnapshotHashes(string $targetsFileName = 'targets.json'): void
+    {
+        $updater = $this->getSystemInTest('Simple_WithHashes');
+
+        $targetsContent = json_decode($this->serverStorage->fileContents[$targetsFileName], true);
+        $targetsContent['signed']['expires'] = '2038-01-01T07:27:10Z';
+        // Encode the altered targets metadata in so that it will be decoded
+        // correctly, but not match the hash in the snapshots metadata.
+        $targetsContent['signed']['delegations']['keys'] = new \stdClass();
+        $this->serverStorage->fileContents[$targetsFileName] = json_encode($targetsContent, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
+        $updater->refresh();
+    }
 }

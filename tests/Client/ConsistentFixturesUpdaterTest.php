@@ -170,4 +170,13 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
         $data['targets.json too big'][2] = '1.targets.json';
         return $data;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function testSnapshotHashes(string $targetsFileName = '1.targets.json'): void
+    {
+        parent::testSnapshotHashes($targetsFileName);
+    }
+
 }
