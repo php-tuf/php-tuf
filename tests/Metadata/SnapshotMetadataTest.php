@@ -60,9 +60,7 @@ class SnapshotMetadataTest extends MetadataBaseTest
     {
         $data = parent::providerOptionalFields();
         $data[] = ['signed:meta:targets.json:length', 999];
-        $data[] = ['signed:meta:targets.json:hashes', [
-           'sha256' => 'some long hash',
-        ]];
+        $data[] = ['signed:meta:targets.json:hashes', ['sha256' => 'some long hash']];
         return static::getKeyedArray($data);
     }
 
