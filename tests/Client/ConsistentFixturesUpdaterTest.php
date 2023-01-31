@@ -178,5 +178,4 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
     {
         parent::testSnapshotHashes($targetsFileName);
     }
-
 }
