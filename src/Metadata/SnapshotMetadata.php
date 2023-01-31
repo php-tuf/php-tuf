@@ -44,6 +44,8 @@ class SnapshotMetadata extends FileInfoMetadataBase
         $fields['length'] = new Optional([
             new Type('integer'),
         ]);
+        $fields += static::getHashesConstraints();
+        $fields['hashes'] = new Optional($fields['hashes']);
         return $fields;
     }
 }
