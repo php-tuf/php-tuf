@@ -28,7 +28,7 @@ class GuzzleRepository implements RepositoryInterface
      */
     public function getRoot(int $version, array $options = []): PromiseInterface
     {
-        $onFinish = function (string $data): RootMetadata {
+        $onSuccess = function (string $data): RootMetadata {
             return RootMetadata::createFromJson($data);
         };
         $onFailure = function (\Throwable $e) {
@@ -48,7 +48,7 @@ class GuzzleRepository implements RepositoryInterface
         };
 
         return $this->doFetch($version, 'root.json', self::MAXIMUM_BYTES, $options)
-            ->then($onFinish, $onFailure);
+            ->then($onSuccess, $onFailure);
     }
 
     /**
@@ -102,7 +102,7 @@ class GuzzleRepository implements RepositoryInterface
             RequestOptions::PROGRESS => $checkSize,
         ];
 
-        $onFinish = function (ResponseInterface $response) use ($checkSize): string {
+        $onSuccess = function (ResponseInterface $response) use ($checkSize): string {
             $body = $response->getBody();
             $data = $body->getContents();
             // Ensure the downloaded data didn't exceed $maxBytes.
@@ -125,6 +125,6 @@ class GuzzleRepository implements RepositoryInterface
         };
 
         return $this->client->requestAsync('GET', $fileName, $options)
-            ->then($onFinish, $onFailure);
+            ->then($onSuccess, $onFailure);
     }
 }

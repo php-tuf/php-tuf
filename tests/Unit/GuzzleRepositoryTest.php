@@ -288,14 +288,9 @@ class GuzzleRepositoryTest extends TestCase
     }
 
     /**
-     * @param array $responseHeaders
-     *   The response headers.
-     * @param int|null $streamSize
-     *   The size of the mocked stream.
-     *
      * @dataProvider providerSizeLimit
      */
-    public function testMetadataExceedsSizeLimit(string $method, array $arguments, string $fileName, int $maxSize): void
+    public function testSizeLimit(string $method, array $arguments, string $fileName, int $maxSize): void
     {
         foreach ([null, $maxSize + 1] as $reportedSize) {
             $contents = str_repeat('*', $maxSize + 1);
