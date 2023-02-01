@@ -18,6 +18,7 @@ use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 use Tuf\Metadata\Verifier\UniversalVerifier;
 use Tuf\Metadata\Verifier\RootVerifier;
+use Tuf\RepositoryInterface;
 
 /**
  * Class Updater
@@ -54,12 +55,7 @@ class Updater
      */
     protected StorageInterface $storage;
 
-    /**
-     * The repo file fetcher.
-     *
-     * @var \Tuf\Client\RepoFileFetcherInterface
-     */
-    protected $repoFileFetcher;
+    protected RepositoryInterface $server;
 
     /**
      * Whether the repo has been refreshed or not.
@@ -114,9 +110,9 @@ class Updater
      *     The storage backend for trusted metadata. Should be available to
      *     future instances of Updater that interact with the same repository.
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $storage)
+    public function __construct(RepositoryInterface $server, array $mirrors, StorageInterface $storage)
     {
-        $this->repoFileFetcher = $repoFileFetcher;
+        $this->server = $server;
         $this->mirrors = $mirrors;
         $this->storage = $storage;
         $this->clock = new Clock();
@@ -177,12 +173,11 @@ class Updater
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
 
         // § 5.5
-        $snapshotFileName = $rootData->supportsConsistentSnapshots()
-            ? $snapshotInfo['version'] . ".snapshot.json"
-            : "snapshot.json";
+        $snapshotVersion = $rootData->supportsConsistentSnapshots()
+            ? $snapshotInfo['version']
+            : null;
         // § 5.5.1
-        $newSnapshotContents = $this->fetchFile($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
-        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -200,8 +195,7 @@ class Updater
     private function updateTimestamp(): TimestampMetadata
     {
         // § 5.4.1
-        $newTimestampContents = $this->fetchFile('timestamp.json');
-        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        $newTimestampData = $this->server->getTimestamp()->wait();
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
@@ -238,12 +232,11 @@ class Updater
         $originalRootData = $rootData;
         // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+        while ($nextRoot = $this->server->getRoot($nextVersion)->wait()) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
-            $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->universalVerifier->verify(RootMetadata::TYPE, $nextRoot);
 
             // § 5.3.6 Needs no action. The expiration of the new (intermediate)
@@ -293,27 +286,6 @@ class Updater
             return !$previousRole->keysMatch($newRole);
         }
         return false;
-    }
-
-    /**
-     * Synchronously fetches a file from the remote repo.
-     *
-     * @param string $fileName
-     *   The name of the file to fetch.
-     * @param integer $maxBytes
-     *   (optional) The maximum number of bytes to download.
-     *
-     * @return string
-     *   The contents of the fetched file.
-     */
-    private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
-    {
-        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
-            ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
-                $this->checkLength($data, $maxBytes, $fileName);
-                return $data;
-            })
-            ->wait();
     }
 
     /**
@@ -470,11 +442,10 @@ class Updater
     {
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
-        $targetsFileName = $this->storage->getRoot()->supportsConsistentSnapshots()
-            ? $fileInfo['version'] . ".$role.json"
-            : "$role.json";
-        $newTargetsContent = $this->fetchFile($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
-        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
+        $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
+            ? $fileInfo['version']
+            : null;
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);
