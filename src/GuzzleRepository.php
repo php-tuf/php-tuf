@@ -32,13 +32,17 @@ class GuzzleRepository implements RepositoryInterface
             return RootMetadata::createFromJson($data);
         };
         $onFailure = function (\Throwable $e) {
-            // If the file wasn't found, it's not an error condition; it just
-            // means there is no newer root metadata available. So fulfill the
-            // promise with null.
             if ($e instanceof RepoFileNotFound) {
+                // If the file wasn't found, it's not an error condition; it
+                // just means there is no newer root metadata available. So
+                // fulfill the promise with null.
                 return new FulfilledPromise(null);
+            } elseif ($e instanceof DownloadSizeException) {
+                // We don't really need to preserve the backtrace for a
+                // DownloadSizeException, since its cause is pretty clear.
+                throw $e;
             } else {
-                // Wrap the exception to preserve the original backtrace.
+                // In all other cases, wrap the exception to keep the backtrace.
                 throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
             }
         };
@@ -101,11 +105,8 @@ class GuzzleRepository implements RepositoryInterface
         $onFinish = function (ResponseInterface $response) use ($checkSize): string {
             $body = $response->getBody();
             $data = $body->getContents();
-
             // Ensure the downloaded data didn't exceed $maxBytes.
-            $expectedBytes = $response->getHeaderLine('Content-Length') ?: 0;
-            $downloadedBytes = $body->getSize() ?? mb_strlen($data);
-            $checkSize($expectedBytes, $downloadedBytes);
+            $checkSize(0, $body->getSize() ?? mb_strlen($data));
 
             return $data;
         };
