@@ -18,6 +18,7 @@ use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -41,7 +42,7 @@ abstract class UpdaterTest extends TestCase
     /**
      * The server-side storage for metadata and targets.
      *
-     * @var \Tuf\Tests\Client\TestRepo
+     * @var \Tuf\Tests\TestHelpers\TestRepository
      */
     protected $serverStorage;
 
@@ -80,7 +81,7 @@ abstract class UpdaterTest extends TestCase
         ];
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
+        $this->serverStorage = new TestRepository(static::getFixturePath($fixtureName, 'server/metadata'));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
@@ -1048,7 +1049,7 @@ abstract class UpdaterTest extends TestCase
         // Depending on which file is removed from the server, the update
         // process will error out at various points. That's fine, because we're
         // not trying to complete the refresh.
-        $this->serverStorage->removeRepoFile($fileName);
+        $this->serverStorage->set($fileName, 404);
         try {
             $updater->refresh();
             $this->fail('No RepoFileNotFound exception thrown');
@@ -1184,7 +1185,7 @@ abstract class UpdaterTest extends TestCase
         // This refresh should succeed.
         $updater->refresh();
         // Put the server-side repo into an invalid state.
-        $this->serverStorage->removeRepoFile('timestamp.json');
+        $this->serverStorage->set('timestamp.json', 404);
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
@@ -1192,7 +1193,7 @@ abstract class UpdaterTest extends TestCase
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
-        $this->expectExceptionMessage('File timestamp.json not found.');
+        $this->expectExceptionMessage('timestamp.json not found');
         $updater->refresh(true);
     }
 
@@ -1316,7 +1317,7 @@ abstract class UpdaterTest extends TestCase
         $updater = $this->getSystemInTest($fixtureName);
         // This will purposefully cause the refresh to fail, immediately after
         // updating the root metadata.
-        $this->serverStorage->removeRepoFile('timestamp.json');
+        $this->serverStorage->set('timestamp.json', 404);
         try {
             $updater->refresh();
             $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
@@ -1410,12 +1411,13 @@ abstract class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest('Simple_WithHashes');
 
-        $targetsContent = json_decode($this->serverStorage->fileContents[$targetsFileName], true);
+        $targetsContent = file_get_contents(static::getFixturePath('Simple_WithHashes', "server/metadata/$targetsFileName", false));
+        $targetsContent = json_decode($targetsContent, true);
         $targetsContent['signed']['expires'] = '2038-01-01T07:27:10Z';
         // Encode the altered targets metadata in so that it will be decoded
         // correctly, but not match the hash in the snapshots metadata.
         $targetsContent['signed']['delegations']['keys'] = new \stdClass();
-        $this->serverStorage->fileContents[$targetsFileName] = json_encode($targetsContent, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $this->serverStorage->set($targetsFileName, json_encode($targetsContent, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
