@@ -30,10 +30,6 @@ class SnapshotMetadata extends FileInfoMetadataBase
                 new Collection(
                     [
                         'fields' => static::getMetaPathConstraints(),
-                        // This field is mentioned in the specification as optional but the Python library does not
-                        // add it. Since we use the Python library for our fixtures we cannot create test
-                        // fixtures that have these fields specified.
-                        'unsupportedFields' => ['hashes'],
                         'allowExtraFields' => true,
                     ]
                 ),
@@ -48,6 +44,8 @@ class SnapshotMetadata extends FileInfoMetadataBase
         $fields['length'] = new Optional([
             new Type('integer'),
         ]);
+        $fields += static::getHashesConstraints();
+        $fields['hashes'] = new Optional($fields['hashes']);
         return $fields;
     }
 }

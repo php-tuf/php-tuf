@@ -11,7 +11,6 @@ use Tuf\Metadata\SnapshotMetadata;
 class SnapshotMetadataTest extends MetadataBaseTest
 {
     use UntrustedExceptionTrait;
-    use UnsupportedFieldsTestTrait;
 
     /**
      * {@inheritdoc}
@@ -61,26 +60,8 @@ class SnapshotMetadataTest extends MetadataBaseTest
     {
         $data = parent::providerOptionalFields();
         $data[] = ['signed:meta:targets.json:length', 999];
+        $data[] = ['signed:meta:targets.json:hashes', ['sha256' => 'some long hash']];
         return static::getKeyedArray($data);
-    }
-
-    /**
-     * Data provider for testUnsupportedFields().
-     *
-     * @return array[]
-     *  The test cases.
-     */
-    public function providerUnsupportedFields(): array
-    {
-        $cases = [
-            'hashes' => [['signed', 'meta', 'targets.json', 'hashes'], []],
-        ];
-        foreach ($cases as $fieldName => &$case) {
-            $expectedMessage = preg_quote("Object(ArrayObject)[signed][meta][targets.json][$fieldName]", '/');
-            $expectedMessage .= ".*This field is not supported.";
-            $case[] = $expectedMessage;
-        }
-        return $cases;
     }
 
     /**
