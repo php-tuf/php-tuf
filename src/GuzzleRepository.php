@@ -98,9 +98,7 @@ class GuzzleRepository implements RepositoryInterface
         // Periodically check the number of bytes that have been downloaded and
         // throw an exception if it exceeds $maxBytes. Note that this only works
         // with cURL, so we also check the download size in $onFinish.
-        $options += [
-            RequestOptions::PROGRESS => $checkSize,
-        ];
+        $options += [RequestOptions::PROGRESS => $checkSize];
 
         $onSuccess = function (ResponseInterface $response) use ($checkSize): string {
             $body = $response->getBody();
