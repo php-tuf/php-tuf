@@ -91,8 +91,8 @@ class TestRepository implements RepositoryInterface
             $fileName = "$version.$fileName";
         }
         return $this->load($fileName)
-            ->then(function ($data): TargetsMetadata {
-                return $data instanceof TargetsMetadata ? $data : TargetsMetadata::createFromJson($data);
+            ->then(function ($data) use ($role): TargetsMetadata {
+                return $data instanceof TargetsMetadata ? $data : TargetsMetadata::createFromJson($data, $role);
             });
     }
 }

@@ -80,8 +80,8 @@ class GuzzleRepository implements RepositoryInterface
     public function getTargets(?int $version, string $role = 'targets', int $maxBytes = self::MAXIMUM_BYTES, array $options = []): PromiseInterface
     {
         return $this->doFetch($version, "$role.json", $maxBytes, $options)
-            ->then(function (StreamInterface $data): TargetsMetadata {
-                return TargetsMetadata::createFromJson($data->getContents());
+            ->then(function (StreamInterface $data) use ($role): TargetsMetadata {
+                return TargetsMetadata::createFromJson($data->getContents(), $role);
             });
     }
 

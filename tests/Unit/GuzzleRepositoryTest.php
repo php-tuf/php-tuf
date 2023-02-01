@@ -113,9 +113,16 @@ class GuzzleRepositoryTest extends TestCase
         $this->assertIsResource($file);
         $this->mockHandler->append(new Response(200, [], $file));
 
-        $this->assertInstanceOf($metadataClass, $this->repository->$method(...$arguments)->wait());
+        $metadata = $this->repository->$method(...$arguments)->wait();
+        $this->assertInstanceOf($metadataClass, $metadata);
         // Ensure that the correct file was requested.
         $this->assertSame($fileName, $this->history[0]['request']->getUri()->getPath());
+
+        // If we were fetching targets metadata, ensure the metadata object we
+        // got back has the correct role.
+        if ($metadata instanceof TargetsMetadata) {
+            $this->assertSame($arguments[1] ?? 'targets', $metadata->getRole());
+        }
 
         // If the response is a 404, we should get an exception for everything
         // except the root metadata, which should merely return null.
