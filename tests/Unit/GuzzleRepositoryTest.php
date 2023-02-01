@@ -7,6 +7,7 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Stream;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Exception\DownloadSizeException;
@@ -291,13 +292,32 @@ class GuzzleRepositoryTest extends TestCase
      */
     public function testSizeLimit(string $method, array $arguments, string $fileName, int $maxSize): void
     {
-        foreach ([null, $maxSize + 1] as $reportedSize) {
-            $contents = str_repeat('*', $maxSize + 1);
-            $body = $this->prophesize('\Psr\Http\Message\StreamInterface');
-            $body->getContents()->willReturn($contents);
-            $body->getSize()->willReturn($reportedSize);
+        // Create a buffer in memory with more than the maximum allowed number
+        // of bytes written to it.
+        $buffer = fopen('php://memory', 'a+');
+        $this->assertIsResource($buffer);
+        $bytesWritten = fwrite($buffer, str_repeat('-', $maxSize + 1));
+        $this->assertGreaterThan($maxSize, $bytesWritten);
 
-            $this->mockHandler->append(new Response(200, [], $body->reveal()));
+        // Wrap that buffer in a stream which will report whatever size we
+        // tell it to.
+        $body = new class ($buffer) extends Stream {
+
+            public ?int $size;
+
+            public function getSize()
+            {
+                return $this->size;
+            }
+
+        };
+
+        // Ensure we test what happens when the stream does and doesn't know
+        // how long it is.
+        foreach ([null, $bytesWritten] as $reportedSize) {
+            $body->size = $reportedSize;
+
+            $this->mockHandler->append(new Response(200, [], $body));
             try {
                 $this->repository->$method(...$arguments)->wait();
                 $this->fail('Expected a DownloadSizeException to be thrown.');

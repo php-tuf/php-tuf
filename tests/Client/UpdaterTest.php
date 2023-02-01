@@ -16,6 +16,7 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
+use Tuf\JsonNormalizer;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\TestRepository;
@@ -921,7 +922,12 @@ abstract class UpdaterTest extends TestCase
     {
         $fixtureName = 'Delegated';
         $updater = $this->getSystemInTest($fixtureName);
-        $this->serverStorage->setRepoFileNestedValue($fileToChange, $keys, $newValue);
+
+        $fileData = file_get_contents(static::getFixturePath('Delegated', "server/metadata/$fileToChange", false));
+        $fileData = json_decode($fileData, true);
+        static::nestedChange($keys, $fileData, $newValue);
+        $this->serverStorage->set($fileToChange, JsonNormalizer::asNormalizedJson($fileData));
+
         try {
             $updater->refresh();
         } catch (TufException $exception) {
