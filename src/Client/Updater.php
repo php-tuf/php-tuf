@@ -12,6 +12,7 @@ use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
 use Tuf\Loader\LoaderInterface;
+use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\StorageInterface;
@@ -96,6 +97,8 @@ class Updater implements LoaderInterface
      */
     protected $universalVerifier;
 
+    private LoaderInterface $loader;
+
     /**
      * Updater constructor.
      *
@@ -121,6 +124,12 @@ class Updater implements LoaderInterface
         $this->mirrors = $mirrors;
         $this->storage = $storage;
         $this->clock = new Clock();
+    }
+
+    public function setLoader(LoaderInterface $loader): void
+    {
+        // Ensure the sizes of loaded files are always verified.
+        $this->loader = new SizeCheckingLoader($loader);
     }
 
     /**
@@ -309,12 +318,7 @@ class Updater implements LoaderInterface
      */
     private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
     {
-        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
-            ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
-                $this->checkLength($data, $maxBytes, $fileName);
-                return $data;
-            })
-            ->wait();
+        return $this->loader->load($fileName, $maxBytes)->wait();
     }
 
     /**
@@ -431,7 +435,7 @@ class Updater implements LoaderInterface
             return new RejectedPromise($e);
         }
 
-        return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
+        return $this->loader->load($target, $length)
             ->then(function (StreamInterface $stream) use ($target) {
                 $this->verify($target, $stream);
                 return $stream;

@@ -102,6 +102,8 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
+        $updater->setLoader($this->serverStorage);
+
         return $updater;
     }
 

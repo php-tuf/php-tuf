@@ -9,12 +9,13 @@ use GuzzleHttp\Psr7\Utils;
 use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Loader\LoaderInterface;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
  */
-class TestRepo implements RepoFileFetcherInterface
+class TestRepo implements RepoFileFetcherInterface, LoaderInterface
 {
     use UtilsTrait;
 
@@ -65,8 +66,7 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
-        $this->fetchMetadataArguments[] = func_get_args();
-        return $this->fetchFile($fileName);
+        return $this->load($fileName);
     }
 
     /**
@@ -74,14 +74,16 @@ class TestRepo implements RepoFileFetcherInterface
      */
     public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface
     {
-        return $this->fetchFile($fileName);
+        return $this->load($fileName);
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
-    protected function fetchFile(string $fileName): PromiseInterface
+    public function load(string $fileName, int $maxBytes = null): PromiseInterface
     {
+        $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
+
         if (empty($this->fileContents[$fileName])) {
             return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
         }
@@ -101,7 +103,7 @@ class TestRepo implements RepoFileFetcherInterface
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
         try {
-            return $this->fetchFile($fileName, $maxBytes)->wait();
+            return $this->load($fileName, $maxBytes)->wait();
         } catch (RepoFileNotFound $exception) {
             return null;
         }
