@@ -49,11 +49,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
         // Make a new stream that doesn't know how long it is, and ensure we
         // still get an error if it's longer than $maxBytes.
-        $buffer = fopen('php://memory', 'a+');
-        $this->assertIsResource($buffer);
-        // Transfer the contents of the old stream into the new buffer.
-        $bytesWritten = fwrite($buffer, $this->stream->getContents());
-        $this->assertGreaterThan(0, $bytesWritten);
+        $buffer = $this->stream->detach();
         $this->stream = new class ($buffer) extends Stream {
 
             public function getSize()

@@ -37,8 +37,6 @@ class GuzzleLoader implements LoaderInterface
             $options[RequestOptions::PROGRESS] = $onProgress;
         }
 
-        // LoaderInterface requires that the promise wrap around a stream, so
-        // only return the response body.
         try {
             return $this->client->request('GET', $uri, $options)->getBody();
         } catch (ClientException $e) {
