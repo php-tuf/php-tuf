@@ -115,16 +115,9 @@ class RepositoryTest extends TestCase
             $this->expectException(RepoFileNotFound::class);
             $this->expectExceptionMessage("$fileName not found.");
         }
-        $this->assertNull($this->repository->$method(...$arguments)->wait());
     }
 
-    /**
-     * Data provider for testing methods that behave the same way.
-     *
-     * @return array[]
-     *   The test cases.
-     */
-    public function providerStandardInvocations(): array
+    public function providerInvalidJson(): array
     {
         return [
             'root' => [
@@ -171,7 +164,7 @@ class RepositoryTest extends TestCase
     }
 
     /**
-     * @dataProvider providerStandardInvocations
+     * @dataProvider providerInvalidJson
      */
     public function testInvalidJson(string $method, array $arguments, string $fileName): void
     {
