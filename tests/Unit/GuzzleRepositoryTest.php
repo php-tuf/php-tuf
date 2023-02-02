@@ -10,6 +10,8 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Stream;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\Downloader\GuzzleDownloader;
+use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\RepoFileNotFound;
@@ -47,7 +49,10 @@ class GuzzleRepositoryTest extends TestCase
         $handlerStack->push($history);
 
         $client = new Client(['handler' => $handlerStack]);
-        $this->repository = new GuzzleRepository($client);
+
+        $downloader = new GuzzleDownloader($client);
+        $downloader = new SizeCheckingDownloader($downloader);
+        $this->repository = new GuzzleRepository($downloader);
     }
 
     public function providerFetchMetadata(): array
@@ -329,7 +334,7 @@ class GuzzleRepositoryTest extends TestCase
                 $this->repository->$method(...$arguments)->wait();
                 $this->fail('Expected a DownloadSizeException to be thrown.');
             } catch (DownloadSizeException $e) {
-                $this->assertSame("$fileName exceeded $maxSize bytes", $e->getMessage());
+                $this->assertSame("$fileName exceeded $maxSize bytes.", $e->getMessage());
             }
         }
     }
