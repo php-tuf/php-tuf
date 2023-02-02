@@ -9,10 +9,7 @@ use Tuf\JsonNormalizer;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
-/**
- * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
- */
-class TestRepo implements LoaderInterface
+class TestLoader implements LoaderInterface
 {
     use UtilsTrait;
 

@@ -41,7 +41,7 @@ abstract class UpdaterTest extends TestCase
     /**
      * The server-side storage for metadata and targets.
      *
-     * @var \Tuf\Tests\Client\TestRepo
+     * @var \Tuf\Tests\Client\TestLoader
      */
     protected $serverStorage;
 
@@ -80,7 +80,7 @@ abstract class UpdaterTest extends TestCase
         ];
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
+        $this->serverStorage = new TestLoader(static::getFixturePath($fixtureName));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
