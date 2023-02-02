@@ -2,13 +2,10 @@
 
 namespace Tuf\Tests\Unit;
 
-use GuzzleHttp\Promise\Create;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Tuf\Downloader\DownloaderInterface;
 use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -18,17 +15,18 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
+use Tuf\Tests\TestHelpers\TestDownloader;
 
 /**
  * @covers \Tuf\Repository
  */
-class RepositoryTest extends TestCase implements DownloaderInterface
+class RepositoryTest extends TestCase
 {
     use ProphecyTrait;
 
     private Repository $repository;
 
-    private array $files = [];
+    private TestDownloader $downloader;
 
     /**
      * {@inheritdoc}
@@ -37,27 +35,8 @@ class RepositoryTest extends TestCase implements DownloaderInterface
     {
         parent::setUp();
 
-        $downloader = new SizeCheckingDownloader($this);
-        $this->repository = new Repository($downloader);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function download(string $uri, int $maxBytes = null): PromiseInterface
-    {
-        if (array_key_exists($uri, $this->files)) {
-            $value = $this->files[$uri];
-
-            if ($value instanceof \Throwable) {
-                return Create::rejectionFor($value);
-            } else {
-                return Create::promiseFor($value);
-            }
-        } else {
-            $error = new RepoFileNotFound("$uri not found.");
-            return Create::rejectionFor($error);
-        }
+        $this->downloader = new TestDownloader();
+        $this->repository = new Repository(new SizeCheckingDownloader($this->downloader));
     }
 
     public function providerFetchMetadata(): array
@@ -121,7 +100,7 @@ class RepositoryTest extends TestCase implements DownloaderInterface
     {
         $file = fopen(__DIR__ . "/../../fixtures/Delegated/consistent/server/metadata/$fileName", 'r');
         $this->assertIsResource($file);
-        $this->files[$fileName] = Utils::streamFor($file);
+        $this->downloader->set($fileName, Utils::streamFor($file));
 
         $metadata = $this->repository->$method(...$arguments)->wait();
         $this->assertInstanceOf($metadataClass, $metadata);
@@ -134,7 +113,7 @@ class RepositoryTest extends TestCase implements DownloaderInterface
 
         // If the response is a 404, we should get an exception for everything
         // except the root metadata, which should merely return null.
-        unset($this->files[$fileName]);
+        $this->downloader->set($fileName, 404);
         if ($metadataClass !== RootMetadata::class) {
             $this->expectException(RepoFileNotFound::class);
             $this->expectExceptionMessage("$fileName not found.");
@@ -199,7 +178,7 @@ class RepositoryTest extends TestCase implements DownloaderInterface
      */
     public function testInvalidJson(string $method, array $arguments, string $fileName): void
     {
-        $this->files[$fileName] = Utils::streamFor('{"invalid": "data"}');
+        $this->downloader->set($fileName, '{"invalid": "data"}');
         // If createFromJson() cannot validate the JSON returned by the server,
         // we should get a MetadataException right away.
         $this->expectException(MetadataException::class);
@@ -326,7 +305,7 @@ class RepositoryTest extends TestCase implements DownloaderInterface
         foreach ([null, $bytesWritten] as $reportedSize) {
             $body->size = $reportedSize;
 
-            $this->files[$fileName] = $body;
+            $this->downloader->set($fileName, $body);
             try {
                 $this->repository->$method(...$arguments)->wait();
                 $this->fail('Expected a DownloadSizeException to be thrown.');

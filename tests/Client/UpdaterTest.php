@@ -21,7 +21,7 @@ use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\JsonNormalizer;
 use Tuf\Repository;
-use Tuf\Tests\TestHelpers\ArrayDownloader;
+use Tuf\Tests\TestHelpers\TestDownloader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -89,7 +89,7 @@ abstract class UpdaterTest extends TestCase
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
         $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/metadata'));
-        $this->serverStorage = new ArrayDownloader($downloader);
+        $this->serverStorage = new TestDownloader($downloader);
         $server = new Repository(new SizeCheckingDownloader($this->serverStorage));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
@@ -113,7 +113,7 @@ abstract class UpdaterTest extends TestCase
         $property->setValue($updater, new TestClock());
 
         $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
-        $this->fileDownloader = new ArrayDownloader($downloader);
+        $this->fileDownloader = new TestDownloader($downloader);
         $updater->decorated = new SizeCheckingDownloader($this->fileDownloader);
 
         return $updater;
