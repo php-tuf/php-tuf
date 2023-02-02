@@ -15,6 +15,7 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
+use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -93,7 +94,7 @@ abstract class UpdaterTest extends TestCase
         $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
-        $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
+        $updater = new $updaterClass(new SizeCheckingLoader($this->serverStorage), $mirrors, $this->clientStorage);
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);

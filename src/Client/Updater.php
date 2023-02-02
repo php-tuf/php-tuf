@@ -82,13 +82,6 @@ class Updater implements LoaderInterface
     protected $universalVerifier;
 
     /**
-     * The backend to load data from the server.
-     *
-     * @var \Tuf\Loader\LoaderInterface
-     */
-    private LoaderInterface $loader;
-
-    /**
      * The backend to load untrusted metadata from the server.
      *
      * @var \Tuf\Client\Repository
@@ -98,7 +91,7 @@ class Updater implements LoaderInterface
     /**
      * Updater constructor.
      *
-     * @param \Tuf\Loader\LoaderInterface $loader
+     * @param \Tuf\Loader\SizeCheckingLoader $loader
      *   The backend to load data from the server.
      * @param mixed[][] $mirrors
      *     A nested array of mirrors to use for fetching signing data from the
@@ -115,10 +108,9 @@ class Updater implements LoaderInterface
      *@todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(LoaderInterface $loader, array $mirrors, StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $loader, array $mirrors, StorageInterface $storage)
     {
         // Ensure the sizes of loaded files are always verified.
-        $this->loader = new SizeCheckingLoader($loader);
         $this->server = new Repository($this->loader);
         $this->mirrors = $mirrors;
         $this->storage = $storage;
