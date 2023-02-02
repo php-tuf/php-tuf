@@ -6,7 +6,6 @@ use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Downloader\DownloaderInterface;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
@@ -292,43 +291,6 @@ class Updater implements DownloaderInterface
     }
 
     /**
-     * Verifies the length of a data stream.
-     *
-     * @param \Psr\Http\Message\StreamInterface $data
-     *   The data stream to check.
-     * @param int $maxBytes
-     *   The maximum acceptable length of the stream, in bytes.
-     * @param string $fileName
-     *   The filename associated with the stream.
-     *
-     * @throws \Tuf\Exception\DownloadSizeException
-     *   If the stream's length exceeds $maxBytes in size.
-     */
-    protected function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
-    {
-        $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
-        $size = $data->getSize();
-
-        if (isset($size)) {
-            if ($size > $maxBytes) {
-                throw $error;
-            }
-        } else {
-            // @todo Handle non-seekable streams.
-            // https://github.com/php-tuf/php-tuf/issues/169
-            $data->rewind();
-            $data->read($maxBytes);
-
-            // If we reached the end of the stream, we didn't exceed the
-            // maximum number of bytes.
-            if ($data->eof() === false) {
-                throw $error;
-            }
-            $data->rewind();
-        }
-    }
-
-    /**
      * Verifies a stream of data against a known TUF target.
      *
      * @param string $target
@@ -350,8 +312,6 @@ class Updater implements DownloaderInterface
         if ($targetsMetadata === null) {
             throw new NotFoundException($target, 'Target');
         }
-        $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
-        $this->checkLength($data, $maxBytes, $target);
 
         $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {

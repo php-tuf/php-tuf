@@ -4,7 +4,9 @@ namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
+use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
+use ParagonIE\Sodium\Core\Util;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
@@ -49,6 +51,8 @@ abstract class UpdaterTest extends TestCase
      * @var \Tuf\Tests\TestHelpers\TestRepository
      */
     protected $serverStorage;
+
+    protected $overrider;
 
     protected const FIXTURE_VARIANT = '';
 
@@ -108,8 +112,8 @@ abstract class UpdaterTest extends TestCase
         $property->setValue($updater, new TestClock());
 
         $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
-        $downloader = new SizeCheckingDownloader($downloader);
-        $updater->decorated = new OverrideDownloader($downloader);;
+        $this->overrider = new OverrideDownloader($downloader);
+        $updater->decorated = new SizeCheckingDownloader($this->overrider);;
 
         return $updater;
     }
@@ -144,7 +148,7 @@ abstract class UpdaterTest extends TestCase
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->overrider->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -155,27 +159,34 @@ abstract class UpdaterTest extends TestCase
 
         // If the stream is longer than expected, we should get an exception,
         // whether or not the stream's length is known.
-        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(1024);
-        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $fileData = fopen($testFilePath, 'r');
+        $this->assertIsResource($fileData);
+        $stream = new Stream($fileData, ['size' => 1024]);
+        $this->overrider->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
+            $this->assertSame("testtarget.txt exceeded 24 bytes.", $e->getMessage());
         }
 
-        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(null);
-        $stream->rewind()->shouldBeCalledOnce();
-        $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
-        $stream->eof()->willReturn(false);
-        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $buffer = fopen('php://memory', 'a+');
+        $this->assertIsResource($buffer);
+        fwrite($buffer, 'A nice, long string that is certainly longer than 24 bytes.');
+        $stream = new class ($buffer) extends Stream {
+
+            public function getSize()
+            {
+                return null;
+            }
+
+        };
+        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
+            $this->assertSame("testtarget.txt exceeded 24 bytes.", $e->getMessage());
         }
     }
 
