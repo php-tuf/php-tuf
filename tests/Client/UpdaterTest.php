@@ -3,14 +3,12 @@
 namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
-use Tuf\Downloader\DownloaderInterface;
 use Tuf\Downloader\FileDownloader;
 use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
@@ -22,15 +20,16 @@ use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\JsonNormalizer;
+use Tuf\Repository;
+use Tuf\Tests\TestHelpers\ArrayDownloader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
-use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Base class for testing the client update workflow.
  */
-abstract class UpdaterTest extends TestCase implements DownloaderInterface
+abstract class UpdaterTest extends TestCase
 {
     use FixturesTrait {
         getFixturePath as getFixturePathFromTrait;
@@ -47,8 +46,6 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
 
     /**
      * The server-side storage for metadata and targets.
-     *
-     * @var \Tuf\Tests\TestHelpers\TestRepository
      */
     protected $serverStorage;
 
@@ -91,7 +88,9 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
         ];
 
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepository(static::getFixturePath($fixtureName, 'server/metadata'));
+        $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/metadata'));
+        $this->serverStorage = new ArrayDownloader($downloader);
+        $server = new Repository(new SizeCheckingDownloader($this->serverStorage));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
@@ -105,7 +104,7 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
         $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
-        $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
+        $updater = new $updaterClass($server, $mirrors, $this->clientStorage);
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);
@@ -113,19 +112,11 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
         $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
-        $this->fileDownloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
-        $updater->decorated = new SizeCheckingDownloader($this);
+        $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
+        $this->fileDownloader = new ArrayDownloader($downloader);
+        $updater->decorated = new SizeCheckingDownloader($this->fileDownloader);
 
         return $updater;
-    }
-
-    public function download(string $uri, int $maxBytes = null): PromiseInterface
-    {
-        if (array_key_exists($uri, $this->overrides)) {
-            return $this->overrides[$uri];
-        } else {
-            return $this->fileDownloader->download($uri, $maxBytes);
-        }
     }
 
     /**
@@ -158,7 +149,7 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->fileDownloader->files['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -172,7 +163,7 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
         $fileData = fopen($testFilePath, 'r');
         $this->assertIsResource($fileData);
         $stream = new Stream($fileData, ['size' => 1024]);
-        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->fileDownloader->files['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
@@ -191,7 +182,7 @@ abstract class UpdaterTest extends TestCase implements DownloaderInterface
             }
 
         };
-        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->fileDownloader->files['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
