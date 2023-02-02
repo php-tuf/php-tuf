@@ -6,10 +6,10 @@ use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
-use Tuf\Tests\TestHelpers\FileLoader;
+use Tuf\Loader\LoaderInterface;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
-class TestLoader extends FileLoader
+class TestLoader implements LoaderInterface
 {
     use UtilsTrait;
 
@@ -38,8 +38,6 @@ class TestLoader extends FileLoader
      */
     public function __construct(string $basePath)
     {
-        parent::__construct($basePath);
-
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
         $fixturesPath = "$basePath/server";
@@ -64,19 +62,16 @@ class TestLoader extends FileLoader
     {
         $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
 
-        if (array_key_exists($fileName, $this->fileContents)) {
-            $contents = $this->fileContents[$fileName];
-
-            if ($contents instanceof StreamInterface) {
-                return $contents;
-            } elseif (is_string($contents)) {
-                return Utils::streamFor($contents);
-            } elseif ($contents instanceof \Throwable) {
-                throw $contents;
-            }
-        } else {
-            return parent::load($fileName, $maxBytes);
+        if (empty($this->fileContents[$fileName])) {
+            throw new RepoFileNotFound("File $fileName not found.");
         }
+        // Allow test code to directly set the returned stream so that they can
+        // be mocked.
+        $contents = $this->fileContents[$fileName];
+        if ($contents instanceof StreamInterface) {
+            return $contents;
+        }
+        return Utils::streamFor($this->fileContents[$fileName]);
     }
 
     /**
@@ -108,6 +103,6 @@ class TestLoader extends FileLoader
      */
     public function removeRepoFile(string $fileName): void
     {
-        $this->fileContents[$fileName] = new RepoFileNotFound("File $fileName not found.");
+        unset($this->fileContents[$fileName]);
     }
 }
