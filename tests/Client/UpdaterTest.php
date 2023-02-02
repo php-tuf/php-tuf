@@ -566,7 +566,7 @@ abstract class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest($fixtureName);
         try {
-            $updater->load($fileName)->wait();
+            $updater->load($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
             $this->assertClientFileVersions($expectedFileVersions);
