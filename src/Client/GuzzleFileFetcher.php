@@ -3,7 +3,7 @@
 namespace Tuf\Client;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Promise\FulfilledPromise;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\GuzzleLoader;
 use Tuf\Loader\LoaderInterface;
@@ -43,20 +43,17 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
-    {
-        return $this->metadataLoader->load($fileName, $maxBytes);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
-        try {
-            return $this->fetchMetadata($fileName, $maxBytes)->wait();
-        } catch (RepoFileNotFound $exception) {
-            return null;
-        }
+        $onFailure = function (\Throwable $e) {
+            if ($e instanceof RepoFileNotFound) {
+                return new FulfilledPromise(null);
+            } else {
+                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            }
+        };
+        return $this->metadataLoader->load($fileName, $maxBytes)
+            ->then(null, $onFailure)
+            ->wait();
     }
 }

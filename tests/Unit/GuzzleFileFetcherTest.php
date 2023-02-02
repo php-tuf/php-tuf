@@ -8,6 +8,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\GuzzleFileFetcher;
@@ -71,24 +72,7 @@ class GuzzleFileFetcherTest extends TestCase
     private function getFetcher(): GuzzleFileFetcher
     {
         $metadataLoader = new GuzzleLoader($this->client);
-        $targetsLoader = new GuzzleLoader($this->client);
-
-        return new GuzzleFileFetcher($metadataLoader, $targetsLoader);
-    }
-
-    /**
-     * Data provider for testfetchFileError().
-     *
-     * @return array[]
-     *   Sets of arguments to pass to the test method.
-     */
-    public function providerFetchFileError(): array
-    {
-        return [
-            [404, RepoFileNotFound::class, 0],
-            [403, 'RuntimeException'],
-            [500, 'RuntimeException'],
-        ];
+        return new GuzzleFileFetcher($metadataLoader);
     }
 
     /**
@@ -103,33 +87,6 @@ class GuzzleFileFetcherTest extends TestCase
             [403, 'RuntimeException'],
             [500, 'RuntimeException'],
         ];
-    }
-
-    /**
-     * Tests various error conditions when fetching a file with fetchFile().
-     *
-     * @param integer $statusCode
-     *   The response status code.
-     * @param string $exceptionClass
-     *   The expected exception class that will be thrown.
-     * @param integer|null $exceptionCode
-     *   (optional) The expected exception code. Defaults to the status code.
-     * @param integer|null $maxBytes
-     *   (optional) The maximum number of bytes to read from the response.
-     *   Defaults to the length of $this->testContent.
-     *
-     * @return void
-     *
-     * @dataProvider providerFetchFileError
-     */
-    public function testFetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
-    {
-        $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
-        $this->expectException($exceptionClass);
-        $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $this->getFetcher()
-            ->fetchMetadata('test.json', $maxBytes ?? strlen($this->testContent))
-            ->wait();
     }
 
     /**
@@ -154,10 +111,17 @@ class GuzzleFileFetcherTest extends TestCase
     public function testFetchFileIfExistsError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
         $this->mockHandler->append(new Response($statusCode, [], $this->testContent));
-        $this->expectException($exceptionClass);
-        $this->expectExceptionCode($exceptionCode ?? $statusCode);
-        $this->getFetcher()
-            ->fetchMetadataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
+        try {
+            $metadata = $this->getFetcher()->fetchMetadataIfExists('test.json', $maxBytes ?? strlen($this->testContent));
+            // If we don't get an exception, ensure we expected a
+            // RepoFileNotFound, which should be converted to a harmless null
+            // by fetchMetadataIfExists().
+            $this->assertSame(RepoFileNotFound::class, $exceptionClass);
+            $this->assertNull($metadata);
+        } catch (\Throwable $e) {
+            $this->assertInstanceOf($exceptionClass, $e);
+            $this->assertSame($exceptionCode ?? $statusCode, $e->getCode());
+        }
     }
 
     /**
@@ -168,8 +132,6 @@ class GuzzleFileFetcherTest extends TestCase
     public function testSuccessfulFetch(): void
     {
         $fetcher = $this->getFetcher();
-        $this->mockHandler->append(new Response(200, [], $this->testContent));
-        $this->assertSame($fetcher->fetchMetadata('test.json', 256)->wait()->getContents(), $this->testContent);
         $this->mockHandler->append(new Response(200, [], $this->testContent));
         $this->assertSame($fetcher->fetchMetadataIfExists('test.json', 256), $this->testContent);
         $this->mockHandler->append(new Response(404, []));
@@ -183,7 +145,7 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testPrefixes(): void
     {
-        $promise = new FulfilledPromise(new Response());
+        $promise = new FulfilledPromise(Utils::streamFor(''));
 
         $metadataLoader = $this->prophesize(LoaderInterface::class);
         $metadataLoader->load('root.json', 128)
@@ -191,7 +153,7 @@ class GuzzleFileFetcherTest extends TestCase
             ->shouldBeCalled();
 
         $fetcher = new GuzzleFileFetcher($metadataLoader->reveal());
-        $fetcher->fetchMetadata('root.json', 128);
+        $fetcher->fetchMetadataIfExists('root.json', 128);
     }
 
     /**

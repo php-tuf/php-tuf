@@ -64,14 +64,6 @@ class TestRepo implements RepoFileFetcherInterface, LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
-    {
-        return $this->load($fileName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function load(string $fileName, int $maxBytes = null): PromiseInterface
     {
         $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
@@ -94,11 +86,15 @@ class TestRepo implements RepoFileFetcherInterface, LoaderInterface
      */
     public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
     {
-        try {
-            return $this->load($fileName, $maxBytes)->wait();
-        } catch (RepoFileNotFound $exception) {
-            return null;
-        }
+        return $this->load($fileName, $maxBytes)
+            ->then(null, function (\Throwable $e) {
+                if ($e instanceof RepoFileNotFound) {
+                    return new FulfilledPromise(null);
+                } else {
+                    throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+                }
+            })
+            ->wait();
     }
 
     /**
