@@ -6,6 +6,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 
+/**
+ * Defines a downloader that checks the length when the promise is fulfilled.
+ */
 class SizeCheckingDownloader implements DownloaderInterface
 {
     public function __construct(private DownloaderInterface $decorated)

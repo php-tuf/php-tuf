@@ -11,6 +11,9 @@ use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
+/**
+ * Defines a file downloader that uses the Guzzle HTTP client.
+ */
 class GuzzleDownloader implements DownloaderInterface
 {
     public function __construct(private ClientInterface $client)

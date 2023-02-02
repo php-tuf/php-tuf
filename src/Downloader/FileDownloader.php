@@ -8,6 +8,9 @@ use GuzzleHttp\Psr7\Utils;
 use Symfony\Component\Filesystem\Path;
 use Tuf\Exception\RepoFileNotFound;
 
+/**
+ * Defines a file downloader that loads from the local file system.
+ */
 class FileDownloader implements DownloaderInterface
 {
     public function __construct(private string $baseDir)

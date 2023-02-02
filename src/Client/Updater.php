@@ -96,8 +96,8 @@ class Updater implements DownloaderInterface
     /**
      * Updater constructor.
      *
-     * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
-     *     The repo fetcher.
+     * @param \Tuf\RepositoryInterface $server
+     *   The backend to retrieve untrusted metadata from the server.
      * @param mixed[][] $mirrors
      *     A nested array of mirrors to use for fetching signing data from the
      *     repository. Each child array contains information about the mirror:
