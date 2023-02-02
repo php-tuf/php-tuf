@@ -31,12 +31,6 @@ class Updater implements LoaderInterface
     const MAX_ROOT_DOWNLOADS = 1024;
 
     /**
-     * The maximum number of bytes to download if the remote file size is not
-     * known.
-     */
-    const MAXIMUM_DOWNLOAD_BYTES = 100000;
-
-    /**
      * The maximum number of target roles supported.
      *
      * § 5.6.7.1
@@ -192,7 +186,7 @@ class Updater implements LoaderInterface
             ? $snapshotInfo['version']
             : null;
         // § 5.5.1
-        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? $this->server::MAX_BYTES)->wait();
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -374,7 +368,7 @@ class Updater implements LoaderInterface
 
         // If the target isn't known, immediately return a rejected promise.
         try {
-            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+            $length = $targetsMetadata->getLength($target) ?? $this->server::MAX_BYTES;
         } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
@@ -422,7 +416,7 @@ class Updater implements LoaderInterface
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? $this->server::MAX_BYTES)->wait();
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);

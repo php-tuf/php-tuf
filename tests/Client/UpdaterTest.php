@@ -7,6 +7,7 @@ use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\Client\Repository;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -1332,12 +1333,12 @@ abstract class UpdaterTest extends TestCase
             'unknown snapshot length' => [
                 'TargetsLengthNoSnapshotLength',
                 'snapshot.json',
-                Updater::MAXIMUM_DOWNLOAD_BYTES,
+                Repository::MAX_BYTES,
             ],
             'unknown targets length' => [
                 'Simple',
                 'targets.json',
-                Updater::MAXIMUM_DOWNLOAD_BYTES,
+                Repository::MAX_BYTES,
             ],
             'known snapshot length' => [
                 'Simple',
@@ -1365,7 +1366,7 @@ abstract class UpdaterTest extends TestCase
         }
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
+        $this->assertSame(Repository::MAX_BYTES, $fetchMetadataArguments['timestamp.json']);
         $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
     }
 
