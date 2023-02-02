@@ -9,6 +9,7 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
+use Tuf\Exception\RepoFileNotFound;
 use Tuf\Helper\Clock;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
@@ -56,13 +57,6 @@ class Updater implements LoaderInterface
     protected StorageInterface $storage;
 
     /**
-     * The repo file fetcher.
-     *
-     * @var \Tuf\Client\RepoFileFetcherInterface
-     */
-    protected $repoFileFetcher;
-
-    /**
      * Whether the repo has been refreshed or not.
      *
      * @see ::download()
@@ -101,8 +95,8 @@ class Updater implements LoaderInterface
     /**
      * Updater constructor.
      *
-     * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
-     *     The repo fetcher.
+     * @param \Tuf\Loader\LoaderInterface $loader
+     *   The backend which will load files from the server.
      * @param mixed[][] $mirrors
      *     A nested array of mirrors to use for fetching signing data from the
      *     repository. Each child array contains information about the mirror:
@@ -111,24 +105,20 @@ class Updater implements LoaderInterface
      *       metadata.
      *     - targets_path: (string) The path within the repository for targets
      *       (the actual update data that has been signed).
-     *     - confined_target_dirs: (array) @todo What is this for?
-     *       https://github.com/php-tuf/php-tuf/issues/161
-     *  @param \Tuf\Metadata\StorageInterface $storage
+     *     - confined_target_dirs: (array) @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
      *     future instances of Updater that interact with the same repository.
+     *
+     *@todo What is this for?
+     *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $storage)
-    {
-        $this->repoFileFetcher = $repoFileFetcher;
-        $this->mirrors = $mirrors;
-        $this->storage = $storage;
-        $this->clock = new Clock();
-    }
-
-    public function setLoader(LoaderInterface $loader): void
+    public function __construct(LoaderInterface $loader, array $mirrors, StorageInterface $storage)
     {
         // Ensure the sizes of loaded files are always verified.
         $this->loader = new SizeCheckingLoader($loader);
+        $this->mirrors = $mirrors;
+        $this->storage = $storage;
+        $this->clock = new Clock();
     }
 
     /**
@@ -247,7 +237,19 @@ class Updater implements LoaderInterface
         $originalRootData = $rootData;
         // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+
+        // If the next version of the root metadata fails to download, it's not
+        // an error -- it just means there's no newer root metadata. So we can
+        // safely fulfill the promise with null.
+        $onDownloadFailure = function (\Throwable $e) {
+            if ($e instanceof RepoFileNotFound) {
+                return null;
+            } else {
+                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+            }
+        };
+
+        while ($nextRootContents = $this->loader->load("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)->then(null, $onDownloadFailure)->wait()) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);

@@ -6,7 +6,6 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
-use Tuf\Client\RepoFileFetcherInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
 use Tuf\Loader\LoaderInterface;
@@ -15,7 +14,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
 /**
  * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
  */
-class TestRepo implements RepoFileFetcherInterface, LoaderInterface
+class TestRepo implements LoaderInterface
 {
     use UtilsTrait;
 
@@ -79,22 +78,6 @@ class TestRepo implements RepoFileFetcherInterface, LoaderInterface
         }
         $stream = Utils::streamFor($this->fileContents[$fileName]);
         return new FulfilledPromise($stream);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
-    {
-        return $this->load($fileName, $maxBytes)
-            ->then(null, function (\Throwable $e) {
-                if ($e instanceof RepoFileNotFound) {
-                    return new FulfilledPromise(null);
-                } else {
-                    throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-                }
-            })
-            ->wait();
     }
 
     /**
