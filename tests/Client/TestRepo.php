@@ -2,10 +2,8 @@
 
 namespace Tuf\Tests\Client;
 
-use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
+use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
 use Tuf\Loader\LoaderInterface;
@@ -63,21 +61,20 @@ class TestRepo implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $fileName, int $maxBytes = null): PromiseInterface
+    public function load(string $fileName, int $maxBytes = null): StreamInterface
     {
         $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
 
         if (empty($this->fileContents[$fileName])) {
-            return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
+            throw new RepoFileNotFound("File $fileName not found.");
         }
-        // Allow test code to directly set the returned promise so that the
-        // underlying streams can be mocked.
+        // Allow test code to directly set the returned stream so that they can
+        // be mocked.
         $contents = $this->fileContents[$fileName];
-        if ($contents instanceof PromiseInterface) {
+        if ($contents instanceof StreamInterface) {
             return $contents;
         }
-        $stream = Utils::streamFor($this->fileContents[$fileName]);
-        return new FulfilledPromise($stream);
+        return Utils::streamFor($this->fileContents[$fileName]);
     }
 
     /**

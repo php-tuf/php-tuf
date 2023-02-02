@@ -2,8 +2,6 @@
 
 namespace Tuf\Client;
 
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
@@ -186,7 +184,7 @@ class Updater implements LoaderInterface
             ? $snapshotInfo['version']
             : null;
         // § 5.5.1
-        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? $this->server::MAX_BYTES)->wait();
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? $this->server::MAX_BYTES);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -204,7 +202,7 @@ class Updater implements LoaderInterface
     private function updateTimestamp(): TimestampMetadata
     {
         // § 5.4.1
-        $newTimestampData = $this->server->getTimestamp()->wait();
+        $newTimestampData = $this->server->getTimestamp();
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
@@ -242,7 +240,7 @@ class Updater implements LoaderInterface
         // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
 
-        while ($nextRoot = $this->server->getRoot($nextVersion)->wait()) {
+        while ($nextRoot = $this->server->getRoot($nextVersion)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
@@ -353,31 +351,21 @@ class Updater implements LoaderInterface
      * @param mixed ...$extra
      *   Additional arguments to pass to the file fetcher.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface
-     *   A promise representing the eventual verified result of the download
-     *   operation.
+     * @return \Psr\Http\Message\StreamInterface
+     *   A verified data stream for the target.
      */
-    public function load(string $target, int $maxBytes = null, ...$extra): PromiseInterface
+    public function load(string $target, int $maxBytes = null, ...$extra): StreamInterface
     {
         $this->refresh();
 
         $targetsMetadata = $this->getMetadataForTarget($target);
         if ($targetsMetadata === null) {
-            return new RejectedPromise(new NotFoundException($target, 'Target'));
+            throw new NotFoundException($target, 'Target');
         }
 
-        // If the target isn't known, immediately return a rejected promise.
-        try {
-            $length = $targetsMetadata->getLength($target) ?? $this->server::MAX_BYTES;
-        } catch (NotFoundException $e) {
-            return new RejectedPromise($e);
-        }
-
-        return $this->loader->load($target, $length)
-            ->then(function (StreamInterface $stream) use ($target) {
-                $this->verify($target, $stream);
-                return $stream;
-            });
+        $stream = $this->loader->load($target, $targetsMetadata->getLength($target) ?? $this->server::MAX_BYTES);
+        $this->verify($target, $stream);
+        return $stream;
     }
 
     /**
@@ -416,7 +404,7 @@ class Updater implements LoaderInterface
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? $this->server::MAX_BYTES)->wait();
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? $this->server::MAX_BYTES);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);

@@ -2,14 +2,13 @@
 
 namespace Tuf\Loader;
 
-use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Defines an interface to load data as a stream.
  *
  * The data source can be anything, from anywhere, but it must be returned as an
- * implementation of \Psr\Http\Message\StreamInterface, wrapped by an
- * implementation of \GuzzleHttp\Promise\PromiseInterface.
+ * implementation of \Psr\Http\Message\StreamInterface.
  */
 interface LoaderInterface
 {
@@ -24,10 +23,11 @@ interface LoaderInterface
      *   (optional) The maximum number of bytes that should be read from the
      *   data source, or null to have no limit.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface<\Psr\Http\Message\StreamInterface>
-     *   A promise, fulfilled by an implementation of
-     *   \Psr\Http\Message\StreamInterface. If the data cannot be found,
-     *   the promise should be rejected with \Tuf\Exception\RepoFileNotFound.
+     * @return \Psr\Http\Message\StreamInterface
+     *   A data stream.
+     *
+     * @throws \Tuf\Exception\RepoFileNotFound
+     *   If the data cannot be found.
      */
-    public function load(string $uri, int $maxBytes = null): PromiseInterface;
+    public function load(string $uri, int $maxBytes = null): StreamInterface;
 }

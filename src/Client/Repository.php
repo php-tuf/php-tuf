@@ -2,8 +2,6 @@
 
 namespace Tuf\Client;
 
-use GuzzleHttp\Promise\PromiseInterface;
-use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
@@ -45,41 +43,35 @@ class Repository
      * @param int $version
      *   The version of the root metadata to load.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface<?\Tuf\Metadata\RootMetadata>
+     * @return \Tuf\Metadata\RootMetadata|null
      *   A promise wrapping either an instance of \Tuf\Metadata\RootMetadata,
      *   or null if the requested version of the metadata doesn't exist.
      */
-    public function getRoot(int $version): PromiseInterface
+    public function getRoot(int $version): ?RootMetadata
     {
-        $onSuccess = function (StreamInterface $data): RootMetadata {
+        try {
+            $data = $this->loader->load("$version.root.json", self::MAX_BYTES);
+
             return RootMetadata::createFromJson($data->getContents());
-        };
-        // If the next version of the root metadata doesn't exist, it's not
-        // an error -- it just means there's nothing newer. So we can safely
-        // fulfill the promise with null.
-        $onFailure = function (\Throwable $e) {
-            if ($e instanceof RepoFileNotFound) {
-                return null;
-            } else {
-                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-            }
-        };
-        return $this->loader->load("$version.root.json", self::MAX_BYTES)
-            ->then($onSuccess, $onFailure);
+        } catch (RepoFileNotFound) {
+            // If the next version of the root metadata doesn't exist, it's not
+            // an error -- it just means there's nothing newer. So we can safely
+            // return null.
+            return null;
+        }
     }
 
     /**
      * Loads untrusted timestamp metadata.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TimestampMetadata>
-     *   A promise wrapping an instance of \Tuf\Metadata\RootMetadata.
+     * @return \Tuf\Metadata\TimestampMetadata
+     *   The untrusted timestamp metadata.
      */
-    public function getTimestamp(): PromiseInterface
+    public function getTimestamp(): TimestampMetadata
     {
-        return $this->loader->load('timestamp.json', self::MAX_BYTES)
-            ->then(function (StreamInterface $data): TimestampMetadata {
-                return TimestampMetadata::createFromJson($data->getContents());
-            });
+        $data = $this->loader->load('timestamp.json', self::MAX_BYTES);
+
+        return TimestampMetadata::createFromJson($data->getContents());
     }
 
     /**
@@ -91,17 +83,15 @@ class Repository
      * @param int $maxBytes
      *   The maximum number of bytes to download.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\SnapshotMetadata>
-     *   A promise wrapping an instance of \Tuf\Metadata\SnapshotMetadata.
+     * @return \Tuf\Metadata\SnapshotMetadata
+     *   The untrusted snapshot metadata.
      */
-    public function getSnapshot(?int $version, int $maxBytes = self::MAX_BYTES): PromiseInterface
+    public function getSnapshot(?int $version, int $maxBytes = self::MAX_BYTES): SnapshotMetadata
     {
         $name = isset($version) ? "$version.snapshot" : 'snapshot';
+        $data = $this->loader->load("$name.json", $maxBytes);
 
-        return $this->loader->load("$name.json", $maxBytes)
-            ->then(function (StreamInterface $data): SnapshotMetadata {
-                return SnapshotMetadata::createFromJson($data->getContents());
-            });
+        return SnapshotMetadata::createFromJson($data->getContents());
     }
 
     /**
@@ -116,16 +106,14 @@ class Repository
      * @param int $maxBytes
      *   The maximum number of bytes to download.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
-     *   A promise wrapping an instance of \Tuf\Metadata\TargetsMetadata.
+     * @return \Tuf\Metadata\TargetsMetadata
+     *   The untrusted targets metadata.
      */
-    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = self::MAX_BYTES): PromiseInterface
+    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = self::MAX_BYTES): TargetsMetadata
     {
         $name = isset($version) ? "$version.$role" : $role;
+        $data = $this->loader->load("$name.json", $maxBytes);
 
-        return $this->loader->load("$name.json", $maxBytes)
-            ->then(function (StreamInterface $data) use ($role): TargetsMetadata {
-                return TargetsMetadata::createFromJson($data->getContents(), $role);
-            });
+        return TargetsMetadata::createFromJson($data->getContents(), $role);
     }
 }

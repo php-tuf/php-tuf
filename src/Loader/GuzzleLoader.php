@@ -4,9 +4,7 @@ namespace Tuf\Loader;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
@@ -23,7 +21,7 @@ class GuzzleLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes = null): PromiseInterface
+    public function load(string $uri, int $maxBytes = null): StreamInterface
     {
         // Always try to stream the file from the server.
         $options = [RequestOptions::STREAM => true];
@@ -41,18 +39,12 @@ class GuzzleLoader implements LoaderInterface
 
         // LoaderInterface requires that the promise wrap around a stream, so
         // only return the response body.
-        $onSuccess = function (ResponseInterface $response): StreamInterface {
-            return $response->getBody();
-        };
-        $onFailure = function (\Throwable $e) use ($uri) {
-            if ($e instanceof ClientException && $e->getCode() === 404) {
-                throw new RepoFileNotFound("$uri not found");
-            } else {
-                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+        try {
+            return $this->client->request('GET', $uri, $options)->getBody();
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                throw new RepoFileNotFound("$uri not found", $e->getCode(), $e);
             }
-        };
-
-        return $this->client->requestAsync('GET', $uri, $options)
-            ->then($onSuccess, $onFailure);
+        }
     }
 }

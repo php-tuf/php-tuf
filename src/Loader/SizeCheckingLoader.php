@@ -2,7 +2,6 @@
 
 namespace Tuf\Loader;
 
-use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 
@@ -18,33 +17,30 @@ class SizeCheckingLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes = null): PromiseInterface
+    public function load(string $uri, int $maxBytes = null): StreamInterface
     {
-        $onSuccess = null;
+        $data = $this->decorated->load($uri, $maxBytes);
 
         if (isset($maxBytes)) {
-            $onSuccess = function (StreamInterface $data) use ($uri, $maxBytes): StreamInterface {
-                $error = new DownloadSizeException("$uri exceeded $maxBytes bytes");
+            $error = new DownloadSizeException("$uri exceeded $maxBytes bytes");
 
-                $size = $data->getSize();
-                if ($size === null) {
-                    // @todo Handle non-seekable streams.
-                    // https://github.com/php-tuf/php-tuf/issues/169
-                    $data->rewind();
-                    $data->read($maxBytes);
+            $size = $data->getSize();
+            if ($size === null) {
+                // @todo Handle non-seekable streams.
+                // https://github.com/php-tuf/php-tuf/issues/169
+                $data->rewind();
+                $data->read($maxBytes);
 
-                    // If we reached the end of the stream, we didn't exceed the
-                    // maximum number of bytes.
-                    if ($data->eof() === false) {
-                        throw $error;
-                    }
-                    $data->rewind();
-                } elseif ($size > $maxBytes) {
+                // If we reached the end of the stream, we didn't exceed the
+                // maximum number of bytes.
+                if ($data->eof() === false) {
                     throw $error;
                 }
-                return $data;
-            };
+                $data->rewind();
+            } elseif ($size > $maxBytes) {
+                throw $error;
+            }
         }
-        return $this->decorated->load($uri, $maxBytes)->then($onSuccess);
+        return $data;
     }
 }
