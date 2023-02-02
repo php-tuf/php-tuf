@@ -5,6 +5,7 @@ namespace Tuf\Client;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
+use Tuf\Downloader\DownloaderInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
@@ -25,7 +26,7 @@ use Tuf\RepositoryInterface;
  *
  * @package Tuf\Client
  */
-class Updater
+class Updater implements DownloaderInterface
 {
 
     const MAX_ROOT_DOWNLOADS = 1024;
@@ -91,7 +92,7 @@ class Updater
      */
     protected $universalVerifier;
 
-    public $repoFileFetcher;
+    public DownloaderInterface $decorated;
 
     /**
      * Updater constructor.
@@ -388,7 +389,7 @@ class Updater
      *   A promise representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target, ...$extra): PromiseInterface
+    public function download(string $target, int $maxBytes = null): PromiseInterface
     {
         $this->refresh();
 
@@ -399,12 +400,12 @@ class Updater
 
         // If the target isn't known, immediately return a rejected promise.
         try {
-            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
+            $maxBytes ??= $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
         } catch (NotFoundException $e) {
             return new RejectedPromise($e);
         }
 
-        return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
+        return $this->decorated->download($target, $maxBytes)
             ->then(function (StreamInterface $stream) use ($target) {
                 $this->verify($target, $stream);
                 return $stream;

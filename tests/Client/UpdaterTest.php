@@ -8,6 +8,9 @@ use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
+use Tuf\Downloader\FileDownloader;
+use Tuf\Downloader\OverrideDownloader;
+use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
@@ -104,7 +107,9 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
-        $updater->repoFileFetcher = new TestRepo(static::getFixturePath($fixtureName));
+        $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
+        $downloader = new SizeCheckingDownloader($downloader);
+        $updater->decorated = new OverrideDownloader($downloader);;
 
         return $updater;
     }
@@ -139,7 +144,7 @@ abstract class UpdaterTest extends TestCase
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream);
+        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -152,7 +157,7 @@ abstract class UpdaterTest extends TestCase
         // whether or not the stream's length is known.
         $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(1024);
-        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
@@ -165,7 +170,7 @@ abstract class UpdaterTest extends TestCase
         $stream->rewind()->shouldBeCalledOnce();
         $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
         $stream->eof()->willReturn(false);
-        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
