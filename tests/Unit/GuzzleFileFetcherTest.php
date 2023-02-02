@@ -190,18 +190,8 @@ class GuzzleFileFetcherTest extends TestCase
             ->willReturn($promise)
             ->shouldBeCalled();
 
-        $targetsLoader = $this->prophesize(LoaderInterface::class);
-        $targetsLoader->load('test.txt', 128)
-            ->willReturn($promise)
-            ->shouldBeCalled();
-        $targetsLoader->load('https://example.net/foo.php', 128)
-            ->willReturn($promise)
-            ->shouldBeCalled();
-
-        $fetcher = new GuzzleFileFetcher($metadataLoader->reveal(), $targetsLoader->reveal());
+        $fetcher = new GuzzleFileFetcher($metadataLoader->reveal());
         $fetcher->fetchMetadata('root.json', 128);
-        $fetcher->fetchTarget('test.txt', 128);
-        $fetcher->fetchTarget('test.txt', 128, [], 'https://example.net/foo.php');
     }
 
     /**

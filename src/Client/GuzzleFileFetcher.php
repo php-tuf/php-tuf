@@ -14,7 +14,7 @@ use Tuf\Loader\SizeCheckingLoader;
  */
 class GuzzleFileFetcher implements RepoFileFetcherInterface
 {
-    public function __construct(private LoaderInterface $metadataLoader, private LoaderInterface $targetsLoader)
+    public function __construct(private LoaderInterface $metadataLoader)
     {
     }
 
@@ -37,11 +37,7 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
         $metadataLoader = new GuzzleLoader($metadataClient);
         $metadataLoader = new SizeCheckingLoader($metadataLoader);
 
-        $targetsClient = new Client(['base_uri' => $baseUri . $targetsPrefix]);
-        $targetsLoader = new GuzzleLoader($targetsClient);
-        $targetsLoader = new SizeCheckingLoader($targetsLoader);
-
-        return new static($metadataLoader, $targetsLoader);
+        return new static($metadataLoader);
     }
 
     /**
@@ -50,21 +46,6 @@ class GuzzleFileFetcher implements RepoFileFetcherInterface
     public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
     {
         return $this->metadataLoader->load($fileName, $maxBytes);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param array $options
-     *   (optional) Additional request options to pass to the Guzzle client.
-     *   See \GuzzleHttp\RequestOptions.
-     * @param string $url
-     *   (optional) An arbitrary URL from which the target should be downloaded.
-     *   If passed, takes precedence over $fileName.
-     */
-    public function fetchTarget(string $fileName, int $maxBytes, array $options = [], string $url = null): PromiseInterface
-    {
-        return $this->targetsLoader->load($url ?: $fileName, $maxBytes);
     }
 
     /**

@@ -72,14 +72,6 @@ class TestRepo implements RepoFileFetcherInterface, LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface
-    {
-        return $this->load($fileName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function load(string $fileName, int $maxBytes = null): PromiseInterface
     {
         $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
