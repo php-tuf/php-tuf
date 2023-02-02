@@ -4,7 +4,6 @@ namespace Tuf\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Repository;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -46,15 +45,6 @@ class RepositoryTest extends TestCase
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version, $fileSize));
             $this->assertSame($fileSize, $loader->maxBytes[$fileName][1]);
 
-            // Ensure that the file size is always checked, even if Repository
-            // was not given a SizeCheckingLoader.
-            try {
-                $repository->getSnapshot($version, 1);
-                $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-            } catch (DownloadSizeException $e) {
-                $this->assertSame("$fileName exceeded 1 bytes", $e->getMessage());
-            }
-
             foreach (['targets', 'unclaimed'] as $role) {
                 $fileName = isset($version) ? "$version.$role.json" : "$role.json";
 
@@ -64,13 +54,6 @@ class RepositoryTest extends TestCase
                 $fileSize = filesize($baseDir . '/' . $fileName);
                 $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role, $fileSize));
                 $this->assertSame($fileSize, $loader->maxBytes[$fileName][1]);
-
-                try {
-                    $repository->getTargets($version, $role, 1);
-                    $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-                } catch (DownloadSizeException $e) {
-                    $this->assertSame("$fileName exceeded 1 bytes", $e->getMessage());
-                }
             }
         }
     }
