@@ -5,7 +5,6 @@ namespace Tuf\Downloader;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Utils;
-use Symfony\Component\Filesystem\Path;
 use Tuf\Exception\RepoFileNotFound;
 
 /**
@@ -22,9 +21,7 @@ class FileDownloader implements DownloaderInterface
      */
     public function download(string $path, int $maxBytes = null): PromiseInterface
     {
-        if (Path::isRelative($path)) {
-            $path = $this->baseDir . DIRECTORY_SEPARATOR . $path;
-        }
+        $path = $this->baseDir . DIRECTORY_SEPARATOR . $path;
 
         if (file_exists($path)) {
             try {
