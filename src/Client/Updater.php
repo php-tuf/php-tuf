@@ -9,7 +9,6 @@ use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
-use Tuf\Exception\RepoFileNotFound;
 use Tuf\Helper\Clock;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
@@ -98,6 +97,13 @@ class Updater implements LoaderInterface
     private LoaderInterface $loader;
 
     /**
+     * The backend to load untrusted metadata from the server.
+     *
+     * @var \Tuf\Client\Repository
+     */
+    private Repository $server;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Loader\LoaderInterface $loader
@@ -121,6 +127,7 @@ class Updater implements LoaderInterface
     {
         // Ensure the sizes of loaded files are always verified.
         $this->loader = new SizeCheckingLoader($loader);
+        $this->server = new Repository($this->loader);
         $this->mirrors = $mirrors;
         $this->storage = $storage;
         $this->clock = new Clock();
@@ -181,12 +188,11 @@ class Updater implements LoaderInterface
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
 
         // § 5.5
-        $snapshotFileName = $rootData->supportsConsistentSnapshots()
-            ? $snapshotInfo['version'] . ".snapshot.json"
-            : "snapshot.json";
+        $snapshotVersion = $rootData->supportsConsistentSnapshots()
+            ? $snapshotInfo['version']
+            : null;
         // § 5.5.1
-        $newSnapshotContents = $this->loader->load($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
-        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -204,8 +210,7 @@ class Updater implements LoaderInterface
     private function updateTimestamp(): TimestampMetadata
     {
         // § 5.4.1
-        $newTimestampContents = $this->loader->load('timestamp.json', self::MAXIMUM_DOWNLOAD_BYTES)->wait();
-        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        $newTimestampData = $this->server->getTimestamp()->wait();
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
@@ -243,23 +248,11 @@ class Updater implements LoaderInterface
         // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
 
-        // If the next version of the root metadata fails to download, it's not
-        // an error -- it just means there's no newer root metadata. So we can
-        // safely fulfill the promise with null.
-        $onDownloadFailure = function (\Throwable $e) {
-            if ($e instanceof RepoFileNotFound) {
-                return null;
-            } else {
-                throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-            }
-        };
-
-        while ($nextRootContents = $this->loader->load("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)->then(null, $onDownloadFailure)->wait()) {
+        while ($nextRoot = $this->server->getRoot($nextVersion)->wait()) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
-            $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->universalVerifier->verify(RootMetadata::TYPE, $nextRoot);
 
             // § 5.3.6 Needs no action. The expiration of the new (intermediate)
@@ -426,11 +419,10 @@ class Updater implements LoaderInterface
     {
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
-        $targetsFileName = $this->storage->getRoot()->supportsConsistentSnapshots()
-            ? $fileInfo['version'] . ".$role.json"
-            : "$role.json";
-        $newTargetsContent = $this->loader->load($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
-        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
+        $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
+            ? $fileInfo['version']
+            : null;
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);
