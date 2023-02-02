@@ -19,21 +19,6 @@ use Tuf\Tests\TestHelpers\TestDownloader;
  */
 class RepositoryTest extends TestCase
 {
-    private Repository $repository;
-
-    private TestDownloader $downloader;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->downloader = new TestDownloader();
-        $this->repository = new Repository(new SizeCheckingDownloader($this->downloader));
-    }
-
     public function providerFetchMetadata(): array
     {
         return [
@@ -93,11 +78,14 @@ class RepositoryTest extends TestCase
      */
     public function testFetchMetadata(string $fileName, string $method, array $arguments, string $metadataClass): void
     {
+        $downloader = new TestDownloader();
+        $repository = new Repository(new SizeCheckingDownloader($downloader));
+
         $file = fopen(__DIR__ . "/../../fixtures/Delegated/consistent/server/metadata/$fileName", 'r');
         $this->assertIsResource($file);
-        $this->downloader->set($fileName, Utils::streamFor($file));
+        $downloader->set($fileName, Utils::streamFor($file));
 
-        $metadata = $this->repository->$method(...$arguments)->wait();
+        $metadata = $repository->$method(...$arguments)->wait();
         $this->assertInstanceOf($metadataClass, $metadata);
 
         // If we were fetching targets metadata, ensure the metadata object we
@@ -108,69 +96,22 @@ class RepositoryTest extends TestCase
 
         // If the response is a 404, we should get an exception for everything
         // except the root metadata, which should merely return null.
-        $this->downloader->set($fileName, 404);
-        if ($metadataClass !== RootMetadata::class) {
-            $this->expectException(RepoFileNotFound::class);
-            $this->expectExceptionMessage("$fileName not found.");
+        $downloader->set($fileName, 404);
+        try {
+            $metadata = $repository->$method(...$arguments)->wait();
+            // If we didn't get an exception, ensure we were trying to load
+            // non-existent root metadata, and that we got null back.
+            $this->assertSame(RootMetadata::class, $metadataClass);
+            $this->assertNull($metadata);
+        } catch (RepoFileNotFound $e) {
+            $this->assertNotSame(RootMetadata::class, $metadataClass);
+            $this->assertSame("$fileName not found.", $e->getMessage());
         }
-        $this->assertNull($this->repository->$method(...$arguments)->wait());
-    }
 
-    public function providerInvalidJson(): array
-    {
-        return [
-            'root' => [
-                'getRoot',
-                [1],
-                '1.root.json',
-            ],
-            'timestamp' => [
-                'getTimestamp',
-                [],
-                'timestamp.json',
-            ],
-            'snapshot with version' => [
-                'getSnapshot',
-                [1],
-                '1.snapshot.json',
-            ],
-            'snapshot without version' => [
-                'getSnapshot',
-                [null],
-                'snapshot.json',
-            ],
-            'targets with version' => [
-                'getTargets',
-                [1],
-                '1.targets.json',
-            ],
-            'targets without version' => [
-                'getTargets',
-                [null],
-                'targets.json',
-            ],
-            'delegated role with version' => [
-                'getTargets',
-                [1, 'delegated'],
-                '1.delegated.json',
-            ],
-            'delegated role without version' => [
-                'getTargets',
-                [null, 'delegated'],
-                'delegated.json',
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider providerInvalidJson
-     */
-    public function testInvalidJson(string $method, array $arguments, string $fileName): void
-    {
-        $this->downloader->set($fileName, '{"invalid": "data"}');
+        $downloader->set($fileName, '{"invalid": "data"}');
         // If createFromJson() cannot validate the JSON returned by the server,
         // we should get a MetadataException right away.
         $this->expectException(MetadataException::class);
-        $this->repository->$method(...$arguments)->wait();
+        $repository->$method(...$arguments)->wait();
     }
 }
