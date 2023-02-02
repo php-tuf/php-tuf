@@ -6,6 +6,7 @@ use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Utils;
 use Symfony\Component\Filesystem\Path;
+use Tuf\Exception\RepoFileNotFound;
 
 class FileDownloader implements DownloaderInterface
 {
@@ -22,12 +23,17 @@ class FileDownloader implements DownloaderInterface
             $path = $this->baseDir . DIRECTORY_SEPARATOR . $path;
         }
 
-        try {
-            $data = Utils::tryFopen($path, 'r');
-            $data = Utils::streamFor($data);
+        if (file_exists($path)) {
+            try {
+                $data = Utils::tryFopen($path, 'r');
+                $data = Utils::streamFor($data);
 
-            return Create::promiseFor($data);
-        } catch (\Throwable $error) {
+                return Create::promiseFor($data);
+            } catch (\Throwable $error) {
+                return Create::rejectionFor($error);
+            }
+        } else {
+            $error = new RepoFileNotFound("$path not found.");
             return Create::rejectionFor($error);
         }
     }

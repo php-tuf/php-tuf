@@ -3,11 +3,13 @@
 namespace Tuf\Downloader;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
+use Tuf\Exception\RepoFileNotFound;
 
 class GuzzleDownloader implements DownloaderInterface
 {
@@ -32,7 +34,18 @@ class GuzzleDownloader implements DownloaderInterface
             };
             $options[RequestOptions::PROGRESS] = $onProgress;
         }
+        $onSuccess = function (ResponseInterface $response): StreamInterface {
+            return $response->getBody();
+        };
+        $onFailure = function (\Throwable $error) use ($uri) {
+            if ($error instanceof ClientException && $error->getCode() === 404) {
+                throw new RepoFileNotFound("$uri not found.");
+            } else {
+                throw new \RuntimeException($error->getMessage(), $error->getCode(), $error);
+            }
+        };
+
         return $this->client->requestAsync('GET', $uri, $options)
-            ->then(fn (ResponseInterface $response): StreamInterface => $response->getBody());
+            ->then($onSuccess, $onFailure);
     }
 }
