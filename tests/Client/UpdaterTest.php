@@ -24,6 +24,7 @@ use Tuf\Repository;
 use Tuf\Tests\TestHelpers\TestDownloader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -104,7 +105,7 @@ abstract class UpdaterTest extends TestCase
         $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
-        $updater = new $updaterClass($server, $mirrors, $this->clientStorage);
+        $updater = new $updaterClass(new TestRepository($server), $mirrors, $this->clientStorage);
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);

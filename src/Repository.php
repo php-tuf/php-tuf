@@ -15,7 +15,7 @@ use Tuf\Metadata\TimestampMetadata;
 
 class Repository implements RepositoryInterface
 {
-    public const MAXIMUM_BYTES = 10 * 1024;
+    public const MAXIMUM_BYTES = 100000;
 
     public function __construct(private DownloaderInterface $downloader)
     {
