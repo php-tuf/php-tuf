@@ -3,14 +3,15 @@
 namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Promise\FulfilledPromise;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
+use Tuf\Downloader\DownloaderInterface;
 use Tuf\Downloader\FileDownloader;
-use Tuf\Downloader\OverrideDownloader;
 use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -29,7 +30,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
 /**
  * Base class for testing the client update workflow.
  */
-abstract class UpdaterTest extends TestCase
+abstract class UpdaterTest extends TestCase implements DownloaderInterface
 {
     use FixturesTrait {
         getFixturePath as getFixturePathFromTrait;
@@ -51,7 +52,9 @@ abstract class UpdaterTest extends TestCase
      */
     protected $serverStorage;
 
-    protected $overrider;
+    protected $fileDownloader;
+
+    protected array $overrides = [];
 
     protected const FIXTURE_VARIANT = '';
 
@@ -110,11 +113,19 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
-        $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
-        $this->overrider = new OverrideDownloader($downloader);
-        $updater->decorated = new SizeCheckingDownloader($this->overrider);
+        $this->fileDownloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
+        $updater->decorated = new SizeCheckingDownloader($this);
 
         return $updater;
+    }
+
+    public function download(string $uri, int $maxBytes = null): PromiseInterface
+    {
+        if (array_key_exists($uri, $this->overrides)) {
+            return $this->overrides[$uri];
+        } else {
+            return $this->fileDownloader->download($uri, $maxBytes);
+        }
     }
 
     /**
@@ -147,7 +158,7 @@ abstract class UpdaterTest extends TestCase
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $this->overrider->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -161,7 +172,7 @@ abstract class UpdaterTest extends TestCase
         $fileData = fopen($testFilePath, 'r');
         $this->assertIsResource($fileData);
         $stream = new Stream($fileData, ['size' => 1024]);
-        $this->overrider->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
@@ -180,7 +191,7 @@ abstract class UpdaterTest extends TestCase
             }
 
         };
-        $updater->decorated->overrides['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->overrides['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
