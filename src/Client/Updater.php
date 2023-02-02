@@ -11,6 +11,7 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
+use Tuf\Loader\LoaderInterface;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\StorageInterface;
@@ -24,7 +25,7 @@ use Tuf\Metadata\Verifier\RootVerifier;
  *
  * @package Tuf\Client
  */
-class Updater
+class Updater implements LoaderInterface
 {
 
     const MAX_ROOT_DOWNLOADS = 1024;
@@ -414,7 +415,7 @@ class Updater
      *   A promise representing the eventual verified result of the download
      *   operation.
      */
-    public function download(string $target, ...$extra): PromiseInterface
+    public function load(string $target, int $maxBytes = null, ...$extra): PromiseInterface
     {
         $this->refresh();
 
