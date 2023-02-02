@@ -20,16 +20,17 @@ class SizeCheckingDownloader implements DownloaderInterface
      */
     public function download(string $uri, int $maxBytes = null): PromiseInterface
     {
+        $onSuccess = null;
+
         if (isset($maxBytes)) {
             $onSuccess = function (StreamInterface $data) use ($uri, $maxBytes): StreamInterface {
                 $error = new DownloadSizeException("$uri exceeded $maxBytes bytes.");
 
+                // If the stream knows its own length, just ensure it is less
+                // than $maxBytes. Otherwise, read $maxBytes of the stream and
+                // ensure we've reached the end.
                 $size = $data->getSize();
-                if (isset($size)) {
-                    if ($size > $maxBytes) {
-                        throw $error;
-                    }
-                } else {
+                if ($size === null) {
                     // @todo Handle non-seekable streams.
                     // https://github.com/php-tuf/php-tuf/issues/169
                     $data->rewind();
@@ -41,11 +42,11 @@ class SizeCheckingDownloader implements DownloaderInterface
                         throw $error;
                     }
                     $data->rewind();
+                } elseif ($size > $maxBytes) {
+                    throw $error;
                 }
                 return $data;
             };
-        } else {
-            $onSuccess = null;
         }
         return $this->decorated->download($uri, $maxBytes)
             ->then($onSuccess);

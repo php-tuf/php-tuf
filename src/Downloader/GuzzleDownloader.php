@@ -28,8 +28,9 @@ class GuzzleDownloader implements DownloaderInterface
         $options = [RequestOptions::STREAM => true];
 
         if (isset($maxBytes)) {
-            // If using cURL, periodically check how many bytes that have been
-            // downloaded and throw an exception if it exceeds $maxBytes.
+            // Periodically check how many bytes that have been downloaded and
+            // throw an exception if it exceeds $maxBytes. This has no effect
+            // unless Guzzle is using cURL under the hood.
             $onProgress = function (int $expectedBytes, int $downloadedBytes) use ($uri, $maxBytes) {
                 if ($expectedBytes > $maxBytes || $downloadedBytes > $maxBytes) {
                     throw new DownloadSizeException("$uri exceeded $maxBytes bytes.");
@@ -37,10 +38,18 @@ class GuzzleDownloader implements DownloaderInterface
             };
             $options[RequestOptions::PROGRESS] = $onProgress;
         }
+
         $onSuccess = function (ResponseInterface $response): StreamInterface {
+            // DownloaderInterface implementations expect promises to be
+            // fulfilled with StreamInterface, which is how Guzzle returns the
+            // response body.
             return $response->getBody();
         };
         $onFailure = function (\Throwable $error) use ($uri) {
+            // If the file wasn't found, convert the exception to one that's not
+            // tied to Guzzle's HTTP client. Otherwise, wrap the exception in a
+            // more generic exception to preserve the backtrace, then re-throw
+            // it.
             if ($error instanceof ClientException && $error->getCode() === 404) {
                 throw new RepoFileNotFound("$uri not found.");
             } else {

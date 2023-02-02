@@ -23,17 +23,17 @@ class FileDownloader implements DownloaderInterface
     {
         $path = $this->baseDir . DIRECTORY_SEPARATOR . $path;
 
-        if (file_exists($path)) {
-            try {
-                $data = Utils::tryFopen($path, 'r');
-                $data = Utils::streamFor($data);
-
-                return Create::promiseFor($data);
-            } catch (\Throwable $error) {
-                return Create::rejectionFor($error);
-            }
-        } else {
+        if (!file_exists($path)) {
             $error = new RepoFileNotFound("$path not found.");
+            return Create::rejectionFor($error);
+        }
+
+        try {
+            $data = Utils::tryFopen($path, 'r');
+            $data = Utils::streamFor($data);
+
+            return Create::promiseFor($data);
+        } catch (\Throwable $error) {
             return Create::rejectionFor($error);
         }
     }
