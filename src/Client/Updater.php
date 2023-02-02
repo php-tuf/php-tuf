@@ -348,13 +348,11 @@ class Updater implements LoaderInterface
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param mixed ...$extra
-     *   Additional arguments to pass to the file fetcher.
      *
      * @return \Psr\Http\Message\StreamInterface
      *   A verified data stream for the target.
      */
-    public function load(string $target, int $maxBytes = null, ...$extra): StreamInterface
+    public function load(string $target, int $maxBytes = null): StreamInterface
     {
         $this->refresh();
 

@@ -69,8 +69,7 @@ class RepositoryTest extends TestCase
                     $repository->getTargets($version, $role, 1);
                     $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
                 } catch (DownloadSizeException $e) {
-                    $this->assertSame("$fileName exceeded 1 bytes",
-                        $e->getMessage());
+                    $this->assertSame("$fileName exceeded 1 bytes", $e->getMessage());
                 }
             }
         }
