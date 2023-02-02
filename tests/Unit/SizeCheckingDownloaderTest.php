@@ -5,7 +5,6 @@ namespace Tuf\Tests\Unit;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
@@ -16,8 +15,6 @@ use Tuf\Tests\TestHelpers\TestDownloader;
  */
 class SizeCheckingDownloaderTest extends TestCase
 {
-    use ProphecyTrait;
-
     public function provider(): array
     {
         return [
