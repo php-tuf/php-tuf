@@ -190,7 +190,7 @@ class Updater implements LoaderInterface
             ? $snapshotInfo['version'] . ".snapshot.json"
             : "snapshot.json";
         // § 5.5.1
-        $newSnapshotContents = $this->fetchFile($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
+        $newSnapshotContents = $this->loader->load($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
@@ -209,7 +209,7 @@ class Updater implements LoaderInterface
     private function updateTimestamp(): TimestampMetadata
     {
         // § 5.4.1
-        $newTimestampContents = $this->fetchFile('timestamp.json');
+        $newTimestampContents = $this->loader->load('timestamp.json', self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
@@ -302,22 +302,6 @@ class Updater implements LoaderInterface
             return !$previousRole->keysMatch($newRole);
         }
         return false;
-    }
-
-    /**
-     * Synchronously fetches a file from the remote repo.
-     *
-     * @param string $fileName
-     *   The name of the file to fetch.
-     * @param integer $maxBytes
-     *   (optional) The maximum number of bytes to download.
-     *
-     * @return string
-     *   The contents of the fetched file.
-     */
-    private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
-    {
-        return $this->loader->load($fileName, $maxBytes)->wait();
     }
 
     /**
@@ -438,7 +422,7 @@ class Updater implements LoaderInterface
         $targetsFileName = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version'] . ".$role.json"
             : "$role.json";
-        $newTargetsContent = $this->fetchFile($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
+        $newTargetsContent = $this->loader->load($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES)->wait();
         $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
