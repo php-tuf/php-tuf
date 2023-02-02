@@ -2,37 +2,31 @@
 
 namespace Tuf\Tests\Unit;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Tuf\Downloader\GuzzleDownloader;
+use Tuf\Downloader\DownloaderInterface;
 use Tuf\Downloader\SizeCheckingDownloader;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\GuzzleRepository;
+use Tuf\Repository;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
 /**
- * @covers \Tuf\GuzzleRepository
+ * @covers \Tuf\Repository
  */
-class GuzzleRepositoryTest extends TestCase
+class RepositoryTest extends TestCase implements DownloaderInterface
 {
     use ProphecyTrait;
 
-    private MockHandler $mockHandler;
-
-    private GuzzleRepository $repository;
-
-    private array $history = [];
+    private array $files = [];
 
     /**
      * {@inheritdoc}
@@ -41,18 +35,27 @@ class GuzzleRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->mockHandler = new MockHandler();
-        $handlerStack = HandlerStack::create($this->mockHandler);
+        $downloader = new SizeCheckingDownloader($this);
+        $this->repository = new Repository($downloader);
+    }
 
-        // Ensure that we can inspect the request and response history.
-        $history = Middleware::history($this->history);
-        $handlerStack->push($history);
+    /**
+     * {@inheritDoc}
+     */
+    public function download(string $uri, int $maxBytes = null): PromiseInterface
+    {
+        if (array_key_exists($uri, $this->files)) {
+            $value = $this->files[$uri];
 
-        $client = new Client(['handler' => $handlerStack]);
-
-        $downloader = new GuzzleDownloader($client);
-        $downloader = new SizeCheckingDownloader($downloader);
-        $this->repository = new GuzzleRepository($downloader);
+            if ($value instanceof \Throwable) {
+                return Create::rejectionFor($value);
+            } else {
+                return Create::promiseFor($value);
+            }
+        } else {
+            $error = new RepoFileNotFound("$uri not found.");
+            return Create::rejectionFor($error);
+        }
     }
 
     public function providerFetchMetadata(): array
@@ -116,12 +119,10 @@ class GuzzleRepositoryTest extends TestCase
     {
         $file = fopen(__DIR__ . "/../../fixtures/Delegated/consistent/server/metadata/$fileName", 'r');
         $this->assertIsResource($file);
-        $this->mockHandler->append(new Response(200, [], $file));
+        $this->files[$fileName] = Utils::streamFor($file);
 
         $metadata = $this->repository->$method(...$arguments)->wait();
         $this->assertInstanceOf($metadataClass, $metadata);
-        // Ensure that the correct file was requested.
-        $this->assertSame($fileName, $this->history[0]['request']->getUri()->getPath());
 
         // If we were fetching targets metadata, ensure the metadata object we
         // got back has the correct role.
@@ -131,10 +132,10 @@ class GuzzleRepositoryTest extends TestCase
 
         // If the response is a 404, we should get an exception for everything
         // except the root metadata, which should merely return null.
-        $this->mockHandler->append(new Response(404));
+        unset($this->files[$fileName]);
         if ($metadataClass !== RootMetadata::class) {
             $this->expectException(RepoFileNotFound::class);
-            $this->expectExceptionMessage("$fileName not found");
+            $this->expectExceptionMessage("$fileName not found.");
         }
         $this->assertNull($this->repository->$method(...$arguments)->wait());
     }
@@ -151,34 +152,42 @@ class GuzzleRepositoryTest extends TestCase
             'root' => [
                 'getRoot',
                 [1],
+                '1.root.json',
             ],
             'timestamp' => [
                 'getTimestamp',
                 [],
+                'timestamp.json',
             ],
             'snapshot with version' => [
                 'getSnapshot',
                 [1],
+                '1.snapshot.json',
             ],
             'snapshot without version' => [
                 'getSnapshot',
                 [null],
+                'snapshot.json',
             ],
             'targets with version' => [
                 'getTargets',
                 [1],
+                '1.targets.json',
             ],
             'targets without version' => [
                 'getTargets',
                 [null],
+                'targets.json',
             ],
             'delegated role with version' => [
                 'getTargets',
                 [1, 'delegated'],
+                '1.delegated.json',
             ],
             'delegated role without version' => [
                 'getTargets',
                 [null, 'delegated'],
+                'delegated.json',
             ],
         ];
     }
@@ -186,23 +195,9 @@ class GuzzleRepositoryTest extends TestCase
     /**
      * @dataProvider providerStandardInvocations
      */
-    public function testServerError(string $method, array $arguments): void
+    public function testInvalidJson(string $method, array $arguments, string $fileName): void
     {
-        $this->mockHandler->append(new Response(500));
-        // If there's an internal server error, Guzzle should throw a
-        // ServerException, which we should wrap in a RuntimException and
-        // re-throw.
-        $this->expectException('RuntimeException');
-        $this->expectExceptionCode(500);
-        $this->repository->$method(...$arguments)->wait();
-    }
-
-    /**
-     * @dataProvider providerStandardInvocations
-     */
-    public function testInvalidJson(string $method, array $arguments): void
-    {
-        $this->mockHandler->append(new Response(200, [], '{"invalid": "data"}'));
+        $this->files[$fileName] = Utils::streamFor('{"invalid": "data"}');
         // If createFromJson() cannot validate the JSON returned by the server,
         // we should get a MetadataException right away.
         $this->expectException(MetadataException::class);
@@ -216,25 +211,25 @@ class GuzzleRepositoryTest extends TestCase
                 'getRoot',
                 [1],
                 '1.root.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'timestamp' => [
                 'getTimestamp',
                 [],
                 'timestamp.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'versioned snapshot' => [
                 'getSnapshot',
                 [1],
                 '1.snapshot.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'un-versioned snapshot' => [
                 'getSnapshot',
                 [null],
                 'snapshot.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'versioned snapshot with explicit size' => [
                 'getSnapshot',
@@ -252,13 +247,13 @@ class GuzzleRepositoryTest extends TestCase
                 'getTargets',
                 [1],
                 '1.targets.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'un-versioned targets' => [
                 'getTargets',
                 [null],
                 'targets.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'versioned targets with explicit size' => [
                 'getTargets',
@@ -276,13 +271,13 @@ class GuzzleRepositoryTest extends TestCase
                 'getTargets',
                 [1, 'delegated'],
                 '1.delegated.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'un-versioned delegated role' => [
                 'getTargets',
                 [null, 'delegated'],
                 'delegated.json',
-                GuzzleRepository::MAXIMUM_BYTES,
+                Repository::MAXIMUM_BYTES,
             ],
             'versioned delegated role with explicit size' => [
                 'getTargets',
@@ -329,7 +324,7 @@ class GuzzleRepositoryTest extends TestCase
         foreach ([null, $bytesWritten] as $reportedSize) {
             $body->size = $reportedSize;
 
-            $this->mockHandler->append(new Response(200, [], $body));
+            $this->files[$fileName] = $body;
             try {
                 $this->repository->$method(...$arguments)->wait();
                 $this->fail('Expected a DownloadSizeException to be thrown.');

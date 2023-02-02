@@ -13,7 +13,7 @@ use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
 
-class GuzzleRepository implements RepositoryInterface
+class Repository implements RepositoryInterface
 {
     public const MAXIMUM_BYTES = 10 * 1024;
 
