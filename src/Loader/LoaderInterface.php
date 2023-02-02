@@ -25,7 +25,7 @@ interface LoaderInterface
      *   path, or something else.
      * @param int|null $maxBytes
      *   (optional) The maximum number of bytes that should be read from the
-     *   data source, or null to have no limit.
+     *   data source, or null for no limit.
      *
      * @return \Psr\Http\Message\StreamInterface
      *   A data stream.

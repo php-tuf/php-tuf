@@ -33,8 +33,8 @@ class Repository
      *   The version of the root metadata to load.
      *
      * @return \Tuf\Metadata\RootMetadata|null
-     *   A promise wrapping either an instance of \Tuf\Metadata\RootMetadata,
-     *   or null if the requested version of the metadata doesn't exist.
+     *   An instance of \Tuf\Metadata\RootMetadata, or null if the requested
+     *   version of the metadata doesn't exist.
      */
     public function getRoot(int $version): ?RootMetadata
     {

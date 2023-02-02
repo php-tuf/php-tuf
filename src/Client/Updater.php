@@ -36,18 +36,6 @@ class Updater implements LoaderInterface
     const MAXIMUM_TARGET_ROLES = 100;
 
     /**
-     * @var \array[][]
-     */
-    protected $mirrors;
-
-    /**
-     * The permanent storage (e.g., filesystem storage) for the client metadata.
-     *
-     * @var \Tuf\Metadata\StorageInterface
-     */
-    protected StorageInterface $storage;
-
-    /**
      * Whether the repo has been refreshed or not.
      *
      * @see ::download()
@@ -108,11 +96,9 @@ class Updater implements LoaderInterface
      *@todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(private SizeCheckingLoader $loader, array $mirrors, StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $loader, protected array $mirrors, protected StorageInterface $storage)
     {
         $this->server = new Repository($this->loader);
-        $this->mirrors = $mirrors;
-        $this->storage = $storage;
         $this->clock = new Clock();
     }
 
