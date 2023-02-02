@@ -9,6 +9,10 @@ use Psr\Http\Message\StreamInterface;
  *
  * The data source can be anything, from anywhere, but it must be returned as an
  * implementation of \Psr\Http\Message\StreamInterface.
+ *
+ * This is an internal interface used to load untrusted data! External code
+ * should not use this directly, but instead rely on \Tuf\Client\Updater to
+ * load TUF-verified data.
  */
 interface LoaderInterface
 {
