@@ -104,6 +104,8 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
+        $updater->repoFileFetcher = new TestRepo(static::getFixturePath($fixtureName));
+
         return $updater;
     }
 
@@ -137,7 +139,7 @@ abstract class UpdaterTest extends TestCase
         $this->assertInstanceOf(RejectedPromise::class, $promise);
 
         $stream = Utils::streamFor('invalid data');
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream);
+        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream);
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
@@ -150,7 +152,7 @@ abstract class UpdaterTest extends TestCase
         // whether or not the stream's length is known.
         $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(1024);
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
@@ -163,7 +165,7 @@ abstract class UpdaterTest extends TestCase
         $stream->rewind()->shouldBeCalledOnce();
         $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
         $stream->eof()->willReturn(false);
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $updater->repoFileFetcher->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
         try {
             $updater->download('testtarget.txt')->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');

@@ -91,6 +91,8 @@ class Updater
      */
     protected $universalVerifier;
 
+    public $repoFileFetcher;
+
     /**
      * Updater constructor.
      *
