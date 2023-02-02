@@ -6,7 +6,6 @@ use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
-use ParagonIE\Sodium\Core\Util;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Updater;
