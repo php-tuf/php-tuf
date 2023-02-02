@@ -5,7 +5,6 @@ namespace Tuf\Tests\TestHelpers;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Downloader\DownloaderInterface;
@@ -31,8 +30,7 @@ class TestDownloader implements DownloaderInterface
         } elseif ($data instanceof MetadataBase || $data instanceof StreamInterface) {
             $this->set($fileName, new FulfilledPromise($data));
         } elseif ($data === 404) {
-            $error = new RepoFileNotFound("$fileName not found.");
-            $this->set($fileName, new RejectedPromise($error));
+            $this->files[$fileName] = new RepoFileNotFound("$fileName not found.");
         } elseif ($data instanceof PromiseInterface) {
             $this->files[$fileName] = $data;
         } else {

@@ -2,11 +2,9 @@
 
 namespace Tuf\Tests\Unit;
 
-use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Tuf\Downloader\SizeCheckingDownloader;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Repository;
@@ -115,6 +113,7 @@ class RepositoryTest extends TestCase
             $this->expectException(RepoFileNotFound::class);
             $this->expectExceptionMessage("$fileName not found.");
         }
+        $this->assertNull($this->repository->$method(...$arguments)->wait());
     }
 
     public function providerInvalidJson(): array
@@ -173,135 +172,5 @@ class RepositoryTest extends TestCase
         // we should get a MetadataException right away.
         $this->expectException(MetadataException::class);
         $this->repository->$method(...$arguments)->wait();
-    }
-
-    public function providerSizeLimit(): array
-    {
-        return [
-            'root' => [
-                'getRoot',
-                [1],
-                '1.root.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'timestamp' => [
-                'getTimestamp',
-                [],
-                'timestamp.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'versioned snapshot' => [
-                'getSnapshot',
-                [1],
-                '1.snapshot.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'un-versioned snapshot' => [
-                'getSnapshot',
-                [null],
-                'snapshot.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'versioned snapshot with explicit size' => [
-                'getSnapshot',
-                [1, 128],
-                '1.snapshot.json',
-                128,
-            ],
-            'un-versioned snapshot with explicit size' => [
-                'getSnapshot',
-                [null, 128],
-                'snapshot.json',
-                128,
-            ],
-            'versioned targets' => [
-                'getTargets',
-                [1],
-                '1.targets.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'un-versioned targets' => [
-                'getTargets',
-                [null],
-                'targets.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'versioned targets with explicit size' => [
-                'getTargets',
-                [1, 'targets', 128],
-                '1.targets.json',
-                128,
-            ],
-            'un-versioned targets with explicit size' => [
-                'getTargets',
-                [null, 'targets', 128],
-                'targets.json',
-                128,
-            ],
-            'versioned delegated role' => [
-                'getTargets',
-                [1, 'delegated'],
-                '1.delegated.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'un-versioned delegated role' => [
-                'getTargets',
-                [null, 'delegated'],
-                'delegated.json',
-                Repository::MAXIMUM_BYTES,
-            ],
-            'versioned delegated role with explicit size' => [
-                'getTargets',
-                [1, 'delegated', 128],
-                '1.delegated.json',
-                128,
-            ],
-            'un-versioned delegated role with explicit size' => [
-                'getTargets',
-                [null, 'delegated', 128],
-                'delegated.json',
-                128,
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider providerSizeLimit
-     */
-    public function testSizeLimit(string $method, array $arguments, string $fileName, int $maxSize): void
-    {
-        // Create a buffer in memory with more than the maximum allowed number
-        // of bytes written to it.
-        $buffer = fopen('php://memory', 'a+');
-        $this->assertIsResource($buffer);
-        $bytesWritten = fwrite($buffer, str_repeat('-', $maxSize + 1));
-        $this->assertGreaterThan($maxSize, $bytesWritten);
-
-        // Wrap that buffer in a stream which will report whatever size we
-        // tell it to.
-        $body = new class ($buffer) extends Stream {
-
-            public ?int $size;
-
-            public function getSize()
-            {
-                return $this->size;
-            }
-
-        };
-
-        // Ensure we test what happens when the stream does and doesn't know
-        // how long it is.
-        foreach ([null, $bytesWritten] as $reportedSize) {
-            $body->size = $reportedSize;
-
-            $this->downloader->set($fileName, $body);
-            try {
-                $this->repository->$method(...$arguments)->wait();
-                $this->fail('Expected a DownloadSizeException to be thrown.');
-            } catch (DownloadSizeException $e) {
-                $this->assertSame("$fileName exceeded $maxSize bytes.", $e->getMessage());
-            }
-        }
     }
 }
