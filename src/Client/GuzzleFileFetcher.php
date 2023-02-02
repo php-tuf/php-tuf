@@ -10,6 +10,7 @@ use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
+use Tuf\Loader\LoaderInterface;
 
 /**
  * Defines a file fetcher that uses Guzzle to read a file over HTTPS.
