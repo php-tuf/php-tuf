@@ -11,7 +11,7 @@ use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Metadata\TimestampMetadata;
-use Tuf\Tests\TestHelpers\FileLoader;
+use Tuf\Tests\Client\TestLoader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 
 /**
@@ -23,7 +23,7 @@ class RepositoryTest extends TestCase implements LoaderInterface
 
     private array $maxBytes = [];
 
-    private FileLoader $fileLoader;
+    private TestLoader $loader;
 
     /**
      * {@inheritDoc}
@@ -31,13 +31,13 @@ class RepositoryTest extends TestCase implements LoaderInterface
     public function load(string $uri, int $maxBytes = null): StreamInterface
     {
         $this->maxBytes[$uri][] = $maxBytes;
-        return $this->fileLoader->load($uri, $maxBytes);
+        return $this->loader->load($uri, $maxBytes);
     }
 
     public function testRepository(): void
     {
-        $baseDir = static::getFixturePath('Delegated', 'consistent/server/metadata');
-        $this->fileLoader = new FileLoader($baseDir);
+        $baseDir = static::getFixturePath('Delegated', 'consistent');
+        $this->loader = new TestLoader($baseDir);
         $repository = new Repository(new SizeCheckingLoader($this));
 
         $this->assertInstanceOf(RootMetadata::class, $repository->getRoot(1));
@@ -55,7 +55,8 @@ class RepositoryTest extends TestCase implements LoaderInterface
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version));
             $this->assertSame(Repository::MAX_BYTES, $this->maxBytes[$fileName][0]);
 
-            $fileSize = filesize($baseDir . '/' . $fileName);
+            $metadataDir = $baseDir . '/server/metadata';
+            $fileSize = filesize($metadataDir . '/' . $fileName);
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version, $fileSize));
             $this->assertSame($fileSize, $this->maxBytes[$fileName][1]);
 
@@ -65,7 +66,7 @@ class RepositoryTest extends TestCase implements LoaderInterface
                 $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role));
                 $this->assertSame(Repository::MAX_BYTES, $this->maxBytes[$fileName][0]);
 
-                $fileSize = filesize($baseDir . '/' . $fileName);
+                $fileSize = filesize($metadataDir . '/' . $fileName);
                 $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role, $fileSize));
                 $this->assertSame($fileSize, $this->maxBytes[$fileName][1]);
             }
