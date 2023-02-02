@@ -113,7 +113,7 @@ abstract class UpdaterTest extends TestCase
 
         $downloader = new FileDownloader(static::getFixturePath($fixtureName, 'server/targets'));
         $this->overrider = new OverrideDownloader($downloader);
-        $updater->decorated = new SizeCheckingDownloader($this->overrider);;
+        $updater->decorated = new SizeCheckingDownloader($this->overrider);
 
         return $updater;
     }
