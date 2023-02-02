@@ -26,6 +26,8 @@ class RepositoryTest extends TestCase implements DownloaderInterface
 {
     use ProphecyTrait;
 
+    private Repository $repository;
+
     private array $files = [];
 
     /**
