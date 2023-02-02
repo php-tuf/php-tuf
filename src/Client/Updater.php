@@ -110,7 +110,6 @@ class Updater implements LoaderInterface
      */
     public function __construct(private SizeCheckingLoader $loader, array $mirrors, StorageInterface $storage)
     {
-        // Ensure the sizes of loaded files are always verified.
         $this->server = new Repository($this->loader);
         $this->mirrors = $mirrors;
         $this->storage = $storage;
@@ -176,7 +175,7 @@ class Updater implements LoaderInterface
             ? $snapshotInfo['version']
             : null;
         // § 5.5.1
-        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? $this->server::MAX_BYTES);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? Repository::MAX_BYTES);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -353,7 +352,7 @@ class Updater implements LoaderInterface
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->loader->load($target, $targetsMetadata->getLength($target) ?? $this->server::MAX_BYTES);
+        $stream = $this->loader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
         $this->verify($target, $stream);
         return $stream;
     }
@@ -394,7 +393,7 @@ class Updater implements LoaderInterface
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? $this->server::MAX_BYTES);
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? Repository::MAX_BYTES);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);
