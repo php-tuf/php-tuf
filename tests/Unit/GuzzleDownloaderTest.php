@@ -19,7 +19,7 @@ use Tuf\Exception\RepoFileNotFound;
  */
 class GuzzleDownloaderTest extends TestCase
 {
-    public function testRequestOptionsArePassed(): void
+    public function testGuzzleDownloader(): void
     {
         $mockHandler = new MockHandler();
         $history = [];
