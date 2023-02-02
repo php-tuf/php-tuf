@@ -320,19 +320,14 @@ class Updater implements LoaderInterface
     }
 
     /**
-     * Downloads a target file, verifies it, and returns its contents.
-     *
-     * @param string $target
-     *   The path of the target file. Needs to be known to the most recent
-     *   targets metadata downloaded in ::refresh().
-     *
-     * @return \Psr\Http\Message\StreamInterface
-     *   A verified data stream for the target.
+     * {@inheritDoc}
      */
     public function load(string $target, int $maxBytes = null): StreamInterface
     {
         $this->refresh();
 
+        // The target needs to be known to the most recent targets metadata
+        // that we downloaded during ::refresh().
         $targetsMetadata = $this->getMetadataForTarget($target);
         if ($targetsMetadata === null) {
             throw new NotFoundException($target, 'Target');
