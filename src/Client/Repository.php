@@ -3,7 +3,6 @@
 namespace Tuf\Client;
 
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -23,18 +22,8 @@ class Repository
      */
     public const MAX_BYTES = 100000;
 
-    /**
-     * The data loader.
-     *
-     * @var \Tuf\Loader\LoaderInterface
-     */
-    private LoaderInterface $loader;
-
-    public function __construct(LoaderInterface $loader)
+    public function __construct(private SizeCheckingLoader $loader)
     {
-        $this->loader = $loader instanceof SizeCheckingLoader
-            ? $loader
-            : new SizeCheckingLoader($loader);
     }
 
     /**

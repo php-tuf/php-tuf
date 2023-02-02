@@ -5,6 +5,7 @@ namespace Tuf\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Repository;
 use Tuf\Exception\DownloadSizeException;
+use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -24,7 +25,7 @@ class RepositoryTest extends TestCase
     {
         $baseDir = static::getFixturePath('Delegated', 'consistent/server/metadata');
         $loader = new MaxBytesSpyLoader(new FileLoader($baseDir));
-        $repository = new Repository($loader);
+        $repository = new Repository(new SizeCheckingLoader($loader));
 
         $this->assertInstanceOf(RootMetadata::class, $repository->getRoot(1));
         $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes['1.root.json'][0]);
