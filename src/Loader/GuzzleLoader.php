@@ -44,6 +44,9 @@ class GuzzleLoader implements LoaderInterface
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
                 throw new RepoFileNotFound("$uri not found", $e->getCode(), $e);
+            } else {
+                // Wrap the original exception to preserve the backtrace.
+                throw new ClientException($e->getMessage(), $e->getRequest(), $e->getResponse(), $e, $e->getHandlerContext());
             }
         }
     }
