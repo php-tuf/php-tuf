@@ -1367,15 +1367,7 @@ abstract class UpdaterTest extends TestCase
     public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
     {
         $this->getSystemInTest($fixtureName)->refresh();
-
-        $fetchMetadataArguments = [];
-        foreach ($this->serverStorage->fetchMetadataArguments as [$fileName, $maxBytes]) {
-            $fetchMetadataArguments[$fileName] = $maxBytes;
-        }
-        // The length of the timestamp metadata is never known in advance, so it
-        // is always downloaded with the maximum length.
-        $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
-        $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
+        $this->assertSame($expectedLength, $this->serverStorage->fileSizes[$downloadedFileName]);
     }
 
     public function testSnapshotHashes(string $targetsFileName = 'targets.json'): void

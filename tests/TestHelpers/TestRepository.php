@@ -17,6 +17,8 @@ class TestRepository implements RepositoryInterface
 {
     private array $promises = [];
 
+    public array $fileSizes = [];
+
     public function __construct(private string $baseDir)
     {
     }
@@ -72,24 +74,28 @@ class TestRepository implements RepositoryInterface
             });
     }
 
-    public function getSnapshot(?int $version): PromiseInterface
+    public function getSnapshot(?int $version, int $maxBytes = null): PromiseInterface
     {
         $fileName = 'snapshot.json';
         if (isset($version)) {
             $fileName = "$version.$fileName";
         }
+        $this->fileSizes[$fileName] = $maxBytes;
+
         return $this->load($fileName)
             ->then(function ($data): SnapshotMetadata {
                 return $data instanceof SnapshotMetadata ? $data : SnapshotMetadata::createFromJson($data);
             });
     }
 
-    public function getTargets(?int $version, string $role = 'targets'): PromiseInterface
+    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): PromiseInterface
     {
         $fileName = "$role.json";
         if (isset($version)) {
             $fileName = "$version.$fileName";
         }
+        $this->fileSizes[$fileName] = $maxBytes;
+
         return $this->load($fileName)
             ->then(function ($data) use ($role): TargetsMetadata {
                 return $data instanceof TargetsMetadata ? $data : TargetsMetadata::createFromJson($data, $role);
