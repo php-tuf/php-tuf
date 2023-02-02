@@ -25,7 +25,7 @@ class TestRepository implements RepositoryInterface
 
     public function set(string $fileName, $data): void
     {
-        if ($data === NULL) {
+        if ($data === null) {
             unset($this->promises[$fileName]);
         } elseif ($data instanceof MetadataBase || is_string($data)) {
             $this->set($fileName, new FulfilledPromise($data));
