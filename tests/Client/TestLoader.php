@@ -6,10 +6,10 @@ use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
-use Tuf\Loader\LoaderInterface;
+use Tuf\Tests\TestHelpers\FileLoader;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
-class TestLoader implements LoaderInterface
+class TestLoader extends FileLoader
 {
     use UtilsTrait;
 
@@ -38,6 +38,8 @@ class TestLoader implements LoaderInterface
      */
     public function __construct(string $basePath)
     {
+        parent::__construct($basePath);
+
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
         $fixturesPath = "$basePath/server";
@@ -62,16 +64,19 @@ class TestLoader implements LoaderInterface
     {
         $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
 
-        if (empty($this->fileContents[$fileName])) {
-            throw new RepoFileNotFound("File $fileName not found.");
+        if (array_key_exists($fileName, $this->fileContents)) {
+            $contents = $this->fileContents[$fileName];
+
+            if ($contents instanceof StreamInterface) {
+                return $contents;
+            } elseif (is_string($contents)) {
+                return Utils::streamFor($contents);
+            } elseif ($contents instanceof \Throwable) {
+                throw $contents;
+            }
+        } else {
+            return parent::load($fileName, $maxBytes);
         }
-        // Allow test code to directly set the returned stream so that they can
-        // be mocked.
-        $contents = $this->fileContents[$fileName];
-        if ($contents instanceof StreamInterface) {
-            return $contents;
-        }
-        return Utils::streamFor($this->fileContents[$fileName]);
     }
 
     /**
@@ -103,6 +108,6 @@ class TestLoader implements LoaderInterface
      */
     public function removeRepoFile(string $fileName): void
     {
-        unset($this->fileContents[$fileName]);
+        $this->fileContents[$fileName] = new RepoFileNotFound("File $fileName not found.");
     }
 }
