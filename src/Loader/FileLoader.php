@@ -7,6 +7,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Utils;
 use Tuf\Exception\RepoFileNotFound;
 
+/**
+ * Defines a data loader that reads from the local file system.
+ */
 class FileLoader implements LoaderInterface
 {
     public function __construct(private string $baseDir = '')

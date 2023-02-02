@@ -11,6 +11,9 @@ use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\RepoFileNotFound;
 
+/**
+ * Defines a data loader that initiates a download using Guzzle.
+ */
 class GuzzleLoader implements LoaderInterface
 {
     public function __construct(private ClientInterface $client)
@@ -22,6 +25,7 @@ class GuzzleLoader implements LoaderInterface
      */
     public function load(string $uri, int $maxBytes = null): PromiseInterface
     {
+        // Always try to stream the file from the server.
         $options = [RequestOptions::STREAM => true];
 
         if (isset($maxBytes)) {
@@ -35,6 +39,8 @@ class GuzzleLoader implements LoaderInterface
             $options[RequestOptions::PROGRESS] = $onProgress;
         }
 
+        // LoaderInterface requires that the promise wrap around a stream, so
+        // only return the response body.
         $onSuccess = function (ResponseInterface $response): StreamInterface {
             return $response->getBody();
         };

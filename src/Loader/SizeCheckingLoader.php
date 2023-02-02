@@ -6,6 +6,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\DownloadSizeException;
 
+/**
+ * A data loader that enforces a size limit on the output of another loader.
+ */
 class SizeCheckingLoader implements LoaderInterface
 {
     public function __construct(private LoaderInterface $decorated)

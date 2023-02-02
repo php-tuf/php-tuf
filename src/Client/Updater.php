@@ -90,13 +90,18 @@ class Updater implements LoaderInterface
      */
     protected $universalVerifier;
 
+    /**
+     * The backend to load data from the server.
+     *
+     * @var \Tuf\Loader\LoaderInterface
+     */
     private LoaderInterface $loader;
 
     /**
      * Updater constructor.
      *
      * @param \Tuf\Loader\LoaderInterface $loader
-     *   The backend which will load files from the server.
+     *   The backend to load data from the server.
      * @param mixed[][] $mirrors
      *     A nested array of mirrors to use for fetching signing data from the
      *     repository. Each child array contains information about the mirror:
