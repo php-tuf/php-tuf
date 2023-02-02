@@ -3,17 +3,17 @@
 namespace Tuf\Tests\Unit;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Promise\FulfilledPromise;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\GuzzleFileFetcher;
 use Tuf\Exception\RepoFileNotFound;
+use Tuf\Loader\GuzzleLoader;
+use Tuf\Loader\LoaderInterface;
 
 /**
  * @coversDefaultClass \Tuf\Client\GuzzleFileFetcher
@@ -70,7 +70,10 @@ class GuzzleFileFetcherTest extends TestCase
      */
     private function getFetcher(): GuzzleFileFetcher
     {
-        return new GuzzleFileFetcher($this->client, '/metadata/', '/targets/');
+        $metadataLoader = new GuzzleLoader($this->client);
+        $targetsLoader = new GuzzleLoader($this->client);
+
+        return new GuzzleFileFetcher($metadataLoader, $targetsLoader);
     }
 
     /**
@@ -84,7 +87,7 @@ class GuzzleFileFetcherTest extends TestCase
         return [
             [404, RepoFileNotFound::class, 0],
             [403, 'RuntimeException'],
-            [500, BadResponseException::class],
+            [500, 'RuntimeException'],
         ];
     }
 
@@ -98,7 +101,7 @@ class GuzzleFileFetcherTest extends TestCase
     {
         return [
             [403, 'RuntimeException'],
-            [500, BadResponseException::class],
+            [500, 'RuntimeException'],
         ];
     }
 
@@ -118,8 +121,6 @@ class GuzzleFileFetcherTest extends TestCase
      * @return void
      *
      * @dataProvider providerFetchFileError
-     *
-     * @covers ::fetchFile
      */
     public function testFetchFileError(int $statusCode, string $exceptionClass, ?int $exceptionCode = null, ?int $maxBytes = null): void
     {
@@ -182,22 +183,22 @@ class GuzzleFileFetcherTest extends TestCase
      */
     public function testPrefixes(): void
     {
-        $options = Argument::type('array');
         $promise = new FulfilledPromise(new Response());
 
-        $client = $this->prophesize('\GuzzleHttp\ClientInterface');
-        $client->requestAsync('GET', '/metadata/root.json', $options)
-            ->willReturn($promise)
-            ->shouldBeCalled();
-        $client->requestAsync('GET', '/targets/test.txt', $options)
-            ->willReturn($promise)
-            ->shouldBeCalledOnce();
-        // If an arbitrary URL is passed, the file name should be ignored.
-        $client->requestAsync('GET', 'https://example.net/foo.php', $options)
+        $metadataLoader = $this->prophesize(LoaderInterface::class);
+        $metadataLoader->load('root.json', 128)
             ->willReturn($promise)
             ->shouldBeCalled();
 
-        $fetcher = new GuzzleFileFetcher($client->reveal(), '/metadata/', '/targets/');
+        $targetsLoader = $this->prophesize(LoaderInterface::class);
+        $targetsLoader->load('test.txt', 128)
+            ->willReturn($promise)
+            ->shouldBeCalled();
+        $targetsLoader->load('https://example.net/foo.php', 128)
+            ->willReturn($promise)
+            ->shouldBeCalled();
+
+        $fetcher = new GuzzleFileFetcher($metadataLoader->reveal(), $targetsLoader->reveal());
         $fetcher->fetchMetadata('root.json', 128);
         $fetcher->fetchTarget('test.txt', 128);
         $fetcher->fetchTarget('test.txt', 128, [], 'https://example.net/foo.php');
