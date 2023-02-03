@@ -81,24 +81,17 @@ class Updater implements LoaderInterface
      *
      * @param \Tuf\Loader\SizeCheckingLoader $loader
      *   The backend to load data from the server.
-     * @param mixed[][] $mirrors
-     *     A nested array of mirrors to use for fetching signing data from the
-     *     repository. Each child array contains information about the mirror:
-     *     - url_prefix: (string) The URL for the mirror.
-     *     - metadata_path: (string) The path within the repository for signing
-     *       metadata.
-     *     - targets_path: (string) The path within the repository for targets
-     *       (the actual update data that has been signed).
-     *     - confined_target_dirs: (array) @param \Tuf\Metadata\StorageInterface $storage
+     *  @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
      *     future instances of Updater that interact with the same repository.
      *
      *@todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(private SizeCheckingLoader $loader, protected array $mirrors, protected StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $loader, protected StorageInterface $storage)
     {
         $this->server = new Repository($this->loader);
+        $this->storage = $storage;
         $this->clock = new Clock();
     }
 
