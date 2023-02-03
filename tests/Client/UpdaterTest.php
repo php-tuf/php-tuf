@@ -1356,14 +1356,10 @@ abstract class UpdaterTest extends TestCase
     {
         $this->getSystemInTest($fixtureName)->refresh();
 
-        $fetchMetadataArguments = [];
-        foreach ($this->serverStorage->fetchMetadataArguments as [$fileName, $maxBytes]) {
-            $fetchMetadataArguments[$fileName] = $maxBytes;
-        }
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::MAX_BYTES, $fetchMetadataArguments['timestamp.json']);
-        $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
+        $this->assertSame(Repository::MAX_BYTES, $this->serverStorage->maxBytes['timestamp.json'][0]);
+        $this->assertSame($expectedLength, $this->serverStorage->maxBytes[$downloadedFileName][0]);
     }
 
     public function providerMetadataTooBig(): array

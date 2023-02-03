@@ -28,7 +28,7 @@ class TestLoader implements LoaderInterface
      *
      * @var array[]
      */
-    public array $fetchMetadataArguments = [];
+    public array $maxBytes = [];
 
     /**
      * TestRepo constructor.
@@ -60,7 +60,7 @@ class TestLoader implements LoaderInterface
      */
     public function load(string $fileName, int $maxBytes = null): StreamInterface
     {
-        $this->fetchMetadataArguments[] = [$fileName, $maxBytes];
+        $this->maxBytes[$fileName][] = $maxBytes;
 
         if (empty($this->fileContents[$fileName])) {
             throw new RepoFileNotFound("File $fileName not found.");
