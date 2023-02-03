@@ -43,11 +43,6 @@ class Updater
     const MAXIMUM_TARGET_ROLES = 100;
 
     /**
-     * @var \array[][]
-     */
-    protected $mirrors;
-
-    /**
      * The permanent storage (e.g., filesystem storage) for the client metadata.
      *
      * @var \Tuf\Metadata\StorageInterface
@@ -100,24 +95,13 @@ class Updater
      *
      * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
      *     The repo fetcher.
-     * @param mixed[][] $mirrors
-     *     A nested array of mirrors to use for fetching signing data from the
-     *     repository. Each child array contains information about the mirror:
-     *     - url_prefix: (string) The URL for the mirror.
-     *     - metadata_path: (string) The path within the repository for signing
-     *       metadata.
-     *     - targets_path: (string) The path within the repository for targets
-     *       (the actual update data that has been signed).
-     *     - confined_target_dirs: (array) @todo What is this for?
-     *       https://github.com/php-tuf/php-tuf/issues/161
      *  @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
      *     future instances of Updater that interact with the same repository.
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, array $mirrors, StorageInterface $storage)
+    public function __construct(RepoFileFetcherInterface $repoFileFetcher, StorageInterface $storage)
     {
         $this->repoFileFetcher = $repoFileFetcher;
-        $this->mirrors = $mirrors;
         $this->storage = $storage;
         $this->clock = new Clock();
     }

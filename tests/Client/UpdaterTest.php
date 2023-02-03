@@ -70,15 +70,6 @@ abstract class UpdaterTest extends TestCase
      */
     protected function getSystemInTest(string $fixtureName, string $updaterClass = Updater::class): Updater
     {
-        $mirrors = [
-            'mirror1' => [
-                'url_prefix' => 'http://localhost:8001',
-                'metadata_path' => 'metadata',
-                'targets_path' => 'targets',
-                'confined_target_dirs' => [],
-            ],
-        ];
-
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
         $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
 
@@ -94,7 +85,7 @@ abstract class UpdaterTest extends TestCase
         $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
-        $updater = new $updaterClass($this->serverStorage, $mirrors, $this->clientStorage);
+        $updater = new $updaterClass($this->serverStorage, $this->clientStorage);
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);
