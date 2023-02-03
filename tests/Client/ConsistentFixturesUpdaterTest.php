@@ -159,15 +159,4 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
         $data['known targets length'][1] = '1.targets.json';
         return $data;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function providerMetadataTooBig(): array
-    {
-        $data = parent::providerMetadataTooBig();
-        $data['snapshot.json too big'][2] = '1.snapshot.json';
-        $data['targets.json too big'][2] = '1.targets.json';
-        return $data;
-    }
 }

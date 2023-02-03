@@ -1380,12 +1380,10 @@ abstract class UpdaterTest extends TestCase
         return [
             'snapshot.json too big' => [
                 'Simple',
-                'timestamp.json',
                 'snapshot.json',
             ],
             'targets.json too big' => [
                 'TargetsLengthNoSnapshotLength',
-                'snapshot.json',
                 'targets.json',
             ],
         ];
@@ -1394,17 +1392,40 @@ abstract class UpdaterTest extends TestCase
     /**
      * @dataProvider providerMetadataTooBig
      *
-     * @testdox Exception if $fileToChange is bigger than stated in $authorityFile
+     * @testdox Exception if $fileToChange is bigger than known size
      */
-    public function testMetadataFileTooBig(string $fixtureName, string $authorityFile, string $fileToChange): void
+    public function testMetadataFileTooBig(string $fixtureName, string $fileToChange): void
     {
         $updater = $this->getSystemInTest($fixtureName);
 
-        $authorityData = json_decode($this->serverStorage->fileContents[$authorityFile], true);
-        // Even if consistent snapshots are used, the authority file does not
-        // use the version prefix when referring to the file to change.
-        $fileToChangeKey = ltrim($fileToChange, '.0123456789');
-        $knownLength = $authorityData['signed']['meta'][$fileToChangeKey]['length'];
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        /** @var \Tuf\Client\Repository $repository */
+        $repository = $property->getValue($updater);
+
+        $consistentSnapshots = $repository->getRoot(1)
+            ->trust()
+            ->supportsConsistentSnapshots();
+        $snapshotInfo = $repository->getTimestamp()
+            ->trust()
+            ->getFileMetaInfo('snapshot.json');
+        $targetsInfo = $repository->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+            ->trust()
+            ->getFileMetaInfo('targets.json');
+
+        // If using consistent snapshots, the file to change will be prefixed
+        // with its version number.
+        if ($consistentSnapshots) {
+            $prefix = match ($fileToChange) {
+                'snapshot.json' => $snapshotInfo['version'],
+                'targets.json' => $targetsInfo['version'],
+            };
+            $fileToChange = "$prefix.$fileToChange";
+        }
+        $knownLength = match ($fileToChange) {
+            'snapshot.json' => $snapshotInfo['length'],
+            'targets.json' => $targetsInfo['length'],
+        };
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
