@@ -16,8 +16,10 @@ use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Loader\SizeCheckingLoader;
+use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -1346,7 +1348,7 @@ abstract class UpdaterTest extends TestCase
             'known snapshot length' => [
                 'Simple',
                 'snapshot.json',
-                431,
+                683,
             ],
             'known targets length' => [
                 'TargetsLengthNoSnapshotLength',
@@ -1410,16 +1412,19 @@ abstract class UpdaterTest extends TestCase
         $updater->refresh();
     }
 
-    public function testSnapshotHashes(string $targetsFileName = 'targets.json'): void
+    public function testSnapshotHashes(): void
     {
-        $updater = $this->getSystemInTest('Simple_WithHashes');
+        $updater = $this->getSystemInTest('Simple');
 
-        $targetsContent = json_decode($this->serverStorage->fileContents[$targetsFileName], true);
-        $targetsContent['signed']['expires'] = '2038-01-01T07:27:10Z';
-        // Encode the altered targets metadata in so that it will be decoded
-        // correctly, but not match the hash in the snapshots metadata.
-        $targetsContent['signed']['delegations']['keys'] = new \stdClass();
-        $this->serverStorage->fileContents[$targetsFileName] = json_encode($targetsContent, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        $property->setValue($updater, $repository);
+
+        $targetsMetadata = $this->prophesize(TargetsMetadata::class);
+        $targetsMetadata->getRole()->willReturn('targets');
+        $targetsMetadata->getSource()->willReturn('invalid data');
+        $repository->targets['targets'][1] = $targetsMetadata->reveal();
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");

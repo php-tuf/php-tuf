@@ -7,7 +7,6 @@ import os
 
 from fixtures import (
     Simple,
-    Simple_WithHashes,
     AttackRollback,
     Delegated,
     NestedDelegated,
@@ -27,7 +26,6 @@ from fixtures import (
 @mock.patch('time.time', mock.MagicMock(return_value=1577836800))
 def generate_fixtures():
     Simple.build()
-    Simple_WithHashes.build()
     AttackRollback.build()
     Delegated.build()
     NestedDelegated.build()
