@@ -1413,6 +1413,10 @@ abstract class UpdaterTest extends TestCase
             ->trust()
             ->getFileMetaInfo('targets.json');
 
+        $knownLength = match ($fileToChange) {
+            'snapshot.json' => $snapshotInfo['length'],
+            'targets.json' => $targetsInfo['length'],
+        };
         // If using consistent snapshots, the file to change will be prefixed
         // with its version number.
         if ($consistentSnapshots) {
@@ -1422,10 +1426,6 @@ abstract class UpdaterTest extends TestCase
             };
             $fileToChange = "$prefix.$fileToChange";
         }
-        $knownLength = match ($fileToChange) {
-            'snapshot.json' => $snapshotInfo['length'],
-            'targets.json' => $targetsInfo['length'],
-        };
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
