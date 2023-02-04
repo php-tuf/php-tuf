@@ -13,7 +13,6 @@ from fixtures import (
     UnsupportedDelegation,
     NestedDelegatedErrors,
     ThresholdTwo,
-    ThresholdTwoAttack,
     TerminatingDelegation,
     TopLevelTerminating,
     NestedTerminatingNonDelegatingDelegation,
@@ -32,7 +31,6 @@ def generate_fixtures():
     UnsupportedDelegation.build()
     NestedDelegatedErrors.build()
     ThresholdTwo.build()
-    ThresholdTwoAttack.build()
     TerminatingDelegation.build()
     TopLevelTerminating.build()
     NestedTerminatingNonDelegatingDelegation.build()

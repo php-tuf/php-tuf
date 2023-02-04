@@ -15,6 +15,7 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
+use Tuf\JsonNormalizer;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
@@ -1143,29 +1144,47 @@ abstract class UpdaterTest extends TestCase
     public function providerTestSignatureThresholds():array
     {
         return [
-            ['ThresholdTwo'],
-            // § 5.4.2
-            ['ThresholdTwoAttack', SignatureThresholdException::class],
+            [false],
+            [true],
         ];
     }
 
     /**
      * Tests fixtures with signature thresholds greater than 1.
      *
-     * @param string $fixtureName
-     *   The fixtures set to use.
-     * @param string $expectedException
-     *   The null or the class name of an expected exception.
+     * @param boolean $attack
+     *   Whether or not to re-use a signature in timestamp.json, simulating
+     *   an attack.
      *
      * @return void
      *
      * @dataProvider providerTestSignatureThresholds
      */
-    public function testSignatureThresholds(string $fixtureName, string $expectedException = null)
+    public function testSignatureThresholds(bool $attack): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
-        if ($expectedException) {
-            $this->expectException($expectedException);
+        $updater = $this->getSystemInTest('ThresholdTwo');
+
+        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        $property->setValue($updater, $repository);
+
+        foreach ($this->serverStorage->fileContents as $fileName => $json) {
+            if (str_ends_with($fileName, 'root.json')) {
+                $data = JsonNormalizer::decode($json);
+                $data['signed']['roles']['timestamp']['threshold'] = 2;
+                $this->serverStorage->fileContents[$fileName] = JsonNormalizer::asNormalizedJson($data);
+            }
+        }
+
+        // § 5.4.2
+        if ($attack) {
+            $json = $this->serverStorage->fileContents['timestamp.json'];
+            $data = JsonNormalizer::decode($json);
+            $data['signatures'] = array_fill(0, 2, $data['signatures'][0]);
+            $this->serverStorage->fileContents['timestamp.json'] = JsonNormalizer::asNormalizedJson($data);
+
+            $this->expectException(SignatureThresholdException::class);
         }
         $updater->refresh();
     }
