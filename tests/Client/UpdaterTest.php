@@ -15,7 +15,6 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\JsonNormalizer;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
@@ -1171,18 +1170,14 @@ abstract class UpdaterTest extends TestCase
 
         foreach ($this->serverStorage->fileContents as $fileName => $json) {
             if (str_ends_with($fileName, 'root.json')) {
-                $data = JsonNormalizer::decode($json);
-                $data['signed']['roles']['timestamp']['threshold'] = 2;
-                $this->serverStorage->fileContents[$fileName] = JsonNormalizer::asNormalizedJson($data);
+                $this->serverStorage->setRepoFileNestedValue($fileName, ['signed', 'roles', 'timestamp', 'threshold'], 2);
             }
         }
 
         // § 5.4.2
         if ($attack) {
-            $json = $this->serverStorage->fileContents['timestamp.json'];
-            $data = JsonNormalizer::decode($json);
-            $data['signatures'] = array_fill(0, 2, $data['signatures'][0]);
-            $this->serverStorage->fileContents['timestamp.json'] = JsonNormalizer::asNormalizedJson($data);
+            $data = json_decode($this->serverStorage->fileContents['timestamp.json'], true);
+            $this->serverStorage->setRepoFileNestedValue('timestamp.json', ['signatures'], array_fill(0, 2, $data['signatures'][0]));
 
             $this->expectException(SignatureThresholdException::class);
         }
