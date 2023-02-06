@@ -56,13 +56,9 @@ project's release creation process. This will require:
 
          sudo apt-get install pipenv python3-dev libffi-dev
 
-1. Configure the virtual environment:
+2. Configure the virtual environment:
 
-       pipenv --three install
-
-1. Launch a shell within the virtual environment:
-
-       pipenv shell
+       pipenv install
 
 ## Code style
 
