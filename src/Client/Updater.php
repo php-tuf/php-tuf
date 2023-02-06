@@ -8,7 +8,6 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
-use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -23,7 +22,7 @@ use Tuf\Metadata\Verifier\RootVerifier;
  *
  * @package Tuf\Client
  */
-class Updater implements LoaderInterface
+class Updater
 {
 
     const MAX_ROOT_DOWNLOADS = 1024;
@@ -91,7 +90,6 @@ class Updater implements LoaderInterface
     public function __construct(private SizeCheckingLoader $loader, protected StorageInterface $storage)
     {
         $this->server = new Repository($this->loader);
-        $this->storage = $storage;
         $this->clock = new Clock();
     }
 
@@ -313,9 +311,18 @@ class Updater implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Downloads a target file, verifies it, and returns its contents.
+     *
+     * @param string $target
+     *   The path of the target file. Needs to be known to the most recent
+     *   targets metadata downloaded in ::refresh().
+     * @param int $maxBytes
+     *   The maximum number of bytes to download, or null to have no limit.
+     *
+     * @return \Psr\Http\Message\StreamInterface
+     *   A stream of the trusted, downloaded data.
      */
-    public function load(string $target, int $maxBytes = null): StreamInterface
+    public function download(string $target, int $maxBytes = null): StreamInterface
     {
         $this->refresh();
 
