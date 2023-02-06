@@ -78,7 +78,7 @@ class Updater
     /**
      * Updater constructor.
      *
-     * @param \Tuf\Loader\SizeCheckingLoader $loader
+     * @param \Tuf\Loader\SizeCheckingLoader $sizeCheckingLoader
      *   The backend to load data from the server.
      *  @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
@@ -87,9 +87,9 @@ class Updater
      *@todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(private SizeCheckingLoader $loader, protected StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $sizeCheckingLoader, protected StorageInterface $storage)
     {
-        $this->server = new Repository($this->loader);
+        $this->server = new Repository($this->sizeCheckingLoader);
         $this->clock = new Clock();
     }
 
@@ -333,7 +333,8 @@ class Updater
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->loader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
+        $stream = $this->sizeCheckingLoader->load($target,
+            $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
         $this->verify($target, $stream);
         return $stream;
     }

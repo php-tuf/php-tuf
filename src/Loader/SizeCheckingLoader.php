@@ -17,29 +17,27 @@ class SizeCheckingLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes = null): StreamInterface
+    public function load(string $uri, int $maxBytes): StreamInterface
     {
         $data = $this->decorated->load($uri, $maxBytes);
 
-        if (isset($maxBytes)) {
-            $error = new DownloadSizeException("$uri exceeded $maxBytes bytes");
+        $error = new DownloadSizeException("$uri exceeded $maxBytes bytes");
 
-            $size = $data->getSize();
-            if ($size === null) {
-                // @todo Handle non-seekable streams.
-                // https://github.com/php-tuf/php-tuf/issues/169
-                $data->rewind();
-                $data->read($maxBytes);
+        $size = $data->getSize();
+        if ($size === null) {
+            // @todo Handle non-seekable streams.
+            // https://github.com/php-tuf/php-tuf/issues/169
+            $data->rewind();
+            $data->read($maxBytes);
 
-                // If we reached the end of the stream, we didn't exceed the
-                // maximum number of bytes.
-                if ($data->eof() === false) {
-                    throw $error;
-                }
-                $data->rewind();
-            } elseif ($size > $maxBytes) {
+            // If we reached the end of the stream, we didn't exceed the
+            // maximum number of bytes.
+            if ($data->eof() === false) {
                 throw $error;
             }
+            $data->rewind();
+        } elseif ($size > $maxBytes) {
+            throw $error;
         }
         return $data;
     }

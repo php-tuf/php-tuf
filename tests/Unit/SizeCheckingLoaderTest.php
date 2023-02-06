@@ -20,7 +20,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes = null): StreamInterface
+    public function load(string $uri, int $maxBytes): StreamInterface
     {
         return $this->stream;
     }
@@ -29,12 +29,9 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
     {
         $loader = new SizeCheckingLoader($this);
 
-        // If we don't pass $maxBytes, it doesn't matter how big the stream is.
-        $this->stream = Utils::streamFor('Deep Space Nine is the best Star Trek series. This is a scientific fact.');
-        $loader->load('ok.txt');
-
         // If $maxBytes is bigger than the size of the stream, we shouldn't have
         // a problem.
+        $this->stream = Utils::streamFor('Deep Space Nine is the best Star Trek series. This is a scientific fact.');
         $loader->load('ok.txt', 1024);
 
         // If the size of the stream is known, we should get an error if it's

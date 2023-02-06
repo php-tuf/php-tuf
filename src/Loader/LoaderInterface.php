@@ -23,7 +23,7 @@ interface LoaderInterface
      *   The URI of the data to load. The meaning of this depends on the
      *   implementing class; it could be a URL, a relative or absolute file
      *   path, or something else.
-     * @param int|null $maxBytes
+     * @param int $maxBytes
      *   (optional) The maximum number of bytes that should be read from the
      *   data source, or null for no limit.
      *
@@ -33,5 +33,5 @@ interface LoaderInterface
      * @throws \Tuf\Exception\RepoFileNotFound
      *   If the data cannot be found.
      */
-    public function load(string $uri, int $maxBytes = null): StreamInterface;
+    public function load(string $uri, int $maxBytes): StreamInterface;
 }

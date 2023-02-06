@@ -58,20 +58,20 @@ class TestLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $fileName, int $maxBytes = null): StreamInterface
+    public function load(string $uri, int $maxBytes): StreamInterface
     {
-        $this->maxBytes[$fileName][] = $maxBytes;
+        $this->maxBytes[$uri][] = $maxBytes;
 
-        if (empty($this->fileContents[$fileName])) {
-            throw new RepoFileNotFound("File $fileName not found.");
+        if (empty($this->fileContents[$uri])) {
+            throw new RepoFileNotFound("File $uri not found.");
         }
         // Allow test code to directly set the returned stream so that they can
         // be mocked.
-        $contents = $this->fileContents[$fileName];
+        $contents = $this->fileContents[$uri];
         if ($contents instanceof StreamInterface) {
             return $contents;
         }
-        return Utils::streamFor($this->fileContents[$fileName]);
+        return Utils::streamFor($this->fileContents[$uri]);
     }
 
     /**
