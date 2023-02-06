@@ -42,7 +42,7 @@ jobs:
         python -m pip install --upgrade pipenv
     - name: Install dependencies via pipenv
       run: |
-        if [ -f Pipfile.lock ]; then pipenv --three install; fi
+        if [ -f Pipfile.lock ]; then pipenv install; fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
