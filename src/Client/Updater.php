@@ -316,13 +316,11 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param int $maxBytes
-     *   The maximum number of bytes to download, or null to have no limit.
      *
      * @return \Psr\Http\Message\StreamInterface
      *   A stream of the trusted, downloaded data.
      */
-    public function download(string $target, int $maxBytes = null): StreamInterface
+    public function download(string $target): StreamInterface
     {
         $this->refresh();
 
@@ -333,8 +331,7 @@ class Updater
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->sizeCheckingLoader->load($target,
-            $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
+        $stream = $this->sizeCheckingLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
         $this->verify($target, $stream);
         return $stream;
     }

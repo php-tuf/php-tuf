@@ -39,8 +39,7 @@ class Repository
     public function getRoot(int $version): ?RootMetadata
     {
         try {
-            $data = $this->sizeCheckingLoader->load("$version.root.json",
-                self::MAX_BYTES);
+            $data = $this->sizeCheckingLoader->load("$version.root.json", self::MAX_BYTES);
 
             return RootMetadata::createFromJson($data->getContents());
         } catch (RepoFileNotFound) {
@@ -59,8 +58,7 @@ class Repository
      */
     public function getTimestamp(): TimestampMetadata
     {
-        $data = $this->sizeCheckingLoader->load('timestamp.json',
-            self::MAX_BYTES);
+        $data = $this->sizeCheckingLoader->load('timestamp.json', self::MAX_BYTES);
 
         return TimestampMetadata::createFromJson($data->getContents());
     }

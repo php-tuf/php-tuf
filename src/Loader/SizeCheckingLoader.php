@@ -17,11 +17,11 @@ class SizeCheckingLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes): StreamInterface
     {
-        $data = $this->decorated->load($uri, $maxBytes);
+        $data = $this->decorated->load($locator, $maxBytes);
 
-        $error = new DownloadSizeException("$uri exceeded $maxBytes bytes");
+        $error = new DownloadSizeException("$locator exceeded $maxBytes bytes");
 
         $size = $data->getSize();
         if ($size === null) {

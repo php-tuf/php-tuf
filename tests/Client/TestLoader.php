@@ -21,10 +21,10 @@ class TestLoader implements LoaderInterface
     public $fileContents = [];
 
     /**
-     * The arguments ::fetchMetadata() was called with.
+     * The $maxBytes argument passed to ::load() each time it was called.
      *
-     * This is used by tests to confirm that fetchMetadata was called by the
-     * updater with the expected file names and maximum download lengths.
+     * This is used by tests to confirm that the updater passes the expected
+     * file names and maximum download lengths.
      *
      * @var array[]
      */
@@ -58,20 +58,20 @@ class TestLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes): StreamInterface
     {
-        $this->maxBytes[$uri][] = $maxBytes;
+        $this->maxBytes[$locator][] = $maxBytes;
 
-        if (empty($this->fileContents[$uri])) {
-            throw new RepoFileNotFound("File $uri not found.");
+        if (empty($this->fileContents[$locator])) {
+            throw new RepoFileNotFound("File $locator not found.");
         }
         // Allow test code to directly set the returned stream so that they can
         // be mocked.
-        $contents = $this->fileContents[$uri];
+        $contents = $this->fileContents[$locator];
         if ($contents instanceof StreamInterface) {
             return $contents;
         }
-        return Utils::streamFor($this->fileContents[$uri]);
+        return Utils::streamFor($this->fileContents[$locator]);
     }
 
     /**

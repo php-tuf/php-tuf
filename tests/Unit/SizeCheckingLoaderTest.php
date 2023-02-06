@@ -20,7 +20,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes): StreamInterface
     {
         return $this->stream;
     }
