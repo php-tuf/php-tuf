@@ -107,8 +107,8 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         // Write another byte, and return to the start of the stream.
         $this->stream->write('*');
         $this->assertSame(0, fseek($buffer, 0), 'Failed to return to the start of the stream.');
-        // If there is more data to read beyond $maxBytes, we should get an
-        // exception.
+        // Since there is now more data to read beyond $maxBytes, we should get
+        // an exception.
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage('too_long.txt exceeded 8 bytes');
         $this->loader->load('too_long.txt', 8);
