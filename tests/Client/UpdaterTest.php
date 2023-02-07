@@ -153,8 +153,8 @@ abstract class UpdaterTest extends TestCase
 
         $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(null);
-        $stream->rewind()->shouldBeCalledOnce();
-        $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
+        $stream->isSeekable()->willReturn(false);
+        $stream->read(1)->willReturn('a')->shouldBeCalledTimes(25);
         $stream->eof()->willReturn(false);
         $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
         try {
