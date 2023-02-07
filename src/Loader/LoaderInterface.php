@@ -19,13 +19,12 @@ interface LoaderInterface
     /**
      * Loads data as a stream.
      *
-     * @param string $uri
-     *   The URI of the data to load. The meaning of this depends on the
-     *   implementing class; it could be a URL, a relative or absolute file
+     * @param string $locator
+     *   A string identifying the data to load. The meaning of this depends on
+     *   the implementing class; it could be a URL, a relative or absolute file
      *   path, or something else.
-     * @param int|null $maxBytes
-     *   (optional) The maximum number of bytes that should be read from the
-     *   data source, or null for no limit.
+     * @param int $maxBytes
+     *   The maximum number of bytes that should be read from the data source.
      *
      * @return \Psr\Http\Message\StreamInterface
      *   A data stream.
@@ -33,5 +32,5 @@ interface LoaderInterface
      * @throws \Tuf\Exception\RepoFileNotFound
      *   If the data cannot be found.
      */
-    public function load(string $uri, int $maxBytes = null): StreamInterface;
+    public function load(string $locator, int $maxBytes): StreamInterface;
 }

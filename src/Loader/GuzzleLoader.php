@@ -21,27 +21,25 @@ class GuzzleLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $uri, int $maxBytes = null): StreamInterface
+    public function load(string $locator, int $maxBytes): StreamInterface
     {
         // Always try to stream the file from the server.
         $options = [RequestOptions::STREAM => true];
 
-        if (isset($maxBytes)) {
-            // If using cURL, periodically check how many bytes have been
-            // downloaded and throw an exception if it exceeds $maxBytes.
-            $onProgress = function (int $expectedBytes, int $downloadedBytes) use ($uri, $maxBytes) {
-                if ($expectedBytes > $maxBytes || $downloadedBytes > $maxBytes) {
-                    throw new DownloadSizeException("$uri exceeded $maxBytes bytes");
-                }
-            };
-            $options[RequestOptions::PROGRESS] = $onProgress;
-        }
+        // If using cURL, periodically check how many bytes have been
+        // downloaded and throw an exception if it exceeds $maxBytes.
+        $onProgress = function (int $expectedBytes, int $downloadedBytes) use ($locator, $maxBytes) {
+            if ($expectedBytes > $maxBytes || $downloadedBytes > $maxBytes) {
+                throw new DownloadSizeException("$locator exceeded $maxBytes bytes");
+            }
+        };
+        $options[RequestOptions::PROGRESS] = $onProgress;
 
         try {
-            return $this->client->request('GET', $uri, $options)->getBody();
+            return $this->client->request('GET', $locator, $options)->getBody();
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
-                throw new RepoFileNotFound("$uri not found", $e->getCode(), $e);
+                throw new RepoFileNotFound("$locator not found", $e->getCode(), $e);
             } else {
                 // Wrap the original exception to preserve the backtrace.
                 throw new ClientException($e->getMessage(), $e->getRequest(), $e->getResponse(), $e, $e->getHandlerContext());

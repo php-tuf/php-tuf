@@ -112,7 +112,7 @@ abstract class UpdaterTest extends TestCase
 
         $testFilePath = static::getFixturePath($fixtureName, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
-        $this->assertSame($testFileContents, $updater->load('testtarget.txt')->getContents());
+        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->getContents());
 
         // If the file fetcher returns a file stream, the updater should NOT try
         // to read the contents of the stream into memory.
@@ -121,11 +121,11 @@ abstract class UpdaterTest extends TestCase
         $stream->getContents()->shouldNotBeCalled();
         $stream->rewind()->shouldNotBeCalled();
         $stream->getSize()->willReturn(strlen($testFileContents));
-        $updater->load('testtarget.txt');
+        $updater->download('testtarget.txt');
 
         // If the target isn't known, we should get an exception.
         try {
-            $updater->load('void.txt');
+            $updater->download('void.txt');
             $this->fail('Expected a NotFoundException to be thrown, but it was not.');
         } catch (NotFoundException $e) {
             $this->assertSame('Target not found: void.txt', $e->getMessage());
@@ -134,36 +134,11 @@ abstract class UpdaterTest extends TestCase
         $stream = Utils::streamFor('invalid data');
         $this->serverStorage->fileContents['testtarget.txt'] = $stream;
         try {
-            $updater->load('testtarget.txt');
+            $updater->download('testtarget.txt');
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
         } catch (InvalidHashException $e) {
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
             $this->assertSame($stream, $e->getStream());
-        }
-
-        // If the stream is longer than expected, we should get an exception,
-        // whether or not the stream's length is known.
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(1024);
-        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
-        try {
-            $updater->load('testtarget.txt');
-            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-        } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
-        }
-
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(null);
-        $stream->rewind()->shouldBeCalledOnce();
-        $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
-        $stream->eof()->willReturn(false);
-        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
-        try {
-            $updater->load('testtarget.txt');
-            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-        } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
         }
     }
 
@@ -195,7 +170,7 @@ abstract class UpdaterTest extends TestCase
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->load($target)->getContents());
+        $this->assertSame($testFileContents, $updater->download($target)->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
         $this->assertClientFileVersions($expectedFileVersions);
@@ -531,14 +506,14 @@ abstract class UpdaterTest extends TestCase
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $updater->load($fileName)->getContents());
+        self::assertSame($testFileContents, $updater->download($fileName)->getContents());
 
 
         // Ensure the file can not found if the maximum role limit is 3.
         $updater = $this->getSystemInTest($fixtureName, LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
-        $updater->load($fileName);
+        $updater->download($fileName);
     }
 
     /**
@@ -559,7 +534,7 @@ abstract class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest($fixtureName);
         try {
-            $updater->load($fileName);
+            $updater->download($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
             $this->assertClientFileVersions($expectedFileVersions);

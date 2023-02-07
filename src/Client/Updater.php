@@ -8,7 +8,6 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
-use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
@@ -23,7 +22,7 @@ use Tuf\Metadata\Verifier\RootVerifier;
  *
  * @package Tuf\Client
  */
-class Updater implements LoaderInterface
+class Updater
 {
 
     const MAX_ROOT_DOWNLOADS = 1024;
@@ -79,7 +78,7 @@ class Updater implements LoaderInterface
     /**
      * Updater constructor.
      *
-     * @param \Tuf\Loader\SizeCheckingLoader $loader
+     * @param \Tuf\Loader\SizeCheckingLoader $sizeCheckingLoader
      *   The backend to load data from the server.
      *  @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
@@ -88,10 +87,9 @@ class Updater implements LoaderInterface
      *@todo What is this for?
      *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(private SizeCheckingLoader $loader, protected StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $sizeCheckingLoader, protected StorageInterface $storage)
     {
-        $this->server = new Repository($this->loader);
-        $this->storage = $storage;
+        $this->server = new Repository($this->sizeCheckingLoader);
         $this->clock = new Clock();
     }
 
@@ -313,9 +311,16 @@ class Updater implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Downloads a target file, verifies it, and returns its contents.
+     *
+     * @param string $target
+     *   The path of the target file. Needs to be known to the most recent
+     *   targets metadata downloaded in ::refresh().
+     *
+     * @return \Psr\Http\Message\StreamInterface
+     *   A stream of the trusted, downloaded data.
      */
-    public function load(string $target, int $maxBytes = null): StreamInterface
+    public function download(string $target): StreamInterface
     {
         $this->refresh();
 
@@ -326,7 +331,7 @@ class Updater implements LoaderInterface
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->loader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
+        $stream = $this->sizeCheckingLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
         $this->verify($target, $stream);
         return $stream;
     }
