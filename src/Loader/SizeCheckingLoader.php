@@ -72,6 +72,7 @@ class SizeCheckingLoader implements LoaderInterface
         $replacementStream = Utils::streamFor($buffer);
         $size = $replacementStream->write($stream->read($maxBytes + 1));
         $stream = $replacementStream;
+        $stream->rewind();
         return $size;
     }
 }

@@ -106,7 +106,9 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->assertSame(0, fseek($buffer, 0), 'Failed to return to the start of the stream.');
         // Even if the stream did not exceed $maxBytes, it should have been
         // replaced with a new stream.
-        $this->assertNotSame($this->stream, $this->loader->load('ok.txt', 8));
+        $replacementStream = $this->loader->load('ok.txt', 8);
+        $this->assertNotSame($this->stream, $replacementStream);
+        $this->assertSame(0, $replacementStream->tell());
 
         // Write another byte, and return to the start of the stream.
         $this->stream->write('*');
