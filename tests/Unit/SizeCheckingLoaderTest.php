@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests\Unit;
 
-use GuzzleHttp\Psr7\NoSeekStream;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
@@ -86,14 +85,19 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $buffer = Utils::tryFopen('php://temp', 'a+');
 
         // Make the stream non-seekable, forcing the loader to read from it.
-        $this->stream = new NoSeekStream(new class ($buffer) extends Stream {
+        $this->stream = new class ($buffer) extends Stream {
 
             public function getSize()
             {
                 return null;
             }
 
-        });
+            public function isSeekable()
+            {
+                return false;
+            }
+
+        };
 
         // Write 8 bytes, and then return to the start of the stream so we can
         // read them back.
