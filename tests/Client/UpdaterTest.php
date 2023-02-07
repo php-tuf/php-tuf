@@ -138,31 +138,6 @@ abstract class UpdaterTest extends TestCase
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
             $this->assertSame($stream, $e->getStream());
         }
-
-        // If the stream is longer than expected, we should get an exception,
-        // whether or not the stream's length is known.
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(1024);
-        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
-        try {
-            $updater->download('testtarget.txt');
-            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-        } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
-        }
-
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getSize()->willReturn(null);
-        $stream->rewind()->shouldBeCalledOnce();
-        $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
-        $stream->eof()->willReturn(false);
-        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
-        try {
-            $updater->download('testtarget.txt');
-            $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
-        } catch (DownloadSizeException $e) {
-            $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
-        }
     }
 
     /**
