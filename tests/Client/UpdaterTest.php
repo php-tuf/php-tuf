@@ -154,8 +154,7 @@ abstract class UpdaterTest extends TestCase
         $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(null);
         $stream->isSeekable()->willReturn(false);
-        $stream->read(1)->willReturn('a')->shouldBeCalledTimes(25);
-        $stream->eof()->willReturn(false);
+        $stream->read(25)->willReturn('The quick brown fox jumped over the lazy dogs.');
         $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
         try {
             $updater->download('testtarget.txt');
