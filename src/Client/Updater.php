@@ -2,15 +2,13 @@
 
 namespace Tuf\Client;
 
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use Psr\Http\Message\StreamInterface;
-use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Helper\Clock;
+use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\StorageInterface;
@@ -30,31 +28,11 @@ class Updater
     const MAX_ROOT_DOWNLOADS = 1024;
 
     /**
-     * The maximum number of bytes to download if the remote file size is not
-     * known.
-     */
-    const MAXIMUM_DOWNLOAD_BYTES = 100000;
-
-    /**
      * The maximum number of target roles supported.
      *
      * § 5.6.7.1
      */
     const MAXIMUM_TARGET_ROLES = 100;
-
-    /**
-     * The permanent storage (e.g., filesystem storage) for the client metadata.
-     *
-     * @var \Tuf\Metadata\StorageInterface
-     */
-    protected StorageInterface $storage;
-
-    /**
-     * The repo file fetcher.
-     *
-     * @var \Tuf\Client\RepoFileFetcherInterface
-     */
-    protected $repoFileFetcher;
 
     /**
      * Whether the repo has been refreshed or not.
@@ -91,18 +69,27 @@ class Updater
     protected $universalVerifier;
 
     /**
+     * The backend to load untrusted metadata from the server.
+     *
+     * @var \Tuf\Client\Repository
+     */
+    private Repository $server;
+
+    /**
      * Updater constructor.
      *
-     * @param \Tuf\Client\RepoFileFetcherInterface $repoFileFetcher
-     *     The repo fetcher.
+     * @param \Tuf\Loader\SizeCheckingLoader $sizeCheckingLoader
+     *   The backend to load data from the server.
      *  @param \Tuf\Metadata\StorageInterface $storage
      *     The storage backend for trusted metadata. Should be available to
      *     future instances of Updater that interact with the same repository.
+     *
+     *@todo What is this for?
+     *       https://github.com/php-tuf/php-tuf/issues/161
      */
-    public function __construct(RepoFileFetcherInterface $repoFileFetcher, StorageInterface $storage)
+    public function __construct(private SizeCheckingLoader $sizeCheckingLoader, protected StorageInterface $storage)
     {
-        $this->repoFileFetcher = $repoFileFetcher;
-        $this->storage = $storage;
+        $this->server = new Repository($this->sizeCheckingLoader);
         $this->clock = new Clock();
     }
 
@@ -161,12 +148,11 @@ class Updater
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
 
         // § 5.5
-        $snapshotFileName = $rootData->supportsConsistentSnapshots()
-            ? $snapshotInfo['version'] . ".snapshot.json"
-            : "snapshot.json";
+        $snapshotVersion = $rootData->supportsConsistentSnapshots()
+            ? $snapshotInfo['version']
+            : null;
         // § 5.5.1
-        $newSnapshotContents = $this->fetchFile($snapshotFileName, $snapshotInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
-        $newSnapshotData = SnapshotMetadata::createFromJson($newSnapshotContents);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? Repository::MAX_BYTES);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -184,8 +170,7 @@ class Updater
     private function updateTimestamp(): TimestampMetadata
     {
         // § 5.4.1
-        $newTimestampContents = $this->fetchFile('timestamp.json');
-        $newTimestampData = TimestampMetadata::createFromJson($newTimestampContents);
+        $newTimestampData = $this->server->getTimestamp();
 
         $this->universalVerifier->verify(TimestampMetadata::TYPE, $newTimestampData);
 
@@ -222,12 +207,12 @@ class Updater
         $originalRootData = $rootData;
         // § 5.3.2 and 5.3.3
         $nextVersion = $rootData->getVersion() + 1;
-        while ($nextRootContents = $this->repoFileFetcher->fetchMetadataIfExists("$nextVersion.root.json", static::MAXIMUM_DOWNLOAD_BYTES)) {
+
+        while ($nextRoot = $this->server->getRoot($nextVersion)) {
             $rootsDownloaded++;
             if ($rootsDownloaded > static::MAX_ROOT_DOWNLOADS) {
                 throw new DenialOfServiceAttackException("The maximum number root files have already been downloaded: " . static::MAX_ROOT_DOWNLOADS);
             }
-            $nextRoot = RootMetadata::createFromJson($nextRootContents);
             $this->universalVerifier->verify(RootMetadata::TYPE, $nextRoot);
 
             // § 5.3.6 Needs no action. The expiration of the new (intermediate)
@@ -280,64 +265,6 @@ class Updater
     }
 
     /**
-     * Synchronously fetches a file from the remote repo.
-     *
-     * @param string $fileName
-     *   The name of the file to fetch.
-     * @param integer $maxBytes
-     *   (optional) The maximum number of bytes to download.
-     *
-     * @return string
-     *   The contents of the fetched file.
-     */
-    private function fetchFile(string $fileName, int $maxBytes = self::MAXIMUM_DOWNLOAD_BYTES): string
-    {
-        return $this->repoFileFetcher->fetchMetadata($fileName, $maxBytes)
-            ->then(function (StreamInterface $data) use ($fileName, $maxBytes) {
-                $this->checkLength($data, $maxBytes, $fileName);
-                return $data;
-            })
-            ->wait();
-    }
-
-    /**
-     * Verifies the length of a data stream.
-     *
-     * @param \Psr\Http\Message\StreamInterface $data
-     *   The data stream to check.
-     * @param int $maxBytes
-     *   The maximum acceptable length of the stream, in bytes.
-     * @param string $fileName
-     *   The filename associated with the stream.
-     *
-     * @throws \Tuf\Exception\DownloadSizeException
-     *   If the stream's length exceeds $maxBytes in size.
-     */
-    protected function checkLength(StreamInterface $data, int $maxBytes, string $fileName): void
-    {
-        $error = new DownloadSizeException("$fileName exceeded $maxBytes bytes");
-        $size = $data->getSize();
-
-        if (isset($size)) {
-            if ($size > $maxBytes) {
-                throw $error;
-            }
-        } else {
-            // @todo Handle non-seekable streams.
-            // https://github.com/php-tuf/php-tuf/issues/169
-            $data->rewind();
-            $data->read($maxBytes);
-
-            // If we reached the end of the stream, we didn't exceed the
-            // maximum number of bytes.
-            if ($data->eof() === false) {
-                throw $error;
-            }
-            $data->rewind();
-        }
-    }
-
-    /**
      * Verifies a stream of data against a known TUF target.
      *
      * @param string $target
@@ -359,8 +286,6 @@ class Updater
         if ($targetsMetadata === null) {
             throw new NotFoundException($target, 'Target');
         }
-        $maxBytes = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
-        $this->checkLength($data, $maxBytes, $target);
 
         $hashes = $targetsMetadata->getHashes($target);
         if (count($hashes) === 0) {
@@ -391,34 +316,24 @@ class Updater
      * @param string $target
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
-     * @param mixed ...$extra
-     *   Additional arguments to pass to the file fetcher.
      *
-     * @return \GuzzleHttp\Promise\PromiseInterface
-     *   A promise representing the eventual verified result of the download
-     *   operation.
+     * @return \Psr\Http\Message\StreamInterface
+     *   A stream of the trusted, downloaded data.
      */
-    public function download(string $target, ...$extra): PromiseInterface
+    public function download(string $target): StreamInterface
     {
         $this->refresh();
 
+        // The target needs to be known to the most recent targets metadata
+        // that we downloaded during ::refresh().
         $targetsMetadata = $this->getMetadataForTarget($target);
         if ($targetsMetadata === null) {
-            return new RejectedPromise(new NotFoundException($target, 'Target'));
+            throw new NotFoundException($target, 'Target');
         }
 
-        // If the target isn't known, immediately return a rejected promise.
-        try {
-            $length = $targetsMetadata->getLength($target) ?? static::MAXIMUM_DOWNLOAD_BYTES;
-        } catch (NotFoundException $e) {
-            return new RejectedPromise($e);
-        }
-
-        return $this->repoFileFetcher->fetchTarget($target, $length, ...$extra)
-            ->then(function (StreamInterface $stream) use ($target) {
-                $this->verify($target, $stream);
-                return $stream;
-            });
+        $stream = $this->sizeCheckingLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
+        $this->verify($target, $stream);
+        return $stream;
     }
 
     /**
@@ -454,11 +369,10 @@ class Updater
     {
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
-        $targetsFileName = $this->storage->getRoot()->supportsConsistentSnapshots()
-            ? $fileInfo['version'] . ".$role.json"
-            : "$role.json";
-        $newTargetsContent = $this->fetchFile($targetsFileName, $fileInfo['length'] ?? self::MAXIMUM_DOWNLOAD_BYTES);
-        $newTargetsData = TargetsMetadata::createFromJson($newTargetsContent, $role);
+        $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
+            ? $fileInfo['version']
+            : null;
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? Repository::MAX_BYTES);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);

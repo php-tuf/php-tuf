@@ -2,11 +2,10 @@
 
 namespace Tuf\Tests\Client;
 
-use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\Client\Repository;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -16,6 +15,7 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
+use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -41,7 +41,7 @@ abstract class UpdaterTest extends TestCase
     /**
      * The server-side storage for metadata and targets.
      *
-     * @var \Tuf\Tests\Client\TestRepo
+     * @var \Tuf\Tests\Client\TestLoader
      */
     protected $serverStorage;
 
@@ -71,7 +71,7 @@ abstract class UpdaterTest extends TestCase
     protected function getSystemInTest(string $fixtureName, string $updaterClass = Updater::class): Updater
     {
         $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestRepo(static::getFixturePath($fixtureName));
+        $this->serverStorage = new TestLoader(static::getFixturePath($fixtureName));
 
         // Remove all '*.[TYPE].json' because they are needed for the tests.
         $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
@@ -85,7 +85,7 @@ abstract class UpdaterTest extends TestCase
         $expectedStartVersions = static::getClientStartVersions($fixtureName);
         $this->assertClientFileVersions($expectedStartVersions);
 
-        $updater = new $updaterClass($this->serverStorage, $this->clientStorage);
+        $updater = new $updaterClass(new SizeCheckingLoader($this->serverStorage), $this->clientStorage);
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);
@@ -110,7 +110,7 @@ abstract class UpdaterTest extends TestCase
 
         $testFilePath = static::getFixturePath($fixtureName, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
-        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
+        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->getContents());
 
         // If the file fetcher returns a file stream, the updater should NOT try
         // to read the contents of the stream into memory.
@@ -119,16 +119,20 @@ abstract class UpdaterTest extends TestCase
         $stream->getContents()->shouldNotBeCalled();
         $stream->rewind()->shouldNotBeCalled();
         $stream->getSize()->willReturn(strlen($testFileContents));
-        $updater->download('testtarget.txt')->wait();
+        $updater->download('testtarget.txt');
 
-        // If the target isn't known, we should get a rejected promise.
-        $promise = $updater->download('void.txt');
-        $this->assertInstanceOf(RejectedPromise::class, $promise);
+        // If the target isn't known, we should get an exception.
+        try {
+            $updater->download('void.txt');
+            $this->fail('Expected a NotFoundException to be thrown, but it was not.');
+        } catch (NotFoundException $e) {
+            $this->assertSame('Target not found: void.txt', $e->getMessage());
+        }
 
         $stream = Utils::streamFor('invalid data');
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream);
+        $this->serverStorage->fileContents['testtarget.txt'] = $stream;
         try {
-            $updater->download('testtarget.txt')->wait();
+            $updater->download('testtarget.txt');
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
         } catch (InvalidHashException $e) {
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
@@ -137,24 +141,24 @@ abstract class UpdaterTest extends TestCase
 
         // If the stream is longer than expected, we should get an exception,
         // whether or not the stream's length is known.
-        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(1024);
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
         try {
-            $updater->download('testtarget.txt')->wait();
+            $updater->download('testtarget.txt');
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
             $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
         }
 
-        $stream = $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
+        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
         $stream->getSize()->willReturn(null);
         $stream->rewind()->shouldBeCalledOnce();
         $stream->read(24)->willReturn('A nice, long string that is certainly longer than 24 bytes.');
         $stream->eof()->willReturn(false);
-        $this->serverStorage->fileContents['testtarget.txt'] = new FulfilledPromise($stream->reveal());
+        $this->serverStorage->fileContents['testtarget.txt'] = $stream->reveal();
         try {
-            $updater->download('testtarget.txt')->wait();
+            $updater->download('testtarget.txt');
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
             $this->assertSame("testtarget.txt exceeded 24 bytes", $e->getMessage());
@@ -189,7 +193,7 @@ abstract class UpdaterTest extends TestCase
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->download($target)->wait()->getContents());
+        $this->assertSame($testFileContents, $updater->download($target)->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
         $this->assertClientFileVersions($expectedFileVersions);
@@ -525,14 +529,14 @@ abstract class UpdaterTest extends TestCase
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $updater->download($fileName)->wait()->getContents());
+        self::assertSame($testFileContents, $updater->download($fileName)->getContents());
 
 
         // Ensure the file can not found if the maximum role limit is 3.
         $updater = $this->getSystemInTest($fixtureName, LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
-        $updater->download($fileName)->wait();
+        $updater->download($fileName);
     }
 
     /**
@@ -553,7 +557,7 @@ abstract class UpdaterTest extends TestCase
     {
         $updater = $this->getSystemInTest($fixtureName);
         try {
-            $updater->download($fileName)->wait();
+            $updater->download($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
             $this->assertClientFileVersions($expectedFileVersions);
@@ -1323,12 +1327,12 @@ abstract class UpdaterTest extends TestCase
             'unknown snapshot length' => [
                 'TargetsLengthNoSnapshotLength',
                 'snapshot.json',
-                Updater::MAXIMUM_DOWNLOAD_BYTES,
+                Repository::MAX_BYTES,
             ],
             'unknown targets length' => [
                 'Simple',
                 'targets.json',
-                Updater::MAXIMUM_DOWNLOAD_BYTES,
+                Repository::MAX_BYTES,
             ],
             'known snapshot length' => [
                 'Simple',
@@ -1350,14 +1354,10 @@ abstract class UpdaterTest extends TestCase
     {
         $this->getSystemInTest($fixtureName)->refresh();
 
-        $fetchMetadataArguments = [];
-        foreach ($this->serverStorage->fetchMetadataArguments as [$fileName, $maxBytes]) {
-            $fetchMetadataArguments[$fileName] = $maxBytes;
-        }
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Updater::MAXIMUM_DOWNLOAD_BYTES, $fetchMetadataArguments['timestamp.json']);
-        $this->assertSame($expectedLength, $fetchMetadataArguments[$downloadedFileName]);
+        $this->assertSame(Repository::MAX_BYTES, $this->serverStorage->maxBytes['timestamp.json'][0]);
+        $this->assertSame($expectedLength, $this->serverStorage->maxBytes[$downloadedFileName][0]);
     }
 
     public function providerMetadataTooBig(): array

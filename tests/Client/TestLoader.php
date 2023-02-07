@@ -2,19 +2,14 @@
 
 namespace Tuf\Tests\Client;
 
-use GuzzleHttp\Promise\FulfilledPromise;
-use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Promise\RejectedPromise;
 use GuzzleHttp\Psr7\Utils;
-use Tuf\Client\RepoFileFetcherInterface;
+use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\JsonNormalizer;
+use Tuf\Loader\LoaderInterface;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
-/**
- * Defines an implementation of RepoFileFetcherInterface to use with test fixtures.
- */
-class TestRepo implements RepoFileFetcherInterface
+class TestLoader implements LoaderInterface
 {
     use UtilsTrait;
 
@@ -26,14 +21,14 @@ class TestRepo implements RepoFileFetcherInterface
     public $fileContents = [];
 
     /**
-     * The arguments ::fetchMetadata() was called with.
+     * The $maxBytes argument passed to ::load() each time it was called.
      *
-     * This is used by tests to confirm that fetchMetadata was called by the
-     * updater with the expected file names and maximum download lengths.
+     * This is used by tests to confirm that the updater passes the expected
+     * file names and maximum download lengths.
      *
      * @var array[]
      */
-    public array $fetchMetadataArguments = [];
+    public array $maxBytes = [];
 
     /**
      * TestRepo constructor.
@@ -63,48 +58,20 @@ class TestRepo implements RepoFileFetcherInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchMetadata(string $fileName, int $maxBytes): PromiseInterface
+    public function load(string $locator, int $maxBytes): StreamInterface
     {
-        $this->fetchMetadataArguments[] = func_get_args();
-        return $this->fetchFile($fileName);
-    }
+        $this->maxBytes[$locator][] = $maxBytes;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function fetchTarget(string $fileName, int $maxBytes): PromiseInterface
-    {
-        return $this->fetchFile($fileName);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function fetchFile(string $fileName): PromiseInterface
-    {
-        if (empty($this->fileContents[$fileName])) {
-            return new RejectedPromise(new RepoFileNotFound("File $fileName not found."));
+        if (empty($this->fileContents[$locator])) {
+            throw new RepoFileNotFound("File $locator not found.");
         }
-        // Allow test code to directly set the returned promise so that the
-        // underlying streams can be mocked.
-        $contents = $this->fileContents[$fileName];
-        if ($contents instanceof PromiseInterface) {
+        // Allow test code to directly set the returned stream so that they can
+        // be mocked.
+        $contents = $this->fileContents[$locator];
+        if ($contents instanceof StreamInterface) {
             return $contents;
         }
-        $stream = Utils::streamFor($this->fileContents[$fileName]);
-        return new FulfilledPromise($stream);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function fetchMetadataIfExists(string $fileName, int $maxBytes): ?string
-    {
-        try {
-            return $this->fetchFile($fileName, $maxBytes)->wait();
-        } catch (RepoFileNotFound $exception) {
-            return null;
-        }
+        return Utils::streamFor($this->fileContents[$locator]);
     }
 
     /**
