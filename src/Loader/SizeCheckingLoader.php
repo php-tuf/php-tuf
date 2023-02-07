@@ -70,6 +70,8 @@ class SizeCheckingLoader implements LoaderInterface
         // do trust.
         $buffer = Utils::tryFopen('php://temp', 'a');
         $replacementStream = Utils::streamFor($buffer);
+        // Read $maxBytes + 1 to detect if there is any data in the stream
+        // beyond $maxBytes (there shouldn't be).
         $size = $replacementStream->write($stream->read($maxBytes + 1));
         $stream = $replacementStream;
         $stream->rewind();
