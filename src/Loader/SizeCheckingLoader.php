@@ -70,18 +70,8 @@ class SizeCheckingLoader implements LoaderInterface
         // do trust.
         $buffer = Utils::tryFopen('php://temp', 'a');
         $replacementStream = Utils::streamFor($buffer);
-        $bytesCopied = 0;
-        // Transfer incoming data to the replacement stream, one byte at a time,
-        // until we either reach the end of the original stream, or we copy
-        // $maxBytes.
-        while ($bytesCopied <= $maxBytes && $stream->eof() === false) {
-            $replacementStream->write($stream->read(1));
-            // Even if the byte wasn't copied to $replacementStream, increment
-            // $bytesCopied, since our main goal here is to measure the size of
-            // the stream.
-            $bytesCopied++;
-        }
+        $size = $replacementStream->write($stream->read($maxBytes + 1));
         $stream = $replacementStream;
-        return $bytesCopied;
+        return $size;
     }
 }
