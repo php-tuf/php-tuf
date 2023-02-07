@@ -44,8 +44,8 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
             $this->assertSame('too_long_known_size.txt exceeded 8 bytes', $e->getMessage());
         }
 
-        // Make a new stream that doesn't know how long it is, and ensure we
-        // still get an error if it's longer than $maxBytes.
+        // Make a new stream that doesn't know how long it is, but is seekable,
+        // and ensure we still get an error if it's longer than $maxBytes.
         $buffer = $this->stream->detach();
         $this->stream = new class ($buffer) extends Stream {
 
@@ -55,11 +55,17 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
             }
 
         };
+        $this->assertTrue($this->stream->isSeekable());
+        $this->assertSame(0, $this->stream->tell());
+        // Move the stream to a different position so we can ensure the size
+        // check returns us there.
+        $this->stream->seek(8);
         try {
             $loader->load('too_long_unknown_size.txt', 8);
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
             $this->assertSame('too_long_unknown_size.txt exceeded 8 bytes', $e->getMessage());
+            $this->assertSame(8, $this->stream->tell());
         }
     }
 }

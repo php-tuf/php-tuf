@@ -32,6 +32,11 @@ class SizeCheckingLoader implements LoaderInterface
     /**
      * Tries to determine the size of a stream, up to $maxBytes.
      *
+     * This method has intentional side effects. If the stream isn't seekable
+     * and its size is unknown, up to $maxBytes of the incoming data will be
+     * copied into a new stream, which will be referenced by the $stream
+     * parameter. Data that was already in the original stream will be lost!
+     *
      * @param \Psr\Http\Message\StreamInterface $stream
      *   A data stream.
      * @param int $maxBytes
