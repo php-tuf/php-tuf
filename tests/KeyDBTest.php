@@ -50,9 +50,7 @@ class KeyDBTest extends TestCase
         $key = new \ArrayObject([
             'keytype' => 'unsupported',
             'scheme' => 'ed25519',
-            'keyval' => new \ArrayObject([
-                'public' => 'this is the public key',
-            ]),
+            'keyval' => new \ArrayObject(['public' => 'this is the public key']),
         ]);
 
         $rootMetadata = $this->prophesize(RootMetadata::class);
