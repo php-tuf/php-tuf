@@ -3,6 +3,9 @@
 namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\Exception\InvalidKeyException;
+use Tuf\Key;
 use Tuf\KeyDB;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
@@ -13,6 +16,8 @@ use Tuf\Tests\TestHelpers\FixturesTrait;
 class KeyDBTest extends TestCase
 {
     use FixturesTrait;
+    use ProphecyTrait;
+
     /**
      * @covers ::createFromRootMetadata
      *
@@ -38,5 +43,23 @@ class KeyDBTest extends TestCase
         self::assertSame($key->getPublic(), $retrievedKey->getPublic());
         self::assertSame($key->getType(), $retrievedKey->getType());
         self::assertSame($key->getComputedKeyId(), $retrievedKey->getComputedKeyId());
+    }
+
+    public function testUnsupportedKeyType(): void
+    {
+        $key = new \ArrayObject([
+            'keytype' => 'unsupported',
+            'scheme' => 'ed25519',
+            'keyval' => new \ArrayObject(['public' => 'this is the public key']),
+        ]);
+
+        $rootMetadata = $this->prophesize(RootMetadata::class);
+        $rootMetadata->getKeys(false)->willReturn([
+            'unsupported_key' => Key::createFromMetadata($key),
+        ]);
+
+        $this->expectException(InvalidKeyException::class);
+        $this->expectExceptionMessage("Root metadata file contains an unsupported key type: 'unsupported'");
+        KeyDB::createFromRootMetadata($rootMetadata->reveal());
     }
 }

@@ -114,9 +114,6 @@ final class SignatureVerifier
         // valid for the given data and pubkey.
         $pubkeyBytes = hex2bin($pubkey);
         $sigBytes = hex2bin($signatureMeta['sig']);
-        // @todo Check that the key type in $signatureMeta is ed25519; return
-        //     false if not.
-        //     https://github.com/php-tuf/php-tuf/issues/168
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
