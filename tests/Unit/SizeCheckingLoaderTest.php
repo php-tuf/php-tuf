@@ -56,7 +56,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
         $this->stream = new class ($buffer) extends Stream {
 
-            public function getSize()
+            public function getSize(): ?int
             {
                 return null;
             }
@@ -87,12 +87,12 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         // Make the stream non-seekable, forcing the loader to read from it.
         $this->stream = new class ($buffer) extends Stream {
 
-            public function getSize()
+            public function getSize(): ?int
             {
                 return null;
             }
 
-            public function isSeekable()
+            public function isSeekable(): bool
             {
                 return false;
             }
