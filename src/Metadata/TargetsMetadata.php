@@ -185,7 +185,7 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedKeys(): array
     {
         $keys = [];
-        foreach ($this->getSigned()['delegations']['keys'] ?? []as $keyId => $keyInfo) {
+        foreach ($this->getSigned()['delegations']['keys'] ?? [] as $keyId => $keyInfo) {
             $keys[$keyId] = Key::createFromMetadata($keyInfo);
         }
         return $keys;

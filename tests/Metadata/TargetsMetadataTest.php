@@ -127,10 +127,13 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data = parent::providerOptionalFields();
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
-        $data[] = ['signed:delegations', [
-            'keys' => new \ArrayObject(),
-            'roles' => [],
-        ]];
+        $data[] = [
+            'signed:delegations',
+            [
+                'keys' => new \ArrayObject(),
+                'roles' => [],
+            ],
+        ];
         return $data;
     }
 
