@@ -126,6 +126,6 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected too_short.txt to be 1024 bytes.");
-        $this->loader->load('too_short.txt', 1024, TRUE);
+        $this->loader->load('too_short.txt', 1024, true);
     }
 }
