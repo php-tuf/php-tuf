@@ -1368,7 +1368,7 @@ abstract class UpdaterTest extends TestCase
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
-        $this->expectExceptionMessage("$fileToChange exceeded $knownLength bytes");
+        $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
         $updater->refresh();
     }
 
