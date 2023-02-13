@@ -86,7 +86,8 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
-        $data[] = ['signed:delegations'];
+        // Delegations are optional (see ::providerOptionalFields()), but if
+        // present, test that their internal structure is validated too.
         $data[] = ['signed:delegations:keys'];
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'keys']);
         $data[] = ["signed:delegations:keys:$firstKey:keytype"];
@@ -126,6 +127,13 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data = parent::providerOptionalFields();
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
+        $data[] = [
+            'signed:delegations',
+            [
+                'keys' => new \ArrayObject(),
+                'roles' => [],
+            ],
+        ];
         return $data;
     }
 
