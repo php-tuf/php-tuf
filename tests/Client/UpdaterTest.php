@@ -894,7 +894,7 @@ abstract class UpdaterTest extends TestCase
         try {
             $updater->refresh();
         } catch (TufException $exception) {
-            $this->assertEquals($exception, $expectedException);
+            $this->assertEquals($expectedException, $exception);
             $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
