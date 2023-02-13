@@ -120,7 +120,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->loader->load('too_long.txt', 8);
     }
 
-    public function testExactSizeCheck(): void
+    public function testExactSize(): void
     {
         $this->stream = Utils::streamFor('Row, row, row your boat, gently down the stream...');
 
