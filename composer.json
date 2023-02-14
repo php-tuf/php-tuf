@@ -24,8 +24,7 @@
         "guzzlehttp/psr7": "^2.4"
     },
     "suggest": {
-        "ext-sodium": "Provides faster verification of updates",
-        "guzzlehttp/guzzle": "Required package if GuzzleFileFetcher shall be used"
+        "ext-sodium": "Provides faster verification of updates"
     },
     "autoload": {
         "psr-4": {
