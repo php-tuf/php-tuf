@@ -11,14 +11,6 @@ use Tuf\Metadata\FileInfoMetadataBase;
 abstract class FileInfoVerifier extends VerifierBase
 {
     /**
-     * The trusted metadata, if any.
-     *
-     * @var \Tuf\Metadata\FileInfoMetadataBase
-     */
-    protected $trustedMetadata;
-
-
-    /**
      * Checks for rollback of files referenced in $untrustedMetadata.
      *
      * @param \Tuf\Metadata\FileInfoMetadataBase $untrustedMetadata
