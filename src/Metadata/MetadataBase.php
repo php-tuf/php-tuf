@@ -22,13 +22,6 @@ abstract class MetadataBase
     use ConstraintsTrait;
 
     /**
-     * The metadata.
-     *
-     * @var array
-     */
-    protected $metadata;
-
-    /**
      * Metadata type.
      *
      * @var string
@@ -36,16 +29,11 @@ abstract class MetadataBase
     protected const TYPE = '';
 
     /**
-     * @var string
-     */
-    private $sourceJson;
-
-    /**
      * Whether the metadata has been verified and should be considered trusted.
      *
      * @var bool
      */
-    private $isTrusted = false;
+    private bool $isTrusted = false;
 
 
     /**
@@ -56,10 +44,8 @@ abstract class MetadataBase
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(\ArrayObject $metadata, string $sourceJson)
+    public function __construct(protected \ArrayObject $metadata, protected string $sourceJson)
     {
-        $this->metadata = $metadata;
-        $this->sourceJson = $sourceJson;
     }
 
     /**
@@ -68,7 +54,7 @@ abstract class MetadataBase
      * @return string
      *   The JSON source.
      */
-    public function getSource():string
+    public function getSource(): string
     {
         return $this->sourceJson;
     }
@@ -85,7 +71,7 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json): self
+    public static function createFromJson(string $json): static
     {
         $data = JsonNormalizer::decode($json);
         static::validate($data, new Collection(static::getConstraints()));
