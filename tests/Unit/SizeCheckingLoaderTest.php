@@ -122,7 +122,8 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
     public function testExactSize(): void
     {
-        $this->stream = Utils::streamFor('Row, row, row your boat, gently down the stream...');
+        $this->stream = Utils::streamFor('Sisko');
+        $this->loader->load('just_right.txt', 5, true);
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected too_short.txt to be 1024 bytes.");
