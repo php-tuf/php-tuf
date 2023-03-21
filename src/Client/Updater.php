@@ -59,7 +59,7 @@ class Updater
      *
      * @var \DateTimeImmutable
      */
-    private \DateTimeImmutable $metadataExpiration;
+    private ?\DateTimeImmutable $metadataExpiration;
 
     /**
      * The verifier factory.
