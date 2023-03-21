@@ -152,7 +152,7 @@ class Updater
             ? $snapshotInfo['version']
             : null;
         // § 5.5.1
-        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? Repository::MAX_BYTES);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? null);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -372,7 +372,7 @@ class Updater
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? Repository::MAX_BYTES);
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);

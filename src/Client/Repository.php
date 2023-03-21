@@ -69,16 +69,19 @@ class Repository
      * @param int|null $version
      *   The version of the snapshot metadata to load, or null if consistent
      *   snapshots are not used.
-     * @param int $maxBytes
-     *   The maximum number of bytes to download.
+     * @param int|null $maxBytes
+     *   The maximum number of bytes to download, or null to use
+     *   self::MAX_BYTES.
      *
      * @return \Tuf\Metadata\SnapshotMetadata
      *   The untrusted snapshot metadata.
      */
-    public function getSnapshot(?int $version, int $maxBytes = self::MAX_BYTES): SnapshotMetadata
+    public function getSnapshot(?int $version, int $maxBytes = null): SnapshotMetadata
     {
         $name = isset($version) ? "$version.snapshot" : 'snapshot';
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes);
+        // If a maximum number of bytes was provided, we must download *exactly*
+        // that number of bytes.
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::MAX_BYTES, isset($maxBytes));
 
         return SnapshotMetadata::createFromJson($data->getContents());
     }
@@ -92,16 +95,19 @@ class Repository
      * @param string $role
      *   The role to load. Defaults to `targets`, but could be the name of any
      *   delegated role.
-     * @param int $maxBytes
-     *   The maximum number of bytes to download.
+     * @param int|null $maxBytes
+     *   The maximum number of bytes to download, or null to use
+     *   self::MAX_BYTES.
      *
      * @return \Tuf\Metadata\TargetsMetadata
      *   The untrusted targets metadata.
      */
-    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = self::MAX_BYTES): TargetsMetadata
+    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): TargetsMetadata
     {
         $name = isset($version) ? "$version.$role" : $role;
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes);
+        // If a maximum number of bytes was provided, we must download *exactly*
+        // that number of bytes.
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::MAX_BYTES, isset($maxBytes));
 
         return TargetsMetadata::createFromJson($data->getContents(), $role);
     }

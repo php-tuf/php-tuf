@@ -119,4 +119,14 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->expectExceptionMessage('too_long.txt exceeded 8 bytes');
         $this->loader->load('too_long.txt', 8);
     }
+
+    public function testExactSize(): void
+    {
+        $this->stream = Utils::streamFor('Sisko');
+        $this->loader->load('just_right.txt', 5, true);
+
+        $this->expectException(DownloadSizeException::class);
+        $this->expectExceptionMessage("Expected too_short.txt to be 1024 bytes.");
+        $this->loader->load('too_short.txt', 1024, true);
+    }
 }

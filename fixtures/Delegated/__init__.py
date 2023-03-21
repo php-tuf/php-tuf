@@ -2,7 +2,7 @@ from fixtures.builder import ConsistencyVariantFixtureBuilder
 
 
 def build():
-    fixture = ConsistencyVariantFixtureBuilder('Delegated')\
+    fixture = ConsistencyVariantFixtureBuilder('Delegated', { 'use_timestamp_length': False })\
         .create_target('testtarget.txt')\
         .publish(with_client=True)\
         .delegate('unclaimed', ['level_1_*.txt'])\
