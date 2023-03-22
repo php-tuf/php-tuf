@@ -434,7 +434,7 @@ class Updater
                     return $delegatedTargetsMetadata;
                 }
                 $searchedRoles[] = $delegatedRoleName;
-                // § 5.6.7.2.1
+                // § 5.6.7.2
                 // Recursively search the list of delegations in order of appearance.
                 $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
                 if ($terminated || $delegatedRolesMetadataSearchResult) {
@@ -445,7 +445,7 @@ class Updater
                 // in the delegations from $targetsMetadata.
                 if ($delegatedRole->isTerminating()) {
                     $terminated = true;
-                    // § 5.6.7.2.2
+                    // § 5.6.7.2.1
                     // If the role is terminating then abort searching for a target.
                     return null;
                 }
