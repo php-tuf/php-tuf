@@ -22,6 +22,13 @@ use Tuf\Metadata\RootMetadata;
 class KeyDB
 {
     /**
+     * A set of keys, indexed by key ID.
+     *
+     * @var array[]
+     */
+    protected array $keys = [];
+
+    /**
      * Creates a key database with the unique keys found in root metadata.
      *
      * @param \Tuf\Metadata\RootMetadata $rootMetadata
@@ -59,15 +66,6 @@ class KeyDB
         return ['ed25519'];
     }
 
-    /**
-     * Constructs a new KeyDB.
-     *
-     * @param array $keys
-     *   Keys indexed by key ID.
-     */
-    public function __construct(protected array $keys = [])
-    {
-    }
 
     /**
      * Adds key metadata to the key database while avoiding duplicates.
