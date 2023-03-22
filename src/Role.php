@@ -35,7 +35,7 @@ class Role
      *
      * @return static
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.19#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.20#document-formats
      */
     public static function createFromMetadata(\ArrayObject $roleInfo, string $name): Role
     {
