@@ -525,7 +525,6 @@ abstract class UpdaterTest extends TestCase
      *
      * § 5.6.7.2.1
      * § 5.6.7.2.2
-     * § 5.6.7.2.3
      * § 5.7.2
      */
     public function testDelegationErrors(string $fixtureName, string $fileName, array $expectedFileVersions): void
