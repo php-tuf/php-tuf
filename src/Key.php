@@ -12,27 +12,6 @@ final class Key
     use ConstraintsTrait;
 
     /**
-     * The key type.
-     *
-     * @var string
-     */
-    private $type;
-
-    /**
-     * The key scheme.
-     *
-     * @var string
-     */
-    private $scheme;
-
-    /**
-     * The public key value.
-     *
-     * @var string
-     */
-    private $public;
-
-    /**
      * Key constructor.
      *
      * @param string $type
@@ -42,11 +21,8 @@ final class Key
      * @param string $public
      *   The public key value.
      */
-    private function __construct(string $type, string $scheme, string $public)
+    private function __construct(private string $type, private string $scheme, private string $public)
     {
-        $this->type = $type;
-        $this->scheme = $scheme;
-        $this->public = $public;
     }
 
     /**

@@ -42,31 +42,31 @@ class Updater
      *
      * @var bool
      */
-    protected $isRefreshed = false;
+    protected bool $isRefreshed = false;
 
     /**
      * @var \Tuf\Client\SignatureVerifier
      */
-    protected $signatureVerifier;
+    protected SignatureVerifier $signatureVerifier;
 
     /**
      * @var \Tuf\Helper\Clock
      */
-    protected $clock;
+    protected Clock $clock;
 
     /**
      * The time after which metadata should be considered expired.
      *
      * @var \DateTimeImmutable
      */
-    private $metadataExpiration;
+    private ?\DateTimeImmutable $metadataExpiration;
 
     /**
      * The verifier factory.
      *
      * @var \Tuf\Metadata\Verifier\UniversalVerifier
      */
-    protected $universalVerifier;
+    protected UniversalVerifier $universalVerifier;
 
     /**
      * The backend to load untrusted metadata from the server.

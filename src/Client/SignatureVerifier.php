@@ -17,22 +17,10 @@ use Tuf\RoleDB;
 final class SignatureVerifier
 {
     /**
-     * @var \Tuf\RoleDB
-     */
-    private $roleDb;
-
-    /**
-     * @var \Tuf\KeyDB
-     */
-    private $keyDb;
-
-    /**
      * SignatureVerifier constructor.
      */
-    private function __construct(RoleDB $roleDb, KeyDB $keyDb)
+    private function __construct(private RoleDB $roleDb, private KeyDB $keyDb)
     {
-        $this->roleDb = $roleDb;
-        $this->keyDb = $keyDb;
     }
 
     /**

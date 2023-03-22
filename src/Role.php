@@ -12,27 +12,6 @@ class Role
     use ConstraintsTrait;
 
     /**
-     * The role name.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * The role threshold.
-     *
-     * @var int
-     */
-    protected $threshold;
-
-    /**
-     * The key IDs.
-     *
-     * @var array
-     */
-    protected $keyIds;
-
-    /**
      * Role constructor.
      *
      * @param string $name
@@ -42,11 +21,8 @@ class Role
      * @param array $keyIds
      *   The key IDs.
      */
-    protected function __construct(string $name, int $threshold, array $keyIds)
+    protected function __construct(protected string $name, protected int $threshold, protected array $keyIds)
     {
-        $this->name = $name;
-        $this->threshold = $threshold;
-        $this->keyIds = $keyIds;
     }
 
     /**
