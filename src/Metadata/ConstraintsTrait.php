@@ -23,7 +23,7 @@ trait ConstraintsTrait
     /**
      * Validates the structure of the metadata.
      *
-     * @param \ArrayObject $data
+     * @param array $data
      *   The data to validate.
      * @param \Symfony\Component\Validator\Constraints\Collection $constraints
      *   Th constraints collection for validation.
@@ -33,7 +33,7 @@ trait ConstraintsTrait
      * @throws \Tuf\Exception\MetadataException
      *    Thrown if validation fails.
      */
-    protected static function validate(iterable $data, Collection $constraints): void
+    protected static function validate(array $data, Collection $constraints): void
     {
         $validator = Validation::createValidator();
         $violations = $validator->validate($data, $constraints);
