@@ -49,7 +49,7 @@ abstract class MetadataBase
     }
 
     /**
-     * Returns a normalized array versuib of this object for JSON encoding.
+     * Returns a normalized array version of this object for JSON encoding.
      *
      * @see ::toCanonicalJson()
      *
