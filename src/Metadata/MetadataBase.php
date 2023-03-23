@@ -44,7 +44,7 @@ abstract class MetadataBase
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(protected \ArrayObject $metadata, protected string $sourceJson)
+    public function __construct(protected \ArrayObject $metadata, protected string $sourceJson, protected array $data)
     {
     }
 
@@ -75,7 +75,7 @@ abstract class MetadataBase
     {
         $data = JsonNormalizer::decode($json);
         static::validate($data, new Collection(static::getConstraints()));
-        return new static($data, $json);
+        return new static($data, $json, json_decode($json, TRUE, 512, JSON_THROW_ON_ERROR));
     }
 
     /**
