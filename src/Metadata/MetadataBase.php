@@ -82,9 +82,9 @@ abstract class MetadataBase implements \JsonSerializable
      */
     public static function createFromJson(string $json): static
     {
-        $data = json_decode($json, TRUE, 512, JSON_THROW_ON_ERROR);
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         static::validate($data, new Collection(static::getConstraints()));
-        return new static($data, $json, json_decode($json, TRUE, 512, JSON_THROW_ON_ERROR));
+        return new static($data, $json);
     }
 
     /**
