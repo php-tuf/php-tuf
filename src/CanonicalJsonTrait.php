@@ -41,7 +41,7 @@ trait CanonicalJsonTrait
      */
     protected static function decodeJson(string $data): array
     {
-        return json_decode($data, TRUE, 512, JSON_THROW_ON_ERROR);
+        return json_decode($data, true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
