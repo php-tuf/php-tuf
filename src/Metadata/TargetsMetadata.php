@@ -45,24 +45,23 @@ class TargetsMetadata extends MetadataBase
     /**
      * {@inheritDoc}
      */
-    public function jsonSerialize(): array
+    protected function toNormalizedArray(): array
     {
-        $signedData = parent::jsonSerialize();
+        $normalized = parent::toNormalizedArray();
 
-        foreach ($signedData['targets'] as $path => $target) {
+        foreach ($normalized['targets'] as $path => $target) {
             // Custom target info should always encode to an object, even if
             // it's empty.
             if (array_key_exists('custom', $target)) {
-                $target['custom'] = (object) $target['custom'];
+                $normalized['targets'][$path]['custom'] = (object) $target['custom'];
             }
-            $signedData['targets'][$path] = $target;
         }
 
         // Ensure that these will encode as objects even if they're empty.
-        $signedData['targets'] = (object) $signedData['targets'];
-        $signedData['delegations']['keys'] = (object) $signedData['delegations']['keys'];
+        $normalized['targets'] = (object) $normalized['targets'];
+        $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
 
-        return $signedData;
+        return $normalized;
     }
 
     /**

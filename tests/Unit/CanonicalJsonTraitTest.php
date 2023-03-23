@@ -3,32 +3,33 @@
 namespace Tuf\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\JsonNormalizer;
+use Tuf\CanonicalJsonTrait;
 
 /**
- * @coversDefaultClass \Tuf\JsonNormalizer
+ * @coversDefaultClass \Tuf\CanonicalJsonTrait
  */
-class JsonNormalizerTest extends TestCase
+class CanonicalJsonTraitTest extends TestCase
 {
+    use CanonicalJsonTrait;
 
     /**
-     * @covers ::rKeySort
+     * @covers ::sortKeys
      */
     public function testSort(): void
     {
         $fixturesDirectory = __DIR__ . '/../../fixtures/json';
         $sortedData = json_decode(file_get_contents("$fixturesDirectory/sorted.json"), true, 512, JSON_THROW_ON_ERROR);
         $unsortedData = json_decode(file_get_contents("$fixturesDirectory/unsorted.json"), true, 512, JSON_THROW_ON_ERROR);
-        JsonNormalizer::rKeySort($unsortedData);
+        static::sortKeys($unsortedData);
         $this->assertSame($unsortedData, $sortedData);
     }
 
     /**
-     * @covers ::asNormalizedJson
+     * @covers ::encodeJson
      */
     public function testSlashEscaping(): void
     {
-        $json = JsonNormalizer::asNormalizedJson(['here/there' => 'everywhere']);
+        $json = static::encodeJson(['here/there' => 'everywhere']);
         $this->assertSame('{"here/there":"everywhere"}', $json);
     }
 }

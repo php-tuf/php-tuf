@@ -11,13 +11,14 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\JsonNormalizer;
+use Tuf\CanonicalJsonTrait;
 
 /**
  * Base class for metadata.
  */
-abstract class MetadataBase implements \JsonSerializable
+abstract class MetadataBase
 {
+    use CanonicalJsonTrait;
     use ConstraintsTrait;
 
     /**
@@ -48,13 +49,27 @@ abstract class MetadataBase implements \JsonSerializable
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a normalized array versuib of this object for JSON encoding.
+     *
+     * @see ::toCanonicalJson()
+     *
+     * @return array
+     *   A normalized array representation of this object.
      */
-    public function jsonSerialize(): array
+    protected function toNormalizedArray(): array
     {
-        $signedData = $this->getSigned();
-        JsonNormalizer::rKeySort($signedData);
-        return $signedData;
+        return $this->getSigned();
+    }
+
+    /**
+     * Returns a canonical JSON representation of this metadata object.
+     *
+     * @return string
+     *   The canonical JSON representation of this object.
+     */
+    public function toCanonicalJson(): string
+    {
+        return static::encodeJson($this->toNormalizedArray());
     }
 
     /**

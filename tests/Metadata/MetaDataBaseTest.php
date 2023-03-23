@@ -3,6 +3,7 @@
 namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\FixturesTrait;
@@ -13,6 +14,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 abstract class MetadataBaseTest extends TestCase
 {
+    use CanonicalJsonTrait;
     use FixturesTrait;
     use UtilsTrait;
 
@@ -433,12 +435,10 @@ abstract class MetadataBaseTest extends TestCase
     }
 
     /**
-     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     * @covers ::toCanonicalJson
      *
      * @param string $validJson
      *   The valid json key from $this->clientStorage.
-     *
-     * @return void
      *
      * @dataProvider providerValidMetadata
      */
@@ -447,6 +447,6 @@ abstract class MetadataBaseTest extends TestCase
         $contents = $this->clientStorage->read($validJson);
         $json = json_decode($contents);
         $metadata = static::callCreateFromJson($contents);
-        $this->assertEquals(json_encode($json->signed), json_encode($metadata, JSON_UNESCAPED_SLASHES));
+        $this->assertEquals(json_encode($json->signed), $metadata->toCanonicalJson());
     }
 }
