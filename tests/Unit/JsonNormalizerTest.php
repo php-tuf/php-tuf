@@ -17,8 +17,8 @@ class JsonNormalizerTest extends TestCase
     public function testSort(): void
     {
         $fixturesDirectory = __DIR__ . '/../../fixtures/json';
-        $sortedData = json_decode(file_get_contents("$fixturesDirectory/sorted.json"), TRUE, 512, JSON_THROW_ON_ERROR);
-        $unsortedData = json_decode(file_get_contents("$fixturesDirectory/unsorted.json"), TRUE, 512, JSON_THROW_ON_ERROR);
+        $sortedData = json_decode(file_get_contents("$fixturesDirectory/sorted.json"), true, 512, JSON_THROW_ON_ERROR);
+        $unsortedData = json_decode(file_get_contents("$fixturesDirectory/unsorted.json"), true, 512, JSON_THROW_ON_ERROR);
         JsonNormalizer::rKeySort($unsortedData);
         $this->assertSame($unsortedData, $sortedData);
     }
