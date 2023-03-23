@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Tuf\DelegatedRole;
+use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Key;
 
@@ -40,6 +41,22 @@ class TargetsMetadata extends MetadataBase
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;
         return $newMetadata;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function validate(array $data, Collection $constraints): void
+    {
+        parent::validate($data, $constraints);
+
+        // The TUF spec requires that all delegated role names be unique.
+        // @todo Use Symfony's Unique constraint for this when at least Symonfy
+        //   6.1 is required.
+        $delegatedRoles = array_column($data['delegations']['roles'] ?? [], 'name');
+        if ($delegatedRoles !== array_unique($delegatedRoles)) {
+            throw new MetadataException("Delegated role names must be unique.");
+        }
     }
 
     /**
