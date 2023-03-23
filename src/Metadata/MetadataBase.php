@@ -38,19 +38,19 @@ abstract class MetadataBase implements \JsonSerializable
     /**
      * MetadataBase constructor.
      *
-     * @param \ArrayObject $metadata
+     * @param array $metadata
      *   The data.
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(protected iterable $metadata, protected string $sourceJson)
+    public function __construct(protected array $metadata, protected string $sourceJson)
     {
     }
 
     /**
      * {@inheritDoc}
      */
-    public function jsonSerialize(): iterable
+    public function jsonSerialize(): array
     {
         $signedData = $this->getSigned();
         JsonNormalizer::rKeySort($signedData);
@@ -148,10 +148,10 @@ abstract class MetadataBase implements \JsonSerializable
     /**
      * Get signed.
      *
-     * @return iterable
+     * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned(): iterable
+    public function getSigned(): array
     {
         return $this->metadata['signed'];
     }

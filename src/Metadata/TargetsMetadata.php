@@ -45,7 +45,7 @@ class TargetsMetadata extends MetadataBase
     /**
      * {@inheritDoc}
      */
-    public function jsonSerialize(): iterable
+    public function jsonSerialize(): array
     {
         $signedData = parent::jsonSerialize();
         $signedData['delegations']['keys'] = (object) $signedData['delegations']['keys'];
