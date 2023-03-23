@@ -29,9 +29,14 @@ def _build(consistent):
     fixture.repository.mark_dirty(['timestamp'])
     fixture.publish(consistent=consistent)
 
+    fixture.add_key('timestamp')
+
     timestamp = fixture.read('timestamp.json')
-    signature = timestamp['signatures'][0].copy()
-    timestamp["signatures"] = [signature, signature]
+    timestamp["signatures"][1] = {
+        'keyid': fixture._keys['timestamp']['public'][2]['keyid'],
+        # This is the SHA-512 hash of the sentence "This is just a random string".
+        'sig': 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545'
+    }
 
     fixture.write('timestamp.json', timestamp)
 
