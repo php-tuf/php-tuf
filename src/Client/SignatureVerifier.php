@@ -3,7 +3,6 @@
 namespace Tuf\Client;
 
 use Tuf\Exception\Attack\SignatureThresholdException;
-use Tuf\JsonNormalizer;
 use Tuf\Key;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
@@ -58,7 +57,7 @@ final class SignatureVerifier
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
+        $canonicalBytes = json_encode($metadata, JSON_UNESCAPED_SLASHES);
         foreach ($signatures as $signature) {
             // Don't allow the same key to be counted twice.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {

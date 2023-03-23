@@ -43,6 +43,23 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function jsonSerialize(): iterable
+    {
+        $signedData = parent::jsonSerialize();
+        $signedData['delegations']['keys'] = (object) $signedData['delegations']['keys'];
+        foreach ($signedData['targets'] as $path => $target) {
+            if (!isset($target['custom'])) {
+                continue;
+            }
+            $signedData['targets'][$path]['custom'] = (object) $target['custom'];
+        }
+        $signedData['targets'] = (object) $signedData['targets'];
+        return $signedData;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected static function getSignedCollectionOptions(): array
