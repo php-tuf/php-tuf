@@ -64,7 +64,7 @@ class JsonNormalizer
      *
      * @return void
      */
-    private static function rKeySort(iterable &$structure): void
+    public static function rKeySort(iterable &$structure): void
     {
         if (is_array($structure)) {
             if (!ksort($structure, SORT_STRING)) {

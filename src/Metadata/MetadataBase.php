@@ -17,7 +17,7 @@ use Tuf\JsonNormalizer;
 /**
  * Base class for metadata.
  */
-abstract class MetadataBase
+abstract class MetadataBase implements \JsonSerializable
 {
     use ConstraintsTrait;
 
@@ -46,6 +46,16 @@ abstract class MetadataBase
      */
     public function __construct(protected \ArrayObject $metadata, protected string $sourceJson, protected array $data)
     {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function jsonSerialize(): iterable
+    {
+        $signedData = $this->getSigned(true);
+        JsonNormalizer::rKeySort($signedData);
+        return $signedData;
     }
 
     /**
