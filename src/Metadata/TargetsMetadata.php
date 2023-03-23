@@ -48,14 +48,20 @@ class TargetsMetadata extends MetadataBase
     public function jsonSerialize(): array
     {
         $signedData = parent::jsonSerialize();
-        $signedData['delegations']['keys'] = (object) $signedData['delegations']['keys'];
+
         foreach ($signedData['targets'] as $path => $target) {
-            if (!isset($target['custom'])) {
-                continue;
+            // Custom target info should always encode to an object, even if
+            // it's empty.
+            if (array_key_exists('custom', $target)) {
+                $target['custom'] = (object) $target['custom'];
             }
-            $signedData['targets'][$path]['custom'] = (object) $target['custom'];
+            $signedData['targets'][$path] = $target;
         }
+
+        // Ensure that these will encode as objects even if they're empty.
         $signedData['targets'] = (object) $signedData['targets'];
+        $signedData['delegations']['keys'] = (object) $signedData['delegations']['keys'];
+
         return $signedData;
     }
 
