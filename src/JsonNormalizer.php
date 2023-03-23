@@ -32,27 +32,7 @@ class JsonNormalizer
     }
 
     /**
-     * Decodes a string to data that can be used with ::asNormalizedJson().
-     *
-     * @param string $json
-     *   The JSON string.
-     *
-     * @return iterable
-     *   The data with all stdClass instances replaced with ArrayObject.
-     */
-    public static function decode(string $json): iterable
-    {
-        $data = json_decode($json);
-        return static::replaceStdClassWithArrayObject($data);
-    }
-
-    /**
      * Sorts the JSON data array into a canonical order.
-     *
-     * This method should be used to sort data structures that were passed
-     * through \Tuf\JsonNormalizer::replaceStdClassWithArrayObject().
-     *
-     * @see \Tuf\JsonNormalizer::replaceStdClassWithArrayObject()
      *
      * @param iterable $structure
      *     The JSON data to sort, passed by reference.
@@ -81,38 +61,5 @@ class JsonNormalizer
                 self::rKeySort($structure[$key]);
             }
         }
-    }
-
-    /**
-     * Replaces all instance of \stdClass in the data structure with \ArrayObject.
-     *
-     * Symfony Validator library's built-in constraints cannot validate
-     * \stdClass objects. This method should only be used with the return value
-     * of json_decode therefore should not contain any objects except instances
-     * of \stdClass.
-     *
-     * @param array|\stdClass $data
-     *   The data to convert. The data structure should contain no objects
-     *   except \stdClass instances.
-     *
-     * @return iterable
-     *   The data with all stdClass instances replaced with ArrayObject.
-     *
-     * @throws \RuntimeException
-     *   Thrown if the an object other than \stdClass is found.
-     */
-    private static function replaceStdClassWithArrayObject($data): iterable
-    {
-        if ($data instanceof \stdClass) {
-            $data = new \ArrayObject($data);
-        } elseif (!is_array($data)) {
-            throw new \RuntimeException('Cannot convert type: ' . get_class($data));
-        }
-        foreach ($data as $key => $datum) {
-            if (is_array($datum) || is_object($datum)) {
-                $data[$key] = static::replaceStdClassWithArrayObject($datum);
-            }
-        }
-        return $data;
     }
 }

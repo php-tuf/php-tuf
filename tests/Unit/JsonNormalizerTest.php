@@ -12,25 +12,19 @@ class JsonNormalizerTest extends TestCase
 {
 
     /**
-     * @covers ::asNormalizedJson
-     * @covers ::decode
-     *
-     * @return void
+     * @covers ::rKeySort
      */
     public function testSort(): void
     {
         $fixturesDirectory = __DIR__ . '/../../fixtures/json';
-        $sortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/sorted.json"));
-        $unsortedData = JsonNormalizer::decode(file_get_contents("$fixturesDirectory/unsorted.json"));
-        $normalizedFromUnsorted = JsonNormalizer::asNormalizedJson($unsortedData);
-        $this->assertSame(JsonNormalizer::asNormalizedJson($sortedData), $normalizedFromUnsorted);
-        $this->assertSame(json_encode($sortedData), $normalizedFromUnsorted);
+        $sortedData = json_decode(file_get_contents("$fixturesDirectory/sorted.json"), TRUE, 512, JSON_THROW_ON_ERROR);
+        $unsortedData = json_decode(file_get_contents("$fixturesDirectory/unsorted.json"), TRUE, 512, JSON_THROW_ON_ERROR);
+        JsonNormalizer::rKeySort($unsortedData);
+        $this->assertSame($unsortedData, $sortedData);
     }
 
     /**
      * @covers ::asNormalizedJson
-     *
-     * @return void
      */
     public function testSlashEscaping(): void
     {
