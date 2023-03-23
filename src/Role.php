@@ -28,7 +28,7 @@ class Role
     /**
      * Creates a role object from TUF metadata.
      *
-     * @param \ArrayObject $roleInfo
+     * @param array $roleInfo
      *   The role information from TUF metadata.
      * @param string $name
      *   The name of the role.
@@ -37,7 +37,7 @@ class Role
      *
      * @see https://theupdateframework.github.io/specification/v1.0.20#document-formats
      */
-    public static function createFromMetadata(iterable $roleInfo, string $name): Role
+    public static function createFromMetadata(array $roleInfo, string $name): Role
     {
         self::validate($roleInfo, static::getRoleConstraints());
         return new static(
