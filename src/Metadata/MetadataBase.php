@@ -139,12 +139,12 @@ abstract class MetadataBase
     /**
      * Get signed.
      *
-     * @return \ArrayObject
+     * @return iterable
      *   The "signed" section of the data.
      */
-    public function getSigned(): \ArrayObject
+    public function getSigned(bool $asArray = false): iterable
     {
-        return (new DeepCopy())->copy($this->metadata['signed']);
+        return $asArray ? $this->data['signed'] : (new DeepCopy())->copy($this->metadata['signed']);
     }
 
     /**
