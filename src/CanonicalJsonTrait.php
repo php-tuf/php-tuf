@@ -53,7 +53,7 @@ trait CanonicalJsonTrait
      * @throws \RuntimeException
      *     Thrown if sorting the array fails.
      */
-    protected static function sortKeys(array &$data): void
+    private static function sortKeys(array &$data): void
     {
         if (!ksort($data, SORT_STRING)) {
             throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
