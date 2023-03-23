@@ -43,6 +43,28 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
+     * {@inheritDoc}
+     */
+    protected function toNormalizedArray(): array
+    {
+        $normalized = parent::toNormalizedArray();
+
+        foreach ($normalized['targets'] as $path => $target) {
+            // Custom target info should always encode to an object, even if
+            // it's empty.
+            if (array_key_exists('custom', $target)) {
+                $normalized['targets'][$path]['custom'] = (object) $target['custom'];
+            }
+        }
+
+        // Ensure that these will encode as objects even if they're empty.
+        $normalized['targets'] = (object) $normalized['targets'];
+        $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+
+        return $normalized;
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected static function getSignedCollectionOptions(): array
@@ -51,13 +73,13 @@ class TargetsMetadata extends MetadataBase
         $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new All([
                         static::getKeyConstraints(),
                     ]),
                 ]),
                 'roles' => new All([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new TufCollection([
                         'fields' => [
                             'name' => [
@@ -90,7 +112,7 @@ class TargetsMetadata extends MetadataBase
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([
-                        new Type('\ArrayObject'),
+                        new Type('array'),
                     ]),
                 ] + static::getHashesConstraints()),
             ]),
@@ -127,11 +149,11 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The known hashes for the object. The keys are the hash algorithm (e.g.
      *   'sha256') and the values are the hash digest.
      */
-    public function getHashes(string $target): \ArrayObject
+    public function getHashes(string $target): array
     {
         return $this->getInfo($target)['hashes'];
     }
@@ -161,13 +183,13 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The target's info.
      *
      * @throws \Tuf\Exception\NotFoundException
      *   Thrown if the target is not mentioned in this metadata.
      */
-    protected function getInfo(string $target): \ArrayObject
+    protected function getInfo(string $target): array
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {

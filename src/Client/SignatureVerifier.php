@@ -3,7 +3,6 @@
 namespace Tuf\Client;
 
 use Tuf\Exception\Attack\SignatureThresholdException;
-use Tuf\JsonNormalizer;
 use Tuf\Key;
 use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
@@ -58,10 +57,9 @@ final class SignatureVerifier
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
         foreach ($signatures as $signature) {
             // Don't allow the same key to be counted twice.
-            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
+            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
@@ -83,7 +81,7 @@ final class SignatureVerifier
      *
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param \ArrayAccess $signatureMeta
+     * @param array $signatureMeta
      *     The ArrayAccess object of metadata for the signature. Each signature
      *     metadata contains two elements:
      *     - keyid: The identifier of the key signing the role data.
@@ -93,7 +91,7 @@ final class SignatureVerifier
      * @return boolean
      *     TRUE if the signature is valid for $bytes.
      */
-    private function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
+    private function verifySingleSignature(string $bytes, array $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $pubkey = $this->keyDb->getKey($signatureMeta['keyid'])->getPublic();

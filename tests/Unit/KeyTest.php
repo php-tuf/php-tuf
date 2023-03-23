@@ -23,9 +23,9 @@ class KeyTest extends TestCase
         $data += [
             'keytype' => 'ed11111',
             'scheme' => 'scheme-ed11111',
-            'keyval' => new \ArrayObject(['public' => '12345']),
+            'keyval' => ['public' => '12345'],
         ];
-        $key = Key::createFromMetadata(new \ArrayObject($data));
+        $key = Key::createFromMetadata($data);
         self::assertInstanceOf(Key::class, $key);
         self::assertSame('ed11111', $key->getType());
         self::assertSame('12345', $key->getPublic());

@@ -9,6 +9,7 @@ use Tuf\Metadata\ConstraintsTrait;
  */
 final class Key
 {
+    use CanonicalJsonTrait;
     use ConstraintsTrait;
 
     /**
@@ -28,8 +29,8 @@ final class Key
     /**
      * Creates a key object from TUF metadata.
      *
-     * @param \ArrayObject $keyInfo
-     *   The key information from TUF metadata including.
+     * @param array $keyInfo
+     *   The key information from TUF metadata, including:
      *   - keytype: The public key signature system, e.g. 'ed25519'.
      *   - scheme: The corresponding signature scheme, e.g. 'ed25519'.
      *   - keyval: An associative array containing the public key value.
@@ -39,7 +40,7 @@ final class Key
      *
      * @see https://theupdateframework.github.io/specification/v1.0.20#document-formats
      */
-    public static function createFromMetadata(\ArrayObject $keyInfo): self
+    public static function createFromMetadata(array $keyInfo): self
     {
         self::validate($keyInfo, static::getKeyConstraints());
         return new static(
@@ -94,14 +95,14 @@ final class Key
         // since this is how it's calculated in the securesystemslib code and
         // any value for keyid_hash_algorithms in the key data in root.json is
         // ignored.
-        $keyCanonicalStruct = [
+        $canonical = self::encodeJson([
             'keytype' => $this->getType(),
             'scheme' => $this->scheme,
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
-            'keyval' => ['public' => $this->getPublic()],
-        ];
-        $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
-
-        return hash('sha256', $keyCanonicalForm, false);
+            'keyval' => [
+                'public' => $this->getPublic(),
+            ],
+        ]);
+        return hash('sha256', $canonical);
     }
 }

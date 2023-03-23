@@ -2,7 +2,6 @@
 
 namespace Tuf\Metadata;
 
-use DeepCopy\DeepCopy;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
@@ -12,13 +11,14 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\JsonNormalizer;
+use Tuf\CanonicalJsonTrait;
 
 /**
  * Base class for metadata.
  */
 abstract class MetadataBase
 {
+    use CanonicalJsonTrait;
     use ConstraintsTrait;
 
     /**
@@ -39,13 +39,37 @@ abstract class MetadataBase
     /**
      * MetadataBase constructor.
      *
-     * @param \ArrayObject $metadata
+     * @param array $metadata
      *   The data.
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(protected \ArrayObject $metadata, protected string $sourceJson)
+    public function __construct(protected array $metadata, protected string $sourceJson)
     {
+    }
+
+    /**
+     * Returns a normalized array version of this object for JSON encoding.
+     *
+     * @see ::toCanonicalJson()
+     *
+     * @return array
+     *   A normalized array representation of this object.
+     */
+    protected function toNormalizedArray(): array
+    {
+        return $this->getSigned();
+    }
+
+    /**
+     * Returns a canonical JSON representation of this metadata object.
+     *
+     * @return string
+     *   The canonical JSON representation of this object.
+     */
+    public function toCanonicalJson(): string
+    {
+        return static::encodeJson($this->toNormalizedArray());
     }
 
     /**
@@ -73,7 +97,7 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json): static
     {
-        $data = JsonNormalizer::decode($json);
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         static::validate($data, new Collection(static::getConstraints()));
         return new static($data, $json);
     }
@@ -139,12 +163,12 @@ abstract class MetadataBase
     /**
      * Get signed.
      *
-     * @return \ArrayObject
+     * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned(): \ArrayObject
+    public function getSigned(): array
     {
-        return (new DeepCopy())->copy($this->metadata['signed']);
+        return $this->metadata['signed'];
     }
 
     /**
@@ -177,7 +201,7 @@ abstract class MetadataBase
      */
     public function getSignatures(): array
     {
-        return (new DeepCopy())->copy($this->metadata['signatures']);
+        return $this->metadata['signatures'];
     }
 
     /**

@@ -114,6 +114,6 @@ class DelegatedRoleTest extends RoleTest
                 'path2',
             ],
         ];
-        return DelegatedRole::createFromMetadata(new \ArrayObject($data));
+        return DelegatedRole::createFromMetadata($data);
     }
 }
