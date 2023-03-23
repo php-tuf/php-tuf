@@ -53,7 +53,7 @@ class TargetsMetadata extends MetadataBase
         // The TUF spec requires that all delegated role names be unique.
         // @todo Use Symfony's Unique constraint for this when at least Symonfy
         //   6.1 is required.
-        $delegatedRoles = array_column($data['delegations']['roles'] ?? [], 'name');
+        $delegatedRoles = array_column($data['signed']['delegations']['roles'] ?? [], 'name');
         if ($delegatedRoles !== array_unique($delegatedRoles)) {
             throw new MetadataException("Delegated role names must be unique.");
         }
