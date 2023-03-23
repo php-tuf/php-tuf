@@ -2,7 +2,6 @@
 
 namespace Tuf\Metadata;
 
-use DeepCopy\DeepCopy;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
@@ -44,7 +43,7 @@ abstract class MetadataBase implements \JsonSerializable
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(protected iterable $metadata, protected string $sourceJson, protected array $data)
+    public function __construct(protected iterable $metadata, protected string $sourceJson)
     {
     }
 
@@ -53,7 +52,7 @@ abstract class MetadataBase implements \JsonSerializable
      */
     public function jsonSerialize(): iterable
     {
-        $signedData = $this->getSigned(true);
+        $signedData = $this->getSigned();
         JsonNormalizer::rKeySort($signedData);
         return $signedData;
     }
@@ -152,9 +151,9 @@ abstract class MetadataBase implements \JsonSerializable
      * @return iterable
      *   The "signed" section of the data.
      */
-    public function getSigned(bool $asArray = true): iterable
+    public function getSigned(): iterable
     {
-        return $asArray ? $this->data['signed'] : (new DeepCopy())->copy($this->metadata['signed']);
+        return $this->metadata['signed'];
     }
 
     /**
@@ -187,7 +186,7 @@ abstract class MetadataBase implements \JsonSerializable
      */
     public function getSignatures(): array
     {
-        return (new DeepCopy())->copy($this->metadata['signatures']);
+        return $this->metadata['signatures'];
     }
 
     /**
