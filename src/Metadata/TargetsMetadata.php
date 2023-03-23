@@ -68,13 +68,13 @@ class TargetsMetadata extends MetadataBase
         $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new All([
                         static::getKeyConstraints(),
                     ]),
                 ]),
                 'roles' => new All([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new TufCollection([
                         'fields' => [
                             'name' => [
@@ -107,7 +107,7 @@ class TargetsMetadata extends MetadataBase
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([
-                        new Type('\ArrayObject'),
+                        new Type('array'),
                     ]),
                 ] + static::getHashesConstraints()),
             ]),
@@ -148,7 +148,7 @@ class TargetsMetadata extends MetadataBase
      *   The known hashes for the object. The keys are the hash algorithm (e.g.
      *   'sha256') and the values are the hash digest.
      */
-    public function getHashes(string $target): \ArrayObject
+    public function getHashes(string $target): iterable
     {
         return $this->getInfo($target)['hashes'];
     }
@@ -184,7 +184,7 @@ class TargetsMetadata extends MetadataBase
      * @throws \Tuf\Exception\NotFoundException
      *   Thrown if the target is not mentioned in this metadata.
      */
-    protected function getInfo(string $target): \ArrayObject
+    protected function getInfo(string $target): iterable
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {

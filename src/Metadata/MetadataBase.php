@@ -44,7 +44,7 @@ abstract class MetadataBase implements \JsonSerializable
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(protected \ArrayObject $metadata, protected string $sourceJson, protected array $data)
+    public function __construct(protected iterable $metadata, protected string $sourceJson, protected array $data)
     {
     }
 
@@ -83,7 +83,7 @@ abstract class MetadataBase implements \JsonSerializable
      */
     public static function createFromJson(string $json): static
     {
-        $data = JsonNormalizer::decode($json);
+        $data = json_decode($json, TRUE, 512, JSON_THROW_ON_ERROR);
         static::validate($data, new Collection(static::getConstraints()));
         return new static($data, $json, json_decode($json, TRUE, 512, JSON_THROW_ON_ERROR));
     }
@@ -152,7 +152,7 @@ abstract class MetadataBase implements \JsonSerializable
      * @return iterable
      *   The "signed" section of the data.
      */
-    public function getSigned(bool $asArray = false): iterable
+    public function getSigned(bool $asArray = true): iterable
     {
         return $asArray ? $this->data['signed'] : (new DeepCopy())->copy($this->metadata['signed']);
     }

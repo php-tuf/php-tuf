@@ -92,7 +92,7 @@ final class SignatureVerifier
      * @return boolean
      *     TRUE if the signature is valid for $bytes.
      */
-    private function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
+    private function verifySingleSignature(string $bytes, array $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $pubkey = $this->keyDb->getKey($signatureMeta['keyid'])->getPublic();

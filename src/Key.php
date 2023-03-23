@@ -39,7 +39,7 @@ final class Key
      *
      * @see https://theupdateframework.github.io/specification/v1.0.20#document-formats
      */
-    public static function createFromMetadata(\ArrayObject $keyInfo): self
+    public static function createFromMetadata(iterable $keyInfo): self
     {
         self::validate($keyInfo, static::getKeyConstraints());
         return new static(

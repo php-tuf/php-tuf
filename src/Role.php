@@ -37,7 +37,7 @@ class Role
      *
      * @see https://theupdateframework.github.io/specification/v1.0.20#document-formats
      */
-    public static function createFromMetadata(\ArrayObject $roleInfo, string $name): Role
+    public static function createFromMetadata(iterable $roleInfo, string $name): Role
     {
         self::validate($roleInfo, static::getRoleConstraints());
         return new static(

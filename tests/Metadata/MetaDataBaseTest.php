@@ -4,7 +4,6 @@ namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Exception\MetadataException;
-use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -105,7 +104,7 @@ abstract class MetadataBaseTest extends TestCase
     {
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
+        $expectedMessage = preg_quote("Array[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -151,7 +150,7 @@ abstract class MetadataBaseTest extends TestCase
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
+            $expectedMessage = preg_quote('Array[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -176,7 +175,7 @@ abstract class MetadataBaseTest extends TestCase
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -202,7 +201,7 @@ abstract class MetadataBaseTest extends TestCase
     {
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Array[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
@@ -448,6 +447,6 @@ abstract class MetadataBaseTest extends TestCase
         $contents = $this->clientStorage->read($validJson);
         $json = json_decode($contents);
         $metadata = static::callCreateFromJson($contents);
-        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metadata->getSigned()));
+        $this->assertEquals(json_encode($json->signed), json_encode($metadata, JSON_UNESCAPED_SLASHES));
     }
 }

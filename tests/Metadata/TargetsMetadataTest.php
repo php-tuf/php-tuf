@@ -47,7 +47,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $json = json_decode($json, true);
 
         $target = key($json['signed']['targets']);
-        $this->assertSame($metadata->getHashes($target)->getArrayCopy(), $json['signed']['targets'][$target]['hashes']);
+        $this->assertSame($metadata->getHashes($target), $json['signed']['targets'][$target]['hashes']);
         $this->assertSame($metadata->getLength($target), $json['signed']['targets'][$target]['length']);
 
         // Trying to get information about an unknown target should throw.
@@ -115,7 +115,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:hashes", 'array'];
         $data[] = ["signed:targets:$target:length", 'int'];
-        $data[] = ["signed:targets:$target:custom", '\ArrayObject'];
+        $data[] = ["signed:targets:$target:custom", 'array'];
         return $data;
     }
 
@@ -130,7 +130,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = [
             'signed:delegations',
             [
-                'keys' => new \ArrayObject(),
+                'keys' => [],
                 'roles' => [],
             ],
         ];
@@ -208,7 +208,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $keyId = key($data['signed']['delegations']['keys']);
         $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
         self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
+        $expectedMessage = preg_quote("Array[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
         $expectedMessage .= '.* This value should be equal to array';
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($data));
@@ -222,7 +222,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function providerUnsupportedFields(): array
     {
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]", '/');
+        $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]", '/');
         $expectedMessage .= ".*This field is not supported.";
         $cases['path_hash_prefixes'] = [
             ['signed', 'delegations', 'roles', 0, 'path_hash_prefixes'],

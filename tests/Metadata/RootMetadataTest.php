@@ -80,7 +80,7 @@ class RootMetadataTest extends MetadataBaseTest
     public function testRequiredRoles(string $missingRole): void
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][$missingRole]:", '/');
+        $expectedMessage = preg_quote("Array[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         $data = json_decode($this->clientStorage->read($this->validJson), true);
@@ -129,7 +129,7 @@ class RootMetadataTest extends MetadataBaseTest
     public function testInvalidRoleName(): void
     {
         $this->expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][roles][super_root]:", '/');
+        $expectedMessage = preg_quote("Array[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
         $data = json_decode($this->clientStorage->read($this->validJson), true);
@@ -204,7 +204,7 @@ class RootMetadataTest extends MetadataBaseTest
         $keyId = key($data['signed']['keys']);
         $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
         self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][keys][$keyId][keyid_hash_algorithms]:", '/');
+        $expectedMessage = preg_quote("Array[signed][keys][$keyId][keyid_hash_algorithms]:", '/');
         $expectedMessage .= '.* This value should be equal to array';
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($data));

@@ -47,11 +47,11 @@ class KeyDBTest extends TestCase
 
     public function testUnsupportedKeyType(): void
     {
-        $key = new \ArrayObject([
+        $key = [
             'keytype' => 'unsupported',
             'scheme' => 'ed25519',
-            'keyval' => new \ArrayObject(['public' => 'this is the public key']),
-        ]);
+            'keyval' => ['public' => 'this is the public key'],
+        ];
 
         $rootMetadata = $this->prophesize(RootMetadata::class);
         $rootMetadata->getKeys(false)->willReturn([
