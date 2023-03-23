@@ -127,6 +127,10 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
+                // The TUF spec requires that every key is uniquely identified.
+                // Incidentally, all the hashes should be unique as well, so it
+                // makes sense to just validate that the key IDs *and* the
+                // signatures are unique.
                 new Unique(),
             ]),
             'signed' => new Required([
