@@ -81,7 +81,7 @@ final class SignatureVerifier
      *
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param \ArrayAccess $signatureMeta
+     * @param array $signatureMeta
      *     The ArrayAccess object of metadata for the signature. Each signature
      *     metadata contains two elements:
      *     - keyid: The identifier of the key signing the role data.
