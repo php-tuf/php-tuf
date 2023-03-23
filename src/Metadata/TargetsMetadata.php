@@ -144,11 +144,11 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The known hashes for the object. The keys are the hash algorithm (e.g.
      *   'sha256') and the values are the hash digest.
      */
-    public function getHashes(string $target): iterable
+    public function getHashes(string $target): array
     {
         return $this->getInfo($target)['hashes'];
     }
@@ -178,13 +178,13 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The target's info.
      *
      * @throws \Tuf\Exception\NotFoundException
      *   Thrown if the target is not mentioned in this metadata.
      */
-    protected function getInfo(string $target): iterable
+    protected function getInfo(string $target): array
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {

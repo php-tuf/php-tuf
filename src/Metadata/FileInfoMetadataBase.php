@@ -15,10 +15,10 @@ abstract class FileInfoMetadataBase extends MetadataBase
      * @param boolean $allowUntrustedAccess
      *   Whether this method should access even if the metadata is not trusted.
      *
-     * @return \ArrayObject|null
+     * @return array|null
      *   The file information if available or null if not set.
      */
-    public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false): ?iterable
+    public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false): ?array
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
         $signed = $this->getSigned();
