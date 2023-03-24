@@ -232,4 +232,19 @@ class TargetsMetadataTest extends MetadataBaseTest
         ];
         return $cases;
     }
+
+    public function testDuplicateDelegatedRoleNames(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = json_decode($json, true);
+
+        $this->assertNotEmpty($data['signed']['delegations']['roles']);
+        // Duplicating a role should raise a validation exception.
+        $data['signed']['delegations']['roles'][] = $data['signed']['delegations']['roles'][0];
+        $json = json_encode($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Delegated role names must be unique.');
+        static::callCreateFromJson($json);
+    }
 }

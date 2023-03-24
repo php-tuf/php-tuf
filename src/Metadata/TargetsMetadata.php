@@ -3,7 +3,9 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Tuf\Constraints\Collection as TufCollection;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -40,6 +42,28 @@ class TargetsMetadata extends MetadataBase
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;
         return $newMetadata;
+    }
+
+    /**
+     * Validates that delegated role names are unique.
+     *
+     * @todo Use Symfony's Unique constraint for this when at least Symfony
+     *   6.1 is required in https://github.com/php-tuf/php-tuf/issues/317.
+     *
+     * @param mixed $delegations
+     *   The value to be validated.
+     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
+     *   The validation context.
+     */
+    public static function validateDelegatedRoles(mixed $delegations, ExecutionContextInterface $context): void
+    {
+        if (!is_array($delegations)) {
+            return;
+        }
+        $names = array_column($delegations['roles'] ?? [], 'name');
+        if ($names !== array_unique($names)) {
+            $context->addViolation('Delegated role names must be unique.');
+        }
     }
 
     /**
@@ -103,6 +127,7 @@ class TargetsMetadata extends MetadataBase
                     ]),
                 ]),
             ]),
+            new Callback([static::class, 'validateDelegatedRoles']),
         ]);
         $options['fields']['targets'] = new Required([
             new All([
