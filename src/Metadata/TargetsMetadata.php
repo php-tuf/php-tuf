@@ -110,13 +110,13 @@ class TargetsMetadata extends MetadataBase
                                 new NotBlank(),
                                 new Type('string'),
                             ],
-                            'paths' => [
+                            'paths' => new Optional([
                                 new Type('array'),
                                 new All([
                                     new Type('string'),
                                     new NotBlank(),
                                 ]),
-                            ],
+                            ]),
                             'terminating' => [
                                 new Type('boolean'),
                             ],
