@@ -51,7 +51,7 @@ class TargetsMetadata extends MetadataBase
         parent::validate($data, $constraints);
 
         // The TUF spec requires that all delegated role names be unique.
-        // @todo Use Symfony's Unique constraint for this when at least Symonfy
+        // @todo Use Symfony's Unique constraint for this when at least Symfony
         //   6.1 is required.
         $delegatedRoles = array_column($data['signed']['delegations']['roles'] ?? [], 'name');
         if ($delegatedRoles !== array_unique($delegatedRoles)) {

@@ -449,4 +449,20 @@ abstract class MetadataBaseTest extends TestCase
         $metadata = static::callCreateFromJson($contents);
         $this->assertEquals(json_encode($json->signed), $metadata->toCanonicalJson());
     }
+
+    public function testDuplicateKeyId(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = static::decodeJson($json);
+        $this->assertNotEmpty($data['signatures']);
+        $data['signatures'][] = [
+          'keyid' => $data['signatures'][0]['keyid'],
+          'sig' => 'In real metadata, this would be a hash digest.',
+        ];
+        $json = static::encodeJson($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Key IDs must be unique.');
+        static::callCreateFromJson($json);
+    }
 }

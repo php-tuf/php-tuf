@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Constraints\Unique;
 use Tuf\CanonicalJsonTrait;
+use Tuf\Exception\MetadataException;
 
 /**
  * Base class for metadata.
@@ -20,7 +21,9 @@ use Tuf\CanonicalJsonTrait;
 abstract class MetadataBase
 {
     use CanonicalJsonTrait;
-    use ConstraintsTrait;
+    use ConstraintsTrait {
+        validate as traitValidate;
+    }
 
     /**
      * Metadata type.
@@ -127,16 +130,27 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
-                // The TUF spec requires that every key is uniquely identified.
-                // Incidentally, all the hashes should be unique as well, so it
-                // makes sense to just validate that the key IDs *and* the
-                // signatures are unique.
-                new Unique(),
             ]),
             'signed' => new Required([
                 new Collection(static::getSignedCollectionOptions()),
             ]),
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected static function validate(array $data, Collection $constraints): void
+    {
+        static::traitValidate($data, $constraints);
+
+        // The TUF spec requires that all key IDs be unique.
+        // @todo Use Symfony's Unique constraint for this when at least Symfony
+        //   6.1 is required.
+        $keyIds = array_column($data['signatures'], 'keyid');
+        if ($keyIds !== array_unique($keyIds)) {
+            throw new MetadataException("Key IDs must be unique.");
+        }
     }
 
     /**
