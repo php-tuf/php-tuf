@@ -3,6 +3,7 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\DateTime;
@@ -11,8 +12,8 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Tuf\CanonicalJsonTrait;
-use Tuf\Exception\MetadataException;
 
 /**
  * Base class for metadata.
@@ -20,9 +21,7 @@ use Tuf\Exception\MetadataException;
 abstract class MetadataBase
 {
     use CanonicalJsonTrait;
-    use ConstraintsTrait {
-        validate as traitValidate;
-    }
+    use ConstraintsTrait;
 
     /**
      * Metadata type.
@@ -129,6 +128,7 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
+                new Callback([static::class, 'validateKeyIds']),
             ]),
             'signed' => new Required([
                 new Collection(static::getSignedCollectionOptions()),
@@ -137,18 +137,24 @@ abstract class MetadataBase
     }
 
     /**
-     * {@inheritdoc}
+     * Validates that all signature key IDs are unique.
+     *
+     * @todo Use Symfony's Unique constraint for this when at least Symfony
+     *   6.1 is required in https://github.com/php-tuf/php-tuf/issues/317.
+     *
+     * @param mixed $signatures
+     *   The value to be validated.
+     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
+     *   The validation context.
      */
-    protected static function validate(array $data, Collection $constraints): void
+    public static function validateKeyIds(mixed $signatures, ExecutionContextInterface $context): void
     {
-        static::traitValidate($data, $constraints);
-
-        // The TUF spec requires that all key IDs be unique.
-        // @todo Use Symfony's Unique constraint for this when at least Symfony
-        //   6.1 is required.
-        $keyIds = array_column($data['signatures'], 'keyid');
+        if (!is_array($signatures)) {
+            return;
+        }
+        $keyIds = array_column($signatures, 'keyid');
         if ($keyIds !== array_unique($keyIds)) {
-            throw new MetadataException("Key IDs must be unique.");
+            $context->addViolation('Key IDs must be unique.');
         }
     }
 
