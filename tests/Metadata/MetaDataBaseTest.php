@@ -456,8 +456,8 @@ abstract class MetadataBaseTest extends TestCase
         $data = static::decodeJson($json);
         $this->assertNotEmpty($data['signatures']);
         $data['signatures'][] = [
-          'keyid' => $data['signatures'][0]['keyid'],
-          'sig' => 'In real metadata, this would be a hash digest.',
+            'keyid' => $data['signatures'][0]['keyid'],
+            'sig' => 'In real metadata, this would be a hash digest.',
         ];
         $json = static::encodeJson($data);
 

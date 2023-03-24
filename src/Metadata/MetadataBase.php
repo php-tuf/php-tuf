@@ -11,7 +11,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Symfony\Component\Validator\Constraints\Unique;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Exception\MetadataException;
 
