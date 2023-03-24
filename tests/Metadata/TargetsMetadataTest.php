@@ -97,7 +97,6 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ['signed:delegations:roles'];
         $data[] = ['signed:delegations:roles:0:keyids'];
         $data[] = ['signed:delegations:roles:0:name'];
-        $data[] = ['signed:delegations:roles:0:paths'];
         $data[] = ['signed:delegations:roles:0:terminating'];
         $data[] = ['signed:delegations:roles:0:threshold'];
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
@@ -133,6 +132,10 @@ class TargetsMetadataTest extends MetadataBaseTest
                 'keys' => [],
                 'roles' => [],
             ],
+        ];
+        $data[] = [
+            'signed:delegations:roles:0:paths',
+            ['delegated/path']
         ];
         return $data;
     }
