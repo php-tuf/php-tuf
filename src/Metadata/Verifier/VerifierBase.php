@@ -36,12 +36,15 @@ abstract class VerifierBase
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *   The untrusted metadata to verify.
      *
+     * @return \Tuf\Metadata\MetadataBase
+     *   The verified metadata.
+     *
      * @throws \Tuf\Exception\Attack\FreezeAttackException
      * @throws \Tuf\Exception\Attack\RollbackAttackException
      * @throws \Tuf\Exception\Attack\InvalidHashException
      * @throws \Tuf\Exception\Attack\SignatureThresholdException
      */
-    abstract public function verify(MetadataBase $untrustedMetadata): void;
+    abstract public function verify(MetadataBase $untrustedMetadata): MetadataBase;
 
     /**
      * Checks for a rollback attack.

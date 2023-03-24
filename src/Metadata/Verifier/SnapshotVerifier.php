@@ -35,7 +35,7 @@ class SnapshotVerifier extends FileInfoVerifier
     /**
      * {@inheritdoc}
      */
-    public function verify(MetadataBase $untrustedMetadata): void
+    public function verify(MetadataBase $untrustedMetadata): MetadataBase
     {
         // § 5.5.2
         $this->checkAgainstHashesFromTrustedAuthority($untrustedMetadata);
@@ -55,6 +55,8 @@ class SnapshotVerifier extends FileInfoVerifier
 
         // § 5.5.6
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
+
+        return $untrustedMetadata;
     }
 
     /**

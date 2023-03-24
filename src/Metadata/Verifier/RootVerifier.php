@@ -14,7 +14,7 @@ class RootVerifier extends VerifierBase
     /**
      * {@inheritDoc}
      */
-    public function verify(MetadataBase $untrustedMetadata): void
+    public function verify(MetadataBase $untrustedMetadata): MetadataBase
     {
         // § 5.3.4
         /** @var \Tuf\Metadata\RootMetadata $untrustedMetadata */
@@ -23,6 +23,8 @@ class RootVerifier extends VerifierBase
         $this->signatureVerifier->checkSignatures($untrustedMetadata);
         // § 5.3.5
         $this->checkRollbackAttack($untrustedMetadata);
+
+        return $untrustedMetadata;
     }
 
     /**

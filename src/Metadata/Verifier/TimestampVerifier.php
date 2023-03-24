@@ -12,7 +12,7 @@ class TimestampVerifier extends FileInfoVerifier
     /**
      * {@inheritdoc}
      */
-    public function verify(MetadataBase $untrustedMetadata): void
+    public function verify(MetadataBase $untrustedMetadata): MetadataBase
     {
         // § 5.4.2
         $this->signatureVerifier->checkSignatures($untrustedMetadata);
@@ -24,6 +24,8 @@ class TimestampVerifier extends FileInfoVerifier
         }
         // § 5.4.4
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
+
+        return $untrustedMetadata;
     }
 
     /**

@@ -34,7 +34,7 @@ class TargetsVerifier extends VerifierBase
     /**
      * {@inheritdoc}
      */
-    public function verify(MetadataBase $untrustedMetadata): void
+    public function verify(MetadataBase $untrustedMetadata): MetadataBase
     {
         // § 5.6.2
         $this->checkAgainstHashesFromTrustedAuthority($untrustedMetadata);
@@ -47,5 +47,7 @@ class TargetsVerifier extends VerifierBase
 
         // § 5.6.5
         static::checkFreezeAttack($untrustedMetadata, $this->metadataExpiration);
+
+        return $untrustedMetadata;
     }
 }

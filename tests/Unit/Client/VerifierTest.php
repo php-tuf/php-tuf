@@ -35,9 +35,10 @@ class VerifierTest extends TestCase
                 $this->trustedMetadata = $trustedMetadata;
             }
 
-            public function verify(MetadataBase $untrustedMetadata): void
+            public function verify(MetadataBase $untrustedMetadata): MetadataBase
             {
                 $this->checkRollbackAttack($untrustedMetadata);
+                return $untrustedMetadata;
             }
         };
 
@@ -78,9 +79,10 @@ class VerifierTest extends TestCase
                 $this->trustedMetadata = $trustedMetadata;
             }
 
-            public function verify(MetadataBase $untrustedMetadata): void
+            public function verify(MetadataBase $untrustedMetadata): MetadataBase
             {
                 $this->checkRollbackAttack($untrustedMetadata);
+                return $untrustedMetadata;
             }
         };
 
@@ -118,9 +120,10 @@ class VerifierTest extends TestCase
                 $this->trustedMetadata = $trustedMetadata;
             }
 
-            public function verify(MetadataBase $untrustedMetadata): void
+            public function verify(MetadataBase $untrustedMetadata): MetadataBase
             {
                 $this->checkRollbackAttack($untrustedMetadata);
+                return $untrustedMetadata;
             }
         };
 
