@@ -135,7 +135,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         ];
         $data[] = [
             'signed:delegations:roles:0:paths',
-            ['delegated/path']
+            ['delegated/path'],
         ];
         return $data;
     }
