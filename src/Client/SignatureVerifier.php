@@ -91,8 +91,7 @@ final class SignatureVerifier
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
      * @param array $signatureMeta
-     *     The ArrayAccess object of metadata for the signature. Each signature
-     *     metadata contains two elements:
+     *     An array of metadata about the signature. Must contain two elements:
      *     - keyid: The identifier of the key signing the role data.
      *     - sig: The hex-encoded signature of the canonical form of the
      *       metadata for the role.
@@ -101,13 +100,16 @@ final class SignatureVerifier
      *     TRUE if the signature is valid for $bytes.
      *
      * @throws \Tuf\Exception\NotFoundException
-     *   If the public key for the given signature has not been added.
+     *   If the key for the given signature has not been added by ::addKey().
      */
     private function verifySingleSignature(string $bytes, array $signatureMeta): bool
     {
         // Get the pubkey from the key database.
         $keyId = $signatureMeta['keyid'];
-        $pubkey = $this->keys[$keyId]?->getPublic() ?? throw new NotFoundException($keyId, 'key');
+        if (!array_key_exists($keyId, $this->keys)) {
+            throw new NotFoundException($keyId, 'key');
+        }
+        $pubkey = $this->keys[$keyId]->getPublic();
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
