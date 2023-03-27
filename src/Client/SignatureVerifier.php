@@ -3,8 +3,9 @@
 namespace Tuf\Client;
 
 use Tuf\Exception\Attack\SignatureThresholdException;
+use Tuf\Exception\InvalidKeyException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Key;
-use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Role;
@@ -16,9 +17,14 @@ use Tuf\RoleDB;
 final class SignatureVerifier
 {
     /**
+     * @var \Tuf\Key[]
+     */
+    private array $keys = [];
+
+    /**
      * SignatureVerifier constructor.
      */
-    private function __construct(private RoleDB $roleDb, private KeyDB $keyDb)
+    private function __construct(private RoleDB $roleDb)
     {
     }
 
@@ -30,12 +36,15 @@ final class SignatureVerifier
      *
      * @return static
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): self
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): static
     {
-        return new static(
+        $instance = new static(
             RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
-            KeyDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess)
         );
+        foreach ($rootMetadata->getKeys($allowUntrustedAccess) as $keyId => $key) {
+            $instance->addKey($keyId, $key);
+        }
+        return $instance;
     }
 
     /**
@@ -90,11 +99,15 @@ final class SignatureVerifier
      *
      * @return boolean
      *     TRUE if the signature is valid for $bytes.
+     *
+     * @throws \Tuf\Exception\NotFoundException
+     *   If the public key for the given signature has not been added.
      */
     private function verifySingleSignature(string $bytes, array $signatureMeta): bool
     {
         // Get the pubkey from the key database.
-        $pubkey = $this->keyDb->getKey($signatureMeta['keyid'])->getPublic();
+        $keyId = $signatureMeta['keyid'];
+        $pubkey = $this->keys[$keyId]?->getPublic() ?? throw new NotFoundException($keyId, 'key');
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
@@ -120,9 +133,16 @@ final class SignatureVerifier
      *
      * @param string $keyId
      * @param \Tuf\Key $key
+     *
+     * @see https://theupdateframework.github.io/specification/v1.0.29#document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
-        $this->keyDb->addKey($keyId, $key);
+        // Per TUF specification 4.3, Clients MUST calculate each KEYID to
+        // verify this is correct for the associated key.
+        if ($keyId !== $key->getComputedKeyId()) {
+            throw new InvalidKeyException('The calculated KEYID does not match the value provided.');
+        }
+        $this->keys[$keyId] = $key;
     }
 }
