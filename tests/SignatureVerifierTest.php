@@ -33,7 +33,7 @@ class SignatureVerifierTest extends TestCase
 
         $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
         $verifierKeys = new \ReflectionProperty($verifier, 'keys');
-        $verifierKeys->setAccessible(TRUE);
+        $verifierKeys->setAccessible(true);
         $verifierKeys = $verifierKeys->getValue($verifier);
 
         // Get the first key for comparison.
