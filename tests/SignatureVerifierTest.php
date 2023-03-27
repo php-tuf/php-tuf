@@ -27,23 +27,20 @@ class SignatureVerifierTest extends TestCase
             'client/metadata/current/2.root.json',
             false
         );
-        $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath));
-        self::assertInstanceOf(RootMetadata::class, $rootMetadata);
-        $rootMetadata->trust();
+        $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath))
+            ->trust();
 
         $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
         $verifierKeys = new \ReflectionProperty($verifier, 'keys');
         $verifierKeys->setAccessible(true);
         $verifierKeys = $verifierKeys->getValue($verifier);
 
-        // Get the first key for comparison.
-        $keys = $rootMetadata->getKeys();
-        $key = reset($keys);
-        $this->assertArrayHasKey($key->getComputedKeyId(), $verifierKeys);
-        $retrievedKey = $verifierKeys[key($keys)];
-        // Ensure the retrieved key is the same.
-        self::assertSame($key->getPublic(), $retrievedKey->getPublic());
-        self::assertSame($key->getType(), $retrievedKey->getType());
-        self::assertSame($key->getComputedKeyId(), $retrievedKey->getComputedKeyId());
+        // All of the root metadata keys should be loaded into the verifier.
+        foreach ($rootMetadata->getKeys() as $keyId => $key) {
+            $this->assertArrayHasKey($keyId, $verifierKeys);
+            self::assertSame($key->getPublic(), $verifierKeys[$keyId]->getPublic());
+            self::assertSame($key->getType(), $verifierKeys[$keyId]->getType());
+            self::assertSame($key->getComputedKeyId(), $verifierKeys[$keyId]->getComputedKeyId());
+        }
     }
 }
