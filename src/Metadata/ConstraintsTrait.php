@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Symfony\Component\Validator\Constraints\IdenticalTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Type;
@@ -139,7 +140,7 @@ trait ConstraintsTrait
             ]),
             'keytype' => [
                 new Type('string'),
-                new NotBlank(),
+                new IdenticalTo('ed25519'),
             ],
             'keyval' => [
                 new Type('array'),

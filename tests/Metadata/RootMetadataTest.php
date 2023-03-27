@@ -209,4 +209,16 @@ class RootMetadataTest extends MetadataBaseTest
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($data));
     }
+
+    public function testInvalidKeyType(): void
+    {
+        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $keyId = key($metadata['signed']['keys']);
+        $metadata['signed']['keys'][$keyId]['keytype'] = 'invalid key type';
+        $expectedMessage = preg_quote("Array[signed][keys][$keyId][keytype]", '/');
+        $expectedMessage .= ".*This value should be identical to string \"ed25519\"";
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessageMatches("/$expectedMessage/s");
+        static::callCreateFromJson(json_encode($metadata));
+    }
 }
