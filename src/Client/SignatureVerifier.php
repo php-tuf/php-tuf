@@ -98,8 +98,8 @@ final class SignatureVerifier
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
-        $pubkeyBytes = hex2bin($pubkey);
-        $sigBytes = hex2bin($signatureMeta['sig']);
+        $pubkeyBytes = \sodium_hex2bin($pubkey);
+        $sigBytes = \sodium_hex2bin($signatureMeta['sig']);
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
