@@ -5,6 +5,7 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Repository;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
@@ -16,8 +17,10 @@ use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Loader\SizeCheckingLoader;
+use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
+use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -25,6 +28,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 abstract class UpdaterTest extends TestCase
 {
+    use CanonicalJsonTrait;
     use FixturesTrait {
         getFixturePath as getFixturePathFromTrait;
     }
@@ -1115,29 +1119,43 @@ abstract class UpdaterTest extends TestCase
     public function providerTestSignatureThresholds():array
     {
         return [
-            ['ThresholdTwo'],
-            // § 5.4.2
-            ['ThresholdTwoAttack', SignatureThresholdException::class],
+            [false],
+            [true],
         ];
     }
 
     /**
      * Tests fixtures with signature thresholds greater than 1.
      *
-     * @param string $fixtureName
-     *   The fixtures set to use.
-     * @param string $expectedException
-     *   The null or the class name of an expected exception.
+     * @param boolean $attack
+     *   Whether or not to re-use a signature in timestamp.json, simulating
+     *   an attack.
      *
      * @return void
      *
      * @dataProvider providerTestSignatureThresholds
      */
-    public function testSignatureThresholds(string $fixtureName, string $expectedException = null)
+    public function testSignatureThresholds(bool $attack): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
-        if ($expectedException) {
-            $this->expectException($expectedException);
+        // Begin with ThresholdTwo, and modify it to suit our needs.
+        $updater = $this->getSystemInTest('ThresholdTwo');
+
+        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        $property->setValue($updater, $repository);
+
+        // § 5.4.2
+        // If we're simulating an attack, change the server's timestamp.json so
+        // that one of its signatures is invalid and we will not be able to
+        // reach the required threshold of 2.
+        if ($attack) {
+            $data = static::decodeJson($this->serverStorage->fileContents['timestamp.json']);
+            $this->assertCount(2, $data['signatures']);
+            $data['signatures'][1]['sig'] = hash('sha512', 'This is just a random string.');
+            $this->serverStorage->fileContents['timestamp.json'] = static::encodeJson($data);
+
+            $this->expectException(SignatureThresholdException::class);
         }
         $updater->refresh();
     }
@@ -1311,7 +1329,7 @@ abstract class UpdaterTest extends TestCase
             'known snapshot length' => [
                 'Simple',
                 'snapshot.json',
-                431,
+                683,
             ],
             'known targets length' => [
                 'TargetsLengthNoSnapshotLength',
@@ -1339,12 +1357,10 @@ abstract class UpdaterTest extends TestCase
         return [
             'snapshot.json too big' => [
                 'Simple',
-                'timestamp.json',
                 'snapshot.json',
             ],
             'targets.json too big' => [
                 'TargetsLengthNoSnapshotLength',
-                'snapshot.json',
                 'targets.json',
             ],
         ];
@@ -1353,17 +1369,45 @@ abstract class UpdaterTest extends TestCase
     /**
      * @dataProvider providerMetadataTooBig
      *
-     * @testdox Exception if $fileToChange is bigger than stated in $authorityFile
+     * @testdox Exception if $fileToChange is bigger than known size
      */
-    public function testMetadataFileTooBig(string $fixtureName, string $authorityFile, string $fileToChange): void
+    public function testMetadataFileTooBig(string $fixtureName, string $fileToChange): void
     {
         $updater = $this->getSystemInTest($fixtureName);
 
-        $authorityData = json_decode($this->serverStorage->fileContents[$authorityFile], true);
-        // Even if consistent snapshots are used, the authority file does not
-        // use the version prefix when referring to the file to change.
-        $fileToChangeKey = ltrim($fileToChange, '.0123456789');
-        $knownLength = $authorityData['signed']['meta'][$fileToChangeKey]['length'];
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        /** @var \Tuf\Client\Repository $repository */
+        $repository = $property->getValue($updater);
+
+        // Exactly which server-side files we'll need to modify, depends on
+        // whether we're using consistent snapshots.
+        $consistentSnapshots = $repository->getRoot(1)
+            ->trust()
+            ->supportsConsistentSnapshots();
+        // Get the known lengths of snapshot.json and targets.json.
+        $snapshotInfo = $repository->getTimestamp()
+            ->trust()
+            ->getFileMetaInfo('snapshot.json');
+        $targetsInfo = $repository->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+            ->trust()
+            ->getFileMetaInfo('targets.json');
+
+        $knownLength = match ($fileToChange) {
+            'snapshot.json' => $snapshotInfo['length'],
+            'targets.json' => $targetsInfo['length'],
+        };
+        // If using consistent snapshots, the file to change will be prefixed
+        // with its version number.
+        if ($consistentSnapshots) {
+            $prefix = match ($fileToChange) {
+                'snapshot.json' => $snapshotInfo['version'],
+                'targets.json' => $targetsInfo['version'],
+            };
+            $fileToChange = "$prefix.$fileToChange";
+        }
+        // On the server, replace $fileToChange with a string that's longer than
+        // the known length, which should cause an exception during the update.
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
@@ -1371,16 +1415,19 @@ abstract class UpdaterTest extends TestCase
         $updater->refresh();
     }
 
-    public function testSnapshotHashes(string $targetsFileName = 'targets.json'): void
+    public function testSnapshotHashes(): void
     {
-        $updater = $this->getSystemInTest('Simple_WithHashes');
+        $updater = $this->getSystemInTest('Simple');
 
-        $targetsContent = json_decode($this->serverStorage->fileContents[$targetsFileName], true);
-        $targetsContent['signed']['expires'] = '2038-01-01T07:27:10Z';
-        // Encode the altered targets metadata in so that it will be decoded
-        // correctly, but not match the hash in the snapshots metadata.
-        $targetsContent['signed']['delegations']['keys'] = new \stdClass();
-        $this->serverStorage->fileContents[$targetsFileName] = json_encode($targetsContent, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
+        $property = new \ReflectionProperty($updater, 'server');
+        $property->setAccessible(true);
+        $property->setValue($updater, $repository);
+
+        $targetsMetadata = $this->prophesize(TargetsMetadata::class);
+        $targetsMetadata->getRole()->willReturn('targets');
+        $targetsMetadata->getSource()->willReturn('invalid data');
+        $repository->targets['targets'][1] = $targetsMetadata->reveal();
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
