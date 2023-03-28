@@ -5,7 +5,6 @@ namespace Tuf\Client;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\InvalidKeyException;
 use Tuf\Exception\NotFoundException;
-use Tuf\Exception\RoleExistsException;
 use Tuf\Key;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
