@@ -1135,6 +1135,7 @@ abstract class UpdaterTest extends TestCase
      */
     public function testSignatureThresholds(bool $attack): void
     {
+        // Begin with ThresholdTwo, and modify it to suit our needs.
         $updater = $this->getSystemInTest('ThresholdTwo');
 
         $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
@@ -1142,6 +1143,8 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, $repository);
 
+        // In every version of the server-side root metadata, make the timestamp
+        // role require at least two valid signatures.
         foreach ($this->serverStorage->fileContents as $fileName => $json) {
             if (str_ends_with($fileName, 'root.json')) {
                 $this->serverStorage->setRepoFileNestedValue($fileName, ['signed', 'roles', 'timestamp', 'threshold'], 2);
@@ -1149,6 +1152,9 @@ abstract class UpdaterTest extends TestCase
         }
 
         // § 5.4.2
+        // If we're simulating an attack, change the server's timestamp.json
+        // so that one of its signatures is repeated, so that we will not be
+        // able to reach the signature threshold of 2.
         if ($attack) {
             $data = json_decode($this->serverStorage->fileContents['timestamp.json'], true);
             $this->serverStorage->setRepoFileNestedValue('timestamp.json', ['signatures'], array_fill(0, 2, $data['signatures'][0]));
@@ -1378,9 +1384,12 @@ abstract class UpdaterTest extends TestCase
         /** @var \Tuf\Client\Repository $repository */
         $repository = $property->getValue($updater);
 
+        // Exactly which server-side files we'll need to modify, depends on
+        // whether we're using consistent snapshots.
         $consistentSnapshots = $repository->getRoot(1)
             ->trust()
             ->supportsConsistentSnapshots();
+        // Get the known lengths of snapshot.json and targets.json.
         $snapshotInfo = $repository->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
@@ -1401,6 +1410,8 @@ abstract class UpdaterTest extends TestCase
             };
             $fileToChange = "$prefix.$fileToChange";
         }
+        // On the server, replace $fileToChange with a string that's longer than
+        // the known length, which should cause an exception during the update.
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
