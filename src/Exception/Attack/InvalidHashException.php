@@ -16,17 +16,6 @@ use Tuf\Exception\TufException;
 class InvalidHashException extends TufException
 {
     /**
-     * An untrusted stream object pointing to the downloaded target.
-     *
-     * WARNING: The contents of the stream failed TUF validation. Any code
-     * interacting with this stream should treat it as unsafe and proceed with
-     * great caution.
-     *
-     * @var \Psr\Http\Message\StreamInterface
-     */
-    private $stream;
-
-    /**
      * InvalidHashException constructor.
      *
      * @param \Psr\Http\Message\StreamInterface $stream
@@ -41,10 +30,9 @@ class InvalidHashException extends TufException
      * @param \Throwable|null $previous
      *   The previous exception, if any.
      */
-    public function __construct(StreamInterface $stream, $message = "", $code = 0, \Throwable $previous = null)
+    public function __construct(private StreamInterface $stream, $message = "", $code = 0, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
-        $this->stream = $stream;
     }
 
     /**

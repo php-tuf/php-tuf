@@ -18,12 +18,18 @@ class SizeCheckingLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $locator, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes, bool $exact = false): StreamInterface
     {
         $data = $this->decorated->load($locator, $maxBytes);
 
         $size = $this->getSize($data, $maxBytes);
-        if ($size > $maxBytes) {
+        // If we're doing an exact size check, the stream MUST be exactly
+        // $maxBytes in size.
+        if ($exact) {
+            if ($size !== $maxBytes) {
+                throw new DownloadSizeException("Expected $locator to be $maxBytes bytes.");
+            }
+        } elseif ($size > $maxBytes) {
             throw new DownloadSizeException("$locator exceeded $maxBytes bytes");
         }
         return $data;

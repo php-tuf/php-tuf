@@ -13,12 +13,6 @@ use Tuf\Metadata\StorageBase;
 class FileStorage extends StorageBase
 {
     /**
-     * @var string $basePath
-     *     The path on the filesystem to this durable storage's files.
-     */
-    protected $basePath;
-
-    /**
      * Constructs a new FileStorage instance.
      *
      * @param string $basePath
@@ -27,13 +21,11 @@ class FileStorage extends StorageBase
      * @throws \RuntimeException
      *     Thrown if the base path is not an accessible, existing directory.
      */
-    public function __construct(string $basePath)
+    public function __construct(protected string $basePath)
     {
         if (! is_dir($basePath)) {
             throw new \RuntimeException("Cannot initialize filesystem local state: '$basePath' is not a directory.");
         }
-
-        $this->basePath = $basePath;
     }
 
     /**

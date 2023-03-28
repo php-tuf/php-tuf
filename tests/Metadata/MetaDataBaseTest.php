@@ -3,8 +3,8 @@
 namespace Tuf\Tests\Metadata;
 
 use PHPUnit\Framework\TestCase;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Exception\MetadataException;
-use Tuf\JsonNormalizer;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\UtilsTrait;
@@ -14,6 +14,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 abstract class MetadataBaseTest extends TestCase
 {
+    use CanonicalJsonTrait;
     use FixturesTrait;
     use UtilsTrait;
 
@@ -105,7 +106,7 @@ abstract class MetadataBaseTest extends TestCase
     {
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['_type'] = 'invalid_type_value';
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][_type]", '/');
+        $expectedMessage = preg_quote("Array[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -151,7 +152,7 @@ abstract class MetadataBaseTest extends TestCase
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
-            $expectedMessage = preg_quote('Object(ArrayObject)[signed][expires]', '/');
+            $expectedMessage = preg_quote('Array[signed][expires]', '/');
             $expectedMessage .= '.*This value is not a valid datetime.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -176,7 +177,7 @@ abstract class MetadataBaseTest extends TestCase
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
-            $expectedMessage = preg_quote('Object(ArrayObject)[signed][spec_version]', '/');
+            $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
             $expectedMessage .= '.*This value is not valid.';
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
@@ -202,7 +203,7 @@ abstract class MetadataBaseTest extends TestCase
     {
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);
         $keys = explode(':', $expectedField);
-        $fieldName = preg_quote('Object(ArrayObject)[' . implode('][', $keys) . ']', '/');
+        $fieldName = preg_quote('Array[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
         $json = json_encode($metadata);
         $this->expectException(MetadataException::class);
@@ -434,12 +435,10 @@ abstract class MetadataBaseTest extends TestCase
     }
 
     /**
-     * Tests using JsonNormalizer::asNormalizedJson() with getSigned().
+     * @covers ::toCanonicalJson
      *
      * @param string $validJson
      *   The valid json key from $this->clientStorage.
-     *
-     * @return void
      *
      * @dataProvider providerValidMetadata
      */
@@ -448,6 +447,22 @@ abstract class MetadataBaseTest extends TestCase
         $contents = $this->clientStorage->read($validJson);
         $json = json_decode($contents);
         $metadata = static::callCreateFromJson($contents);
-        $this->assertEquals(json_encode($json->signed), JsonNormalizer::asNormalizedJson($metadata->getSigned()));
+        $this->assertEquals(json_encode($json->signed), $metadata->toCanonicalJson());
+    }
+
+    public function testDuplicateKeyId(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = static::decodeJson($json);
+        $this->assertNotEmpty($data['signatures']);
+        $data['signatures'][] = [
+            'keyid' => $data['signatures'][0]['keyid'],
+            'sig' => 'In real metadata, this would be a hash digest.',
+        ];
+        $json = static::encodeJson($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Key IDs must be unique.');
+        static::callCreateFromJson($json);
     }
 }

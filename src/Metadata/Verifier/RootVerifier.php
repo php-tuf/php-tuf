@@ -12,13 +12,6 @@ use Tuf\Metadata\MetadataBase;
 class RootVerifier extends VerifierBase
 {
     /**
-     * The trusted root metadata.
-     *
-     * @var \Tuf\Metadata\RootMetadata
-     */
-    protected $trustedMetadata;
-
-    /**
      * {@inheritDoc}
      */
     public function verify(MetadataBase $untrustedMetadata): void

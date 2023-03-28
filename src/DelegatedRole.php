@@ -12,17 +12,6 @@ use Symfony\Component\Validator\Constraints\Type;
  */
 class DelegatedRole extends Role
 {
-
-    /**
-     * @var string[]
-     */
-    protected $paths;
-
-    /**
-     * @var bool
-     */
-    protected $terminating;
-
     /**
      * @return bool
      */
@@ -40,14 +29,12 @@ class DelegatedRole extends Role
      * @param array $paths
      * @param bool $terminating
      */
-    private function __construct(string $name, int $threshold, array $keyIds, array $paths, bool $terminating)
+    private function __construct(string $name, int $threshold, array $keyIds, protected array $paths, protected bool $terminating)
     {
         parent::__construct($name, $threshold, $keyIds);
-        $this->paths = $paths;
-        $this->terminating = $terminating;
     }
 
-    public static function createFromMetadata(\ArrayObject $roleInfo, string $name = null): Role
+    public static function createFromMetadata(iterable $roleInfo, string $name = null): Role
     {
         $roleConstraints = static::getRoleConstraints();
         $roleConstraints->fields += [

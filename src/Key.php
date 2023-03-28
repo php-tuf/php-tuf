@@ -9,28 +9,8 @@ use Tuf\Metadata\ConstraintsTrait;
  */
 final class Key
 {
+    use CanonicalJsonTrait;
     use ConstraintsTrait;
-
-    /**
-     * The key type.
-     *
-     * @var string
-     */
-    private $type;
-
-    /**
-     * The key scheme.
-     *
-     * @var string
-     */
-    private $scheme;
-
-    /**
-     * The public key value.
-     *
-     * @var string
-     */
-    private $public;
 
     /**
      * Key constructor.
@@ -42,18 +22,15 @@ final class Key
      * @param string $public
      *   The public key value.
      */
-    private function __construct(string $type, string $scheme, string $public)
+    private function __construct(private string $type, private string $scheme, private string $public)
     {
-        $this->type = $type;
-        $this->scheme = $scheme;
-        $this->public = $public;
     }
 
     /**
      * Creates a key object from TUF metadata.
      *
-     * @param \ArrayObject $keyInfo
-     *   The key information from TUF metadata including.
+     * @param array $keyInfo
+     *   The key information from TUF metadata, including:
      *   - keytype: The public key signature system, e.g. 'ed25519'.
      *   - scheme: The corresponding signature scheme, e.g. 'ed25519'.
      *   - keyval: An associative array containing the public key value.
@@ -61,9 +38,9 @@ final class Key
      *
      * @return static
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.29#document-formats
      */
-    public static function createFromMetadata(\ArrayObject $keyInfo): self
+    public static function createFromMetadata(array $keyInfo): self
     {
         self::validate($keyInfo, static::getKeyConstraints());
         return new static(
@@ -104,7 +81,7 @@ final class Key
      * @return string
      *     The key ID in hex format for the key metadata hashed using sha256.
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.18#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.29#document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
@@ -118,14 +95,14 @@ final class Key
         // since this is how it's calculated in the securesystemslib code and
         // any value for keyid_hash_algorithms in the key data in root.json is
         // ignored.
-        $keyCanonicalStruct = [
+        $canonical = self::encodeJson([
             'keytype' => $this->getType(),
             'scheme' => $this->scheme,
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
-            'keyval' => ['public' => $this->getPublic()],
-        ];
-        $keyCanonicalForm = JsonNormalizer::asNormalizedJson($keyCanonicalStruct);
-
-        return hash('sha256', $keyCanonicalForm, false);
+            'keyval' => [
+                'public' => $this->getPublic(),
+            ],
+        ]);
+        return hash('sha256', $canonical);
     }
 }

@@ -42,31 +42,31 @@ class Updater
      *
      * @var bool
      */
-    protected $isRefreshed = false;
+    protected bool $isRefreshed = false;
 
     /**
      * @var \Tuf\Client\SignatureVerifier
      */
-    protected $signatureVerifier;
+    protected SignatureVerifier $signatureVerifier;
 
     /**
      * @var \Tuf\Helper\Clock
      */
-    protected $clock;
+    protected Clock $clock;
 
     /**
      * The time after which metadata should be considered expired.
      *
      * @var \DateTimeImmutable
      */
-    private $metadataExpiration;
+    private ?\DateTimeImmutable $metadataExpiration;
 
     /**
      * The verifier factory.
      *
      * @var \Tuf\Metadata\Verifier\UniversalVerifier
      */
-    protected $universalVerifier;
+    protected UniversalVerifier $universalVerifier;
 
     /**
      * The backend to load untrusted metadata from the server.
@@ -152,7 +152,7 @@ class Updater
             ? $snapshotInfo['version']
             : null;
         // § 5.5.1
-        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? Repository::MAX_BYTES);
+        $newSnapshotData = $this->server->getSnapshot($snapshotVersion, $snapshotInfo['length'] ?? null);
         $this->universalVerifier->verify(SnapshotMetadata::TYPE, $newSnapshotData);
         // § 5.5.7
         $this->storage->save($newSnapshotData);
@@ -372,7 +372,7 @@ class Updater
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? Repository::MAX_BYTES);
+        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null);
         $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
         // § 5.5.6
         $this->storage->save($newTargetsData);
@@ -434,7 +434,7 @@ class Updater
                     return $delegatedTargetsMetadata;
                 }
                 $searchedRoles[] = $delegatedRoleName;
-                // § 5.6.7.2.1
+                // § 5.6.7.2
                 // Recursively search the list of delegations in order of appearance.
                 $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
                 if ($terminated || $delegatedRolesMetadataSearchResult) {
@@ -445,7 +445,7 @@ class Updater
                 // in the delegations from $targetsMetadata.
                 if ($delegatedRole->isTerminating()) {
                     $terminated = true;
-                    // § 5.6.7.2.2
+                    // § 5.6.7.2.1
                     // If the role is terminating then abort searching for a target.
                     return null;
                 }

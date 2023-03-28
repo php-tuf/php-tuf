@@ -4,13 +4,14 @@ namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\JsonNormalizer;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 class TestLoader implements LoaderInterface
 {
+    use CanonicalJsonTrait;
     use UtilsTrait;
 
     /**
@@ -90,7 +91,7 @@ class TestLoader implements LoaderInterface
     {
         $json = json_decode($this->fileContents[$fileName], true);
         static::nestedChange($keys, $json, $newValue);
-        $this->fileContents[$fileName] = JsonNormalizer::asNormalizedJson($json);
+        $this->fileContents[$fileName] = static::encodeJson($json);
     }
 
     /**

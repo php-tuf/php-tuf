@@ -527,7 +527,6 @@ abstract class UpdaterTest extends TestCase
      *
      * § 5.6.7.2.1
      * § 5.6.7.2.2
-     * § 5.6.7.2.3
      * § 5.7.2
      */
     public function testDelegationErrors(string $fixtureName, string $fileName, array $expectedFileVersions): void
@@ -896,7 +895,7 @@ abstract class UpdaterTest extends TestCase
         try {
             $updater->refresh();
         } catch (TufException $exception) {
-            $this->assertEquals($exception, $expectedException);
+            $this->assertEquals($expectedException, $exception);
             $this->assertClientFileVersions($expectedUpdatedVersions);
             return;
         }
@@ -1210,7 +1209,7 @@ abstract class UpdaterTest extends TestCase
         try {
             $updater->refresh();
         } catch (MetadataException $exception) {
-            $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]:", '/');
+            $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]:", '/');
             $expectedMessage .= ".*This field is not supported.";
             self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
             // Assert that the root, timestamp and snapshot metadata files were updated
@@ -1405,7 +1404,7 @@ abstract class UpdaterTest extends TestCase
         $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
-        $this->expectExceptionMessage("$fileToChange exceeded $knownLength bytes");
+        $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
         $updater->refresh();
     }
 

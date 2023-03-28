@@ -15,27 +15,6 @@ use Tuf\Metadata\TimestampMetadata;
 class UniversalVerifier
 {
     /**
-     * The durable metadata storage.
-     *
-     * @var \Tuf\Metadata\StorageInterface
-     */
-    private StorageInterface $storage;
-
-    /**
-     * The signature verifier.
-     *
-     * @var SignatureVerifier
-     */
-    private $signatureVerifier;
-
-    /**
-     * The time beyond which untrusted metadata will be considered expired.
-     *
-     * @var \DateTimeImmutable
-     */
-    private $metadataExpiration;
-
-    /**
      * Factory constructor.
      *
      * @param \Tuf\Metadata\StorageInterface $storage
@@ -45,11 +24,8 @@ class UniversalVerifier
      * @param \DateTimeImmutable $metadataExpiration
      *   The time beyond which untrusted metadata will be considered expired.
      */
-    public function __construct(StorageInterface $storage, SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration)
+    public function __construct(private StorageInterface $storage, private SignatureVerifier $signatureVerifier, private \DateTimeImmutable $metadataExpiration)
     {
-        $this->storage = $storage;
-        $this->signatureVerifier = $signatureVerifier;
-        $this->metadataExpiration = $metadataExpiration;
     }
 
     /**

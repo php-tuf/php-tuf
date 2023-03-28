@@ -106,9 +106,6 @@ class RoleTest extends TestCase
                 'good_key_2',
             ]
         ];
-        return Role::createFromMetadata(
-            new \ArrayObject($data),
-            'my_role'
-        );
+        return Role::createFromMetadata($data, 'my_role');
     }
 }

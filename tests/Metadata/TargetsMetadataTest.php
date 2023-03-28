@@ -47,7 +47,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $json = json_decode($json, true);
 
         $target = key($json['signed']['targets']);
-        $this->assertSame($metadata->getHashes($target)->getArrayCopy(), $json['signed']['targets'][$target]['hashes']);
+        $this->assertSame($metadata->getHashes($target), $json['signed']['targets'][$target]['hashes']);
         $this->assertSame($metadata->getLength($target), $json['signed']['targets'][$target]['length']);
 
         // Trying to get information about an unknown target should throw.
@@ -86,7 +86,8 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function providerExpectedField(): array
     {
         $data = parent::providerExpectedField();
-        $data[] = ['signed:delegations'];
+        // Delegations are optional (see ::providerOptionalFields()), but if
+        // present, test that their internal structure is validated too.
         $data[] = ['signed:delegations:keys'];
         $firstKey = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'keys']);
         $data[] = ["signed:delegations:keys:$firstKey:keytype"];
@@ -96,7 +97,6 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ['signed:delegations:roles'];
         $data[] = ['signed:delegations:roles:0:keyids'];
         $data[] = ['signed:delegations:roles:0:name'];
-        $data[] = ['signed:delegations:roles:0:paths'];
         $data[] = ['signed:delegations:roles:0:terminating'];
         $data[] = ['signed:delegations:roles:0:threshold'];
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
@@ -114,7 +114,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:hashes", 'array'];
         $data[] = ["signed:targets:$target:length", 'int'];
-        $data[] = ["signed:targets:$target:custom", '\ArrayObject'];
+        $data[] = ["signed:targets:$target:custom", 'array'];
         return $data;
     }
 
@@ -126,6 +126,17 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data = parent::providerOptionalFields();
         $target = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'targets']);
         $data[] = ["signed:targets:$target:custom", ['ignored_key' => 'ignored_value']];
+        $data[] = [
+            'signed:delegations',
+            [
+                'keys' => [],
+                'roles' => [],
+            ],
+        ];
+        $data[] = [
+            'signed:delegations:roles:0:paths',
+            ['delegated/path'],
+        ];
         return $data;
     }
 
@@ -200,7 +211,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $keyId = key($data['signed']['delegations']['keys']);
         $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
         self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
+        $expectedMessage = preg_quote("Array[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
         $expectedMessage .= '.* This value should be equal to array';
         self::expectExceptionMessageMatches("/$expectedMessage/s");
         static::callCreateFromJson(json_encode($data));
@@ -214,7 +225,7 @@ class TargetsMetadataTest extends MetadataBaseTest
      */
     public function providerUnsupportedFields(): array
     {
-        $expectedMessage = preg_quote("Object(ArrayObject)[signed][delegations][roles][0][path_hash_prefixes]", '/');
+        $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]", '/');
         $expectedMessage .= ".*This field is not supported.";
         $cases['path_hash_prefixes'] = [
             ['signed', 'delegations', 'roles', 0, 'path_hash_prefixes'],
@@ -223,5 +234,20 @@ class TargetsMetadataTest extends MetadataBaseTest
 
         ];
         return $cases;
+    }
+
+    public function testDuplicateDelegatedRoleNames(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = json_decode($json, true);
+
+        $this->assertNotEmpty($data['signed']['delegations']['roles']);
+        // Duplicating a role should raise a validation exception.
+        $data['signed']['delegations']['roles'][] = $data['signed']['delegations']['roles'][0];
+        $json = json_encode($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Delegated role names must be unique.');
+        static::callCreateFromJson($json);
     }
 }

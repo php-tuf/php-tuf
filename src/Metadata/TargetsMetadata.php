@@ -3,7 +3,9 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Tuf\Constraints\Collection as TufCollection;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -27,7 +29,7 @@ class TargetsMetadata extends MetadataBase
      *
      * @var string
      */
-    private $role;
+    private ?string $role;
 
     /**
      * {@inheritdoc}
@@ -35,11 +37,55 @@ class TargetsMetadata extends MetadataBase
      * @param string|null $roleName
      *   The role name if not the same as the type.
      */
-    public static function createFromJson(string $json, string $roleName = null): MetadataBase
+    public static function createFromJson(string $json, string $roleName = null): static
     {
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;
         return $newMetadata;
+    }
+
+    /**
+     * Validates that delegated role names are unique.
+     *
+     * @todo Use Symfony's Unique constraint for this when at least Symfony
+     *   6.1 is required in https://github.com/php-tuf/php-tuf/issues/317.
+     *
+     * @param mixed $delegations
+     *   The value to be validated.
+     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
+     *   The validation context.
+     */
+    public static function validateDelegatedRoles(mixed $delegations, ExecutionContextInterface $context): void
+    {
+        if (!is_array($delegations)) {
+            return;
+        }
+        $names = array_column($delegations['roles'] ?? [], 'name');
+        if ($names !== array_unique($names)) {
+            $context->addViolation('Delegated role names must be unique.');
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function toNormalizedArray(): array
+    {
+        $normalized = parent::toNormalizedArray();
+
+        foreach ($normalized['targets'] as $path => $target) {
+            // Custom target info should always encode to an object, even if
+            // it's empty.
+            if (array_key_exists('custom', $target)) {
+                $normalized['targets'][$path]['custom'] = (object) $target['custom'];
+            }
+        }
+
+        // Ensure that these will encode as objects even if they're empty.
+        $normalized['targets'] = (object) $normalized['targets'];
+        $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+
+        return $normalized;
     }
 
     /**
@@ -48,29 +94,29 @@ class TargetsMetadata extends MetadataBase
     protected static function getSignedCollectionOptions(): array
     {
         $options = parent::getSignedCollectionOptions();
-        $options['fields']['delegations'] = new Required([
+        $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new All([
                         static::getKeyConstraints(),
                     ]),
                 ]),
                 'roles' => new All([
-                    new Type('\ArrayObject'),
+                    new Type('array'),
                     new TufCollection([
                         'fields' => [
                             'name' => [
                                 new NotBlank(),
                                 new Type('string'),
                             ],
-                            'paths' => [
+                            'paths' => new Optional([
                                 new Type('array'),
                                 new All([
                                     new Type('string'),
                                     new NotBlank(),
                                 ]),
-                            ],
+                            ]),
                             'terminating' => [
                                 new Type('boolean'),
                             ],
@@ -81,6 +127,7 @@ class TargetsMetadata extends MetadataBase
                     ]),
                 ]),
             ]),
+            new Callback([static::class, 'validateDelegatedRoles']),
         ]);
         $options['fields']['targets'] = new Required([
             new All([
@@ -90,7 +137,7 @@ class TargetsMetadata extends MetadataBase
                         new GreaterThanOrEqual(1),
                     ],
                     'custom' => new Optional([
-                        new Type('\ArrayObject'),
+                        new Type('array'),
                     ]),
                 ] + static::getHashesConstraints()),
             ]),
@@ -127,11 +174,11 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The known hashes for the object. The keys are the hash algorithm (e.g.
      *   'sha256') and the values are the hash digest.
      */
-    public function getHashes(string $target): \ArrayObject
+    public function getHashes(string $target): array
     {
         return $this->getInfo($target)['hashes'];
     }
@@ -161,13 +208,13 @@ class TargetsMetadata extends MetadataBase
      * @param string $target
      *   The target path.
      *
-     * @return \ArrayObject
+     * @return array
      *   The target's info.
      *
      * @throws \Tuf\Exception\NotFoundException
      *   Thrown if the target is not mentioned in this metadata.
      */
-    protected function getInfo(string $target): \ArrayObject
+    protected function getInfo(string $target): array
     {
         $signed = $this->getSigned();
         if (isset($signed['targets'][$target])) {
@@ -185,7 +232,7 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedKeys(): array
     {
         $keys = [];
-        foreach ($this->getSigned()['delegations']['keys'] as $keyId => $keyInfo) {
+        foreach ($this->getSigned()['delegations']['keys'] ?? [] as $keyId => $keyInfo) {
             $keys[$keyId] = Key::createFromMetadata($keyInfo);
         }
         return $keys;
@@ -200,7 +247,7 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedRoles(): array
     {
         $roles = [];
-        foreach ($this->getSigned()['delegations']['roles'] as $roleInfo) {
+        foreach ($this->getSigned()['delegations']['roles'] ?? [] as $roleInfo) {
             $role = DelegatedRole::createFromMetadata($roleInfo);
             $roles[$role->getName()] = $role;
         }

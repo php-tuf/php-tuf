@@ -2,8 +2,8 @@
 
 namespace Tuf\Metadata;
 
-use DeepCopy\DeepCopy;
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\DateTime;
@@ -12,21 +12,16 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\JsonNormalizer;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Tuf\CanonicalJsonTrait;
 
 /**
  * Base class for metadata.
  */
 abstract class MetadataBase
 {
+    use CanonicalJsonTrait;
     use ConstraintsTrait;
-
-    /**
-     * The metadata.
-     *
-     * @var array
-     */
-    protected $metadata;
 
     /**
      * Metadata type.
@@ -36,30 +31,47 @@ abstract class MetadataBase
     protected const TYPE = '';
 
     /**
-     * @var string
-     */
-    private $sourceJson;
-
-    /**
      * Whether the metadata has been verified and should be considered trusted.
      *
      * @var bool
      */
-    private $isTrusted = false;
+    private bool $isTrusted = false;
 
 
     /**
      * MetadataBase constructor.
      *
-     * @param \ArrayObject $metadata
+     * @param array $metadata
      *   The data.
      * @param string $sourceJson
      *   The source JSON.
      */
-    public function __construct(\ArrayObject $metadata, string $sourceJson)
+    public function __construct(protected array $metadata, protected string $sourceJson)
     {
-        $this->metadata = $metadata;
-        $this->sourceJson = $sourceJson;
+    }
+
+    /**
+     * Returns a normalized array version of this object for JSON encoding.
+     *
+     * @see ::toCanonicalJson()
+     *
+     * @return array
+     *   A normalized array representation of this object.
+     */
+    protected function toNormalizedArray(): array
+    {
+        return $this->getSigned();
+    }
+
+    /**
+     * Returns a canonical JSON representation of this metadata object.
+     *
+     * @return string
+     *   The canonical JSON representation of this object.
+     */
+    public function toCanonicalJson(): string
+    {
+        return static::encodeJson($this->toNormalizedArray());
     }
 
     /**
@@ -68,7 +80,7 @@ abstract class MetadataBase
      * @return string
      *   The JSON source.
      */
-    public function getSource():string
+    public function getSource(): string
     {
         return $this->sourceJson;
     }
@@ -85,9 +97,9 @@ abstract class MetadataBase
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if validation fails.
      */
-    public static function createFromJson(string $json): self
+    public static function createFromJson(string $json): static
     {
-        $data = JsonNormalizer::decode($json);
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
         static::validate($data, new Collection(static::getConstraints()));
         return new static($data, $json);
     }
@@ -116,11 +128,34 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
+                new Callback([static::class, 'validateKeyIds']),
             ]),
             'signed' => new Required([
                 new Collection(static::getSignedCollectionOptions()),
             ]),
         ];
+    }
+
+    /**
+     * Validates that all signature key IDs are unique.
+     *
+     * @todo Use Symfony's Unique constraint for this when at least Symfony
+     *   6.1 is required in https://github.com/php-tuf/php-tuf/issues/317.
+     *
+     * @param mixed $signatures
+     *   The value to be validated.
+     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
+     *   The validation context.
+     */
+    public static function validateKeyIds(mixed $signatures, ExecutionContextInterface $context): void
+    {
+        if (!is_array($signatures)) {
+            return;
+        }
+        $keyIds = array_column($signatures, 'keyid');
+        if ($keyIds !== array_unique($keyIds)) {
+            $context->addViolation('Key IDs must be unique.');
+        }
     }
 
     /**
@@ -153,12 +188,12 @@ abstract class MetadataBase
     /**
      * Get signed.
      *
-     * @return \ArrayObject
+     * @return array
      *   The "signed" section of the data.
      */
-    public function getSigned(): \ArrayObject
+    public function getSigned(): array
     {
-        return (new DeepCopy())->copy($this->metadata['signed']);
+        return $this->metadata['signed'];
     }
 
     /**
@@ -191,7 +226,7 @@ abstract class MetadataBase
      */
     public function getSignatures(): array
     {
-        return (new DeepCopy())->copy($this->metadata['signatures']);
+        return $this->metadata['signatures'];
     }
 
     /**

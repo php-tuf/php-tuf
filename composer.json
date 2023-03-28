@@ -19,13 +19,10 @@
         "ext-json": "*",
         "paragonie/sodium_compat": "^1.13",
         "symfony/validator": "^4.4 || ^5 || ^6",
-        "myclabs/deep-copy": "^1.10.2",
-        "psr/http-message": "^1",
-        "guzzlehttp/psr7": "^1.7"
+        "guzzlehttp/psr7": "^2.4"
     },
     "suggest": {
-        "ext-sodium": "Provides faster verification of updates",
-        "guzzlehttp/guzzle": "Required package if GuzzleFileFetcher shall be used"
+        "ext-sodium": "Provides faster verification of updates"
     },
     "autoload": {
         "psr-4": {

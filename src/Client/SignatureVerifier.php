@@ -3,13 +3,12 @@
 namespace Tuf\Client;
 
 use Tuf\Exception\Attack\SignatureThresholdException;
-use Tuf\JsonNormalizer;
+use Tuf\Exception\InvalidKeyException;
+use Tuf\Exception\NotFoundException;
 use Tuf\Key;
-use Tuf\KeyDB;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Role;
-use Tuf\RoleDB;
 
 /**
  * A class that verifies metadata signatures.
@@ -17,23 +16,14 @@ use Tuf\RoleDB;
 final class SignatureVerifier
 {
     /**
-     * @var \Tuf\RoleDB
+     * @var \Tuf\Key[]
      */
-    private $roleDb;
+    private array $keys = [];
 
     /**
-     * @var \Tuf\KeyDB
+     * @var \Tuf\Role[]
      */
-    private $keyDb;
-
-    /**
-     * SignatureVerifier constructor.
-     */
-    private function __construct(RoleDB $roleDb, KeyDB $keyDb)
-    {
-        $this->roleDb = $roleDb;
-        $this->keyDb = $keyDb;
-    }
+    private array $roles = [];
 
     /**
      * Creates a SignatureVerifier object from a RootMetadata object.
@@ -43,12 +33,16 @@ final class SignatureVerifier
      *
      * @return static
      */
-    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): self
+    public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): static
     {
-        return new static(
-            RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
-            KeyDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess)
-        );
+        $instance = new static();
+        foreach ($rootMetadata->getRoles($allowUntrustedAccess) as $role) {
+            $instance->addRole($role);
+        }
+        foreach ($rootMetadata->getKeys($allowUntrustedAccess) as $keyId => $key) {
+            $instance->addKey($keyId, $key);
+        }
+        return $instance;
     }
 
     /**
@@ -57,23 +51,21 @@ final class SignatureVerifier
      * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata to check signatures on.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
+     * @throws \Tuf\Exception\NotFoundException
+     *   If the metadata role is not recognized.
      */
     public function checkSignatures(MetadataBase $metadata): void
     {
-        $signatures = $metadata->getSignatures();
-
-        $role = $this->roleDb->getRole($metadata->getRole());
+        $roleName = $metadata->getRole();
+        $role = $this->roles[$roleName] ?? throw new NotFoundException($roleName, 'role');
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        $canonicalBytes = JsonNormalizer::asNormalizedJson($metadata->getSigned());
-        foreach ($signatures as $signature) {
+        foreach ($metadata->getSignatures() as $signature) {
             // Don't allow the same key to be counted twice.
-            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($canonicalBytes, $signature)) {
+            if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
@@ -95,28 +87,31 @@ final class SignatureVerifier
      *
      * @param string $bytes
      *     The canonical JSON string of the 'signed' section of the given file.
-     * @param \ArrayAccess $signatureMeta
-     *     The ArrayAccess object of metadata for the signature. Each signature
-     *     metadata contains two elements:
+     * @param array $signatureMeta
+     *     An array of metadata about the signature. Must contain two elements:
      *     - keyid: The identifier of the key signing the role data.
      *     - sig: The hex-encoded signature of the canonical form of the
      *       metadata for the role.
      *
      * @return boolean
      *     TRUE if the signature is valid for $bytes.
+     *
+     * @throws \Tuf\Exception\NotFoundException
+     *   If the key for the given signature has not been added by ::addKey().
      */
-    private function verifySingleSignature(string $bytes, \ArrayAccess $signatureMeta): bool
+    private function verifySingleSignature(string $bytes, array $signatureMeta): bool
     {
         // Get the pubkey from the key database.
-        $pubkey = $this->keyDb->getKey($signatureMeta['keyid'])->getPublic();
+        $keyId = $signatureMeta['keyid'];
+        if (!array_key_exists($keyId, $this->keys)) {
+            throw new NotFoundException($keyId, 'key');
+        }
+        $pubkey = $this->keys[$keyId]->getPublic();
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
-        $pubkeyBytes = hex2bin($pubkey);
-        $sigBytes = hex2bin($signatureMeta['sig']);
-        // @todo Check that the key type in $signatureMeta is ed25519; return
-        //     false if not.
-        //     https://github.com/php-tuf/php-tuf/issues/168
+        $pubkeyBytes = \sodium_hex2bin($pubkey);
+        $sigBytes = \sodium_hex2bin($signatureMeta['sig']);
         return \sodium_crypto_sign_verify_detached($sigBytes, $bytes, $pubkeyBytes);
     }
 
@@ -127,8 +122,9 @@ final class SignatureVerifier
      */
     public function addRole(Role $role): void
     {
-        if (!$this->roleDb->roleExists($role->getName())) {
-            $this->roleDb->addRole($role);
+        $name = $role->getName();
+        if (!array_key_exists($name, $this->roles)) {
+            $this->roles[$name] = $role;
         }
     }
 
@@ -137,9 +133,16 @@ final class SignatureVerifier
      *
      * @param string $keyId
      * @param \Tuf\Key $key
+     *
+     * @see https://theupdateframework.github.io/specification/v1.0.29#document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
-        $this->keyDb->addKey($keyId, $key);
+        // Per TUF specification 4.3, Clients MUST calculate each KEYID to
+        // verify this is correct for the associated key.
+        if ($keyId !== $key->getComputedKeyId()) {
+            throw new InvalidKeyException('The calculated KEYID does not match the value provided.');
+        }
+        $this->keys[$keyId] = $key;
     }
 }

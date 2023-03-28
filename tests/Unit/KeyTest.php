@@ -21,17 +21,17 @@ class KeyTest extends TestCase
     public function testCreateFromMetadata(array $data): void
     {
         $data += [
-            'keytype' => 'ed11111',
+            'keytype' => 'ed25519',
             'scheme' => 'scheme-ed11111',
-            'keyval' => new \ArrayObject(['public' => '12345']),
+            'keyval' => ['public' => '12345'],
         ];
-        $key = Key::createFromMetadata(new \ArrayObject($data));
+        $key = Key::createFromMetadata($data);
         self::assertInstanceOf(Key::class, $key);
-        self::assertSame('ed11111', $key->getType());
+        self::assertSame('ed25519', $key->getType());
         self::assertSame('12345', $key->getPublic());
         $keySortedCanonicalStruct = [
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
-            'keytype' => 'ed11111',
+            'keytype' => 'ed25519',
             'keyval' => ['public' => '12345'],
             'scheme' => 'scheme-ed11111',
         ];

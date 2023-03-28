@@ -56,7 +56,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
         $this->stream = new class ($buffer) extends Stream {
 
-            public function getSize()
+            public function getSize(): ?int
             {
                 return null;
             }
@@ -87,12 +87,12 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         // Make the stream non-seekable, forcing the loader to read from it.
         $this->stream = new class ($buffer) extends Stream {
 
-            public function getSize()
+            public function getSize(): ?int
             {
                 return null;
             }
 
-            public function isSeekable()
+            public function isSeekable(): bool
             {
                 return false;
             }
@@ -118,5 +118,15 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage('too_long.txt exceeded 8 bytes');
         $this->loader->load('too_long.txt', 8);
+    }
+
+    public function testExactSize(): void
+    {
+        $this->stream = Utils::streamFor('Sisko');
+        $this->loader->load('just_right.txt', 5, true);
+
+        $this->expectException(DownloadSizeException::class);
+        $this->expectExceptionMessage("Expected too_short.txt to be 1024 bytes.");
+        $this->loader->load('too_short.txt', 1024, true);
     }
 }
