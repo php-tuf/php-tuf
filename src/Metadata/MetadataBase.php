@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Tuf\CanonicalJsonTrait;
+use Tuf\Exception\FormatException;
 
 /**
  * Base class for metadata.
@@ -208,14 +209,18 @@ abstract class MetadataBase
     }
 
     /**
-     * Get the expires date string.
+     * Get the expiration date of this metadata.
      *
-     * @return string
-     *   The date string.
+     * @return \DateTimeImmutable
+     *   The date and time that this metadata expires.
+     *
+     * @throws \Tuf\Exception\FormatException
+     *   If the expiration date and time cannot be parsed.
      */
-    public function getExpires(): string
+    public function getExpires(): \DateTimeImmutable
     {
-        return $this->getSigned()['expires'];
+        $timestamp = $this->getSigned()['expires'];
+        return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp) ?: throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
     }
 
     /**
