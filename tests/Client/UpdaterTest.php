@@ -1086,26 +1086,6 @@ abstract class UpdaterTest extends TestCase
                     'targets' => 1,
                 ],
             ],
-            'snapshot.json in Simple' => [
-                'Simple',
-                'snapshot.json',
-                [
-                    'root' => 1,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
-            ],
-            'targets.json in Simple' => [
-                'Simple',
-                'targets.json',
-                [
-                    'root' => 1,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
-            ],
         ];
     }
 
@@ -1431,6 +1411,17 @@ abstract class UpdaterTest extends TestCase
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
+        $updater->refresh();
+    }
+
+    /**
+     * Tests that the update ends early if timestamp metadata is not changed.
+     */
+    public function testUpdateShortCircuitsIfTimestampUnchanged(): void
+    {
+        $updater = $this->getSystemInTest('Simple');
+        $this->serverStorage->removeRepoFile('snapshot.json');
+        $this->serverStorage->removeRepoFile('targets.json');
         $updater->refresh();
     }
 }
