@@ -3,7 +3,6 @@
 namespace Tuf\Metadata\Verifier;
 
 use Tuf\Client\SignatureVerifier;
-use Tuf\Exception\FormatException;
 use Tuf\Exception\Attack\FreezeAttackException;
 use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Metadata\MetadataBase;
@@ -80,37 +79,15 @@ abstract class VerifierBase
      * @param \DateTimeImmutable $expiration
      *     The metadata expiration.
      *
-     * @return void
-     *
-     * @throws \Tuf\Exception\Attack\FreezeAttackException Thrown if a potential freeze attack is detected.
+     * @throws \Tuf\Exception\Attack\FreezeAttackException
+     *   Thrown if a potential freeze attack is detected.
      */
     protected static function checkFreezeAttack(MetadataBase $metadata, \DateTimeImmutable $expiration): void
     {
-        $metadataExpiration = static::metadataTimestampToDatetime($metadata->getExpires());
+        $metadataExpiration = $metadata->getExpires();
         if ($metadataExpiration < $expiration) {
             $format = "Remote %s metadata expired on %s";
             throw new FreezeAttackException(sprintf($format, $metadata->getRole(), $metadataExpiration->format('c')));
         }
-    }
-
-    /**
-     * Converts a metadata timestamp string into an immutable DateTime object.
-     *
-     * @param string $timestamp
-     *     The timestamp string in the metadata.
-     *
-     * @return \DateTimeImmutable
-     *     An immutable DateTime object for the given timestamp.
-     *
-     * @throws FormatException
-     *     Thrown if the timestamp string format is not valid.
-     */
-    protected static function metadataTimestampToDateTime(string $timestamp): \DateTimeImmutable
-    {
-        $dateTime = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp);
-        if ($dateTime === false) {
-            throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
-        }
-        return $dateTime;
     }
 }
