@@ -142,11 +142,13 @@ class VerifierTest extends TestCase
         // We test lack of an exception in the positive test case.
         $this->expectNotToPerformAssertions();
 
+        $dateFormat = "Y-m-d\TH:i:sT";
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:01Z');
+        $expiration = \DateTimeImmutable::createFromFormat($dateFormat, '1970-01-01T00:00:01Z');
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn($expiration);
         $nowString = '1970-01-01T00:00:00Z';
-        $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $nowString);
+        $now = \DateTimeImmutable::createFromFormat($dateFormat, $nowString);
 
         $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
         $method->setAccessible(true);
@@ -156,7 +158,7 @@ class VerifierTest extends TestCase
         $method->invoke(null, $signedMetadata, $now);
 
         // No exception should be thrown exactly at expiration time.
-        $signedMetadata->expects(self::any())->method('getExpires')->willReturn($nowString);
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn($now);
         $method->invoke(null, $signedMetadata, $now);
     }
 
@@ -174,11 +176,13 @@ class VerifierTest extends TestCase
     {
         $this->expectException('\Tuf\Exception\Attack\FreezeAttackException');
 
+        $dateFormat = "Y-m-d\TH:i:sT";
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)->disableOriginalConstructor()->getMock();
         $signedMetadata->expects(self::any())->method('getType')->willReturn('any');
-        $signedMetadata->expects(self::any())->method('getExpires')->willReturn('1970-01-01T00:00:00Z');
+        $expiration = \DateTimeImmutable::createFromFormat($dateFormat, '1970-01-01T00:00:00Z');
+        $signedMetadata->expects(self::any())->method('getExpires')->willReturn($expiration);
         // 1 second later.
-        $now = \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", '1970-01-01T00:00:01Z');
+        $now = \DateTimeImmutable::createFromFormat($dateFormat, '1970-01-01T00:00:01Z');
 
         $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
         $method->setAccessible(true);
