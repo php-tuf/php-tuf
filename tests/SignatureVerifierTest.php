@@ -5,7 +5,9 @@ namespace Tuf\Tests;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\SignatureVerifier;
+use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
+use Tuf\Metadata\TimestampMetadata;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 
 /**
@@ -42,5 +44,24 @@ class SignatureVerifierTest extends TestCase
             self::assertSame($key->getType(), $verifierKeys[$keyId]->getType());
             self::assertSame($key->getComputedKeyId(), $verifierKeys[$keyId]->getComputedKeyId());
         }
+    }
+
+    /**
+     * @covers ::checkSignatures
+     */
+    public function testCheckSignatureWithInvalidRole(): void
+    {
+        $fixturePath = static::getFixturePath('Simple/consistent', 'server/metadata');
+
+        $rootMetadata = file_get_contents($fixturePath . '/1.root.json');
+        $rootMetadata = RootMetadata::createFromJson($rootMetadata)->trust();
+
+        $timestampMetadata = $this->prophesize(TimestampMetadata::class);
+        $timestampMetadata->getRole()->willReturn('unknown')->shouldBeCalled();
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage("role not found: unknown");
+        SignatureVerifier::createFromRootMetadata($rootMetadata)
+            ->checkSignatures($timestampMetadata->reveal());
     }
 }

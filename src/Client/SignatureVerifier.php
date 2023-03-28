@@ -9,7 +9,6 @@ use Tuf\Key;
 use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Role;
-use Tuf\RoleDB;
 
 /**
  * A class that verifies metadata signatures.
@@ -22,11 +21,9 @@ final class SignatureVerifier
     private array $keys = [];
 
     /**
-     * SignatureVerifier constructor.
+     * @var \Tuf\Role[]
      */
-    private function __construct(private RoleDB $roleDb)
-    {
-    }
+    private array $roles = [];
 
     /**
      * Creates a SignatureVerifier object from a RootMetadata object.
@@ -38,9 +35,10 @@ final class SignatureVerifier
      */
     public static function createFromRootMetadata(RootMetadata $rootMetadata, bool $allowUntrustedAccess = false): static
     {
-        $instance = new static(
-            RoleDB::createFromRootMetadata($rootMetadata, $allowUntrustedAccess),
-        );
+        $instance = new static();
+        foreach ($rootMetadata->getRoles($allowUntrustedAccess) as $role) {
+            $instance->addRole($role);
+        }
         foreach ($rootMetadata->getKeys($allowUntrustedAccess) as $keyId => $key) {
             $instance->addKey($keyId, $key);
         }
@@ -53,20 +51,19 @@ final class SignatureVerifier
      * @param \Tuf\Metadata\MetadataBase $metadata
      *     The metadata to check signatures on.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\Attack\SignatureThresholdException
      *   Thrown if the signature threshold has not be reached.
+     * @throws \Tuf\Exception\NotFoundException
+     *   If the metadata role is not recognized.
      */
     public function checkSignatures(MetadataBase $metadata): void
     {
-        $signatures = $metadata->getSignatures();
-
-        $role = $this->roleDb->getRole($metadata->getRole());
+        $roleName = $metadata->getRole();
+        $role = $this->roles[$roleName] ?? throw new NotFoundException($roleName, 'role');
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        foreach ($signatures as $signature) {
+        foreach ($metadata->getSignatures() as $signature) {
             // Don't allow the same key to be counted twice.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
@@ -125,8 +122,9 @@ final class SignatureVerifier
      */
     public function addRole(Role $role): void
     {
-        if (!$this->roleDb->roleExists($role->getName())) {
-            $this->roleDb->addRole($role);
+        $name = $role->getName();
+        if (!array_key_exists($name, $this->roles)) {
+            $this->roles[$name] = $role;
         }
     }
 
