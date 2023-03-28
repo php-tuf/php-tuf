@@ -5,6 +5,7 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Repository;
 use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
@@ -27,6 +28,7 @@ use Tuf\Tests\TestHelpers\UtilsTrait;
  */
 abstract class UpdaterTest extends TestCase
 {
+    use CanonicalJsonTrait;
     use FixturesTrait {
         getFixturePath as getFixturePathFromTrait;
     }
@@ -1143,21 +1145,15 @@ abstract class UpdaterTest extends TestCase
         $property->setAccessible(true);
         $property->setValue($updater, $repository);
 
-        // In every version of the server-side root metadata, make the timestamp
-        // role require at least two valid signatures.
-        foreach ($this->serverStorage->fileContents as $fileName => $json) {
-            if (str_ends_with($fileName, 'root.json')) {
-                $this->serverStorage->setRepoFileNestedValue($fileName, ['signed', 'roles', 'timestamp', 'threshold'], 2);
-            }
-        }
-
         // § 5.4.2
-        // If we're simulating an attack, change the server's timestamp.json
-        // so that one of its signatures is repeated, so that we will not be
-        // able to reach the signature threshold of 2.
+        // If we're simulating an attack, change the server's timestamp.json so
+        // that one of its signatures is invalid and we will not be able to
+        // reach the required threshold of 2.
         if ($attack) {
-            $data = json_decode($this->serverStorage->fileContents['timestamp.json'], true);
-            $this->serverStorage->setRepoFileNestedValue('timestamp.json', ['signatures'], array_fill(0, 2, $data['signatures'][0]));
+            $data = static::decodeJson($this->serverStorage->fileContents['timestamp.json']);
+            $this->assertCount(2, $data['signatures']);
+            $data['signatures'][1]['sig'] = hash('sha512', 'This is just a random string.');
+            $this->serverStorage->fileContents['timestamp.json'] = static::encodeJson($data);
 
             $this->expectException(SignatureThresholdException::class);
         }
