@@ -58,14 +58,12 @@ final class SignatureVerifier
      */
     public function checkSignatures(MetadataBase $metadata): void
     {
-        $signatures = $metadata->getSignatures();
-
         $roleName = $metadata->getRole();
         $role = $this->roles[$roleName] ?? throw new NotFoundException($roleName, 'role');
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        foreach ($signatures as $signature) {
+        foreach ($metadata->getSignatures() as $signature) {
             // Don't allow the same key to be counted twice.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
