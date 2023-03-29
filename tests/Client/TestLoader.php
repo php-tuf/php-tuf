@@ -4,16 +4,11 @@ namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
-use Tuf\CanonicalJsonTrait;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\LoaderInterface;
-use Tuf\Tests\TestHelpers\UtilsTrait;
 
 class TestLoader implements LoaderInterface
 {
-    use CanonicalJsonTrait;
-    use UtilsTrait;
-
     /**
      * An array of repo file contents keyed by file name.
      *
