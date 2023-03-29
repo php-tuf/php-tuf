@@ -18,7 +18,6 @@ use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\ClientTestBase;
 use Tuf\Tests\TestHelpers\TestClock;
-use Tuf\Tests\TestHelpers\TestRepository;
 
 /**
  * Base class for testing the client update workflow.
@@ -1349,23 +1348,18 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testMetadataFileTooBig(string $fixtureName, string $fileToChange): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
-
-        $property = new \ReflectionProperty($updater, 'server');
-        $property->setAccessible(true);
-        /** @var \Tuf\Client\Repository $repository */
-        $repository = $property->getValue($updater);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
 
         // Exactly which server-side files we'll need to modify, depends on
         // whether we're using consistent snapshots.
-        $consistentSnapshots = $repository->getRoot(1)
+        $consistentSnapshots = $this->server->getRoot(1)
             ->trust()
             ->supportsConsistentSnapshots();
         // Get the known lengths of snapshot.json and targets.json.
-        $snapshotInfo = $repository->getTimestamp()
+        $snapshotInfo = $this->server->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
-        $targetsInfo = $repository->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+        $targetsInfo = $this->server->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
             ->trust()
             ->getFileMetaInfo('targets.json');
 
@@ -1384,29 +1378,24 @@ abstract class UpdaterTest extends ClientTestBase
         }
         // On the server, replace $fileToChange with a string that's longer than
         // the known length, which should cause an exception during the update.
-        $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
+        $this->serverFiles[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
-        $updater->refresh();
+        $this->getUpdater()->refresh();
     }
 
     public function testSnapshotHashes(): void
     {
-        $updater = $this->getSystemInTest('Simple');
-
-        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
-        $property = new \ReflectionProperty($updater, 'server');
-        $property->setAccessible(true);
-        $property->setValue($updater, $repository);
+        $this->loadClientAndServerFilesFromFixture('Simple');
 
         $targetsMetadata = $this->prophesize(TargetsMetadata::class);
         $targetsMetadata->getRole()->willReturn('targets');
         $targetsMetadata->getSource()->willReturn('invalid data');
-        $repository->targets['targets'][1] = $targetsMetadata->reveal();
+        $this->server->targets['targets'][1] = $targetsMetadata->reveal();
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
-        $updater->refresh();
+        $this->getUpdater()->refresh();
     }
 }
