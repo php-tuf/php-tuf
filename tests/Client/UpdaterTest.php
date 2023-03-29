@@ -30,8 +30,7 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testVerifiedDownload(): void
     {
-        $this->loadServerFilesFromFixture('Simple');
-        $this->loadClientFilesFromFixture('Simple');
+        $this->loadClientAndServerFilesFromFixture('Simple');
         $updater = $this->getUpdater();
 
         $testFilePath = static::getFixturePath('Simple', 'server/targets/testtarget.txt', false);
@@ -89,8 +88,7 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         $updater = $this->getUpdater();
 
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
@@ -425,8 +423,7 @@ abstract class UpdaterTest extends ClientTestBase
     public function testRoleDownloadsAreLimited(): void
     {
         $fixtureName = 'NestedDelegated';
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
 
         $fileName = 'level_1_2_terminating_3_target.txt';
 
@@ -459,11 +456,9 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testDelegationErrors(string $fixtureName, string $fileName, array $expectedFileVersions): void
     {
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         try {
-            $updater->download($fileName);
+            $this->getUpdater()->download($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
             $this->assertClientFileVersions($expectedFileVersions);
@@ -818,12 +813,10 @@ abstract class UpdaterTest extends ClientTestBase
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
         $fixtureName = 'Delegated';
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         $this->setValueInServerFile($fileToChange, $keys, $newValue);
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($expectedException, $exception);
             $this->assertClientFileVersions($expectedUpdatedVersions);
@@ -945,15 +938,13 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         // Depending on which file is removed from the server, the update
         // process will error out at various points. That's fine, because we're
         // not trying to complete the refresh.
         unset($this->serverFiles[$fileName]);
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
             $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
             // We don't have to do anything with this exception; we just wanted
@@ -1051,11 +1042,8 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testSignatureThresholds(bool $attack): void
     {
-        $fixtureName = 'ThresholdTwo';
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
         // Begin with ThresholdTwo, and modify it to suit our needs.
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture('ThresholdTwo');
 
         // § 5.4.2
         // If we're simulating an attack, change the server's timestamp.json so
@@ -1069,7 +1057,7 @@ abstract class UpdaterTest extends ClientTestBase
 
             $this->expectException(SignatureThresholdException::class);
         }
-        $updater->refresh();
+        $this->getUpdater()->refresh();
     }
 
     /**
@@ -1079,8 +1067,7 @@ abstract class UpdaterTest extends ClientTestBase
     {
         $fixtureName = 'Simple';
 
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         $updater = $this->getUpdater();
         // This refresh should succeed.
         $updater->refresh();
@@ -1119,13 +1106,10 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testUnsupportedRepo(array $expectedUpdatedVersion): void
     {
-        $fixtureSet = 'UnsupportedDelegation';
-        $this->loadServerFilesFromFixture($fixtureSet);
-        $this->loadClientFilesFromFixture($fixtureSet);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture('UnsupportedDelegation');
         $startingTargets = $this->clientStorage->read('targets');
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
         } catch (MetadataException $exception) {
             $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]:", '/');
             $expectedMessage .= ".*This field is not supported.";
@@ -1148,16 +1132,13 @@ abstract class UpdaterTest extends ClientTestBase
     {
         // Use the memory storage used so tests can write without permanent
         // side-effects.
-        $fixtureName = 'AttackRollback';
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture('AttackRollback');
         try {
             // No changes should be made to client repo.
             $this->clientStorage->setExceptionOnChange();
             // § 5.4.3
             // § 5.4.4
-            $updater->refresh();
+            $this->getUpdater()->refresh();
             $this->fail('No exception thrown.');
         } catch (RollbackAttackException $exception) {
             $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
@@ -1219,16 +1200,14 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
     {
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         // This will purposefully cause the refresh to fail, immediately after
         // updating the root metadata.
         unset($this->serverFiles['timestamp.json']);
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
             $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
-        } catch (RepoFileNotFound $e) {
+        } catch (RepoFileNotFound) {
             // We don't need to do anything with this exception.
         }
         $this->assertClientFileVersions($expectedUpdatedVersions);
