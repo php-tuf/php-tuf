@@ -50,6 +50,13 @@ class ClientTestBase extends TestCase implements LoaderInterface
     protected array $serverFiles = [];
 
     /**
+     * The $maxBytes arguments passed to ::load(), keyed by locator.
+     *
+     * @var int[][]
+     */
+    protected array $maxBytes = [];
+
+    /**
      * {@inheritDoc}
      */
     protected function setUp(): void
@@ -172,6 +179,8 @@ class ClientTestBase extends TestCase implements LoaderInterface
      */
     public function load(string $locator, int $maxBytes): StreamInterface
     {
+        $this->maxBytes[$locator][] = $maxBytes;
+
         if (!array_key_exists($locator, $this->serverFiles)) {
             throw new RepoFileNotFound("File $locator not found.");
         }

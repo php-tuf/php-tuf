@@ -5,7 +5,6 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Psr7\Utils;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\Repository;
-use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
@@ -14,10 +13,8 @@ use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\ClientTestBase;
-use Tuf\Tests\TestHelpers\TestClock;
 
 /**
  * Base class for testing the client update workflow.
@@ -25,57 +22,6 @@ use Tuf\Tests\TestHelpers\TestClock;
 abstract class UpdaterTest extends ClientTestBase
 {
     use ProphecyTrait;
-
-    /**
-     * The server-side storage for metadata and targets.
-     *
-     * @var \Tuf\Tests\Client\TestLoader
-     */
-    protected $serverStorage;
-
-    /**
-     * Returns a memory-based updater populated with a specific test fixture.
-     *
-     * This will initialize $this->serverStorage to fetch server-side data from
-     * the fixture, and $this->clientStorage to interact with the fixture's
-     * client-side metadata. Both are kept in memory only, and will not cause
-     * any permanent side effects.
-     *
-     * @param string $fixtureName
-     *     The name of the fixture to use.
-     *
-     * @return Updater
-     *     The test updater, which uses the 'current' test fixtures in the
-     *     client/metadata/current/ directory and a localhost HTTP
-     *     mirror.
-     */
-    protected function getSystemInTest(string $fixtureName, string $updaterClass = Updater::class): Updater
-    {
-        $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestLoader(static::getFixturePath($fixtureName));
-
-        // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
-        $this->assertNotEmpty($fixtureFiles);
-        foreach ($fixtureFiles as $fileName) {
-            if (preg_match('/.*\..*\.json/', $fileName)) {
-                $this->clientStorage->delete(basename($fileName, '.json'));
-            }
-        }
-
-        $expectedStartVersions = static::getClientStartVersions($fixtureName);
-        $this->assertClientFileVersions($expectedStartVersions);
-
-        $updater = new $updaterClass(new SizeCheckingLoader($this->serverStorage), $this->clientStorage);
-        // Force the updater to use our test clock so that, like supervillains,
-        // we control what time it is.
-        $reflector = new \ReflectionObject($updater);
-        $property = $reflector->getProperty('clock');
-        $property->setAccessible(true);
-        $property->setValue($updater, new TestClock());
-
-        return $updater;
-    }
 
     /**
      * Tests that TUF will transparently verify downloaded target hashes.
@@ -762,10 +708,10 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         $expectedStartVersion = static::getClientStartVersions($fixtureName);
 
-        $updater = $this->getSystemInTest($fixtureName);
-        $this->assertTrue($updater->refresh($fixtureName));
+        $this->assertTrue($this->getUpdater()->refresh());
         // Confirm the local version are updated to the expected versions.
         // § 5.3.8
         // § 5.4.5
@@ -774,7 +720,7 @@ abstract class UpdaterTest extends ClientTestBase
         $this->assertClientFileVersions($expectedUpdatedVersions);
 
         // Create another version of the client that only starts with the root.json file.
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         foreach (array_keys($expectedStartVersion) as $role) {
             if ($role !== 'root') {
                 // Change the expectation that client will not start with any files other than root.json.
@@ -784,7 +730,7 @@ abstract class UpdaterTest extends ClientTestBase
             }
         }
         $this->assertClientFileVersions($expectedStartVersion);
-        $this->assertTrue($updater->refresh());
+        $this->assertTrue($this->getUpdater()->refresh());
         // Confirm that if we start with only root.json all of the files still
         // update to the expected versions.
 
@@ -1319,12 +1265,13 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
     {
-        $this->getSystemInTest($fixtureName)->refresh();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $this->getUpdater()->refresh();
 
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::MAX_BYTES, $this->serverStorage->maxBytes['timestamp.json'][0]);
-        $this->assertSame($expectedLength, $this->serverStorage->maxBytes[$downloadedFileName][0]);
+        $this->assertSame(Repository::MAX_BYTES, $this->maxBytes['timestamp.json'][0]);
+        $this->assertSame($expectedLength, $this->maxBytes[$downloadedFileName][0]);
     }
 
     public function providerMetadataTooBig(): array
