@@ -5,16 +5,15 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
-use Tuf\Loader\LoaderInterface;
 
-class TestLoader implements LoaderInterface
+trait TestLoaderTrait
 {
     /**
      * An array of repo file contents keyed by file name.
      *
      * @var string[]
      */
-    public array $fileContents = [];
+    protected array $fileContents = [];
 
     /**
      * The $maxBytes argument passed to ::load() each time it was called.
@@ -24,7 +23,7 @@ class TestLoader implements LoaderInterface
      *
      * @var array[]
      */
-    public array $maxBytes = [];
+    protected array $maxBytes = [];
 
     /**
      * TestRepo constructor.
@@ -32,7 +31,7 @@ class TestLoader implements LoaderInterface
      * @param string $basePath
      *   The path of the fixture to read from.
      */
-    public function __construct(string $basePath)
+    public function populateFromFixture(string $basePath): void
     {
         // Store all the repo files locally so they can be easily altered.
         // @see self::setRepoFileNestedValue()
