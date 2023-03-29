@@ -876,7 +876,7 @@ abstract class UpdaterTest extends ClientTestBase
         $this->loadServerFilesFromFixture($fixtureName);
         $this->loadClientFilesFromFixture($fixtureName);
         $updater = $this->getUpdater();
-        $this->setValueInFile($fileToChange, $keys, $newValue);
+        $this->setValueInServerFile($fileToChange, $keys, $newValue);
         try {
             $updater->refresh();
         } catch (TufException $exception) {

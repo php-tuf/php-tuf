@@ -16,6 +16,9 @@ use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\TestRepository;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
+/**
+ * Defines a base class for functionally testing the TUF client workflow.
+ */
 class ClientTestBase extends TestCase implements LoaderInterface
 {
     use CanonicalJsonTrait;
@@ -29,10 +32,26 @@ class ClientTestBase extends TestCase implements LoaderInterface
      */
     protected TestStorage $clientStorage;
 
+    /**
+     * The server-side TUF repository.
+     *
+     * @var \Tuf\Tests\TestHelpers\TestRepository
+     */
     protected TestRepository $server;
 
+    /**
+     * The server-side files, keyed by name.
+     *
+     * These can be the full file contents as strings, or stream objects which
+     * will be loaded as-is.
+     *
+     * @var string[]|\Psr\Http\Message\StreamInterface[]
+     */
     protected array $serverFiles = [];
 
+    /**
+     * {@inheritDoc}
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -40,6 +59,23 @@ class ClientTestBase extends TestCase implements LoaderInterface
         $this->server = new TestRepository(new SizeCheckingLoader($this));
     }
 
+    /**
+     * Returns a TUF client for testing.
+     *
+     * By default, the client will have no TUF metadata on either the client or
+     * server side. You can call other methods to populate those automatically
+     * using our fixtures.
+     *
+     * @param string $updaterClass
+     *   (optional) The updater class. Defaults to \Tuf\Client\Updater.
+     *
+     * @return \Tuf\Client\Updater
+     *   The updater.
+     *
+     * @see ::loadClientAndServerFilesFromFixture()
+     * @see ::loadClientFilesFromFixture()
+     * @see ::loadServerFilesFromFixture()
+     */
     protected function getUpdater(string $updaterClass = Updater::class): Updater
     {
         $updater = new $updaterClass(new SizeCheckingLoader($this), $this->clientStorage);
@@ -58,12 +94,33 @@ class ClientTestBase extends TestCase implements LoaderInterface
         return $updater;
     }
 
+    /**
+     * Loads client- and server-side TUF metadata from a fixture.
+     *
+     * @param string $fixtureName
+     *   The name of the fixture from which to load TUF metadata.
+     */
+    protected function loadClientAndServerFilesFromFixture(string $fixtureName): void
+    {
+        $this->loadServerFilesFromFixture($fixtureName);
+        $this->loadClientFilesFromFixture($fixtureName);
+    }
+
+    /**
+     * Loads client-side TUF metadata from a fixture.
+     *
+     * If this is not called, ::getUpdater() will return an updater that has
+     * no TUF metadata stored on the client side.
+     *
+     * @param string $fixtureName
+     *   The name of the fixture from which to load client-side TUF metadata.
+     */
     protected function loadClientFilesFromFixture(string $fixtureName): void
     {
         $path = static::getFixturePath($fixtureName, 'client/metadata/current');
         $this->clientStorage = TestStorage::createFromDirectory($path);
 
-        // Remove all '*.[TYPE].json' because they are needed for the tests.
+        // Remove all '*.[TYPE].json', because they are needed for the tests.
         $fixtureFiles = array_map('basename', scandir($path));
         $this->assertNotEmpty($fixtureFiles);
         foreach ($fixtureFiles as $fileName) {
@@ -80,6 +137,15 @@ class ClientTestBase extends TestCase implements LoaderInterface
         $this->assertMetadataVersions($expectedVersions, $this->clientStorage);
     }
 
+    /**
+     * Loads server-side TUF metadata from a fixture.
+     *
+     * If this is not called, ::getUpdater() will return an updater that has no
+     * TUF metadata on the server side.
+     *
+     * @param string $fixtureName
+     *   The name of the fixture from which to load server-side TUF metadata.
+     */
     protected function loadServerFilesFromFixture(string $fixtureName): void
     {
         $basePath = static::getFixturePath($fixtureName);
@@ -101,6 +167,9 @@ class ClientTestBase extends TestCase implements LoaderInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function load(string $locator, int $maxBytes): StreamInterface
     {
         if (!array_key_exists($locator, $this->serverFiles)) {
@@ -109,7 +178,17 @@ class ClientTestBase extends TestCase implements LoaderInterface
         return Utils::streamFor($this->serverFiles[$locator]);
     }
 
-    protected function setValueInFile(string $fileName, array $keys, mixed $value): void
+    /**
+     * Sets a nested key in a server-side JSON file.
+     *
+     * @param string $fileName
+     *   The name of the file to change.
+     * @param array $keys
+     *   The nested array keys of the item.
+     * @param mixed $value
+     *   The value to set.
+     */
+    protected function setValueInServerFile(string $fileName, array $keys, mixed $value): void
     {
         $this->assertArrayHasKey($fileName, $this->serverFiles);
 
