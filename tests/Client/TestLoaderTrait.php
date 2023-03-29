@@ -8,6 +8,8 @@ use Tuf\Exception\RepoFileNotFound;
 
 /**
  * Defines a trait to load files from a simulated, in-memory server.
+ *
+ * Classes using this trait should implement \Tuf\Loader\LoaderInterface.
  */
 trait TestLoaderTrait
 {

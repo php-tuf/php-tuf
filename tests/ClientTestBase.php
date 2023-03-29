@@ -53,6 +53,8 @@ class ClientTestBase extends TestCase implements LoaderInterface
         parent::setUp();
         $this->clientStorage = new TestStorage();
         $this->server = new TestRepository(new SizeCheckingLoader($this));
+
+        // Alias $this->fileContents for clarity.
         $this->serverFiles = &$this->fileContents;
     }
 
