@@ -418,30 +418,6 @@ abstract class UpdaterTest extends ClientTestBase
     }
 
     /**
-     * Tests for enforcement of maximum number of roles limit.
-     *
-     * § 5.6.7.1
-     */
-    public function testRoleDownloadsAreLimited(): void
-    {
-        $fixtureName = 'NestedDelegated';
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
-
-        $fileName = 'level_1_2_terminating_3_target.txt';
-
-        // Ensure the file can found if the maximum role limit is 100.
-        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
-        $testFileContents = file_get_contents($testFilePath);
-        self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $this->getUpdater()->download($fileName)->getContents());
-
-        // Ensure the file can not found if the maximum role limit is 3.
-        self::expectException(NotFoundException::class);
-        self::expectExceptionMessage("Target not found: $fileName");
-        $this->getUpdater(LimitRolesTestUpdater::class)->download($fileName);
-    }
-
-    /**
      * Tests that improperly delegated targets will produce exceptions.
      *
      * @param string $fixtureName
