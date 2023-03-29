@@ -21,14 +21,12 @@ class RoleDownloadLimitTest extends ClientTestBase
      */
     public function testRoleDownloadsAreLimited(string $fixtureVariant): void
     {
-        $fixtureName = "NestedDelegated/$fixtureVariant";
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture("NestedDelegated/$fixtureVariant");
 
         $fileName = 'level_1_2_terminating_3_target.txt';
 
         // Ensure the file can found if the maximum role limit is 100.
-        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
-        $testFileContents = file_get_contents($testFilePath);
+        $testFileContents = $this->serverFiles[$fileName];
         self::assertNotEmpty($testFileContents);
         self::assertSame($testFileContents, $this->getUpdater()->download($fileName)->getContents());
 
