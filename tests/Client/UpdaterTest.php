@@ -101,7 +101,7 @@ abstract class UpdaterTest extends ClientTestBase
         $this->assertSame($testFileContents, $updater->download($target)->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
-        $this->assertClientFileVersions($expectedFileVersions);
+        $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);
     }
 
     public function providerVerifiedDelegatedDownload(): array
@@ -432,17 +432,15 @@ abstract class UpdaterTest extends ClientTestBase
         $fileName = 'level_1_2_terminating_3_target.txt';
 
         // Ensure the file can found if the maximum role limit is 100.
-        $updater = $this->getUpdater();
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $updater->download($fileName)->getContents());
+        self::assertSame($testFileContents, $this->getUpdater()->download($fileName)->getContents());
 
         // Ensure the file can not found if the maximum role limit is 3.
-        $updater = $this->getUpdater(LimitRolesTestUpdater::class);
         self::expectException(NotFoundException::class);
         self::expectExceptionMessage("Target not found: $fileName");
-        $updater->download($fileName);
+        $this->getUpdater(LimitRolesTestUpdater::class)->download($fileName);
     }
 
     /**
@@ -465,7 +463,7 @@ abstract class UpdaterTest extends ClientTestBase
             $this->getUpdater()->download($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
-            $this->assertClientFileVersions($expectedFileVersions);
+            $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);
             return;
         }
         self::fail('NotFoundException not thrown.');
@@ -716,7 +714,7 @@ abstract class UpdaterTest extends ClientTestBase
         // § 5.4.5
         // § 5.5.7
         // § 5.6.6
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
 
         // Create another version of the client that only starts with the root.json file.
         $this->loadClientAndServerFilesFromFixture($fixtureName);
@@ -728,7 +726,7 @@ abstract class UpdaterTest extends ClientTestBase
                 $this->clientStorage->delete($role);
             }
         }
-        $this->assertClientFileVersions($expectedStartVersion);
+        $this->assertMetadataVersions($expectedStartVersion, $this->clientStorage);
         $this->assertTrue($this->getUpdater()->refresh());
         // Confirm that if we start with only root.json all of the files still
         // update to the expected versions.
@@ -739,7 +737,7 @@ abstract class UpdaterTest extends ClientTestBase
                 $expectedUpdatedVersions[$role] = null;
             }
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     /**
@@ -784,19 +782,6 @@ abstract class UpdaterTest extends ClientTestBase
     }
 
     /**
-     * Asserts that client-side metadata files are at expected versions.
-     *
-     * @param ?int[] $expectedVersions
-     *   The expected versions. The keys are the file names, without the .json
-     *   suffix, and the values are the expected version numbers, or NULL if
-     *   the file should not be present.
-     */
-    protected function assertClientFileVersions(array $expectedVersions): void
-    {
-        static::assertMetadataVersions($expectedVersions, $this->clientStorage);
-    }
-
-    /**
      * Tests that exceptions are thrown when metadata files are not valid.
      *
      * @param string $fileToChange
@@ -816,8 +801,7 @@ abstract class UpdaterTest extends ClientTestBase
      */
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
-        $fixtureName = 'Delegated';
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture('Delegated');
 
         $data = static::decodeJson($this->serverFiles[$fileToChange]);
         static::nestedChange($keys, $data, $newValue);
@@ -827,7 +811,7 @@ abstract class UpdaterTest extends ClientTestBase
             $this->getUpdater()->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($expectedException, $exception);
-            $this->assertClientFileVersions($expectedUpdatedVersions);
+            $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
             return;
         }
         $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
@@ -959,7 +943,7 @@ abstract class UpdaterTest extends ClientTestBase
             // be sure it got thrown. Since the exception is thrown by TestRepo,
             // there's no point in asserting that its message is as expected.
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     /**
@@ -1084,7 +1068,7 @@ abstract class UpdaterTest extends ClientTestBase
         // The updater is already refreshed, so this will return early, and
         // there should be no changes to the client-side repo.
         $updater->refresh();
-        $this->assertClientFileVersions(static::getClientStartVersions($fixtureName));
+        $this->assertMetadataVersions(static::getClientStartVersions($fixtureName), $this->clientStorage);
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
         $this->expectException(RepoFileNotFound::class);
@@ -1124,7 +1108,7 @@ abstract class UpdaterTest extends ClientTestBase
             self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
             // Assert that the root, timestamp and snapshot metadata files were updated
             // and that the unsupported_target metadata file was not downloaded.
-            self::assertClientFileVersions($expectedUpdatedVersion);
+            $this->assertMetadataVersions($expectedUpdatedVersion, $this->clientStorage);
             // Ensure that local version of targets has not changed because the
             // server version is invalid.
             self::assertSame($this->clientStorage->read('targets'), $startingTargets);
@@ -1150,12 +1134,12 @@ abstract class UpdaterTest extends ClientTestBase
             $this->fail('No exception thrown.');
         } catch (RollbackAttackException $exception) {
             $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
-            $this->assertClientFileVersions([
+            $this->assertMetadataVersions([
                 'root' => 2,
                 'timestamp' => 2,
                 'snapshot' => 2,
                 'targets' => 2,
-            ]);
+            ], $this->clientStorage);
         }
     }
 
@@ -1218,7 +1202,7 @@ abstract class UpdaterTest extends ClientTestBase
         } catch (RepoFileNotFound) {
             // We don't need to do anything with this exception.
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     public function providerTimestampAndSnapshotLength(): array
