@@ -13,7 +13,6 @@ use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\ClientTestBase;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
