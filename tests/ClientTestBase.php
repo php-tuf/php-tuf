@@ -3,7 +3,6 @@
 namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Updater;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
@@ -12,17 +11,14 @@ use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
 use Tuf\Tests\TestHelpers\TestRepository;
-use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Defines a base class for functionally testing the TUF client workflow.
  */
 class ClientTestBase extends TestCase implements LoaderInterface
 {
-    use CanonicalJsonTrait;
     use FixturesTrait;
     use TestLoaderTrait;
-    use UtilsTrait;
 
     /**
      * The client-side metadata storage.
@@ -151,24 +147,5 @@ class ClientTestBase extends TestCase implements LoaderInterface
 
         $basePath = static::getFixturePath($fixtureName);
         $this->populateFromFixture($basePath);
-    }
-
-    /**
-     * Sets a nested key in a server-side JSON file.
-     *
-     * @param string $fileName
-     *   The name of the file to change.
-     * @param array $keys
-     *   The nested array keys of the item.
-     * @param mixed $value
-     *   The value to set.
-     */
-    protected function setValueInServerFile(string $fileName, array $keys, mixed $value): void
-    {
-        $this->assertArrayHasKey($fileName, $this->serverFiles);
-
-        $data = static::decodeJson($this->serverFiles[$fileName]);
-        static::nestedChange($keys, $data, $value);
-        $this->serverFiles[$fileName] = static::encodeJson($data);
     }
 }

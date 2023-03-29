@@ -4,6 +4,7 @@ namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Psr7\Utils;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Repository;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
@@ -15,13 +16,16 @@ use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\ClientTestBase;
+use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Base class for testing the client update workflow.
  */
 abstract class UpdaterTest extends ClientTestBase
 {
+    use CanonicalJsonTrait;
     use ProphecyTrait;
+    use UtilsTrait;
 
     /**
      * Tests that TUF will transparently verify downloaded target hashes.
@@ -814,7 +818,11 @@ abstract class UpdaterTest extends ClientTestBase
     {
         $fixtureName = 'Delegated';
         $this->loadClientAndServerFilesFromFixture($fixtureName);
-        $this->setValueInServerFile($fileToChange, $keys, $newValue);
+
+        $data = static::decodeJson($this->serverFiles[$fileToChange]);
+        static::nestedChange($keys, $data, $newValue);
+        $this->serverFiles[$fileToChange] = static::encodeJson($data);
+
         try {
             $this->getUpdater()->refresh();
         } catch (TufException $exception) {
