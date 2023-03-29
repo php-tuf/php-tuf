@@ -93,12 +93,11 @@ abstract class UpdaterTest extends ClientTestBase
     public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
         $this->loadClientAndServerFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
 
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->download($target)->getContents());
+        $this->assertSame($testFileContents, $this->getUpdater()->download($target)->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
         $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);
