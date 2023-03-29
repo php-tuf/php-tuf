@@ -38,6 +38,7 @@ class RoleDownloadLimitTest extends ClientTestBase
         $this->getUpdater(LimitRolesTestUpdater::class)->download($fileName);
     }
 }
+// @codingStandardsIgnoreStart
 
 /**
  * An updater to test the enforcement of MAXIMUM_TARGET_ROLES.
@@ -49,3 +50,4 @@ class LimitRolesTestUpdater extends Updater
      */
     const MAXIMUM_TARGET_ROLES = 3;
 }
+// @codingStandardsIgnoreEnd
