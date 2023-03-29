@@ -11,7 +11,10 @@ def build(rotate_keys=None):
     if rotate_keys is not None:
         name += 'WithRotatedKeys_' + rotate_keys
 
-    fixture = ConsistencyVariantFixtureBuilder(name).publish(with_client=True)
+    fixture = ConsistencyVariantFixtureBuilder(name, { 'use_snapshot_hashes': True })\
+        .publish(with_client=True)
+    fixture.create_target('test.txt')
+
     if rotate_keys is not None:
         fixture.add_key(rotate_keys)\
             .revoke_key(rotate_keys, key_index=0)

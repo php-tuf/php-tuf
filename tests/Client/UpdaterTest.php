@@ -1397,17 +1397,15 @@ abstract class UpdaterTest extends TestCase
 
     public function testSnapshotHashes(): void
     {
-        $updater = $this->getSystemInTest('Simple');
+        $updater = $this->getSystemInTest('PublishedTwice');
 
         $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
         $property = new \ReflectionProperty($updater, 'server');
         $property->setAccessible(true);
         $property->setValue($updater, $repository);
 
-        $targetsMetadata = $this->prophesize(TargetsMetadata::class);
-        $targetsMetadata->getRole()->willReturn('targets');
-        $targetsMetadata->getSource()->willReturn('invalid data');
-        $repository->targets['targets'][1] = $targetsMetadata->reveal();
+        $data = static::decodeJson($this->serverStorage->fileContents['targets.json']);
+        $repository->targets['targets'][2] = new TargetsMetadata($data, 'invalid data');
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
