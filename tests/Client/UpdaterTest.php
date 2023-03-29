@@ -1332,28 +1332,15 @@ abstract class UpdaterTest extends TestCase
         $this->assertSame($expectedLength, $this->serverStorage->maxBytes[$downloadedFileName][0]);
     }
 
-    public function providerMetadataTooBig(): array
-    {
-        return [
-            'snapshot.json too big' => [
-                'Simple',
-                'snapshot.json',
-            ],
-            'targets.json too big' => [
-                'TargetsLengthNoSnapshotLength',
-                'targets.json',
-            ],
-        ];
-    }
-
     /**
-     * @dataProvider providerMetadataTooBig
-     *
      * @testdox Exception if $fileToChange is bigger than known size
+     *
+     * @testWith ["snapshot.json"]
+     *   ["targets.json"]
      */
-    public function testMetadataFileTooBig(string $fixtureName, string $fileToChange): void
+    public function testMetadataFileTooBig(string $fileToChange): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
+        $updater = $this->getSystemInTest('PublishedTwice');
 
         $property = new \ReflectionProperty($updater, 'server');
         $property->setAccessible(true);
