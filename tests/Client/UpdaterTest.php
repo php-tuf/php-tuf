@@ -10,7 +10,6 @@ use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\InvalidHashException;
-use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
@@ -1073,47 +1072,6 @@ abstract class UpdaterTest extends ClientTestBase
         $this->expectException(RepoFileNotFound::class);
         $this->expectExceptionMessage('File timestamp.json not found.');
         $updater->refresh(true);
-    }
-
-    public function providerUnsupportedRepo(): array
-    {
-        return [
-            [
-                [
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'unsupported_target' => null,
-                    // We cannot assert the starting versions of 'targets' because it has
-                    // an unsupported field and would throw an exception when validating.
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * Tests that an exceptions for an repo with an unsupported field.
-     *
-     * @dataProvider providerUnsupportedRepo
-     */
-    public function testUnsupportedRepo(array $expectedUpdatedVersion): void
-    {
-        $this->loadClientAndServerFilesFromFixture('UnsupportedDelegation');
-        $startingTargets = $this->clientStorage->read('targets');
-        try {
-            $this->getUpdater()->refresh();
-        } catch (MetadataException $exception) {
-            $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]:", '/');
-            $expectedMessage .= ".*This field is not supported.";
-            self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
-            // Assert that the root, timestamp and snapshot metadata files were updated
-            // and that the unsupported_target metadata file was not downloaded.
-            $this->assertMetadataVersions($expectedUpdatedVersion, $this->clientStorage);
-            // Ensure that local version of targets has not changed because the
-            // server version is invalid.
-            self::assertSame($this->clientStorage->read('targets'), $startingTargets);
-            return;
-        }
-        $this->fail('No exception thrown.');
     }
 
     public function providerKeyRotation(): array

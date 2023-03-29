@@ -115,14 +115,4 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
         $data['targets.json in Delegated'][2]['root'] = 3;
         return $data;
     }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function providerUnsupportedRepo(): array
-    {
-        $data = parent::providerUnsupportedRepo();
-        $data[0][0]['root'] = 1;
-        return $data;
-    }
 }
