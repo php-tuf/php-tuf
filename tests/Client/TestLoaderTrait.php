@@ -9,9 +9,14 @@ use Tuf\Exception\RepoFileNotFound;
 trait TestLoaderTrait
 {
     /**
-     * An array of repo file contents keyed by file name.
+     * An array of file contents keyed by file name.
      *
-     * @var string[]
+     * These can either be the plain file contents as strings, or stream objects
+     * that should be returned as-is.
+     *
+     * @var string[]|\Psr\Http\Message\StreamInterface[]
+     *
+     * @see ::load()
      */
     protected array $fileContents = [];
 

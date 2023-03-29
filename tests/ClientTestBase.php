@@ -2,14 +2,12 @@
 
 namespace Tuf\Tests;
 
-use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\StreamInterface;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Updater;
-use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
+use Tuf\Tests\Client\TestLoaderTrait;
 use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
@@ -23,6 +21,7 @@ class ClientTestBase extends TestCase implements LoaderInterface
 {
     use CanonicalJsonTrait;
     use FixturesTrait;
+    use TestLoaderTrait;
     use UtilsTrait;
 
     /**
@@ -33,28 +32,18 @@ class ClientTestBase extends TestCase implements LoaderInterface
     protected TestStorage $clientStorage;
 
     /**
+     * Alias of $this->fileContents, for clarity.
+     *
+     * @var array
+     */
+    protected array $serverFiles;
+
+    /**
      * The server-side TUF repository.
      *
      * @var \Tuf\Tests\TestHelpers\TestRepository
      */
     protected TestRepository $server;
-
-    /**
-     * The server-side files, keyed by name.
-     *
-     * These can be the full file contents as strings, or stream objects which
-     * will be loaded as-is.
-     *
-     * @var string[]|\Psr\Http\Message\StreamInterface[]
-     */
-    protected array $serverFiles = [];
-
-    /**
-     * The $maxBytes arguments passed to ::load(), keyed by locator.
-     *
-     * @var int[][]
-     */
-    protected array $maxBytes = [];
 
     /**
      * {@inheritDoc}
@@ -64,6 +53,7 @@ class ClientTestBase extends TestCase implements LoaderInterface
         parent::setUp();
         $this->clientStorage = new TestStorage();
         $this->server = new TestRepository(new SizeCheckingLoader($this));
+        $this->serverFiles = &$this->fileContents;
     }
 
     /**
@@ -155,36 +145,10 @@ class ClientTestBase extends TestCase implements LoaderInterface
      */
     protected function loadServerFilesFromFixture(string $fixtureName): void
     {
+        $this->serverFiles = [];
+
         $basePath = static::getFixturePath($fixtureName);
-
-        // Store all the repo files locally so they can be easily altered.
-        // @see self::setRepoFileNestedValue()
-        $fixturesPath = "$basePath/server";
-        $repoFiles = glob("$fixturesPath/metadata/*.json");
-        $targetsPath = "$fixturesPath/targets";
-        if (is_dir($targetsPath)) {
-            $repoFiles = array_merge($repoFiles, glob("$targetsPath/*"));
-        }
-        foreach ($repoFiles as $repoFile) {
-            $baseName = basename($repoFile);
-            if (isset($this->fileContents[$baseName])) {
-                throw new \UnexpectedValueException("For testing fixtures target files should not use metadata file names");
-            }
-            $this->serverFiles[$baseName] = file_get_contents($repoFile);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function load(string $locator, int $maxBytes): StreamInterface
-    {
-        $this->maxBytes[$locator][] = $maxBytes;
-
-        if (!array_key_exists($locator, $this->serverFiles)) {
-            throw new RepoFileNotFound("File $locator not found.");
-        }
-        return Utils::streamFor($this->serverFiles[$locator]);
+        $this->populateFromFixture($basePath);
     }
 
     /**
