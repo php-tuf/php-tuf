@@ -19,7 +19,7 @@ class TestLoader implements LoaderInterface
      *
      * @var string[]
      */
-    public $fileContents = [];
+    public array $fileContents = [];
 
     /**
      * The $maxBytes argument passed to ::load() each time it was called.
@@ -63,47 +63,12 @@ class TestLoader implements LoaderInterface
     {
         $this->maxBytes[$locator][] = $maxBytes;
 
-        if (empty($this->fileContents[$locator])) {
+        if (array_key_exists($locator, $this->fileContents)) {
+            // Allow test code to directly set the returned stream so that they
+            // can be mocked.
+            return Utils::streamFor($this->fileContents[$locator]);
+        } else {
             throw new RepoFileNotFound("File $locator not found.");
         }
-        // Allow test code to directly set the returned stream so that they can
-        // be mocked.
-        $contents = $this->fileContents[$locator];
-        if ($contents instanceof StreamInterface) {
-            return $contents;
-        }
-        return Utils::streamFor($this->fileContents[$locator]);
-    }
-
-    /**
-     * Sets a nested value in a repo file.
-     *
-     * @param string $fileName
-     *   The name of the file to change.
-     * @param array $keys
-     *   The nested array keys of the item.
-     * @param mixed $newValue
-     *   The new value to set.
-     *
-     * @return void
-     */
-    public function setRepoFileNestedValue(string $fileName, array $keys, $newValue): void
-    {
-        $json = json_decode($this->fileContents[$fileName], true);
-        static::nestedChange($keys, $json, $newValue);
-        $this->fileContents[$fileName] = static::encodeJson($json);
-    }
-
-    /**
-     * Removes a file from the repo.
-     *
-     * @param string $fileName
-     *   The name of the file to remove.
-     *
-     * @return void
-     */
-    public function removeRepoFile(string $fileName): void
-    {
-        unset($this->fileContents[$fileName]);
     }
 }
