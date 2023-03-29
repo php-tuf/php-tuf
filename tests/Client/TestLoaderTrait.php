@@ -41,7 +41,7 @@ trait TestLoaderTrait
      * @param string $basePath
      *   The path of the fixture to read from.
      */
-    public function populateFromFixture(string $basePath): void
+    protected function populateFromFixture(string $basePath): void
     {
         // Store the file contents in memory so they can be easily altered.
         $fixturesPath = "$basePath/server";
