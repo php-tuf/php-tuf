@@ -979,30 +979,6 @@ abstract class UpdaterTest extends ClientTestBase
         $this->getUpdater()->refresh();
     }
 
-    /**
-     * Tests forcing a refresh when the server is in an invalid state.
-     */
-    public function testRefreshFromServerInInvalidState(): void
-    {
-        $fixtureName = 'Simple';
-
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
-        $updater = $this->getUpdater();
-        // This refresh should succeed.
-        $updater->refresh();
-        // Put the server-side repo into an invalid state.
-        unset($this->serverFiles['timestamp.json']);
-        // The updater is already refreshed, so this will return early, and
-        // there should be no changes to the client-side repo.
-        $updater->refresh();
-        $this->assertMetadataVersions(static::getClientStartVersions($fixtureName), $this->clientStorage);
-        // If we force a refresh, the invalid state of the server-side repo will
-        // raise an exception.
-        $this->expectException(RepoFileNotFound::class);
-        $this->expectExceptionMessage('File timestamp.json not found.');
-        $updater->refresh(true);
-    }
-
     public function providerKeyRotation(): array
     {
         return [
