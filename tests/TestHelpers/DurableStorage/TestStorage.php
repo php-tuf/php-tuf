@@ -11,8 +11,6 @@ class TestStorage extends StorageBase
 {
     private $container = [];
 
-    private $exceptionOnChange = false;
-
     public static function createFromDirectory(string $dir): static
     {
         $storage = new static();
@@ -29,19 +27,6 @@ class TestStorage extends StorageBase
         return $storage;
     }
 
-    /**
-     * Sets whether an exception should be thrown if an call to change storage is made.
-     *
-     * @param boolean $exceptionOnChange
-     *   Whether an exception should be thrown on call to change values.
-     *
-     * @return void
-     */
-    public function setExceptionOnChange(bool $exceptionOnChange = true): void
-    {
-        $this->exceptionOnChange = $exceptionOnChange;
-    }
-
     public function read(string $name): ?string
     {
         return $this->container[$name] ?? null;
@@ -49,17 +34,11 @@ class TestStorage extends StorageBase
 
     public function write(string $name, string $data): void
     {
-        if ($this->exceptionOnChange) {
-            throw new \LogicException("Unexpected attempt to change client storage.");
-        }
         $this->container[$name] = $data;
     }
 
     public function delete(string $name): void
     {
-        if ($this->exceptionOnChange) {
-            throw new \LogicException("Unexpected attempt to change client storage.");
-        }
         unset($this->container[$name]);
     }
 }

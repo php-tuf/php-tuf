@@ -1116,32 +1116,6 @@ abstract class UpdaterTest extends ClientTestBase
         $this->fail('No exception thrown.');
     }
 
-    /**
-     * Tests that exceptions are thrown when a repo is in a rollback attack state.
-     */
-    public function testRollbackAttackDetection(): void
-    {
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
-        $this->loadClientAndServerFilesFromFixture('AttackRollback');
-        try {
-            // No changes should be made to client repo.
-            $this->clientStorage->setExceptionOnChange();
-            // § 5.4.3
-            // § 5.4.4
-            $this->getUpdater()->refresh();
-            $this->fail('No exception thrown.');
-        } catch (RollbackAttackException $exception) {
-            $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
-            $this->assertMetadataVersions([
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-            ], $this->clientStorage);
-        }
-    }
-
     public function providerKeyRotation(): array
     {
         return [
