@@ -36,7 +36,7 @@ class PathHashPrefixesTest extends ClientTestBase
     /**
      * @dataProvider provider
      */
-    public function testUnsupportedRepo(string $fixtureVariant, array $expectedUpdatedVersion): void
+    public function test(string $fixtureVariant, array $expectedUpdatedVersion): void
     {
         // We cannot assert the starting version of 'targets' because it has
         // an unsupported field and would throw an exception when validating.
