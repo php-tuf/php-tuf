@@ -73,7 +73,7 @@ class Updater
      *
      * @var \Tuf\Client\Repository
      */
-    private Repository $server;
+    protected Repository $server;
 
     /**
      * Updater constructor.

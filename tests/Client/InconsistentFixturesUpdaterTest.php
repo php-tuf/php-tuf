@@ -14,8 +14,10 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
     /**
      * {@inheritdoc}
      */
-    protected const FIXTURE_VARIANT = 'inconsistent';
-
+    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
+        return parent::getFixturePath($fixtureName, "inconsistent/$subPath", $isDir);
+    }
     /**
      * {@inheritdoc}
      */
