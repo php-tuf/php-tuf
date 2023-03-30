@@ -5,26 +5,15 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
+use Tuf\Loader\LoaderInterface;
 
 /**
  * Defines a trait to load files from a simulated, in-memory server.
  *
  * Classes using this trait should implement \Tuf\Loader\LoaderInterface.
  */
-trait TestLoaderTrait
+class TestLoader extends \ArrayObject implements LoaderInterface
 {
-    /**
-     * An array of file contents keyed by file name.
-     *
-     * These can either be the plain file contents as strings, or stream objects
-     * that should be returned as-is.
-     *
-     * @var string[]|\Psr\Http\Message\StreamInterface[]
-     *
-     * @see ::load()
-     */
-    protected array $fileContents = [];
-
     /**
      * The $maxBytes arguments passed to ::load(), keyed by file name.
      *
@@ -33,15 +22,15 @@ trait TestLoaderTrait
      *
      * @var int[][]
      */
-    protected array $maxBytes = [];
+    public array $maxBytes = [];
 
     /**
-     * Populates $this->fileContents with a fixture's server-side metadata.
+     * Populates this object with a fixture's server-side metadata.
      *
      * @param string $basePath
      *   The path of the fixture to read from.
      */
-    protected function populateFromFixture(string $basePath): void
+    public function populateFromFixture(string $basePath): void
     {
         // Store the file contents in memory so they can be easily altered.
         $fixturesPath = "$basePath/server";
@@ -52,10 +41,10 @@ trait TestLoaderTrait
         }
         foreach ($files as $file) {
             $baseName = basename($file);
-            if (array_key_exists($baseName, $this->fileContents)) {
+            if ($this->offsetExists($baseName)) {
                 throw new \UnexpectedValueException("For testing fixtures target files should not use metadata file names");
             }
-            $this->fileContents[$baseName] = file_get_contents($file);
+            $this[$baseName] = file_get_contents($file);
         }
     }
 
@@ -66,8 +55,8 @@ trait TestLoaderTrait
     {
         $this->maxBytes[$locator][] = $maxBytes;
 
-        if (array_key_exists($locator, $this->fileContents)) {
-            return Utils::streamFor($this->fileContents[$locator]);
+        if ($this->offsetExists($locator)) {
+            return Utils::streamFor($this[$locator]);
         } else {
             throw new RepoFileNotFound("File $locator not found.");
         }

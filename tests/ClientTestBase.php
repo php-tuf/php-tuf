@@ -4,9 +4,8 @@ namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
-use Tuf\Loader\LoaderInterface;
 use Tuf\Loader\SizeCheckingLoader;
-use Tuf\Tests\Client\TestLoaderTrait;
+use Tuf\Tests\Client\TestLoader;
 use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
@@ -15,10 +14,9 @@ use Tuf\Tests\TestHelpers\TestRepository;
 /**
  * Defines a base class for functionally testing the TUF client workflow.
  */
-class ClientTestBase extends TestCase implements LoaderInterface
+class ClientTestBase extends TestCase
 {
     use FixturesTrait;
-    use TestLoaderTrait;
 
     /**
      * The client-side metadata storage.
@@ -34,17 +32,17 @@ class ClientTestBase extends TestCase implements LoaderInterface
     protected TestStorage $clientStorage;
 
     /**
-     * The server-side files, as strings or streams.
+     * A container for server-side files, as strings or streams.
      *
      * This is initially empty; use ::loadServerFilesFromFixture() to populate
      * it with the server-side files from a particular fixture.
      *
-     * @var string[]|\Psr\Http\Message\StreamInterface[]
+     * @var \Tuf\Tests\Client\TestLoader
      *
      * @see ::loadServerFilesFromFixture()
      * @see ::loadClientAndServerFilesFromFixture()
      */
-    protected array $serverFiles;
+    protected TestLoader $serverFiles;
 
     /**
      * The server-side TUF repository.
@@ -60,10 +58,8 @@ class ClientTestBase extends TestCase implements LoaderInterface
     {
         parent::setUp();
         $this->clientStorage = new TestStorage();
-        $this->server = new TestRepository(new SizeCheckingLoader($this));
-
-        // Alias $this->fileContents for clarity.
-        $this->serverFiles = &$this->fileContents;
+        $this->serverFiles = new TestLoader();
+        $this->server = new TestRepository(new SizeCheckingLoader($this->serverFiles));
     }
 
     /**
@@ -86,7 +82,7 @@ class ClientTestBase extends TestCase implements LoaderInterface
      */
     protected function getUpdater(string $updaterClass = Updater::class): Updater
     {
-        $updater = new $updaterClass(new SizeCheckingLoader($this), $this->clientStorage);
+        $updater = new $updaterClass(new SizeCheckingLoader($this->serverFiles), $this->clientStorage);
 
         // Force the updater to use our test clock so that, like supervillains,
         // we control what time it is.
@@ -150,9 +146,8 @@ class ClientTestBase extends TestCase implements LoaderInterface
      */
     protected function loadServerFilesFromFixture(string $fixtureName): void
     {
-        $this->serverFiles = [];
-
         $basePath = static::getFixturePath($fixtureName);
-        $this->populateFromFixture($basePath);
+        $this->serverFiles->exchangeArray([]);
+        $this->serverFiles->populateFromFixture($basePath);
     }
 }

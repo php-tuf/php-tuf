@@ -1077,8 +1077,8 @@ abstract class UpdaterTest extends ClientTestBase
 
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::MAX_BYTES, $this->maxBytes['timestamp.json'][0]);
-        $this->assertSame($expectedLength, $this->maxBytes[$downloadedFileName][0]);
+        $this->assertSame(Repository::MAX_BYTES, $this->serverFiles->maxBytes['timestamp.json'][0]);
+        $this->assertSame($expectedLength, $this->serverFiles->maxBytes[$downloadedFileName][0]);
     }
 
     public function providerMetadataTooBig(): array
