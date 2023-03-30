@@ -23,14 +23,26 @@ class ClientTestBase extends TestCase implements LoaderInterface
     /**
      * The client-side metadata storage.
      *
+     * This is initially empty; use ::loadClientFilesFromFixture() to populate
+     * it with the client-side files from a particular fixture.
+     *
      * @var \Tuf\Tests\TestHelpers\DurableStorage\TestStorage
+     *
+     * @see ::loadClientFilesFromFixture()
+     * @see ::loadClientAndServerFilesFromFixture()
      */
     protected TestStorage $clientStorage;
 
     /**
-     * Alias of $this->fileContents, for clarity.
+     * The server-side files, as strings or streams.
      *
-     * @var array
+     * This is initially empty; use ::loadServerFilesFromFixture() to populate
+     * it with the server-side files from a particular fixture.
+     *
+     * @var string[]|\Psr\Http\Message\StreamInterface[]
+     *
+     * @see ::loadServerFilesFromFixture()
+     * @see ::loadClientAndServerFilesFromFixture()
      */
     protected array $serverFiles;
 
@@ -58,8 +70,9 @@ class ClientTestBase extends TestCase implements LoaderInterface
      * Returns a TUF client for testing.
      *
      * By default, the client will have no TUF metadata on either the client or
-     * server side. You can call other methods to populate those automatically
-     * using our fixtures.
+     * server side. Use ::loadClientAndServerFilesFromFixture(),
+     * ::loadClientFilesFromFixture(), and ::loadServerFilesFromFixture() to
+     * populate the client and/or server side with data from our fixtures.
      *
      * @param string $updaterClass
      *   (optional) The updater class. Defaults to \Tuf\Client\Updater.
@@ -102,10 +115,7 @@ class ClientTestBase extends TestCase implements LoaderInterface
     }
 
     /**
-     * Loads client-side TUF metadata from a fixture.
-     *
-     * If this is not called, ::getUpdater() will return an updater that has
-     * no TUF metadata stored on the client side.
+     * Populates $this->clientStorage with a fixture's client-side metadata.
      *
      * @param string $fixtureName
      *   The name of the fixture from which to load client-side TUF metadata.
@@ -133,10 +143,7 @@ class ClientTestBase extends TestCase implements LoaderInterface
     }
 
     /**
-     * Loads server-side TUF metadata from a fixture.
-     *
-     * If this is not called, ::getUpdater() will return an updater that has no
-     * TUF metadata on the server side.
+     * Populates $this->serverFiles with a fixture's server-side metadata.
      *
      * @param string $fixtureName
      *   The name of the fixture from which to load server-side TUF metadata.
