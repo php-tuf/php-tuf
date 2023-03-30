@@ -34,7 +34,7 @@ class RollbackAttackTest extends ClientTestBase
              */
             public function delete(string $name): void
             {
-                $this->write($name, '');
+                throw new \LogicException("Unexpected attempt to change client storage.");
             }
 
         };
