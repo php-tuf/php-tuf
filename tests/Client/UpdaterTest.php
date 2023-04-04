@@ -1053,6 +1053,12 @@ abstract class UpdaterTest extends ClientTestBase
     public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
     {
         $this->loadClientAndServerFilesFromFixture($fixtureName);
+        // Remove all client-side data except for the root metadata, so that we
+        // can ensure it's all refereshed from the server.
+        foreach (['timestamp', 'snapshot', 'targets'] as $name) {
+            $this->clientStorage->delete($name);
+        }
+
         $this->getUpdater()->refresh();
 
         // The length of the timestamp metadata is never known in advance, so it
