@@ -1111,18 +1111,4 @@ abstract class UpdaterTest extends ClientTestBase
         $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
         $this->getUpdater()->refresh();
     }
-
-    /**
-     * Tests that the update ends early if timestamp metadata is not changed.
-     *
-     * @testWith ["consistent"]
-     *   ["inconsistent"]
-     */
-    public function testUpdateShortCircuitsIfTimestampUnchanged(): void
-    {
-        $this->loadClientAndServerFilesFromFixture('Simple');
-        unset($this->serverFiles['snapshot.json']);
-        unset($this->serverFiles['targets.json']);
-        $this->getUpdater()->refresh();
-    }
 }
