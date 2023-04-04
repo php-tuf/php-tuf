@@ -14,8 +14,10 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
     /**
      * {@inheritdoc}
      */
-    protected const FIXTURE_VARIANT = 'inconsistent';
-
+    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
+        return parent::getFixturePath($fixtureName, "inconsistent/$subPath", $isDir);
+    }
     /**
      * {@inheritdoc}
      */
@@ -111,16 +113,6 @@ class InconsistentFixturesUpdaterTest extends UpdaterTest
         $data['timestamp.json in Delegated'][2]['root'] = 3;
         $data['snapshot.json in Delegated'][2]['root'] = 3;
         $data['targets.json in Delegated'][2]['root'] = 3;
-        return $data;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function providerUnsupportedRepo(): array
-    {
-        $data = parent::providerUnsupportedRepo();
-        $data[0][0]['root'] = 1;
         return $data;
     }
 }

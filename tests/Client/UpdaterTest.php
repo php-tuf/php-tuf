@@ -2,147 +2,24 @@
 
 namespace Tuf\Tests\Client;
 
-use GuzzleHttp\Psr7\Utils;
-use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Client\Repository;
-use Tuf\Client\Updater;
 use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
-use Tuf\Exception\Attack\InvalidHashException;
-use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
-use Tuf\Loader\SizeCheckingLoader;
-use Tuf\Metadata\TargetsMetadata;
-use Tuf\Tests\TestHelpers\FixturesTrait;
-use Tuf\Tests\TestHelpers\TestClock;
-use Tuf\Tests\TestHelpers\TestRepository;
+use Tuf\Tests\ClientTestBase;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
  * Base class for testing the client update workflow.
  */
-abstract class UpdaterTest extends TestCase
+abstract class UpdaterTest extends ClientTestBase
 {
     use CanonicalJsonTrait;
-    use FixturesTrait {
-        getFixturePath as getFixturePathFromTrait;
-    }
-    use ProphecyTrait;
     use UtilsTrait;
-
-    /**
-     * The client-side metadata storage.
-     *
-     * @var \Tuf\Tests\TestHelpers\DurableStorage\TestStorage
-     */
-    protected $clientStorage;
-
-    /**
-     * The server-side storage for metadata and targets.
-     *
-     * @var \Tuf\Tests\Client\TestLoader
-     */
-    protected $serverStorage;
-
-    protected const FIXTURE_VARIANT = '';
-
-    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
-    {
-        return static::getFixturePathFromTrait($fixtureName, static::FIXTURE_VARIANT . "/$subPath", $isDir);
-    }
-
-    /**
-     * Returns a memory-based updater populated with a specific test fixture.
-     *
-     * This will initialize $this->serverStorage to fetch server-side data from
-     * the fixture, and $this->clientStorage to interact with the fixture's
-     * client-side metadata. Both are kept in memory only, and will not cause
-     * any permanent side effects.
-     *
-     * @param string $fixtureName
-     *     The name of the fixture to use.
-     *
-     * @return Updater
-     *     The test updater, which uses the 'current' test fixtures in the
-     *     client/metadata/current/ directory and a localhost HTTP
-     *     mirror.
-     */
-    protected function getSystemInTest(string $fixtureName, string $updaterClass = Updater::class): Updater
-    {
-        $this->clientStorage = static::loadFixtureIntoMemory($fixtureName);
-        $this->serverStorage = new TestLoader(static::getFixturePath($fixtureName));
-
-        // Remove all '*.[TYPE].json' because they are needed for the tests.
-        $fixtureFiles = scandir(static::getFixturePath($fixtureName, 'client/metadata/current'));
-        $this->assertNotEmpty($fixtureFiles);
-        foreach ($fixtureFiles as $fileName) {
-            if (preg_match('/.*\..*\.json/', $fileName)) {
-                $this->clientStorage->delete(basename($fileName, '.json'));
-            }
-        }
-
-        $expectedStartVersions = static::getClientStartVersions($fixtureName);
-        $this->assertClientFileVersions($expectedStartVersions);
-
-        $updater = new $updaterClass(new SizeCheckingLoader($this->serverStorage), $this->clientStorage);
-        // Force the updater to use our test clock so that, like supervillains,
-        // we control what time it is.
-        $reflector = new \ReflectionObject($updater);
-        $property = $reflector->getProperty('clock');
-        $property->setAccessible(true);
-        $property->setValue($updater, new TestClock());
-
-        return $updater;
-    }
-
-    /**
-     * Tests that TUF will transparently verify downloaded target hashes.
-     *
-     * @covers ::download
-     *
-     * @return void
-     */
-    public function testVerifiedDownload(): void
-    {
-        $fixtureName = 'Simple';
-        $updater = $this->getSystemInTest($fixtureName);
-
-        $testFilePath = static::getFixturePath($fixtureName, 'server/targets/testtarget.txt', false);
-        $testFileContents = file_get_contents($testFilePath);
-        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->getContents());
-
-        // If the file fetcher returns a file stream, the updater should NOT try
-        // to read the contents of the stream into memory.
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getMetadata('uri')->willReturn($testFilePath);
-        $stream->getContents()->shouldNotBeCalled();
-        $stream->rewind()->shouldNotBeCalled();
-        $stream->getSize()->willReturn(strlen($testFileContents));
-        $updater->download('testtarget.txt');
-
-        // If the target isn't known, we should get an exception.
-        try {
-            $updater->download('void.txt');
-            $this->fail('Expected a NotFoundException to be thrown, but it was not.');
-        } catch (NotFoundException $e) {
-            $this->assertSame('Target not found: void.txt', $e->getMessage());
-        }
-
-        $stream = Utils::streamFor('invalid data');
-        $this->serverStorage->fileContents['testtarget.txt'] = $stream;
-        try {
-            $updater->download('testtarget.txt');
-            $this->fail('Expected InvalidHashException to be thrown, but it was not.');
-        } catch (InvalidHashException $e) {
-            $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());
-            $this->assertSame($stream, $e->getStream());
-        }
-    }
 
     /**
      * Tests that TUF transparently verifies targets signed by delegated roles.
@@ -167,15 +44,15 @@ abstract class UpdaterTest extends TestCase
      */
     public function testVerifiedDelegatedDownload(string $fixtureName, string $target, array $expectedFileVersions): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
 
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $updater->download($target)->getContents());
+        $this->assertSame($testFileContents, $this->getUpdater()->download($target)->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
-        $this->assertClientFileVersions($expectedFileVersions);
+        $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);
     }
 
     public function providerVerifiedDelegatedDownload(): array
@@ -494,31 +371,6 @@ abstract class UpdaterTest extends TestCase
     }
 
     /**
-     * Tests for enforcement of maximum number of roles limit.
-     *
-     * § 5.6.7.1
-     */
-    public function testRoleDownloadsAreLimited(): void
-    {
-        $fixtureName = 'NestedDelegated';
-        $fileName = 'level_1_2_terminating_3_target.txt';
-
-        // Ensure the file can found if the maximum role limit is 100.
-        $updater = $this->getSystemInTest($fixtureName);
-        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$fileName", false);
-        $testFileContents = file_get_contents($testFilePath);
-        self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $updater->download($fileName)->getContents());
-
-
-        // Ensure the file can not found if the maximum role limit is 3.
-        $updater = $this->getSystemInTest($fixtureName, LimitRolesTestUpdater::class);
-        self::expectException(NotFoundException::class);
-        self::expectExceptionMessage("Target not found: $fileName");
-        $updater->download($fileName);
-    }
-
-    /**
      * Tests that improperly delegated targets will produce exceptions.
      *
      * @param string $fixtureName
@@ -533,12 +385,12 @@ abstract class UpdaterTest extends TestCase
      */
     public function testDelegationErrors(string $fixtureName, string $fileName, array $expectedFileVersions): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         try {
-            $updater->download($fileName);
+            $this->getUpdater()->download($fileName);
         } catch (NotFoundException $exception) {
             self::assertEquals("Target not found: $fileName", $exception->getMessage());
-            $this->assertClientFileVersions($expectedFileVersions);
+            $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);
             return;
         }
         self::fail('NotFoundException not thrown.');
@@ -780,19 +632,19 @@ abstract class UpdaterTest extends TestCase
      */
     public function testRefreshRepository(string $fixtureName, array $expectedUpdatedVersions): void
     {
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         $expectedStartVersion = static::getClientStartVersions($fixtureName);
 
-        $updater = $this->getSystemInTest($fixtureName);
-        $this->assertTrue($updater->refresh($fixtureName));
+        $this->assertTrue($this->getUpdater()->refresh());
         // Confirm the local version are updated to the expected versions.
         // § 5.3.8
         // § 5.4.5
         // § 5.5.7
         // § 5.6.6
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
 
         // Create another version of the client that only starts with the root.json file.
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         foreach (array_keys($expectedStartVersion) as $role) {
             if ($role !== 'root') {
                 // Change the expectation that client will not start with any files other than root.json.
@@ -801,8 +653,8 @@ abstract class UpdaterTest extends TestCase
                 $this->clientStorage->delete($role);
             }
         }
-        $this->assertClientFileVersions($expectedStartVersion);
-        $this->assertTrue($updater->refresh());
+        $this->assertMetadataVersions($expectedStartVersion, $this->clientStorage);
+        $this->assertTrue($this->getUpdater()->refresh());
         // Confirm that if we start with only root.json all of the files still
         // update to the expected versions.
 
@@ -812,7 +664,7 @@ abstract class UpdaterTest extends TestCase
                 $expectedUpdatedVersions[$role] = null;
             }
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     /**
@@ -857,21 +709,6 @@ abstract class UpdaterTest extends TestCase
     }
 
     /**
-     * Asserts that client-side metadata files are at expected versions.
-     *
-     * @param ?int[] $expectedVersions
-     *   The expected versions. The keys are the file names, without the .json
-     *   suffix, and the values are the expected version numbers, or NULL if
-     *   the file should not be present.
-     *
-     * @return void
-     */
-    protected function assertClientFileVersions(array $expectedVersions): void
-    {
-        static::assertMetadataVersions($expectedVersions, $this->clientStorage);
-    }
-
-    /**
      * Tests that exceptions are thrown when metadata files are not valid.
      *
      * @param string $fileToChange
@@ -891,14 +728,17 @@ abstract class UpdaterTest extends TestCase
      */
     public function testExceptionForInvalidMetadata(string $fileToChange, array $keys, $newValue, \Exception $expectedException, array $expectedUpdatedVersions): void
     {
-        $fixtureName = 'Delegated';
-        $updater = $this->getSystemInTest($fixtureName);
-        $this->serverStorage->setRepoFileNestedValue($fileToChange, $keys, $newValue);
+        $this->loadClientAndServerFilesFromFixture('Delegated');
+
+        $data = static::decodeJson($this->serverFiles[$fileToChange]);
+        static::nestedChange($keys, $data, $newValue);
+        $this->serverFiles[$fileToChange] = static::encodeJson($data);
+
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
         } catch (TufException $exception) {
             $this->assertEquals($expectedException, $exception);
-            $this->assertClientFileVersions($expectedUpdatedVersions);
+            $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
             return;
         }
         $this->fail('No exception thrown. Expected: ' . get_class($expectedException));
@@ -1017,20 +857,20 @@ abstract class UpdaterTest extends TestCase
      */
     public function testFileNotFoundExceptions(string $fixtureName, string $fileName, array $expectedUpdatedVersions): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         // Depending on which file is removed from the server, the update
         // process will error out at various points. That's fine, because we're
         // not trying to complete the refresh.
-        $this->serverStorage->removeRepoFile($fileName);
+        unset($this->serverFiles[$fileName]);
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
             $this->fail('No RepoFileNotFound exception thrown');
         } catch (RepoFileNotFound $exception) {
             // We don't have to do anything with this exception; we just wanted
             // be sure it got thrown. Since the exception is thrown by TestRepo,
             // there's no point in asserting that its message is as expected.
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     /**
@@ -1089,21 +929,6 @@ abstract class UpdaterTest extends TestCase
         ];
     }
 
-
-    /**
-     * Data provider for testSignatureThresholds().
-     *
-     * @return mixed[]
-     *   The test cases for testSignatureThresholds().
-     */
-    public function providerTestSignatureThresholds():array
-    {
-        return [
-            [false],
-            [true],
-        ];
-    }
-
     /**
      * Tests fixtures with signature thresholds greater than 1.
      *
@@ -1111,124 +936,27 @@ abstract class UpdaterTest extends TestCase
      *   Whether or not to re-use a signature in timestamp.json, simulating
      *   an attack.
      *
-     * @return void
-     *
-     * @dataProvider providerTestSignatureThresholds
+     * @testWith [false]
+     *   [true]
      */
     public function testSignatureThresholds(bool $attack): void
     {
         // Begin with ThresholdTwo, and modify it to suit our needs.
-        $updater = $this->getSystemInTest('ThresholdTwo');
-
-        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
-        $property = new \ReflectionProperty($updater, 'server');
-        $property->setAccessible(true);
-        $property->setValue($updater, $repository);
+        $this->loadClientAndServerFilesFromFixture('ThresholdTwo');
 
         // § 5.4.2
         // If we're simulating an attack, change the server's timestamp.json so
         // that one of its signatures is invalid and we will not be able to
         // reach the required threshold of 2.
         if ($attack) {
-            $data = static::decodeJson($this->serverStorage->fileContents['timestamp.json']);
+            $data = static::decodeJson($this->serverFiles['timestamp.json']);
             $this->assertCount(2, $data['signatures']);
             $data['signatures'][1]['sig'] = hash('sha512', 'This is just a random string.');
-            $this->serverStorage->fileContents['timestamp.json'] = static::encodeJson($data);
+            $this->serverFiles['timestamp.json'] = static::encodeJson($data);
 
             $this->expectException(SignatureThresholdException::class);
         }
-        $updater->refresh();
-    }
-
-    /**
-     * Tests forcing a refresh when the server is in an invalid state.
-     */
-    public function testRefreshFromServerInInvalidState(): void
-    {
-        $fixtureName = 'Simple';
-
-        $updater = $this->getSystemInTest($fixtureName);
-        // This refresh should succeed.
-        $updater->refresh();
-        // Put the server-side repo into an invalid state.
-        $this->serverStorage->removeRepoFile('timestamp.json');
-        // The updater is already refreshed, so this will return early, and
-        // there should be no changes to the client-side repo.
-        $updater->refresh();
-        $this->assertClientFileVersions(static::getClientStartVersions($fixtureName));
-        // If we force a refresh, the invalid state of the server-side repo will
-        // raise an exception.
-        $this->expectException(RepoFileNotFound::class);
-        $this->expectExceptionMessage('File timestamp.json not found.');
-        $updater->refresh(true);
-    }
-
-    public function providerUnsupportedRepo(): array
-    {
-        return [
-            [
-                [
-                    'timestamp' => 2,
-                    'snapshot' => 2,
-                    'unsupported_target' => null,
-                    // We cannot assert the starting versions of 'targets' because it has
-                    // an unsupported field and would throw an exception when validating.
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * Tests that an exceptions for an repo with an unsupported field.
-     *
-     * @dataProvider providerUnsupportedRepo
-     */
-    public function testUnsupportedRepo(array $expectedUpdatedVersion): void
-    {
-        $fixtureSet = 'UnsupportedDelegation';
-        $updater = $this->getSystemInTest($fixtureSet);
-        $startingTargets = $this->clientStorage->read('targets');
-        try {
-            $updater->refresh();
-        } catch (MetadataException $exception) {
-            $expectedMessage = preg_quote("Array[signed][delegations][roles][0][path_hash_prefixes]:", '/');
-            $expectedMessage .= ".*This field is not supported.";
-            self::assertSame(1, preg_match("/$expectedMessage/s", $exception->getMessage()));
-            // Assert that the root, timestamp and snapshot metadata files were updated
-            // and that the unsupported_target metadata file was not downloaded.
-            self::assertClientFileVersions($expectedUpdatedVersion);
-            // Ensure that local version of targets has not changed because the
-            // server version is invalid.
-            self::assertSame($this->clientStorage->read('targets'), $startingTargets);
-            return;
-        }
-        $this->fail('No exception thrown.');
-    }
-
-    /**
-     * Tests that exceptions are thrown when a repo is in a rollback attack state.
-     */
-    public function testRollbackAttackDetection(): void
-    {
-        // Use the memory storage used so tests can write without permanent
-        // side-effects.
-        $updater = $this->getSystemInTest('AttackRollback');
-        try {
-            // No changes should be made to client repo.
-            $this->clientStorage->setExceptionOnChange();
-            // § 5.4.3
-            // § 5.4.4
-            $updater->refresh();
-            $this->fail('No exception thrown.');
-        } catch (RollbackAttackException $exception) {
-            $this->assertSame('Remote timestamp metadata version "$1" is less than previously seen timestamp version "$2"', $exception->getMessage());
-            $this->assertClientFileVersions([
-                'root' => 2,
-                'timestamp' => 2,
-                'snapshot' => 2,
-                'targets' => 2,
-            ]);
-        }
+        $this->getUpdater()->refresh();
     }
 
     public function providerKeyRotation(): array
@@ -1280,17 +1008,17 @@ abstract class UpdaterTest extends TestCase
      */
     public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
     {
-        $updater = $this->getSystemInTest($fixtureName);
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
         // This will purposefully cause the refresh to fail, immediately after
         // updating the root metadata.
-        $this->serverStorage->removeRepoFile('timestamp.json');
+        unset($this->serverFiles['timestamp.json']);
         try {
-            $updater->refresh();
+            $this->getUpdater()->refresh();
             $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
-        } catch (RepoFileNotFound $e) {
+        } catch (RepoFileNotFound) {
             // We don't need to do anything with this exception.
         }
-        $this->assertClientFileVersions($expectedUpdatedVersions);
+        $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);
     }
 
     public function providerTimestampAndSnapshotLength(): array
@@ -1324,12 +1052,13 @@ abstract class UpdaterTest extends TestCase
      */
     public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
     {
-        $this->getSystemInTest($fixtureName)->refresh();
+        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $this->getUpdater()->refresh();
 
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::MAX_BYTES, $this->serverStorage->maxBytes['timestamp.json'][0]);
-        $this->assertSame($expectedLength, $this->serverStorage->maxBytes[$downloadedFileName][0]);
+        $this->assertSame(Repository::MAX_BYTES, $this->serverFiles->maxBytes['timestamp.json'][0]);
+        $this->assertSame($expectedLength, $this->serverFiles->maxBytes[$downloadedFileName][0]);
     }
 
     /**
@@ -1340,23 +1069,18 @@ abstract class UpdaterTest extends TestCase
      */
     public function testMetadataFileTooBig(string $fileToChange): void
     {
-        $updater = $this->getSystemInTest('PublishedTwice');
-
-        $property = new \ReflectionProperty($updater, 'server');
-        $property->setAccessible(true);
-        /** @var \Tuf\Client\Repository $repository */
-        $repository = $property->getValue($updater);
+        $this->loadClientAndServerFilesFromFixture('PublishedTwice');
 
         // Exactly which server-side files we'll need to modify, depends on
         // whether we're using consistent snapshots.
-        $consistentSnapshots = $repository->getRoot(1)
+        $consistentSnapshots = $this->serverMetadata->getRoot(1)
             ->trust()
             ->supportsConsistentSnapshots();
         // Get the known lengths of snapshot.json and targets.json.
-        $snapshotInfo = $repository->getTimestamp()
+        $snapshotInfo = $this->serverMetadata->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
-        $targetsInfo = $repository->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
             ->trust()
             ->getFileMetaInfo('targets.json');
 
@@ -1375,27 +1099,10 @@ abstract class UpdaterTest extends TestCase
         }
         // On the server, replace $fileToChange with a string that's longer than
         // the known length, which should cause an exception during the update.
-        $this->serverStorage->fileContents[$fileToChange] = str_repeat('a', $knownLength + 1);
+        $this->serverFiles[$fileToChange] = str_repeat('a', $knownLength + 1);
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
-        $updater->refresh();
-    }
-
-    public function testSnapshotHashes(): void
-    {
-        $updater = $this->getSystemInTest('PublishedTwice');
-
-        $repository = new TestRepository(new SizeCheckingLoader($this->serverStorage));
-        $property = new \ReflectionProperty($updater, 'server');
-        $property->setAccessible(true);
-        $property->setValue($updater, $repository);
-
-        $data = static::decodeJson($this->serverStorage->fileContents['targets.json']);
-        $repository->targets['targets'][2] = new TargetsMetadata($data, 'invalid data');
-
-        $this->expectException(MetadataException::class);
-        $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");
         $updater->refresh();
     }
 

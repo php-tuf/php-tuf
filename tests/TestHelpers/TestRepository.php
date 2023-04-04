@@ -13,7 +13,7 @@ class TestRepository extends Repository
     /**
      * The mocked targets metadata, keyed by role name and version number.
      *
-     * @var \Tuf\Metadata\TargetsMetadata[]
+     * @var \Tuf\Metadata\TargetsMetadata[][]
      *
      * @see ::getTargets()
      */
