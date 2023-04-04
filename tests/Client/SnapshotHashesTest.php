@@ -25,7 +25,7 @@ class SnapshotHashesTest extends ClientTestBase
         $targetsMetadata = $this->prophesize(TargetsMetadata::class);
         $targetsMetadata->getRole()->willReturn('targets');
         $targetsMetadata->getSource()->willReturn('invalid data');
-        $this->server->targets['targets'][1] = $targetsMetadata->reveal();
+        $this->serverMetadata->targets['targets'][1] = $targetsMetadata->reveal();
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");

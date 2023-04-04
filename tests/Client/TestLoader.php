@@ -32,6 +32,8 @@ class TestLoader extends \ArrayObject implements LoaderInterface
      */
     public function populateFromFixture(string $basePath): void
     {
+        $this->exchangeArray([]);
+
         // Store the file contents in memory so they can be easily altered.
         $fixturesPath = "$basePath/server";
         $files = glob("$fixturesPath/metadata/*.json");

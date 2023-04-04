@@ -1106,14 +1106,14 @@ abstract class UpdaterTest extends ClientTestBase
 
         // Exactly which server-side files we'll need to modify, depends on
         // whether we're using consistent snapshots.
-        $consistentSnapshots = $this->server->getRoot(1)
+        $consistentSnapshots = $this->serverMetadata->getRoot(1)
             ->trust()
             ->supportsConsistentSnapshots();
         // Get the known lengths of snapshot.json and targets.json.
-        $snapshotInfo = $this->server->getTimestamp()
+        $snapshotInfo = $this->serverMetadata->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
-        $targetsInfo = $this->server->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
             ->trust()
             ->getFileMetaInfo('targets.json');
 

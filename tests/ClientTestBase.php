@@ -47,9 +47,13 @@ class ClientTestBase extends TestCase
     /**
      * The server-side TUF repository.
      *
+     * This is a higher-level abstraction than $this->serverFiles. This returns
+     * untrusted metadata objects, loaded from the server. The raw JSON used to
+     * create those objects is pulled from $this->serverFiles.
+     *
      * @var \Tuf\Tests\TestHelpers\TestRepository
      */
-    protected TestRepository $server;
+    protected TestRepository $serverMetadata;
 
     /**
      * {@inheritDoc}
@@ -59,7 +63,7 @@ class ClientTestBase extends TestCase
         parent::setUp();
         $this->clientStorage = new TestStorage();
         $this->serverFiles = new TestLoader();
-        $this->server = new TestRepository(new SizeCheckingLoader($this->serverFiles));
+        $this->serverMetadata = new TestRepository(new SizeCheckingLoader($this->serverFiles));
     }
 
     /**
@@ -93,7 +97,7 @@ class ClientTestBase extends TestCase
 
         $property = $reflector->getProperty('server');
         $property->setAccessible(true);
-        $property->setValue($updater, $this->server);
+        $property->setValue($updater, $this->serverMetadata);
 
         return $updater;
     }
@@ -144,7 +148,6 @@ class ClientTestBase extends TestCase
     protected function loadServerFilesFromFixture(string $fixtureName): void
     {
         $basePath = static::getFixturePath($fixtureName);
-        $this->serverFiles->exchangeArray([]);
         $this->serverFiles->populateFromFixture($basePath);
     }
 }
