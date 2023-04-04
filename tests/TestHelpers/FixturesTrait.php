@@ -21,7 +21,7 @@ trait FixturesTrait
      *   The expected versions of the initial client-side metadata, keyed by
      *   role.
      */
-    private static function getClientStartVersions(string $fixtureName): array
+    protected static function getClientStartVersions(string $fixtureName): array
     {
         $path = static::getFixturePath($fixtureName, 'client_versions.ini', false);
         return parse_ini_file($path, false, INI_SCANNER_TYPED);
@@ -39,7 +39,7 @@ trait FixturesTrait
      * @return TestStorage
      *     Memory storage containing the test data.
      */
-    private static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): TestStorage
+    protected static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): TestStorage
     {
         $path = static::getFixturePath($fixtureName, $path, true);
         return TestStorage::createFromDirectory($path);
@@ -78,29 +78,18 @@ trait FixturesTrait
      *   The expected versions. The keys are the file names, without the .json
      *   suffix, and the values are the expected version numbers, or NULL if
      *   the file should not be present.
-     * @param \ArrayAccess $storage
+     * @param \Tuf\Metadata\StorageInterface $storage
      *   The durable storage for the metadata.
-     *
-     * @return void
      */
-    private static function assertMetadataVersions(array $expectedVersions, StorageInterface $storage): void
+    protected static function assertMetadataVersions(array $expectedVersions, StorageInterface $storage): void
     {
         foreach ($expectedVersions as $role => $version) {
-            switch ($role) {
-                case 'root':
-                    $metadata = $storage->getRoot();
-                    break;
-                case 'timestamp':
-                    $metadata = $storage->getTimestamp();
-                    break;
-                case 'snapshot':
-                    $metadata = $storage->getSnapshot();
-                    break;
-                default:
-                    // Any other roles will be 'targets' or delegated targets roles.
-                    $metadata = $storage->getTargets($role);
-                    break;
-            }
+            $metadata = match ($role) {
+                'root' => $storage->getRoot(),
+                'timestamp' => $storage->getTimestamp(),
+                'snapshot' => $storage->getSnapshot(),
+                default => $storage->getTargets($role),
+            };
 
             if (is_null($version)) {
                 Assert::assertNull($metadata, "'$role' file is null.");
@@ -110,7 +99,7 @@ trait FixturesTrait
 
             $actualVersion = $metadata->getVersion();
             Assert::assertSame(
-                $expectedVersions[$role],
+                $version,
                 $actualVersion,
                 "Actual version of $role, '$actualVersion' does not match expected version '$version'"
             );

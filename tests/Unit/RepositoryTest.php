@@ -22,7 +22,9 @@ class RepositoryTest extends TestCase
     public function testRepository(): void
     {
         $baseDir = static::getFixturePath('Delegated', 'consistent');
-        $loader = new TestLoader($baseDir);
+        $loader = new TestLoader();
+        $loader->populateFromFixture($baseDir);
+
         $repository = new Repository(new SizeCheckingLoader($loader));
 
         $this->assertInstanceOf(RootMetadata::class, $repository->getRoot(1));

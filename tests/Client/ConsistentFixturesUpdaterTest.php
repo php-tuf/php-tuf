@@ -16,7 +16,10 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
     /**
      * {@inheritdoc}
      */
-    protected const FIXTURE_VARIANT = 'consistent';
+    protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
+    {
+        return parent::getFixturePath($fixtureName, "consistent/$subPath", $isDir);
+    }
 
     /**
      * {@inheritdoc}
