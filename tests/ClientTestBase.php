@@ -132,10 +132,7 @@ class ClientTestBase extends TestCase
             }
         }
 
-        $versionsFile = dirname($path, 3) . '/client_versions.ini';
-        $this->assertFileIsReadable($versionsFile);
-        $expectedVersions = parse_ini_file($versionsFile, false, INI_SCANNER_TYPED);
-        $this->assertMetadataVersions($expectedVersions, $this->clientStorage);
+        $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
     }
 
     /**
