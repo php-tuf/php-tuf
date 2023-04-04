@@ -22,6 +22,12 @@ class SnapshotHashesTest extends ClientTestBase
     {
         $this->loadClientAndServerFilesFromFixture("Simple/$fixtureVariant");
 
+        // Remove all client-side data except for the root metadata, so that we
+        // can ensure it's all refereshed from the server.
+        foreach (['timestamp', 'snapshot', 'targets'] as $name) {
+            $this->clientStorage->delete($name);
+        }
+
         $targetsMetadata = $this->prophesize(TargetsMetadata::class);
         $targetsMetadata->getRole()->willReturn('targets');
         $targetsMetadata->getSource()->willReturn('invalid data');
