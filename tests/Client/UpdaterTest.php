@@ -1114,12 +1114,15 @@ abstract class UpdaterTest extends ClientTestBase
 
     /**
      * Tests that the update ends early if timestamp metadata is not changed.
+     *
+     * @testWith ["consistent"]
+     *   ["inconsistent"]
      */
     public function testUpdateShortCircuitsIfTimestampUnchanged(): void
     {
-        $updater = $this->getSystemInTest('Simple');
-        $this->serverStorage->removeRepoFile('snapshot.json');
-        $this->serverStorage->removeRepoFile('targets.json');
-        $updater->refresh();
+        $this->loadClientAndServerFilesFromFixture('Simple');
+        unset($this->serverFiles['snapshot.json']);
+        unset($this->serverFiles['targets.json']);
+        $this->getUpdater()->refresh();
     }
 }
