@@ -69,10 +69,12 @@ class ClientTestBase extends TestCase
     /**
      * Returns a TUF client for testing.
      *
-     * By default, the client will have no TUF metadata on either the client or
-     * server side. Use ::loadClientAndServerFilesFromFixture(),
-     * ::loadClientFilesFromFixture(), and ::loadServerFilesFromFixture() to
-     * populate the client and/or server side with data from our fixtures.
+     * The returned client will reference the server-side data from
+     * $this->serverFiles and $this->serverMetdata, and it will reference the
+     * client-side data in $this->clientStorage. Use
+     * ::loadClientAndServerFilesFromFixture(), ::loadClientFilesFromFixture(),
+     * and ::loadServerFilesFromFixture() to populate the client and/or server
+     * side with data from our fixtures.
      *
      * @param string $updaterClass
      *   (optional) The updater class. Defaults to \Tuf\Client\Updater.

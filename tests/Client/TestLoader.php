@@ -8,9 +8,7 @@ use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\LoaderInterface;
 
 /**
- * Defines a trait to load files from a simulated, in-memory server.
- *
- * Classes using this trait should implement \Tuf\Loader\LoaderInterface.
+ * Loads files from a simulated, in-memory server.
  */
 class TestLoader extends \ArrayObject implements LoaderInterface
 {
