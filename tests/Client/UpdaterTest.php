@@ -1103,7 +1103,7 @@ abstract class UpdaterTest extends ClientTestBase
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected $fileToChange to be $knownLength bytes.");
-        $updater->refresh();
+        $this->getUpdater()->refresh();
     }
 
     /**
