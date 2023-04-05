@@ -10,17 +10,20 @@ use Tuf\Tests\ClientTestBase;
 class UnchangedTimestampTest extends ClientTestBase
 {
     /**
-     * @testWith ["consistent"]
-     *   ["inconsistent"]
+     * @testWith ["consistent", "1.snapshot.json"]
+     *   ["consistent", "1.targets.json"]
+     *   ["inconsistent", "snapshot.json"]
+     *   ["inconsistent", "targets.json"]
      */
-    public function testUpdateShortCircuitsIfTimestampUnchanged(string $fixtureVariant): void
+    public function testUpdateShortCircuitsIfTimestampUnchanged(string $fixtureVariant, string $fileToDelete): void
     {
+        // Use the Simple fixture because its server- and client-side timestamp
+        // metadata files are identical.
         $this->loadClientAndServerFilesFromFixture("Simple/$fixtureVariant");
 
-        // The removal of these files will cause an exception if the update
-        // doesn't stop after downloading the unchanged timestamp metadata.
-        unset($this->serverFiles['snapshot.json']);
-        unset($this->serverFiles['targets.json']);
+        // The removal of the file will cause an exception if the update doesn't
+        // stop after downloading the unchanged timestamp metadata.
+        unset($this->serverFiles[$fileToDelete]);
         $this->getUpdater()->refresh();
     }
 }
