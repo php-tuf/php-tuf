@@ -8,7 +8,7 @@
 #         / \
 #        c   d
 #
-# No terminating delegations.
+# No terminating delegations. The `f` delegation uses path hash prefixes.
 #
 # Roles should be evaluated in the order:
 # Targets > a > b > c > d > e > f
@@ -30,6 +30,6 @@ def build():
         .create_target('d.txt', signing_role='d') \
         .delegate('e', ['*.txt'], parent='a') \
         .create_target('e.txt', signing_role='e') \
-        .delegate('f', ['*.txt']) \
+        .delegate('f', [], 'targets', ['dd3e']) \
         .create_target('f.txt', signing_role='f') \
         .publish()
