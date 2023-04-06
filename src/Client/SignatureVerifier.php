@@ -134,7 +134,7 @@ final class SignatureVerifier
      * @param string $keyId
      * @param \Tuf\Key $key
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.30#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.31#document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
