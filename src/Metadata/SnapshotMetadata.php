@@ -3,11 +3,11 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
-use Tuf\Constraints\Collection;
 
 class SnapshotMetadata extends FileInfoMetadataBase
 {
