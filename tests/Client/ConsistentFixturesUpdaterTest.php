@@ -135,8 +135,6 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
         $data['snapshot.json in Delegated'][1] = '4.snapshot.json';
         $data['targets.json in Delegated'][2]['root'] = 4;
         $data['targets.json in Delegated'][1] = '4.targets.json';
-        $data['snapshot.json in Simple'][1] = '1.snapshot.json';
-        $data['targets.json in Simple'][1] = '1.targets.json';
         return $data;
     }
 

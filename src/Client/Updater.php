@@ -143,7 +143,14 @@ class Updater
         $this->updateRoot($rootData);
 
         // § 5.4
+        $currentTimestamp = $this->storage->getTimestamp();
         $newTimestampData = $this->updateTimestamp();
+        // § 5.4.3.1
+        if ($currentTimestamp && $currentTimestamp->getVersion() === $newTimestampData->getVersion()) {
+            $this->storage->save($currentTimestamp);
+            $this->isRefreshed = true;
+            return true;
+        }
 
         $snapshotInfo = $newTimestampData->getFileMetaInfo('snapshot.json');
 

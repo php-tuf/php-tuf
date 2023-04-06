@@ -926,26 +926,6 @@ abstract class UpdaterTest extends ClientTestBase
                     'targets' => 1,
                 ],
             ],
-            'snapshot.json in Simple' => [
-                'Simple',
-                'snapshot.json',
-                [
-                    'root' => 1,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
-            ],
-            'targets.json in Simple' => [
-                'Simple',
-                'targets.json',
-                [
-                    'root' => 1,
-                    'timestamp' => 1,
-                    'snapshot' => 1,
-                    'targets' => 1,
-                ],
-            ],
         ];
     }
 
@@ -1073,6 +1053,12 @@ abstract class UpdaterTest extends ClientTestBase
     public function testTimestampAndSnapshotLength(string $fixtureName, string $downloadedFileName, int $expectedLength): void
     {
         $this->loadClientAndServerFilesFromFixture($fixtureName);
+        // Remove all client-side data except for the root metadata, so that we
+        // can ensure it's all refereshed from the server.
+        foreach (['timestamp', 'snapshot', 'targets'] as $name) {
+            $this->clientStorage->delete($name);
+        }
+
         $this->getUpdater()->refresh();
 
         // The length of the timestamp metadata is never known in advance, so it
@@ -1081,28 +1067,15 @@ abstract class UpdaterTest extends ClientTestBase
         $this->assertSame($expectedLength, $this->serverFiles->maxBytes[$downloadedFileName][0]);
     }
 
-    public function providerMetadataTooBig(): array
-    {
-        return [
-            'snapshot.json too big' => [
-                'Simple',
-                'snapshot.json',
-            ],
-            'targets.json too big' => [
-                'TargetsLengthNoSnapshotLength',
-                'targets.json',
-            ],
-        ];
-    }
-
     /**
-     * @dataProvider providerMetadataTooBig
-     *
      * @testdox Exception if $fileToChange is bigger than known size
+     *
+     * @testWith ["snapshot.json"]
+     *   ["targets.json"]
      */
-    public function testMetadataFileTooBig(string $fixtureName, string $fileToChange): void
+    public function testMetadataFileTooBig(string $fileToChange): void
     {
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $this->loadClientAndServerFilesFromFixture('PublishedTwice');
 
         // Exactly which server-side files we'll need to modify, depends on
         // whether we're using consistent snapshots.
