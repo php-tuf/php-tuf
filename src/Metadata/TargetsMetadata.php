@@ -128,6 +128,7 @@ class TargetsMetadata extends MetadataBase
                             ],
                         ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
                     ]),
+                    new Callback([static::class, 'validatePathsAndHashPrefixesExclusivity']),
                 ]),
             ]),
             new Callback([static::class, 'validateDelegatedRoles']),
@@ -147,6 +148,13 @@ class TargetsMetadata extends MetadataBase
 
         ]);
         return $options;
+    }
+
+    public static function validatePathsAndHashPrefixesExclusivity(array $role, ExecutionContextInterface $context): void
+    {
+        if (array_key_exists('paths', $role) && array_key_exists('path_hash_prefixes', $role)) {
+            $context->addViolation('Only paths or path_hash_prefixes may be specified.');
+        }
     }
 
     /**
