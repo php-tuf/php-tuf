@@ -152,8 +152,11 @@ class TargetsMetadata extends MetadataBase
 
     public static function validatePathsAndHashPrefixesExclusivity(array $role, ExecutionContextInterface $context): void
     {
-        if (array_key_exists('paths', $role) && array_key_exists('path_hash_prefixes', $role)) {
-            $context->addViolation('Only paths or path_hash_prefixes may be specified.');
+        // Either of `paths` or `path_hash_prefixes` MUST be specified, but not
+        // both.
+        $valid = array_key_exists('paths', $role) xor array_key_exists('path_hash_prefixes', $role);
+        if (!$valid) {
+            $context->addViolation('Either paths or path_hash_prefixes must be specified.');
         }
     }
 
