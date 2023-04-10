@@ -229,7 +229,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testPathsAndPathHashPrefixesAreGiven(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, TRUE);
+        $data = json_decode($json, true);
 
         $this->assertNotEmpty($data['signed']['delegations']['roles']);
         $role = &$data['signed']['delegations']['roles'][0];
@@ -245,11 +245,11 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testPathsAndPathHashPrefixesAreMissing(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, TRUE);
+        $data = json_decode($json, true);
 
         $this->assertNotEmpty($data['signed']['delegations']['roles']);
         array_walk($data['signed']['delegations']['roles'], function (array &$role): void {
-           unset($role['paths'], $role['path_hash_prefixes']);
+            unset($role['paths'], $role['path_hash_prefixes']);
         });
         $json = json_encode($data);
 
