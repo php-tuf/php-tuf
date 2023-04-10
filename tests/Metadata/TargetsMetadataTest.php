@@ -225,4 +225,20 @@ class TargetsMetadataTest extends MetadataBaseTest
         $this->expectExceptionMessage('Delegated role names must be unique.');
         static::callCreateFromJson($json);
     }
+
+    public function testPathsAndPathHashPrefixesAreGiven(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = json_decode($json, TRUE);
+
+        $this->assertNotEmpty($data['signed']['delegations']['roles']);
+        $role = &$data['signed']['delegations']['roles'][0];
+        $role['paths'] = ['*.txt'];
+        $role['path_hash_prefixes'] = ['abcdef'];
+        $json = json_encode($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
+        static::callCreateFromJson($json);
+    }
 }
