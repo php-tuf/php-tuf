@@ -28,24 +28,6 @@ class DelegatedRoleTest extends RoleTest
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function providerInvalidMetadata(): array
-    {
-        return [
-            'nothing' => [[]],
-            'no paths' => [
-                [
-                    'name' => 'a role',
-                    'threshold' => 1,
-                    'keyids' => ['good_key'],
-                    'terminating' => false,
-                ],
-            ],
-        ];
-    }
-
-    /**
      * @covers ::matchesPath
      *
      * @param string $target
