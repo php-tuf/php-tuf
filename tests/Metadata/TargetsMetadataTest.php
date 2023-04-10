@@ -241,4 +241,20 @@ class TargetsMetadataTest extends MetadataBaseTest
         $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
         static::callCreateFromJson($json);
     }
+
+    public function testPathsAndPathHashPrefixesAreMissing(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        $data = json_decode($json, TRUE);
+
+        $this->assertNotEmpty($data['signed']['delegations']['roles']);
+        array_walk($data['signed']['delegations']['roles'], function (array &$role): void {
+           unset($role['paths'], $role['path_hash_prefixes']);
+        });
+        $json = json_encode($data);
+
+        $this->expectException(MetadataException::class);
+        $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
+        static::callCreateFromJson($json);
+    }
 }
