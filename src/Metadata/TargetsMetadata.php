@@ -154,9 +154,8 @@ class TargetsMetadata extends MetadataBase
     {
         // Either of `paths` or `path_hash_prefixes` MUST be specified, but not
         // both.
-        $valid = array_key_exists('paths', $role) xor array_key_exists('path_hash_prefixes', $role);
-        if (!$valid) {
-            $context->addViolation('Either paths or path_hash_prefixes must be specified.');
+        if (!(array_key_exists('paths', $role) xor array_key_exists('path_hash_prefixes', $role))) {
+            $context->addViolation('Either paths or path_hash_prefixes must be specified, but not both.');
         }
     }
 
