@@ -113,6 +113,10 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ["signed:targets:$target:hashes", 'array'];
         $data[] = ["signed:targets:$target:length", 'int'];
         $data[] = ["signed:targets:$target:custom", 'array'];
+
+        $role = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'roles']);
+        $data[] = ["signed:delegations:roles:$role:paths", 'array'];
+        $data[] = ["signed:delegations:roles:$role:path_hash_prefixes", 'array'];
         return $data;
     }
 
@@ -229,13 +233,13 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testPathsAndPathHashPrefixesAreGiven(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
+        $data = static::decodeJson($json);
 
         $this->assertNotEmpty($data['signed']['delegations']['roles']);
         $role = &$data['signed']['delegations']['roles'][0];
         $role['paths'] = ['*.txt'];
         $role['path_hash_prefixes'] = ['abcdef'];
-        $json = json_encode($data);
+        $json = static::encodeJson($data);
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
@@ -245,13 +249,13 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testPathsAndPathHashPrefixesAreMissing(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
+        $data = static::decodeJson($json);
 
         $this->assertNotEmpty($data['signed']['delegations']['roles']);
         array_walk($data['signed']['delegations']['roles'], function (array &$role): void {
             unset($role['paths'], $role['path_hash_prefixes']);
         });
-        $json = json_encode($data);
+        $json = static::encodeJson($data);
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
