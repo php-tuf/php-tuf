@@ -109,14 +109,14 @@ class TargetsMetadata extends MetadataBase
                                 new NotBlank(),
                                 new Type('string'),
                             ],
-                            'path_hash_prefixes' => new Optional([
+                            'paths' => new Optional([
                                 new Type('array'),
                                 new All([
                                     new Type('string'),
                                     new NotBlank(),
                                 ]),
                             ]),
-                            'paths' => new Optional([
+                            'path_hash_prefixes' => new Optional([
                                 new Type('array'),
                                 new All([
                                     new Type('string'),
@@ -128,7 +128,6 @@ class TargetsMetadata extends MetadataBase
                             ],
                         ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
                     ]),
-                    new Callback([static::class, 'validatePathsAndHashPrefixesExclusivity']),
                 ]),
             ]),
             new Callback([static::class, 'validateDelegatedRoles']),
@@ -148,15 +147,6 @@ class TargetsMetadata extends MetadataBase
 
         ]);
         return $options;
-    }
-
-    public static function validatePathsAndHashPrefixesExclusivity(array $role, ExecutionContextInterface $context): void
-    {
-        // Either of `paths` or `path_hash_prefixes` MUST be specified, but not
-        // both.
-        if (!(array_key_exists('paths', $role) xor array_key_exists('path_hash_prefixes', $role))) {
-            $context->addViolation('Either paths or path_hash_prefixes must be specified, but not both.');
-        }
     }
 
     /**

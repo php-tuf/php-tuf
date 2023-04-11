@@ -135,6 +135,10 @@ class TargetsMetadataTest extends MetadataBaseTest
                 'roles' => [],
             ],
         ];
+        $data[] = [
+            'signed:delegations:roles:0:paths',
+            ['delegated/path'],
+        ];
         return $data;
     }
 
@@ -227,38 +231,6 @@ class TargetsMetadataTest extends MetadataBaseTest
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage('Delegated role names must be unique.');
-        static::callCreateFromJson($json);
-    }
-
-    public function testPathsAndPathHashPrefixesAreGiven(): void
-    {
-        $json = $this->clientStorage->read($this->validJson);
-        $data = static::decodeJson($json);
-
-        $this->assertNotEmpty($data['signed']['delegations']['roles']);
-        $role = &$data['signed']['delegations']['roles'][0];
-        $role['paths'] = ['*.txt'];
-        $role['path_hash_prefixes'] = ['abcdef'];
-        $json = static::encodeJson($data);
-
-        $this->expectException(MetadataException::class);
-        $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
-        static::callCreateFromJson($json);
-    }
-
-    public function testPathsAndPathHashPrefixesAreMissing(): void
-    {
-        $json = $this->clientStorage->read($this->validJson);
-        $data = static::decodeJson($json);
-
-        $this->assertNotEmpty($data['signed']['delegations']['roles']);
-        array_walk($data['signed']['delegations']['roles'], function (array &$role): void {
-            unset($role['paths'], $role['path_hash_prefixes']);
-        });
-        $json = static::encodeJson($data);
-
-        $this->expectException(MetadataException::class);
-        $this->expectExceptionMessage('Either paths or path_hash_prefixes must be specified, but not both.');
         static::callCreateFromJson($json);
     }
 }
