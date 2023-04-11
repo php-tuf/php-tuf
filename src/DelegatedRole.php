@@ -50,6 +50,8 @@ class DelegatedRole extends Role
                 ]
             ),
             'terminating' => new Required(new Type('boolean')),
+            // `paths` is mutually exclusive with `path_hash_prefixes`.
+            // @see ::validate()
             'paths' => new Optional([
                 new Type('array'),
                 new All([
