@@ -4,6 +4,7 @@
 namespace Tuf;
 
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
 
@@ -26,10 +27,11 @@ class DelegatedRole extends Role
      * @param string $name
      * @param int $threshold
      * @param array $keyIds
-     * @param array $paths
+     * @param array|null $paths
+     * @param array|null $pathHashPrefixes
      * @param bool $terminating
      */
-    private function __construct(string $name, int $threshold, array $keyIds, protected array $paths, protected bool $terminating)
+    private function __construct(string $name, int $threshold, array $keyIds, protected ?array $paths, protected ?array $pathHashPrefixes, protected bool $terminating)
     {
         parent::__construct($name, $threshold, $keyIds);
     }
@@ -45,14 +47,16 @@ class DelegatedRole extends Role
                 ]
             ),
             'terminating' => new Required(new Type('boolean')),
-            'paths' => new Required(new Type('array')),
+            'paths' => new Optional(new Type('array')),
+            'path_hash_prefixes' => new Optional(new Type('array')),
         ];
         static::validate($roleInfo, $roleConstraints);
         return new static(
             $roleInfo['name'],
             $roleInfo['threshold'],
             $roleInfo['keyids'],
-            $roleInfo['paths'],
+            $roleInfo['paths'] ?? null,
+            $roleInfo['path_hash_prefixes'] ?? null,
             $roleInfo['terminating']
         );
     }
