@@ -10,7 +10,6 @@ from fixtures import (
     AttackRollback,
     Delegated,
     NestedDelegated,
-    UnsupportedDelegation,
     NestedDelegatedErrors,
     ThresholdTwo,
     TerminatingDelegation,
@@ -28,7 +27,6 @@ def generate_fixtures():
     AttackRollback.build()
     Delegated.build()
     NestedDelegated.build()
-    UnsupportedDelegation.build()
     NestedDelegatedErrors.build()
     ThresholdTwo.build()
     TerminatingDelegation.build()
