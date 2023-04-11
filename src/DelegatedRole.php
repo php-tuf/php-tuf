@@ -53,8 +53,8 @@ class DelegatedRole extends Role
             'paths' => new Optional([
                 new Type('array'),
                 new All([
-                   new Type('string'),
-                   new NotBlank(),
+                    new Type('string'),
+                    new NotBlank(),
                 ]),
             ]),
             'path_hash_prefixes' => new Optional([
