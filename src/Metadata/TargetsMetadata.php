@@ -116,6 +116,13 @@ class TargetsMetadata extends MetadataBase
                                     new NotBlank(),
                                 ]),
                             ]),
+                            'path_hash_prefixes' => new Optional([
+                                new Type('array'),
+                                new All([
+                                    new Type('string'),
+                                    new NotBlank(),
+                                ]),
+                            ]),
                             'terminating' => [
                                 new Type('boolean'),
                             ],
