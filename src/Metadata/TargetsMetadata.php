@@ -6,7 +6,6 @@ use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Tuf\Constraints\Collection as TufCollection;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
@@ -104,7 +103,7 @@ class TargetsMetadata extends MetadataBase
                 ]),
                 'roles' => new All([
                     new Type('array'),
-                    new TufCollection([
+                    new Collection([
                         'fields' => [
                             'name' => [
                                 new NotBlank(),
@@ -121,9 +120,6 @@ class TargetsMetadata extends MetadataBase
                                 new Type('boolean'),
                             ],
                         ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
-                        // @todo Support 'path_hash_prefixes' in
-                        //    https://github.com/php-tuf/php-tuf/issues/191
-                        'unsupportedFields' => ['path_hash_prefixes'],
                     ]),
                 ]),
             ]),
