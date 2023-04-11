@@ -136,7 +136,8 @@ class FixtureBuilder:
         with open(path, 'w') as f:
             f.write(contents)
 
-        self.add_target(filename, signing_role)
+        if signing_role is not None:
+            self.add_target(filename, signing_role)
 
         return self
 
