@@ -3,10 +3,12 @@
 
 namespace Tuf;
 
+use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Required;
 use Symfony\Component\Validator\Constraints\Type;
+use Tuf\Exception\MetadataException;
 
 /**
  * Class that represents a Delegated TUF role.
@@ -59,6 +61,20 @@ class DelegatedRole extends Role
             $roleInfo['path_hash_prefixes'] ?? null,
             $roleInfo['terminating']
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected static function validate(array $data, Collection $constraints): void
+    {
+        parent::validate($data, $constraints);
+
+        // Either `paths` or `path_hash_prefixes` MUST be specified, but not
+        // both.
+        if (!(array_key_exists('paths', $data) xor array_key_exists('path_hash_prefixes', $data))) {
+            throw new MetadataException('Either paths or path_hash_prefixes must be specified, but not both.');
+        }
     }
 
     /**
