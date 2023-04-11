@@ -113,6 +113,10 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ["signed:targets:$target:hashes", 'array'];
         $data[] = ["signed:targets:$target:length", 'int'];
         $data[] = ["signed:targets:$target:custom", 'array'];
+
+        $role = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'roles']);
+        $data[] = ["signed:delegations:roles:$role:paths", 'array'];
+        $data[] = ["signed:delegations:roles:$role:path_hash_prefixes", 'array'];
         return $data;
     }
 
