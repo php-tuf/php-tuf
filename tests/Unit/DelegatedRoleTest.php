@@ -135,15 +135,20 @@ class DelegatedRoleTest extends RoleTest
     }
 
     /**
-     * @param string $key
-     *
-     * @testWith ["paths"]
-     *   ["path_hash_prefixes"]
+     * @testWith ["paths", "Not an array!", ["paths"], "This value should be of type array."]
+     *   ["paths", [""], ["paths", 0], "This value should not be blank."]
+     *   ["paths", [38], ["paths", 0], "This value should be of type string."]
+     *   ["path_hash_prefixes", "Not an array!", ["path_hash_prefixes"], "This value should be of type array."]
+     *   ["path_hash_prefixes", [""], ["path_hash_prefixes", 0], "This value should not be blank."]
+     *   ["path_hash_prefixes", [38], ["path_hash_prefixes", 0], "This value should be of type string."]
      */
-    public function testPathsAndPrefixesMustBeArrays(string $key): void
+    public function testPathsAndPrefixesMustBeArrays(string $key, mixed $value, array $propertyPath, string $expectedError): void
     {
+        $propertyPath = preg_quote('[' . implode('][', $propertyPath) . ']');
+        $expectedError = preg_quote($expectedError);
+
         $this->expectException(MetadataException::class);
-        $this->expectExceptionMessageMatches("/Array\[$key\]:\s*This value should be of type array\./");
+        $this->expectExceptionMessageMatches("/Array$propertyPath:\s*$expectedError/");
 
         $this->createTestRole([
             'name' => 'my_role',
@@ -153,7 +158,7 @@ class DelegatedRoleTest extends RoleTest
                 'good_key_2',
             ],
             'terminating' => false,
-            $key => 'Not an array!',
+            $key => $value,
         ]);
     }
 }

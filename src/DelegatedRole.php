@@ -3,6 +3,7 @@
 
 namespace Tuf;
 
+use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
@@ -49,8 +50,20 @@ class DelegatedRole extends Role
                 ]
             ),
             'terminating' => new Required(new Type('boolean')),
-            'paths' => new Optional(new Type('array')),
-            'path_hash_prefixes' => new Optional(new Type('array')),
+            'paths' => new Optional([
+                new Type('array'),
+                new All([
+                   new Type('string'),
+                   new NotBlank(),
+                ]),
+            ]),
+            'path_hash_prefixes' => new Optional([
+                new Type('array'),
+                new All([
+                    new Type('string'),
+                    new NotBlank(),
+                ]),
+            ]),
         ];
         static::validate($roleInfo, $roleConstraints);
         return new static(
