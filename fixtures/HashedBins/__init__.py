@@ -3,7 +3,7 @@ import string
 from fixtures.builder import FixtureBuilder
 
 def build():
-    builder = FixtureBuilder('HashedBins')\
+    builder = FixtureBuilder('HashedBins', { 'use_snapshot_length': True })\
         .publish(with_client=True)
 
     public_key = builder._keys['targets']['public'][0]
@@ -20,4 +20,5 @@ def build():
         builder.repository.targets(name).load_signing_key(private_key)
         builder.repository.targets(name).add_verification_key(public_key)
 
+    builder.invalidate()
     builder.publish()
