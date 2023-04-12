@@ -103,8 +103,6 @@ class FixtureBuilder:
         public_key = '{}.pub'.format(private_key)
 
         self._key_index = self._key_index + 1
-        if self._key_index is 20:
-            self._key_index = 0
 
         return (
             repository_tool.import_ed25519_publickey_from_file(public_key),
