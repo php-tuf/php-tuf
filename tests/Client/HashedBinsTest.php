@@ -10,12 +10,14 @@ class HashedBinsTest extends ClientTestBase
     {
         $this->loadClientAndServerFilesFromFixture('HashedBins');
 
+        // The fixture contains targets a.txt through z.txt (ASCII 97 through
+        // 122), distributed across hashed bins.
+        $targets = array_map(fn (int $c) => chr($c) . '.txt', range(97, 122));
+
         $updater = $this->getUpdater();
-        // The fixture contains a.txt through z.txt, distributed across hashed
-        // bins. We should be able to download every single one without any
-        // trouble.
-        foreach (array_map('chr', range(97, 122)) as $c) {
-            $this->assertSame("Contents: $c.txt", $updater->download("$c.txt")->getContents());
+        // We should be able to download every single target without trouble.
+        foreach ($targets as $name) {
+            $this->assertSame("Contents: $name", $updater->download($name)->getContents());
         }
     }
 }
