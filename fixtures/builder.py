@@ -61,7 +61,7 @@ class FixtureBuilder:
 
     def add_key(self, role_name):
         """Loads a key pair from disk and assigns it to a given role."""
-        (public_key, private_key) = self._import_key(role_name)
+        (public_key, private_key) = self._import_key()
 
         role = self._role(role_name)
         role.add_verification_key(public_key)
@@ -96,13 +96,12 @@ class FixtureBuilder:
         else:
             self.repository.mark_dirty(['targets'])
 
-    def _import_key(self, role_name):
+    def _import_key(self):
         """Loads a key pair from the keys/ directory."""
         keys_dir = os.path.join(os.path.dirname(__file__), 'keys')
         private_key = os.path.join(keys_dir, str(self._key_index)) + '_key'
         public_key = '{}.pub'.format(private_key)
 
-        print("Using key", self._key_index, "for", role_name)
         self._key_index = self._key_index + 1
 
         return (
@@ -137,7 +136,8 @@ class FixtureBuilder:
         with open(path, 'w') as f:
             f.write(contents)
 
-        self.add_target(filename, signing_role)
+        if signing_role is not None:
+            self.add_target(filename, signing_role)
 
         return self
 

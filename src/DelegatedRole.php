@@ -104,6 +104,16 @@ class DelegatedRole extends Role
      */
     public function matchesPath(string $target): bool
     {
+        if (isset($this->pathHashPrefixes)) {
+            $targetHash = hash('sha256', $target);
+
+            foreach ($this->pathHashPrefixes as $prefix) {
+                if (str_starts_with($targetHash, $prefix)) {
+                    return true;
+                }
+            }
+        }
+
         if ($this->paths) {
             foreach ($this->paths as $path) {
                 if (fnmatch($path, $target)) {

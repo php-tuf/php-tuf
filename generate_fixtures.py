@@ -9,6 +9,7 @@ from fixtures import (
     Simple,
     AttackRollback,
     Delegated,
+    HashedBins,
     NestedDelegated,
     NestedDelegatedErrors,
     ThresholdTwo,
@@ -26,6 +27,7 @@ def generate_fixtures():
     Simple.build()
     AttackRollback.build()
     Delegated.build()
+    HashedBins.build()
     NestedDelegated.build()
     NestedDelegatedErrors.build()
     ThresholdTwo.build()
