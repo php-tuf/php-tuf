@@ -82,7 +82,9 @@ class TargetsMetadata extends MetadataBase
 
         // Ensure that these will encode as objects even if they're empty.
         $normalized['targets'] = (object) $normalized['targets'];
-        $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+        if (array_key_exists('delegations', $normalized)) {
+            $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+        }
 
         return $normalized;
     }
