@@ -26,11 +26,7 @@ trait CanonicalJsonTrait
      */
     protected static function encodeJson(array $data): string
     {
-        // If the array is numerically indexed, the keys are already sorted by
-        // definition.
-        if (!array_is_list($data)) {
-            static::sortKeys($data);
-        }
+        static::sortKeys($data);
         return json_encode($data, JSON_UNESCAPED_SLASHES);
     }
 
@@ -59,6 +55,12 @@ trait CanonicalJsonTrait
      */
     private static function sortKeys(array &$data): void
     {
+        // If $data is numerically indexed, the keys are already sorted, by
+        // definition.
+        if (array_is_list($data)) {
+            return;
+        }
+
         if (!ksort($data, SORT_STRING)) {
             throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
         }

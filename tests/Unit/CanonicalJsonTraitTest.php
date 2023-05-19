@@ -29,10 +29,21 @@ class CanonicalJsonTraitTest extends TestCase
      */
     public function testIndexedArraysAreNotChanged(): void
     {
-        $indexed = array_fill(0, 20, 'Hello!');
-        $this->assertTrue(array_is_list($indexed));
-        $canonicalized = static::encodeJson($indexed);
-        $this->assertSame($indexed, static::decodeJson($canonicalized));
+        $original = [
+          'b' => array_fill(0, 20, 'Hello!'),
+          'a' => 'Canonically speaking, I go before b.',
+        ];
+        // The associative keys should be in their original, non-canonical
+        // order.
+        $this->assertSame(['b', 'a'], array_keys($original));
+        $this->assertTrue(array_is_list($original['b']));
+        $canonical = static::encodeJson($original);
+
+        $canonical = static::decodeJson($canonical);
+        // The associative keys should be in canonical order now, and the
+        // nested, indexed array should be unchanged.
+        $this->assertSame(['a', 'b'], array_keys($canonical));
+        $this->assertSame($original['b'], $canonical['b']);
     }
 
     /**
