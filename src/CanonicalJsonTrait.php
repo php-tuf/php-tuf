@@ -26,11 +26,7 @@ trait CanonicalJsonTrait
      */
     protected static function encodeJson(array $data): string
     {
-        // If the array is numerically indexed, the keys are already sorted by
-        // definition.
-        if (!array_is_list($data)) {
-            static::sortKeys($data);
-        }
+        static::sortKeys($data);
         return json_encode($data, JSON_UNESCAPED_SLASHES);
     }
 

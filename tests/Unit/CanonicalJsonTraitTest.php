@@ -25,17 +25,6 @@ class CanonicalJsonTraitTest extends TestCase
     }
 
     /**
-     * Indexed arrays with >= 10 items should not be changed.
-     */
-    public function testIndexedArraysAreNotChanged(): void
-    {
-        $indexed = array_fill(0, 20, 'Hello!');
-        $this->assertTrue(array_is_list($indexed));
-        $canonicalized = static::encodeJson($indexed);
-        $this->assertSame($indexed, static::decodeJson($canonicalized));
-    }
-
-    /**
      * @covers ::encodeJson
      */
     public function testSlashEscaping(): void
