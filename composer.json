@@ -19,7 +19,8 @@
         "ext-json": "*",
         "paragonie/sodium_compat": "^1.13",
         "symfony/validator": "^4.4 || ^5 || ^6",
-        "guzzlehttp/psr7": "^2.4"
+        "guzzlehttp/psr7": "^2.4",
+        "symfony/polyfill-php81": "^1.27"
     },
     "suggest": {
         "ext-sodium": "Provides faster verification of updates"
