@@ -122,7 +122,7 @@ class DelegatedRole extends Role
             }
             return false;
         }
-        // If no paths are set then any target is a match.
-        return true;
+        // Nothing matched.
+        return false;
     }
 }
