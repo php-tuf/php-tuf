@@ -27,6 +27,7 @@ def generate_fixtures():
     Simple.build()
     AttackRollback.build()
     Delegated.build()
+    HashedBins.build()
     NestedDelegated.build()
     NestedDelegatedErrors.build()
     ThresholdTwo.build()
@@ -38,7 +39,6 @@ def generate_fixtures():
     PublishedTwice.build(rotate_keys='timestamp')
     PublishedTwice.build(rotate_keys='snapshot')
     TargetsLengthNoSnapshotLength.build()
-    HashedBins.build()
 
 
 # Remove all previous fixtures.
