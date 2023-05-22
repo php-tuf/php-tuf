@@ -124,7 +124,7 @@ class DelegatedRole extends Role
             return false;
         }
 
-        // It should never be possible to get here.
-        throw new \LogicException('No paths or path hash prefixes are defined for this role.');
+        // If neither paths nor path hash prefixes are defined, this role matches any target.
+        return true;
     }
 }
