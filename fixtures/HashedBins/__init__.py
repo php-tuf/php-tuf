@@ -5,6 +5,7 @@
 import string
 
 from fixtures.builder import FixtureBuilder
+from tuf import roledb
 
 def build():
     builder = FixtureBuilder('HashedBins', { 'use_snapshot_length': True })\
@@ -31,6 +32,12 @@ def build():
     # It's weird, but for some reason this is not done by delegate_hashed_bins().
     for role in builder.repository.targets.get_delegated_rolenames():
         builder.repository.targets(role).load_signing_key(private_key)
+
+    # Make all the delegated roles terminating.
+    targets_role_info = roledb.get_roleinfo('targets', 'HashedBins')
+    for i in range(len(targets_role_info['delegations']['roles'])):
+        targets_role_info['delegations']['roles'][i]['terminating'] = True
+    roledb.update_roleinfo('targets', targets_role_info, repository_name='HashedBins')
 
     # Publish these changes on the server side.
     builder.invalidate()
