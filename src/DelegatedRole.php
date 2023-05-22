@@ -112,6 +112,7 @@ class DelegatedRole extends Role
                     return true;
                 }
             }
+            return false;
         }
 
         if ($this->paths) {

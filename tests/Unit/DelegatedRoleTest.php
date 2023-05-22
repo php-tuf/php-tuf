@@ -53,8 +53,7 @@ class DelegatedRoleTest extends RoleTest
         ];
         if (is_array($paths)) {
             $data['paths'] = $paths;
-        }
-        elseif (is_array($pathHashPrefixes)) {
+        } elseif (is_array($pathHashPrefixes)) {
             $data['path_hash_prefixes'] = $pathHashPrefixes;
         }
 
