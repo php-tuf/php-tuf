@@ -112,6 +112,7 @@ class DelegatedRole extends Role
                     return true;
                 }
             }
+            return false;
         }
 
         if ($this->paths) {
@@ -122,7 +123,8 @@ class DelegatedRole extends Role
             }
             return false;
         }
-        // If no paths are set then any target is a match.
+
+        // If neither paths nor path hash prefixes are defined, this role matches any target.
         return true;
     }
 }
