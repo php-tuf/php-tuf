@@ -55,6 +55,32 @@ class CanonicalJsonTraitTest extends TestCase
         $this->assertSame([2, 3], array_keys($data['c']));
     }
 
+    public function testSortForListArrays(): void
+    {
+        // Indexed arrays should not be sorted in alphabetical order, at any
+        // level.
+        $data = [
+            // Use an associative nested array
+            0 => [
+                'b' => 'Hey',
+                'a' => 'Ho',
+            ],
+            // This should be sorted too, because PHP doesn't consider it a list.
+            1 => [
+                3 => 'Hey',
+                2 => 'Ho',
+            ],
+        ];
+
+        static::sortKeys($data);
+
+        // The associative keys should be in canonical order now, and the
+        // nested, indexed array should be unchanged.
+        $this->assertSame([0,1], array_keys($data));
+        $this->assertSame(['a', 'b'], array_keys($data['0']));
+        $this->assertSame([2,3], array_keys($data[1]));
+    }
+
     /**
      * @covers ::encodeJson
      */

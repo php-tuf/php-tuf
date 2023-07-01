@@ -55,20 +55,21 @@ trait CanonicalJsonTrait
      */
     private static function sortKeys(array &$data): void
     {
+        // Apply recursively on potential subarrays
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                static::sortKeys($data[$key]);
+            }
+        }
+
         // If $data is numerically indexed, the keys are already sorted, by
-        // definition.
+        // definition, no key sorting on this level necessary
         if (array_is_list($data)) {
             return;
         }
 
         if (!ksort($data, SORT_STRING)) {
             throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
-        }
-
-        foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                static::sortKeys($data[$key]);
-            }
         }
     }
 }
