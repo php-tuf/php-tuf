@@ -338,7 +338,7 @@ class Updater
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->serverLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::MAX_BYTES);
+        $stream = $this->serverLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::$maxBytes);
         $this->verify($target, $stream);
         return $stream;
     }
