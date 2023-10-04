@@ -28,19 +28,19 @@ class RepositoryTest extends TestCase
         $repository = new Repository(new SizeCheckingLoader($loader));
 
         $this->assertInstanceOf(RootMetadata::class, $repository->getRoot(1));
-        $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes['1.root.json'][0]);
+        $this->assertSame(Repository::$maxBytes, $loader->maxBytes['1.root.json'][0]);
 
         $this->assertNull($repository->getRoot(999));
-        $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes['999.root.json'][0]);
+        $this->assertSame(Repository::$maxBytes, $loader->maxBytes['999.root.json'][0]);
 
         $this->assertInstanceOf(TimestampMetadata::class, $repository->getTimestamp());
-        $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes['timestamp.json'][0]);
+        $this->assertSame(Repository::$maxBytes, $loader->maxBytes['timestamp.json'][0]);
 
         foreach ([1, null] as $version) {
             $fileName = isset($version) ? "$version.snapshot.json" : 'snapshot.json';
 
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version));
-            $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes[$fileName][0]);
+            $this->assertSame(Repository::$maxBytes, $loader->maxBytes[$fileName][0]);
 
             $metadataDir = $baseDir . '/server/metadata';
             $fileSize = filesize($metadataDir . '/' . $fileName);
@@ -51,7 +51,7 @@ class RepositoryTest extends TestCase
                 $fileName = isset($version) ? "$version.$role.json" : "$role.json";
 
                 $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role));
-                $this->assertSame(Repository::MAX_BYTES, $loader->maxBytes[$fileName][0]);
+                $this->assertSame(Repository::$maxBytes, $loader->maxBytes[$fileName][0]);
 
                 $fileSize = filesize($metadataDir . '/' . $fileName);
                 $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role, $fileSize));

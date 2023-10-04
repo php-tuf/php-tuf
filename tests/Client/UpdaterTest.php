@@ -1027,12 +1027,12 @@ abstract class UpdaterTest extends ClientTestBase
             'unknown snapshot length' => [
                 'TargetsLengthNoSnapshotLength',
                 'snapshot.json',
-                Repository::MAX_BYTES,
+                Repository::$maxBytes,
             ],
             'unknown targets length' => [
                 'Simple',
                 'targets.json',
-                Repository::MAX_BYTES,
+                Repository::$maxBytes,
             ],
             'known snapshot length' => [
                 'Simple',
@@ -1063,7 +1063,7 @@ abstract class UpdaterTest extends ClientTestBase
 
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::MAX_BYTES, $this->serverFiles->maxBytes['timestamp.json'][0]);
+        $this->assertSame(Repository::$maxBytes, $this->serverFiles->maxBytes['timestamp.json'][0]);
         $this->assertSame($expectedLength, $this->serverFiles->maxBytes[$downloadedFileName][0]);
     }
 

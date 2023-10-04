@@ -20,7 +20,7 @@ class Repository
      *
      * @var int
      */
-    public const MAX_BYTES = 100000;
+    public static int $maxBytes = 100000;
 
     public function __construct(private SizeCheckingLoader $sizeCheckingLoader)
     {
@@ -39,7 +39,7 @@ class Repository
     public function getRoot(int $version): ?RootMetadata
     {
         try {
-            $data = $this->sizeCheckingLoader->load("$version.root.json", self::MAX_BYTES);
+            $data = $this->sizeCheckingLoader->load("$version.root.json", self::$maxBytes);
 
             return RootMetadata::createFromJson($data->getContents());
         } catch (RepoFileNotFound) {
@@ -58,7 +58,7 @@ class Repository
      */
     public function getTimestamp(): TimestampMetadata
     {
-        $data = $this->sizeCheckingLoader->load('timestamp.json', self::MAX_BYTES);
+        $data = $this->sizeCheckingLoader->load('timestamp.json', self::$maxBytes);
 
         return TimestampMetadata::createFromJson($data->getContents());
     }
@@ -71,7 +71,7 @@ class Repository
      *   snapshots are not used.
      * @param int|null $maxBytes
      *   The maximum number of bytes to download, or null to use
-     *   self::MAX_BYTES.
+     *   self::$maxBytes.
      *
      * @return \Tuf\Metadata\SnapshotMetadata
      *   The untrusted snapshot metadata.
@@ -81,7 +81,7 @@ class Repository
         $name = isset($version) ? "$version.snapshot" : 'snapshot';
         // If a maximum number of bytes was provided, we must download *exactly*
         // that number of bytes.
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::MAX_BYTES, isset($maxBytes));
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes));
 
         return SnapshotMetadata::createFromJson($data->getContents());
     }
@@ -97,7 +97,7 @@ class Repository
      *   delegated role.
      * @param int|null $maxBytes
      *   The maximum number of bytes to download, or null to use
-     *   self::MAX_BYTES.
+     *   self::$maxBytes.
      *
      * @return \Tuf\Metadata\TargetsMetadata
      *   The untrusted targets metadata.
@@ -107,7 +107,7 @@ class Repository
         $name = isset($version) ? "$version.$role" : $role;
         // If a maximum number of bytes was provided, we must download *exactly*
         // that number of bytes.
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::MAX_BYTES, isset($maxBytes));
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes));
 
         return TargetsMetadata::createFromJson($data->getContents(), $role);
     }
