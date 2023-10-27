@@ -348,20 +348,26 @@ class Updater
      *
      * @param string $target
      *   The path of the target file.
+     * @param bool $useCache
+     *   (optional) Whether to load the metadata from an internal static cache.
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The targets metadata with information about the desired target, or null if no relevant metadata is found.
      */
-    protected function getMetadataForTarget(string $target): ?TargetsMetadata
+    protected function getMetadataForTarget(string $target, bool $useCache = true): ?TargetsMetadata
     {
+        static $cache = [];
+        if ($useCache && array_key_exists($target, $cache)) {
+            return $cache[$target];
+        }
         // Search the top level targets metadata.
         /** @var \Tuf\Metadata\TargetsMetadata $targetsMetadata */
         $targetsMetadata = $this->storage->getTargets();
         if ($targetsMetadata->hasTarget($target)) {
-            return $targetsMetadata;
+            return $cache[$target] = $targetsMetadata;
         }
         // Recursively search any delegated roles.
-        return $this->searchDelegatedRolesForTarget($targetsMetadata, $target, ['targets']);
+        return $cache[$target] = $this->searchDelegatedRolesForTarget($targetsMetadata, $target, ['targets']);
     }
 
     /**
