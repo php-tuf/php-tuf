@@ -2,6 +2,8 @@
 
 namespace Tuf\Tests\Unit;
 
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Utils;
 use PHPUnit\Framework\TestCase;
@@ -31,9 +33,9 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $locator, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes): PromiseInterface
     {
-        return $this->stream;
+        return Create::promiseFor($this->stream);
     }
 
     public function testKnownSize(): void
@@ -42,11 +44,11 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->assertGreaterThan(0, $this->stream->getSize());
 
         // If the size is known, the stream should not be replaced.
-        $this->assertSame($this->stream, $this->loader->load('ok.txt', 1024));
+        $this->assertSame($this->stream, $this->loader->load('ok.txt', 1024)->wait());
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage('too_long.txt exceeded 8 bytes');
-        $this->loader->load('too_long.txt', 8);
+        $this->loader->load('too_long.txt', 8)->wait();
     }
 
     public function testSeekableUnknownSize(): void
@@ -65,14 +67,14 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->assertTrue($this->stream->isSeekable());
 
         // If the stream is seekable, it should not be replaced.
-        $this->assertSame($this->stream, $this->loader->load('ok.txt', 1024));
+        $this->assertSame($this->stream, $this->loader->load('ok.txt', 1024)->wait());
 
         $this->assertSame(0, $this->stream->tell());
         // Move the stream to a different position so we can ensure the size
         // check returns us there.
         $this->stream->seek(8);
         try {
-            $this->loader->load('too_long.txt', 8);
+            $this->loader->load('too_long.txt', 8)->wait();
             $this->fail('Expected DownloadSizeException to be thrown, but it was not.');
         } catch (DownloadSizeException $e) {
             $this->assertSame('too_long.txt exceeded 8 bytes', $e->getMessage());
@@ -106,7 +108,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         $this->assertSame(0, fseek($buffer, 0), 'Failed to return to the start of the stream.');
         // Even if the stream did not exceed $maxBytes, it should have been
         // replaced with a new stream.
-        $replacementStream = $this->loader->load('ok.txt', 8);
+        $replacementStream = $this->loader->load('ok.txt', 8)->wait();
         $this->assertNotSame($this->stream, $replacementStream);
         $this->assertSame(0, $replacementStream->tell());
 
@@ -117,7 +119,7 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
         // an exception.
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage('too_long.txt exceeded 8 bytes');
-        $this->loader->load('too_long.txt', 8);
+        $this->loader->load('too_long.txt', 8)->wait();
     }
 
     public function testExactSize(): void
@@ -127,6 +129,6 @@ class SizeCheckingLoaderTest extends TestCase implements LoaderInterface
 
         $this->expectException(DownloadSizeException::class);
         $this->expectExceptionMessage("Expected too_short.txt to be 1024 bytes.");
-        $this->loader->load('too_short.txt', 1024, true);
+        $this->loader->load('too_short.txt', 1024, true)->wait();
     }
 }

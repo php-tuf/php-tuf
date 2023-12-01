@@ -49,7 +49,7 @@ abstract class UpdaterTest extends ClientTestBase
         $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
-        $this->assertSame($testFileContents, $this->getUpdater()->download($target)->getContents());
+        $this->assertSame($testFileContents, $this->getUpdater()->download($target)->wait()->getContents());
         // Ensure that client downloads only the delegated role JSON files that
         // are needed to find the metadata for the target.
         $this->assertMetadataVersions($expectedFileVersions, $this->clientStorage);

@@ -2,8 +2,9 @@
 
 namespace Tuf\Tests\Client;
 
+use GuzzleHttp\Promise\Create;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Utils;
-use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\LoaderInterface;
 
@@ -51,14 +52,15 @@ class TestLoader extends \ArrayObject implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load(string $locator, int $maxBytes): StreamInterface
+    public function load(string $locator, int $maxBytes): PromiseInterface
     {
         $this->maxBytes[$locator][] = $maxBytes;
 
         if ($this->offsetExists($locator)) {
-            return Utils::streamFor($this[$locator]);
+            $stream = Utils::streamFor($this[$locator]);
+            return Create::promiseFor($stream);
         } else {
-            throw new RepoFileNotFound("File $locator not found.");
+            return Create::rejectionFor(new RepoFileNotFound("File $locator not found."));
         }
     }
 }
