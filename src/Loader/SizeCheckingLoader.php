@@ -21,20 +21,19 @@ class SizeCheckingLoader implements LoaderInterface
      */
     public function load(string $locator, int $maxBytes, bool $exact = false): PromiseInterface
     {
-        return $this->decorated->load($locator, $maxBytes)
-          ->then(function (StreamInterface $data) use ($locator, $maxBytes, $exact) {
-              $size = $this->getSize($data, $maxBytes);
-              // If we're doing an exact size check, the stream MUST be exactly
-              // $maxBytes in size.
-              if ($exact) {
-                  if ($size !== $maxBytes) {
-                      throw new DownloadSizeException("Expected $locator to be $maxBytes bytes.");
-                  }
-              } elseif ($size > $maxBytes) {
-                  throw new DownloadSizeException("$locator exceeded $maxBytes bytes");
-              }
-              return $data;
-          });
+        $checkSize = function (StreamInterface $data) use ($locator, $maxBytes, $exact) {
+            $size = $this->getSize($data, $maxBytes);
+            // If we're doing an exact size check, the stream MUST be exactly $maxBytes in size.
+            if ($exact) {
+                if ($size !== $maxBytes) {
+                    throw new DownloadSizeException("Expected $locator to be $maxBytes bytes.");
+                }
+            } elseif ($size > $maxBytes) {
+                throw new DownloadSizeException("$locator exceeded $maxBytes bytes");
+            }
+            return $data;
+        };
+        return $this->decorated->load($locator, $maxBytes)->then($checkSize);
     }
 
     /**
