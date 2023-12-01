@@ -16,6 +16,8 @@ jobs:
   fixtures:
     name: Confirm test fixtures generation
     runs-on: ubuntu-latest
+    env:
+      SETUPTOOLS_USE_DISTUTILS: stdlib
     steps:
     - uses: actions/checkout@v2
     - id: cache-pip
@@ -41,8 +43,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --upgrade pipenv
     - name: Install dependencies via pipenv
-      run: |
-        if [ -f Pipfile.lock ]; then pipenv install; fi
+      run: pipenv install
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
