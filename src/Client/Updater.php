@@ -382,10 +382,13 @@ class Updater
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)->wait();
-        $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
-        // § 5.5.6
-        $this->storage->save($newTargetsData);
+        $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
+          ->then(function (TargetsMetadata $newTargetsData) {
+              $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
+              // § 5.5.6
+              $this->storage->save($newTargetsData);
+          })
+          ->wait();
     }
 
     /**
