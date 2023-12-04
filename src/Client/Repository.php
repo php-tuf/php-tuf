@@ -39,7 +39,8 @@ class Repository
     public function getRoot(int $version): ?RootMetadata
     {
         try {
-            $data = $this->sizeCheckingLoader->load("$version.root.json", self::$maxBytes);
+            $data = $this->sizeCheckingLoader->load("$version.root.json", self::$maxBytes)
+              ->wait();
 
             return RootMetadata::createFromJson($data->getContents());
         } catch (RepoFileNotFound) {
@@ -58,7 +59,8 @@ class Repository
      */
     public function getTimestamp(): TimestampMetadata
     {
-        $data = $this->sizeCheckingLoader->load('timestamp.json', self::$maxBytes);
+        $data = $this->sizeCheckingLoader->load('timestamp.json', self::$maxBytes)
+          ->wait();
 
         return TimestampMetadata::createFromJson($data->getContents());
     }
@@ -81,7 +83,8 @@ class Repository
         $name = isset($version) ? "$version.snapshot" : 'snapshot';
         // If a maximum number of bytes was provided, we must download *exactly*
         // that number of bytes.
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes));
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes))
+          ->wait();
 
         return SnapshotMetadata::createFromJson($data->getContents());
     }
@@ -107,7 +110,8 @@ class Repository
         $name = isset($version) ? "$version.$role" : $role;
         // If a maximum number of bytes was provided, we must download *exactly*
         // that number of bytes.
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes));
+        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes))
+          ->wait();
 
         return TargetsMetadata::createFromJson($data->getContents(), $role);
     }

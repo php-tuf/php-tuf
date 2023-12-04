@@ -2,6 +2,7 @@
 
 namespace Tuf\Client;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
@@ -324,10 +325,10 @@ class Updater
      *   The path of the target file. Needs to be known to the most recent
      *   targets metadata downloaded in ::refresh().
      *
-     * @return \Psr\Http\Message\StreamInterface
-     *   A stream of the trusted, downloaded data.
+     * @return \GuzzleHttp\Promise\PromiseInterface<\Psr\Http\Message\StreamInterface>
+     *   A promise wrapping a stream of the trusted, downloaded data.
      */
-    public function download(string $target): StreamInterface
+    public function download(string $target): PromiseInterface
     {
         $this->refresh();
 
@@ -338,9 +339,11 @@ class Updater
             throw new NotFoundException($target, 'Target');
         }
 
-        $stream = $this->serverLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::$maxBytes);
-        $this->verify($target, $stream);
-        return $stream;
+        return $this->serverLoader->load($target, $targetsMetadata->getLength($target) ?? Repository::$maxBytes)
+          ->then(function (StreamInterface $stream) use ($target) {
+             $this->verify($target, $stream);
+             return $stream;
+          });
     }
 
     /**

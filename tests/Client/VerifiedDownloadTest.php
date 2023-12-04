@@ -29,7 +29,7 @@ class VerifiedDownloadTest extends ClientTestBase
 
         $testFilePath = static::getFixturePath($fixture, 'server/targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
-        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->getContents());
+        $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
         // If the file fetcher returns a file stream, the updater should NOT try
         // to read the contents of the stream into memory.
@@ -51,7 +51,7 @@ class VerifiedDownloadTest extends ClientTestBase
         $stream = Utils::streamFor('invalid data');
         $this->serverFiles['testtarget.txt'] = $stream;
         try {
-            $updater->download('testtarget.txt');
+            $updater->download('testtarget.txt')->wait();
             $this->fail('Expected InvalidHashException to be thrown, but it was not.');
         } catch (InvalidHashException $e) {
             $this->assertSame("Invalid sha256 hash for testtarget.txt", $e->getMessage());

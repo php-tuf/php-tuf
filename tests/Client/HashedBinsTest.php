@@ -19,7 +19,7 @@ class HashedBinsTest extends ClientTestBase
         foreach ($targets as $name) {
             // By default, the fixture builder puts "Contents: FILENAME" into
             // the target files it creates.
-            $this->assertSame("Contents: $name", $updater->download($name)->getContents());
+            $this->assertSame("Contents: $name", $updater->download($name)->wait()->getContents());
         }
     }
 }

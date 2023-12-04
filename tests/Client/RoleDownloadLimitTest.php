@@ -28,7 +28,7 @@ class RoleDownloadLimitTest extends ClientTestBase
         // Ensure the file can found if the maximum role limit is 100.
         $testFileContents = $this->serverFiles[$fileName];
         self::assertNotEmpty($testFileContents);
-        self::assertSame($testFileContents, $this->getUpdater()->download($fileName)->getContents());
+        self::assertSame($testFileContents, $this->getUpdater()->download($fileName)->wait()->getContents());
 
         // Ensure the file can not found if the maximum role limit is 3.
         self::expectException(NotFoundException::class);
