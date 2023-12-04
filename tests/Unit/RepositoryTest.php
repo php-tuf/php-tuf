@@ -50,11 +50,11 @@ class RepositoryTest extends TestCase
             foreach (['targets', 'unclaimed'] as $role) {
                 $fileName = isset($version) ? "$version.$role.json" : "$role.json";
 
-                $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role));
+                $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role)->wait());
                 $this->assertSame(Repository::$maxBytes, $loader->maxBytes[$fileName][0]);
 
                 $fileSize = filesize($metadataDir . '/' . $fileName);
-                $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role, $fileSize));
+                $this->assertInstanceOf(TargetsMetadata::class, $repository->getTargets($version, $role, $fileSize)->wait());
                 $this->assertSame($fileSize, $loader->maxBytes[$fileName][1]);
             }
         }

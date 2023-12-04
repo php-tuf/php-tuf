@@ -2,6 +2,8 @@
 
 namespace Tuf\Client;
 
+use GuzzleHttp\Promise\PromiseInterface;
+use Psr\Http\Message\StreamInterface;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Metadata\RootMetadata;
@@ -102,17 +104,17 @@ class Repository
      *   The maximum number of bytes to download, or null to use
      *   self::$maxBytes.
      *
-     * @return \Tuf\Metadata\TargetsMetadata
-     *   The untrusted targets metadata.
+     * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
+     *   A promise wrapping the untrusted targets metadata.
      */
-    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): TargetsMetadata
+    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): PromiseInterface
     {
         $name = isset($version) ? "$version.$role" : $role;
         // If a maximum number of bytes was provided, we must download *exactly*
         // that number of bytes.
-        $data = $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes))
-          ->wait();
-
-        return TargetsMetadata::createFromJson($data->getContents(), $role);
+        return $this->sizeCheckingLoader->load("$name.json", $maxBytes ?? self::$maxBytes, isset($maxBytes))
+          ->then(function (StreamInterface $data) use ($role) {
+              return TargetsMetadata::createFromJson($data->getContents(), $role);
+          });
     }
 }

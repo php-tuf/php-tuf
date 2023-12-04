@@ -166,7 +166,7 @@ class Updater
         $this->storage->save($newSnapshotData);
 
         // § 5.6
-        $this->fetchAndVerifyTargetsMetadata('targets');
+        $this->fetchAndVerifyTargetsMetadata('targets')->wait();
 
         $this->isRefreshed = true;
         return true;
@@ -374,18 +374,25 @@ class Updater
      *
      * @param string $role
      *   The role name. This may be 'targets' or a delegated role.
+     *
+     * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
+     *   A promise wrapping the verified metadata for the role.
      */
-    private function fetchAndVerifyTargetsMetadata(string $role): void
+    private function fetchAndVerifyTargetsMetadata(string $role): PromiseInterface
     {
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
-        $newTargetsData = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null);
-        $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
-        // § 5.5.6
-        $this->storage->save($newTargetsData);
+
+        return $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
+          ->then(function (TargetsMetadata $newTargetsData) {
+              $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
+              // § 5.5.6
+              $this->storage->save($newTargetsData);
+              return $newTargetsData;
+          });
     }
 
     /**
@@ -437,9 +444,9 @@ class Updater
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
             if ($delegatedRole->matchesPath($target)) {
-                $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
                 /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-                $delegatedTargetsMetadata = $this->storage->getTargets($delegatedRoleName);
+                $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
+                  ->wait();
                 if ($delegatedTargetsMetadata->hasTarget($target)) {
                     return $delegatedTargetsMetadata;
                 }
