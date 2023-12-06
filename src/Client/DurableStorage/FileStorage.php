@@ -39,7 +39,7 @@ class FileStorage extends StorageBase
      */
     protected function toPath(string $name): string
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $name . '.json';
+        return $this->basePath . DIRECTORY_SEPARATOR . urlencode($name) . '.json';
     }
 
     protected function read(string $name): ?string
