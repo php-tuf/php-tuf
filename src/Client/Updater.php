@@ -428,7 +428,21 @@ class Updater
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
+
+        $delegatedRoles = [];
         foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+            // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
+            // do not evaluate this role or any roles it delegates to.
+            if ($delegatedRole->matchesPath($target)) {
+                $delegatedRoles[] = $delegatedRole;
+
+                if ($delegatedRole->isTerminating()) {
+                    break;
+                }
+            }
+        }
+
+        foreach ($delegatedRoles as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->getName();
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
@@ -441,31 +455,27 @@ class Updater
             }
 
             $this->signatureVerifier->addRole($delegatedRole);
-            // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
-            // do not evaluate this role or any roles it delegates to.
-            if ($delegatedRole->matchesPath($target)) {
-                /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-                $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
-                  ->wait();
-                if ($delegatedTargetsMetadata->hasTarget($target)) {
-                    return $delegatedTargetsMetadata;
-                }
-                $searchedRoles[] = $delegatedRoleName;
-                // § 5.6.7.2
-                // Recursively search the list of delegations in order of appearance.
-                $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
-                if ($terminated || $delegatedRolesMetadataSearchResult) {
-                    return $delegatedRolesMetadataSearchResult;
-                }
+            /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
+            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
+              ->wait();
+            if ($delegatedTargetsMetadata->hasTarget($target)) {
+                return $delegatedTargetsMetadata;
+            }
+            $searchedRoles[] = $delegatedRoleName;
+            // § 5.6.7.2
+            // Recursively search the list of delegations in order of appearance.
+            $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
+            if ($terminated || $delegatedRolesMetadataSearchResult) {
+                return $delegatedRolesMetadataSearchResult;
+            }
 
-                // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
-                // in the delegations from $targetsMetadata.
-                if ($delegatedRole->isTerminating()) {
-                    $terminated = true;
-                    // § 5.6.7.2.1
-                    // If the role is terminating then abort searching for a target.
-                    return null;
-                }
+            // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
+            // in the delegations from $targetsMetadata.
+            if ($delegatedRole->isTerminating()) {
+                $terminated = true;
+                // § 5.6.7.2.1
+                // If the role is terminating then abort searching for a target.
+                return null;
             }
         }
         return null;
