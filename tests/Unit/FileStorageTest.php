@@ -147,7 +147,7 @@ class FileStorageTest extends TestCase
         $metadata->ensureIsTrusted()->shouldBeCalled();
         $storage->save($metadata->reveal());
 
-        $expectedFileName = urlencode($roleName) . '.json';
+        $expectedFileName = 'hello%2F..%2Fthere%21.json';
         $this->assertFileExists($dir . '/' . $expectedFileName);
 
         $method = new \ReflectionMethod($storage, 'read');
