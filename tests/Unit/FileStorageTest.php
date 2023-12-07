@@ -5,6 +5,7 @@ namespace Tuf\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\DurableStorage\FileStorage;
+use Tuf\Metadata\MetadataBase;
 use Tuf\Metadata\RootMetadata;
 use Tuf\Metadata\SnapshotMetadata;
 use Tuf\Metadata\TargetsMetadata;
@@ -130,5 +131,27 @@ class FileStorageTest extends TestCase
         $this->expectException('LogicException');
         $this->expectExceptionMessage('Could not load root metadata.');
         $storage->getRoot();
+    }
+
+    public function testFileNamesAreUrlEncoded(): void
+    {
+        $roleName = 'hello/../there!';
+        $fileContents = '{["A test of your mettle"]}';
+
+        $dir = sys_get_temp_dir();
+        $storage = new FileStorage($dir);
+
+        $metadata = $this->prophesize(MetadataBase::class);
+        $metadata->getRole()->willReturn($roleName);
+        $metadata->getSource()->willReturn($fileContents);
+        $metadata->ensureIsTrusted()->shouldBeCalled();
+        $storage->save($metadata->reveal());
+
+        $expectedFileName = 'hello%2F..%2Fthere%21.json';
+        $this->assertFileExists($dir . '/' . $expectedFileName);
+
+        $method = new \ReflectionMethod($storage, 'read');
+        $method->setAccessible(true);
+        $this->assertSame($fileContents, $method->invoke($storage, $roleName));
     }
 }
