@@ -192,9 +192,5 @@ jobs:
         run: |
           composer create-project drupal/recommended-project project_name
           cd project_name
-
-      - name: Add Local Repository for Your Package
-        run: composer config repositories.local path ../php-tuf
-
-      - name: Require Your Package
-        run: composer require php-tuf/php-tuf:@dev
+          composer config repositories.local path ../php-tuf
+          composer require php-tuf/php-tuf:@dev
