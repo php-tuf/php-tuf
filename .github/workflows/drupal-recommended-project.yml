@@ -1,13 +1,12 @@
-name: Drupal recommended-project Compatibility
 
+name: Drupal recommended-project Compatibility
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
-  test:
+  composer-project:
     runs-on: ubuntu-latest
 
     steps:

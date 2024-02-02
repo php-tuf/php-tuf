@@ -172,3 +172,28 @@ jobs:
 
       - name: Run test suite
         run: composer test
+
+  composer-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        path: php-tuf
+
+      - name: Install PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          composer: 'latest'
+
+      - name: Create Drupal Project
+        run: |
+          composer create-project drupal/recommended-project project_name
+          cd project_name
+
+      - name: Add Local Repository for Your Package
+        run: composer config repositories.local path ../php-tuf
+
+      - name: Require Your Package
+        run: composer require php-tuf/php-tuf:@dev
