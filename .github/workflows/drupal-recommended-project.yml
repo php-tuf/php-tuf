@@ -12,7 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        path: php-tuf
+        with:
+          path: php-tuf
 
       - name: Install PHP and Composer
         uses: shivammathur/setup-php@v2
