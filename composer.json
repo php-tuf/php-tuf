@@ -21,7 +21,7 @@
         "symfony/validator": "^4.4 || ^5 || ^6",
         "guzzlehttp/psr7": "^2.4",
         "symfony/polyfill-php81": "^1.27",
-        "guzzlehttp/promises": "^1.5"
+        "guzzlehttp/promises": "^1.5 || ^2.0"
     },
     "suggest": {
         "ext-sodium": "Provides faster verification of updates"
