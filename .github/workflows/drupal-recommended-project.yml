@@ -26,4 +26,4 @@ jobs:
           composer create-project drupal/recommended-project project_name
           cd project_name
           composer config repositories.local path ../php-tuf
-          composer require php-tuf/php-tuf:@dev
+          composer require php-tuf/php-tuf:@dev --with-all-dependencies
