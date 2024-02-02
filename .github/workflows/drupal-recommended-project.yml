@@ -1,9 +1,10 @@
 name: Drupal recommended-project Compatibility
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
-    paths:
-      - '**/*.php'
+    branches: [ main ]
 
 jobs:
   test:
