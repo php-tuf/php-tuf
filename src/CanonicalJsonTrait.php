@@ -24,10 +24,10 @@ trait CanonicalJsonTrait
      * @return string
      *   An encoded string of normalized, canonical JSON data.
      */
-    protected static function encodeJson(array $data): string
+    protected static function encodeJson(array $data, int $flags = 0): string
     {
         static::sortKeys($data);
-        return json_encode($data, JSON_UNESCAPED_SLASHES);
+        return json_encode($data, JSON_UNESCAPED_SLASHES | $flags);
     }
 
     /**
