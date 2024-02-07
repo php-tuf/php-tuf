@@ -64,17 +64,18 @@ class Fixture
         $this->writeAllToDirectory($this->baseDir . '/client');
     }
 
-    public function createAndSignTarget(string $name, string $signedBy = 'targets'): static
+    public function createTarget(string $name, ?string $signedBy = 'targets'): void
     {
-        assert(array_key_exists($signedBy, $this->targets));
-
         $dir = $this->baseDir . '/targets';
         self::mkDir($dir);
 
-        $path = $this->targets[$signedBy]->targets[$name] = $dir . '/' . $name;
+        $path = $dir . '/' . $name;
         file_put_contents($path, "Contents: $name");
 
-        return $this;
+        if ($signedBy) {
+            assert(array_key_exists($signedBy, $this->targets));
+            $this->targets[$signedBy]->targets[$name] = $path;
+        }
     }
 
     public function newVersion(): void
@@ -105,9 +106,10 @@ class Fixture
 
     private static function mkDir(string $path): void
     {
-        if (! is_dir($path)) {
-            assert(mkdir($path, recursive: true));
+        if (is_dir($path)) {
+            return;
         }
+        assert(mkdir($path, recursive: true));
     }
 }
 
