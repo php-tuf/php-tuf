@@ -20,9 +20,7 @@ class FixtureGenerator
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = true;
         $fixture->createAndSignTarget('testtarget.txt');
-        $fixture->writeServer();
-        $fixture->writeClient();
-        $fixture->newVersion();
+        $fixture->publish();
         // Because the client will now have newer information than the server,
         // TUF will consider this a rollback attack.
         $fixture->createAndSignTarget('testtarget2.txt');
@@ -36,16 +34,12 @@ class FixtureGenerator
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = true;
         $fixture->createAndSignTarget('testtarget.txt');
-        $fixture->writeServer();
-        $fixture->writeClient();
-        $fixture->newVersion();
+        $fixture->publish();
 
         $unclaimed = $fixture->delegate('targets', 'unclaimed');
         $unclaimed->paths = ['level_1_*.txt'];
         $fixture->createAndSignTarget('level_1_target.txt', 'unclaimed');
-        $fixture->writeServer();
-        $fixture->writeClient();
-        $fixture->newVersion();
+        $fixture->publish();
 
         // From this point on, we don't write the client. This allows us to test
         // that the client is able to pick up changes from the server.

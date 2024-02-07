@@ -85,6 +85,13 @@ class Fixture
         array_walk($this->targets, fn (Targets $role) => $role->version++);
     }
 
+    public function publish(): void
+    {
+        $this->writeServer();
+        $this->writeClient();
+        $this->newVersion();
+    }
+
     public function delegate(string $delegator, string $name): Targets
     {
         assert(array_key_exists($delegator, $this->targets));
