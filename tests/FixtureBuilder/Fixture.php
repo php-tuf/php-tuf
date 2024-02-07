@@ -64,7 +64,7 @@ class Fixture
         $this->writeAllToDirectory($this->baseDir . '/client');
     }
 
-    public function createTarget(string $name, ?string $signedBy = 'targets'): void
+    public function createTarget(string $name, string|Targets|null $signer = 'targets'): void
     {
         $dir = $this->baseDir . '/targets';
         self::mkDir($dir);
@@ -72,9 +72,12 @@ class Fixture
         $path = $dir . '/' . $name;
         file_put_contents($path, "Contents: $name");
 
-        if ($signedBy) {
-            assert(array_key_exists($signedBy, $this->targets));
-            $this->targets[$signedBy]->targets[$name] = $path;
+        if ($signer) {
+            if ($signer instanceof Targets) {
+                $signer = $signer->name;
+            }
+            assert(array_key_exists($signer, $this->targets));
+            $this->targets[$signer]->targets[$name] = $path;
         }
     }
 
@@ -93,8 +96,11 @@ class Fixture
         $this->newVersion();
     }
 
-    public function delegate(string $delegator, string $name): Targets
+    public function delegate(string|Targets $delegator, string $name): Targets
     {
+        if ($delegator instanceof Targets) {
+            $delegator = $delegator->name;
+        }
         assert(array_key_exists($delegator, $this->targets));
 
         $role = new Targets($this->expires, [new Key], $name);

@@ -15,6 +15,7 @@ class FixtureGenerator
 
         self::attackRollback();
         self::delegated();
+        self::nestedDelegated();
     }
 
     private static function attackRollback(): void
@@ -42,7 +43,7 @@ class FixtureGenerator
 
         $unclaimed = $fixture->delegate('targets', 'unclaimed');
         $unclaimed->paths = ['level_1_*.txt'];
-        $fixture->createTarget('level_1_target.txt', 'unclaimed');
+        $fixture->createTarget('level_1_target.txt', $unclaimed);
         $fixture->publish();
 
         // From this point on, we don't write the client. This allows us to test
@@ -55,5 +56,62 @@ class FixtureGenerator
         $fixture->snapshot->revokeKey(-1);
         $fixture->writeServer();
         $fixture->newVersion();
+    }
+
+    private static function nestedDelegated(): void
+    {
+        $dir = self::$baseDir . '/php/NestedDelegated/consistent';
+
+        $fixture = new Fixture($dir);
+        $fixture->root->consistentSnapshot = true;
+        $fixture->createTarget('testtarget.txt');
+        $fixture->publish();
+
+        $unclaimed = $fixture->delegate('targets', 'unclaimed');
+        $unclaimed->paths = ['level_1_*.txt'];
+        $fixture->createTarget('level_1_target.txt', 'unclaimed');
+        $fixture->publish();
+
+        $fixture->targets['targets']->addKey(new Key);
+        $fixture->snapshot->addKey(new Key);
+        $fixture->writeServer();
+        $fixture->newVersion();
+
+        $fixture->targets['targets']->revokeKey(-1);
+        $fixture->snapshot->revokeKey(-1);
+        $fixture->writeServer();
+        $fixture->newVersion();
+
+        # Delegate from level_1_delegation to level_2
+        $level_2 = $fixture->delegate($unclaimed, 'level_2');
+        $level_2->paths = ['level_1_2_*.txt'];
+        $fixture->createTarget('level_1_2_target.txt', $level_2);
+
+        # Create a terminating delegation
+        $level_2_terminating = $fixture->delegate($unclaimed, 'level_2_terminating');
+        $level_2_terminating->terminating = true;
+        $level_2_terminating->paths = ['level_1_2_terminating_*.txt'];
+        $fixture->createTarget('level_1_2_terminating_findable.txt', $level_2_terminating);
+
+        # Create a delegation under non-terminating 'level_2' delegation.
+        $level_3 = $fixture->delegate($level_2, 'level_3');
+        $level_3->paths = ['level_1_2_3_*.txt'];
+        $fixture->createTarget('level_1_2_3_below_non_terminating_target.txt', $level_3);
+
+        # Add a delegation below the 'level_2_terminating' role.
+        # Delegations from a terminating role are evaluated but delegations after a terminating delegation
+        # are not.
+        # See NestedDelegatedErrors
+        $level_3_below_terminated = $fixture->delegate($level_2_terminating, 'level_3_below_terminated');
+        $level_3_below_terminated->paths = ['level_1_2_terminating_3_*.txt'];
+        $fixture->createTarget('level_1_2_terminating_3_target.txt', $level_3_below_terminated);
+
+        # Add a delegation after level_2_terminating, but the path does not match level_2_terminating,
+        # which WILL be evaluated.
+        $level_2_after_terminating_not_match_terminating_path = $fixture->delegate('unclaimed', 'level_2_after_terminating_not_match_terminating_path');
+        $level_2_after_terminating_not_match_terminating_path->paths = ['level_1_2a_terminating_plus_1_more_*.txt'];
+        $fixture->createTarget('level_1_2a_terminating_plus_1_more_findable.txt', $level_2_after_terminating_not_match_terminating_path);
+
+        $fixture->writeServer();
     }
 }
