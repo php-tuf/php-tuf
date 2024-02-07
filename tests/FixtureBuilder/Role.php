@@ -22,7 +22,14 @@ abstract class Role implements \Stringable
 
     public int $version = 1;
 
+    protected ?string $name = null;
+
     public function __construct(public \DateTimeImmutable $expires, private array $keys = []) {}
+
+    public static function create(\DateTimeImmutable $expiration): static
+    {
+        return new static($expiration, [new Key]);
+    }
 
     public function __get(string $name): array
     {
@@ -31,7 +38,7 @@ abstract class Role implements \Stringable
         };
     }
 
-    public function addKey(Key $key): self
+    public function addKey(Key $key): static
     {
         assert(! in_array($key, $this->keys, true));
         $this->keys[] = $key;
@@ -62,5 +69,11 @@ abstract class Role implements \Stringable
         ];
     }
 
-    abstract public function fileName(): string;
+    public function fileName(bool $withVersion = true): string
+    {
+        assert(is_string($this->name));
+
+        $name = $this->name . '.json';
+        return $withVersion ? $this->version . '.' . $name : $name;
+    }
 }

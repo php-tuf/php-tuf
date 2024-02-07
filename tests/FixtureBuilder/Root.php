@@ -10,7 +10,9 @@ final class Root extends Role
 
     private array $roles = [];
 
-    public function addRole(Role $role): self
+    protected ?string $name = 'root';
+
+    public function addRole(Role $role): static
     {
         assert (! in_array($role, $this->roles, true));
         $this->roles[] = $role;
@@ -22,8 +24,7 @@ final class Root extends Role
         $data = parent::getSigned();
 
         foreach ([$this, ...$this->roles] as $role) {
-            $name = basename($role->fileName(), '.json');
-            $name = ltrim($name, '0123456789.');
+            $name = basename($role->fileName(false), '.json');
             $data['roles'][$name]['threshold'] = $role->threshold;
 
             foreach ($role->keys as $key) {
@@ -39,10 +40,5 @@ final class Root extends Role
         $data['_type'] = 'root';
 
         return $data;
-    }
-
-    public function fileName(): string
-    {
-        return $this->version . '.root.json';
     }
 }

@@ -6,7 +6,9 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Timestamp extends MetadataAuthorityRole
 {
-    public function setSnapshot(Snapshot $snapshot): self
+    protected ?string $name = 'timestamp';
+
+    public function setSnapshot(Snapshot $snapshot): static
     {
         $this->meta = [$snapshot];
         return $this;
@@ -18,10 +20,5 @@ final class Timestamp extends MetadataAuthorityRole
 
         $data['_type'] = 'timestamp';
         return $data;
-    }
-
-    public function fileName(): string
-    {
-        return $this->version . '.timestamp.json';
     }
 }

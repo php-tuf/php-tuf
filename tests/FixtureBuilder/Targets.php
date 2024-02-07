@@ -6,7 +6,7 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Targets extends Role
 {
-    public string $name = 'targets';
+    public ?string $name = 'targets';
 
     public ?array $paths = null;
 
@@ -58,10 +58,5 @@ final class Targets extends Role
 
         $data['_type'] = 'targets';
         return $data;
-    }
-
-    public function fileName(): string
-    {
-        return $this->version . '.' . $this->name . '.json';
     }
 }
