@@ -22,16 +22,17 @@ abstract class Role implements \Stringable
 
     public int $version = 1;
 
-    protected ?string $name = null;
-
-    public function __construct(public \DateTimeImmutable $expires, private array $keys = []) {}
+    public function __construct(
+      public \DateTimeImmutable $expires,
+      private array $keys = [],
+    ) {}
 
     public static function create(\DateTimeImmutable $expiration): static
     {
         return new static($expiration, [new Key]);
     }
 
-    public function __get(string $name): array
+    public function __get(string $name): mixed
     {
         return match ($name) {
             'keys' => $this->keys,
@@ -40,8 +41,19 @@ abstract class Role implements \Stringable
 
     public function addKey(Key $key): static
     {
-        assert(! in_array($key, $this->keys, true));
+        assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
         $this->keys[] = $key;
+        return $this;
+    }
+
+    public function revokeKey(Key|int $which): static
+    {
+        if ($which instanceof Key) {
+            $which = array_search($which, $this->keys, true);
+        }
+        if (is_int($which)) {
+            array_splice($this->keys, $which, 1);
+        }
         return $this;
     }
 

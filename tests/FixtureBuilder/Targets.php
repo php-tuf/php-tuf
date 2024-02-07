@@ -6,25 +6,35 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Targets extends Role
 {
-    public ?string $name = 'targets';
-
     public ?array $paths = null;
 
     public ?array $pathHashPrefixes = null;
 
     public bool $terminating = false;
 
-    public array $delegations = [];
+    /**
+     * @var self[]
+     */
+    private array $delegations = [];
 
     public array $targets = [];
+
+    public function __construct(\DateTimeImmutable $expires, array $keys = [], public readonly string $name = 'targets')
+    {
+        parent::__construct($expires, $keys);
+    }
+
+    public function addDelegation(self $role): self
+    {
+        $this->delegations[$role->name] = $role;
+        return $this;
+    }
 
     public function getSigned(): array
     {
         $data = parent::getSigned();
 
         foreach ($this->delegations as $delegation) {
-            assert($delegation instanceof self);
-
             $role = [
               'name' => $delegation->name,
               'threshold' => $delegation->threshold,

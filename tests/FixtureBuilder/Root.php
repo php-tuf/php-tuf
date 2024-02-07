@@ -10,7 +10,13 @@ final class Root extends Role
 
     private array $roles = [];
 
-    protected ?string $name = 'root';
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'name' => 'root',
+            default => parent::__get($name),
+        };
+    }
 
     public function addRole(Role $role): static
     {

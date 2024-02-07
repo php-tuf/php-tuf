@@ -6,7 +6,13 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Timestamp extends MetadataAuthorityRole
 {
-    protected ?string $name = 'timestamp';
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'name' => 'timestamp',
+            default => parent::__get($name),
+        };
+    }
 
     public function setSnapshot(Snapshot $snapshot): static
     {

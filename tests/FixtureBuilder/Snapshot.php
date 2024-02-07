@@ -6,7 +6,13 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Snapshot extends MetadataAuthorityRole
 {
-    protected ?string $name = 'snapshot';
+    public function __get(string $name): mixed
+    {
+        return match ($name) {
+            'name' => 'snapshot',
+            default => parent::__get($name),
+        };
+    }
 
     public function addRole(Targets $role): static
     {

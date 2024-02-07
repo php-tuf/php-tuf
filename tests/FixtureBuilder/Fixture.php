@@ -77,15 +77,23 @@ class Fixture
         return $this;
     }
 
-    public function publish(): void
+    public function newVersion(): void
     {
-        $this->writeServer();
-        $this->writeClient();
-
         $this->root->version++;
         $this->timestamp->version++;
         $this->snapshot->version++;
         array_walk($this->targets, fn (Targets $role) => $role->version++);
+    }
+
+    public function delegate(string $delegator, string $name): Targets
+    {
+        assert(array_key_exists($delegator, $this->targets));
+
+        $role = new Targets($this->expires, [new Key], $name);
+        $this->targets[$name] = $role;
+        $this->targets[$delegator]->addDelegation($role);
+
+        return $role;
     }
 
     private static function mkDir(string $path): void
