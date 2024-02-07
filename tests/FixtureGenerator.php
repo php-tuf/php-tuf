@@ -18,6 +18,10 @@ class FixtureGenerator
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = true;
         $fixture->createAndSignTarget('testtarget.txt');
-        $fixture->publish(true);
+        $fixture->publish();
+        // Because the client will now have newer information than the server,
+        // TUF will consider this a rollback attack.
+        $fixture->createAndSignTarget('testtarget2.txt');
+        $fixture->writeClient();
     }
 }

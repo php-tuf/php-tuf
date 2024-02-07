@@ -43,22 +43,28 @@ class Fixture
         file_put_contents($dir . '/' . $role->fileName(false), $data);
     }
 
-    public function writeAll(bool $withClient = false): void
+    private function writeAllToDirectory(string $dir): void
     {
         $roles = [
-            $this->root,
-            $this->timestamp,
-            $this->snapshot,
-            ...$this->targets,
+          $this->root,
+          $this->timestamp,
+          $this->snapshot,
+          ...$this->targets,
         ];
-        array_walk($roles, fn (Role $role) => $this->write($role, $this->baseDir . '/server'));
-
-        if ($withClient) {
-            array_walk($roles, fn (Role $role) => $this->write($role, $this->baseDir . '/client'));
-        }
+        array_walk($roles, fn (Role $role) => $this->write($role, $dir));
     }
 
-    public function createAndSignTarget(string $name, string $signedBy = 'targets'): void
+    public function writeServer(): void
+    {
+        $this->writeAllToDirectory($this->baseDir . '/server');
+    }
+
+    public function writeClient(): void
+    {
+        $this->writeAllToDirectory($this->baseDir . '/client');
+    }
+
+    public function createAndSignTarget(string $name, string $signedBy = 'targets'): static
     {
         assert(array_key_exists($signedBy, $this->targets));
 
@@ -67,11 +73,14 @@ class Fixture
 
         $path = $this->targets[$signedBy]->targets[$name] = $dir . '/' . $name;
         file_put_contents($path, "Contents: $name");
+
+        return $this;
     }
 
-    public function publish(bool $withClient = false): void
+    public function publish(): void
     {
-        $this->writeAll($withClient);
+        $this->writeServer();
+        $this->writeClient();
 
         $this->root->version++;
         $this->timestamp->version++;
