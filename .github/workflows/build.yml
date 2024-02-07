@@ -82,8 +82,6 @@ jobs:
         # We need to use the ~ operator to prevent weirdness on Windows.
         # See https://github.com/composer/composer/issues/10943
         dependencies:
-          - 'symfony/validator:~4.4'
-          - 'symfony/validator:~5.0'
           - 'symfony/validator:~6.0'
         experimental: [false]
         include:
