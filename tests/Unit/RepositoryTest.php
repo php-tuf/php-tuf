@@ -42,7 +42,7 @@ class RepositoryTest extends TestCase
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version));
             $this->assertSame(Repository::$maxBytes, $loader->maxBytes[$fileName][0]);
 
-            $metadataDir = $baseDir . '/server/metadata';
+            $metadataDir = $baseDir . '/server';
             $fileSize = filesize($metadataDir . '/' . $fileName);
             $this->assertInstanceOf(SnapshotMetadata::class, $repository->getSnapshot($version, $fileSize));
             $this->assertSame($fileSize, $loader->maxBytes[$fileName][1]);

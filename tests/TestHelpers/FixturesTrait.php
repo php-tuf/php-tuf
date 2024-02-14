@@ -39,7 +39,7 @@ trait FixturesTrait
      * @return TestStorage
      *     Memory storage containing the test data.
      */
-    protected static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client/metadata/current'): TestStorage
+    protected static function loadFixtureIntoMemory(string $fixtureName, string $path = 'client'): TestStorage
     {
         $path = static::getFixturePath($fixtureName, $path, true);
         return TestStorage::createFromDirectory($path);

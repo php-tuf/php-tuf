@@ -27,7 +27,7 @@ class VerifiedDownloadTest extends ClientTestBase
         $this->loadClientAndServerFilesFromFixture($fixture);
         $updater = $this->getUpdater();
 
-        $testFilePath = static::getFixturePath($fixture, 'server/targets/testtarget.txt', false);
+        $testFilePath = static::getFixturePath($fixture, 'targets/testtarget.txt', false);
         $testFileContents = file_get_contents($testFilePath);
         $this->assertSame($testFileContents, $updater->download('testtarget.txt')->wait()->getContents());
 
