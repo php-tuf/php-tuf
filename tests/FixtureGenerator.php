@@ -22,6 +22,7 @@ class FixtureGenerator
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
             self::threeLevelDelegation($consistent);
+            self::thresholdTwo($consistent);
         }
     }
 
@@ -310,5 +311,13 @@ class FixtureGenerator
         $fixture->createTarget('f.txt', 'f');
         $fixture->writeServer();
         $fixture->newVersion();
+    }
+
+    private static function thresholdTwo(bool $consistent): void
+    {
+        $fixture = self::init('ThresholdTwo', $consistent);
+        $fixture->timestamp->addKey(new Key);
+        $fixture->timestamp->threshold = 2;
+        $fixture->publish();
     }
 }
