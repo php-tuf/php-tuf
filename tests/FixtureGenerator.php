@@ -18,6 +18,7 @@ class FixtureGenerator
             self::publishedTwice($consistent, null);
             self::publishedTwice($consistent, 'snapshot');
             self::publishedTwice($consistent, 'timestamp');
+            self::targetsLengthNoSnapshotLength($consistent);
         }
     }
 
@@ -238,6 +239,15 @@ class FixtureGenerator
         if ($rotatedRole) {
             $fixture->$rotatedRole->addKey(new Key)->revokeKey(0);
         }
+        $fixture->writeServer();
+        $fixture->newVersion();
+    }
+
+    private static function targetsLengthNoSnapshotLength(bool $consistent): void
+    {
+        $fixture = self::init('TargetsLengthNoSnapshotLength', $consistent);
+        $fixture->timestamp->withLength = false;
+        $fixture->publish();
         $fixture->writeServer();
         $fixture->newVersion();
     }
