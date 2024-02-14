@@ -21,6 +21,7 @@ class FixtureGenerator
             self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
+            self::threeLevelDelegation($consistent);
         }
     }
 
@@ -274,6 +275,30 @@ class FixtureGenerator
         $fixture->delegate('a', 'b', $properties + [
           'terminating' => true,
         ]);
+        $fixture->createTarget('b.txt', 'b');
+        $fixture->delegate('b', 'c', $properties);
+        $fixture->createTarget('c.txt', 'c');
+        $fixture->delegate('b', 'd', $properties);
+        $fixture->createTarget('d.txt', 'd');
+        $fixture->delegate('a', 'e', $properties);
+        $fixture->createTarget('e.txt', 'e');
+        $fixture->delegate('targets', 'f', $properties);
+        $fixture->createTarget('f.txt', 'f');
+        $fixture->writeServer();
+        $fixture->newVersion();
+    }
+
+    private static function threeLevelDelegation(bool $consistent): void
+    {
+        $fixture = self::init('ThreeLevelDelegation', $consistent);
+        $fixture->publish();
+        $fixture->createTarget('targets.txt');
+        $properties = [
+          'paths' => ['*.txt'],
+        ];
+        $fixture->delegate('targets', 'a', $properties);
+        $fixture->createTarget('a.txt', 'a');
+        $fixture->delegate('a', 'b', $properties);
         $fixture->createTarget('b.txt', 'b');
         $fixture->delegate('b', 'c', $properties);
         $fixture->createTarget('c.txt', 'c');
