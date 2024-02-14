@@ -15,6 +15,9 @@ class FixtureGenerator
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
+            self::publishedTwice($consistent, null);
+            self::publishedTwice($consistent, 'snapshot');
+            self::publishedTwice($consistent, 'timestamp');
         }
     }
 
@@ -218,6 +221,23 @@ class FixtureGenerator
           'paths' => ['*.txt'],
         ]);
         $fixture->createTarget('d.txt', 'd');
+        $fixture->writeServer();
+        $fixture->newVersion();
+    }
+
+    private static function publishedTwice(bool $consistent, ?string $rotatedRole): void
+    {
+        $name = 'PublishedTwice';
+        if ($rotatedRole) {
+            $name .= "WithRotatedKeys_$rotatedRole";
+        }
+        $fixture = self::init($name, $consistent);
+        $fixture->publish();
+        $fixture->createTarget('test.txt');
+
+        if ($rotatedRole) {
+            $fixture->$rotatedRole->addKey(new Key)->revokeKey(0);
+        }
         $fixture->writeServer();
         $fixture->newVersion();
     }
