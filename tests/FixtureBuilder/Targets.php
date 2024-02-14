@@ -55,6 +55,7 @@ final class Targets extends Role
             $data['delegations']['roles'][] = $role;
         }
 
+        $data['targets'] = [];
         foreach ($this->targets as $name => $path) {
             assert(is_file($path));
 

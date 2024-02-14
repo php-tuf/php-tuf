@@ -85,7 +85,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     public function providerValidMetadata(): array
     {
-        $fixturesDir = static::getFixturePath('Delegated/consistent', 'client/metadata/current');
+        $fixturesDir = static::getFixturePath('Delegated/consistent', 'client');
         $files = glob("$fixturesDir/*.{$this->expectedType}.json");
         if (empty($files)) {
             throw new \RuntimeException('No fixtures files found for ' . $this->expectedType);
