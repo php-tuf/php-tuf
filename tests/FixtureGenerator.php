@@ -26,6 +26,7 @@ class FixtureGenerator
             self::threeLevelDelegation($consistent);
             self::thresholdTwo($consistent);
             self::thresholdTwoAttack($consistent);
+            self::topLevelLTerminating($consistent);
         }
     }
 
@@ -343,5 +344,23 @@ class FixtureGenerator
           'sig' => 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545',
         ];
         file_put_contents($timestamp_file, static::encodeJson($timestamp_data, JSON_PRETTY_PRINT));
+    }
+
+    private static function topLevelLTerminating(bool $consistent): void
+    {
+        $fixture = self::init('TopLevelTerminating', $consistent);
+        $fixture->publish();
+        $fixture->createTarget('targets.txt');
+        $fixture->delegate('targets', 'a', [
+          'paths' => ["*.txt"],
+          'terminating' => true,
+        ]);
+        $fixture->createTarget('a.txt', 'a');
+        $fixture->delegate('targets', 'b', [
+          'paths' => ["*.txt"],
+        ]);
+        $fixture->createTarget('b.txt', 'b');
+        $fixture->writeServer();
+        $fixture->newVersion();
     }
 }
