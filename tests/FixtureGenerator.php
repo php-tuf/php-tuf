@@ -17,6 +17,7 @@ class FixtureGenerator
         self::delegated();
         self::nestedDelegated();
         self::nestedDelegatedErrors();
+        self::nestedTerminatingNonDelegatingDelegation();
     }
 
     private static function attackRollback(): void
@@ -188,6 +189,36 @@ class FixtureGenerator
           ]
         ]);
         $fixture->createTarget('level_1_2_terminating_plus_1_more_unfindable.txt', 'level_2_terminating_match_terminating_path');
+        $fixture->writeServer();
+        $fixture->newVersion();
+    }
+
+    private static function nestedTerminatingNonDelegatingDelegation(): void
+    {
+        $dir = self::$baseDir . '/php/NestedTerminatingNonDelegatingDelegation/consistent';
+
+        $fixture = new Fixture($dir);
+        $fixture->root->consistentSnapshot = true;
+        $fixture->publish();
+
+        $fixture->createTarget('targets.txt');
+        $fixture->delegate('targets', 'a', [
+          'paths' => ['*.txt'],
+        ]);
+        $fixture->createTarget('a.txt', 'a');
+        $fixture->delegate('a', 'b', [
+          'paths' => ['*.txt'],
+          'terminating' => true,
+        ]);
+        $fixture->createTarget('b.txt', 'b');
+        $fixture->delegate('a', 'c', [
+          'paths' => ['*.txt'],
+        ]);
+        $fixture->createTarget('c.txt', 'c');
+        $fixture->delegate('targets', 'd', [
+          'paths' => ['*.txt'],
+        ]);
+        $fixture->createTarget('d.txt', 'd');
         $fixture->writeServer();
         $fixture->newVersion();
     }
