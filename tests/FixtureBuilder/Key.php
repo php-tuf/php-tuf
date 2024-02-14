@@ -42,13 +42,12 @@ final class Key
           'keyval' => [
             'public' => sodium_bin2hex($this->publicKey),
           ],
+          'keyid_hash_algorithms' => ['sha256', 'sha512'],
         ];
     }
 
     public function id(): string
     {
-        $key = $this->toArray();
-        $key['keyval']['private'] = '';
-        return hash('sha256', self::encodeJson($key));
+        return hash('sha256', self::encodeJson($this->toArray()));
     }
 }
