@@ -114,6 +114,8 @@ class Fixture
             assert(property_exists($role, $key));
             $role->$key = $value;
         }
+
+        $this->snapshot->addRole($role);
         return $role;
     }
 
