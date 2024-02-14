@@ -46,7 +46,7 @@ abstract class UpdaterTest extends ClientTestBase
     {
         $this->loadClientAndServerFilesFromFixture($fixtureName);
 
-        $testFilePath = static::getFixturePath($fixtureName, "server/targets/$target", false);
+        $testFilePath = static::getFixturePath($fixtureName, "targets/$target", false);
         $testFileContents = file_get_contents($testFilePath);
         self::assertNotEmpty($testFileContents);
         $this->assertSame($testFileContents, $this->getUpdater()->download($target)->wait()->getContents());

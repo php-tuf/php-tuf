@@ -124,7 +124,7 @@ class ClientTestBase extends TestCase
      */
     protected function loadClientFilesFromFixture(string $fixtureName): void
     {
-        $path = static::getFixturePath($fixtureName, 'client/metadata/current');
+        $path = static::getFixturePath($fixtureName, 'client');
         $this->clientStorage = TestStorage::createFromDirectory($path);
 
         // Remove all '*.[TYPE].json', because they are needed for the tests.
@@ -138,7 +138,8 @@ class ClientTestBase extends TestCase
             }
         }
 
-        $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
+        // @todo Restore this once all fixtures are converted to PHP.
+        // $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
     }
 
     /**

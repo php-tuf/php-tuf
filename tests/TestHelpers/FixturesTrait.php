@@ -60,7 +60,7 @@ trait FixturesTrait
      */
     protected static function getFixturePath(string $fixtureName, string $subPath = '', bool $isDir = true): string
     {
-        $realpath = realpath(__DIR__ . "/../../fixtures/$fixtureName/$subPath");
+        $realpath = realpath(__DIR__ . "/../../fixtures/php/$fixtureName/$subPath");
         Assert::assertNotEmpty($realpath);
 
         if ($isDir) {
