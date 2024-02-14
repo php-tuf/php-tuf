@@ -96,7 +96,7 @@ class Fixture
         $this->newVersion();
     }
 
-    public function delegate(string|Targets $delegator, string $name): Targets
+    public function delegate(string|Targets $delegator, string $name, array $properties = []): Targets
     {
         if ($delegator instanceof Targets) {
             $delegator = $delegator->name;
@@ -107,6 +107,10 @@ class Fixture
         $this->targets[$name] = $role;
         $this->targets[$delegator]->addDelegation($role);
 
+        foreach ($properties as $key => $value) {
+            assert(property_exists($role, $key));
+            $role->$key = $value;
+        }
         return $role;
     }
 
