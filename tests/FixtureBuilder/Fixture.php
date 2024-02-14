@@ -15,7 +15,10 @@ class Fixture
      */
     public array $targets = [];
 
-    public function __construct(protected string $baseDir, protected ?\DateTimeImmutable $expires = null)
+    public function __construct(
+      public readonly string $baseDir,
+      protected ?\DateTimeImmutable $expires = null,
+    )
     {
         $this->expires ??= new \DateTimeImmutable('+1 year');
 

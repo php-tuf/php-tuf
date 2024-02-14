@@ -39,8 +39,10 @@ abstract class Role implements \Stringable
         };
     }
 
-    public function addKey(Key $key): static
+    public function addKey(Key $key = null): static
     {
+        $key ??= new Key;
+
         assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
         $this->keys[] = $key;
         return $this;

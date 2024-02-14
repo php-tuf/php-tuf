@@ -2,11 +2,13 @@
 
 namespace Tuf\Tests;
 
+use Tuf\CanonicalJsonTrait;
 use Tuf\Tests\FixtureBuilder\Fixture;
-use Tuf\Tests\FixtureBuilder\Key;
 
 class FixtureGenerator
 {
+    use CanonicalJsonTrait;
+
     public static function generateAll(): void
     {
         foreach ([true, false] as $consistent) {
@@ -23,6 +25,7 @@ class FixtureGenerator
             self::terminatingDelegation($consistent);
             self::threeLevelDelegation($consistent);
             self::thresholdTwo($consistent);
+            self::thresholdTwoAttack($consistent);
         }
     }
 
@@ -64,8 +67,8 @@ class FixtureGenerator
 
         // From this point on, we don't write the client. This allows us to test
         // that the client is able to pick up changes from the server.
-        $fixture->targets['targets']->addKey(new Key);
-        $fixture->snapshot->addKey(new Key);
+        $fixture->targets['targets']->addKey();
+        $fixture->snapshot->addKey();
         $fixture->writeServer();
         $fixture->newVersion();
         $fixture->targets['targets']->revokeKey(-1);
@@ -86,8 +89,8 @@ class FixtureGenerator
         $fixture->createTarget('level_1_target.txt', 'unclaimed');
         $fixture->publish();
 
-        $fixture->targets['targets']->addKey(new Key);
-        $fixture->snapshot->addKey(new Key);
+        $fixture->targets['targets']->addKey();
+        $fixture->snapshot->addKey();
         $fixture->writeServer();
         $fixture->newVersion();
 
@@ -142,8 +145,8 @@ class FixtureGenerator
         $fixture->createTarget('level_1_target.txt', $unclaimed);
         $fixture->publish();
 
-        $fixture->targets['targets']->addKey(new Key);
-        $fixture->snapshot->addKey(new Key);
+        $fixture->targets['targets']->addKey();
+        $fixture->snapshot->addKey();
         $fixture->writeServer();
         $fixture->newVersion();
 
@@ -241,7 +244,7 @@ class FixtureGenerator
         $fixture->createTarget('test.txt');
 
         if ($rotatedRole) {
-            $fixture->$rotatedRole->addKey(new Key)->revokeKey(0);
+            $fixture->$rotatedRole->addKey()->revokeKey(0);
         }
         $fixture->writeServer();
         $fixture->newVersion();
@@ -316,8 +319,29 @@ class FixtureGenerator
     private static function thresholdTwo(bool $consistent): void
     {
         $fixture = self::init('ThresholdTwo', $consistent);
-        $fixture->timestamp->addKey(new Key);
+        $fixture->timestamp->addKey();
         $fixture->timestamp->threshold = 2;
         $fixture->publish();
+    }
+
+    private static function thresholdTwoAttack(bool $consistent): void
+    {
+        $fixture = self::init('ThresholdTwoAttack', $consistent);
+        $fixture->timestamp->addKey();
+        $fixture->timestamp->threshold = 2;
+        $fixture->publish();
+        $fixture->publish();
+        $fixture->writeServer();
+        $fixture->newVersion();
+        $fixture->timestamp->addKey();
+
+        $timestamp_file = $fixture->baseDir . '/server/timestamp.json';
+        $timestamp_data = file_get_contents($timestamp_file);
+        $timestamp_data = static::decodeJson($timestamp_data);
+        $timestamp_data['signatures'][1] = [
+          'keyid' => $fixture->timestamp->keys[2]->id(),
+          'sig' => 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545',
+        ];
+        file_put_contents($timestamp_file, static::encodeJson($timestamp_data, JSON_PRETTY_PRINT));
     }
 }
