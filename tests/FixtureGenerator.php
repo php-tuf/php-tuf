@@ -18,6 +18,7 @@ class FixtureGenerator
             self::publishedTwice($consistent, null);
             self::publishedTwice($consistent, 'snapshot');
             self::publishedTwice($consistent, 'timestamp');
+            self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
         }
     }
@@ -241,6 +242,13 @@ class FixtureGenerator
         }
         $fixture->writeServer();
         $fixture->newVersion();
+    }
+
+    private static function simple(bool $consistent): void
+    {
+        $fixture = self::init('Simple', $consistent);
+        $fixture->createTarget('testtarget.txt');
+        $fixture->publish();
     }
 
     private static function targetsLengthNoSnapshotLength(bool $consistent): void
