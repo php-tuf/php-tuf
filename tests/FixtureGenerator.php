@@ -20,6 +20,7 @@ class FixtureGenerator
             self::publishedTwice($consistent, 'timestamp');
             self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
+            self::terminatingDelegation($consistent);
         }
     }
 
@@ -256,6 +257,32 @@ class FixtureGenerator
         $fixture = self::init('TargetsLengthNoSnapshotLength', $consistent);
         $fixture->timestamp->withLength = false;
         $fixture->publish();
+        $fixture->writeServer();
+        $fixture->newVersion();
+    }
+
+    private static function terminatingDelegation(bool $consistent): void
+    {
+        $fixture = self::init('TerminatingDelegation', $consistent);
+        $fixture->publish();
+        $fixture->createTarget('targets.txt');
+        $properties = [
+          'paths' => ['*.txt'],
+        ];
+        $fixture->delegate('targets', 'a', $properties);
+        $fixture->createTarget('a.txt', 'a');
+        $fixture->delegate('a', 'b', $properties + [
+          'terminating' => true,
+        ]);
+        $fixture->createTarget('b.txt', 'b');
+        $fixture->delegate('b', 'c', $properties);
+        $fixture->createTarget('c.txt', 'c');
+        $fixture->delegate('b', 'd', $properties);
+        $fixture->createTarget('d.txt', 'd');
+        $fixture->delegate('a', 'e', $properties);
+        $fixture->createTarget('e.txt', 'e');
+        $fixture->delegate('targets', 'f', $properties);
+        $fixture->createTarget('f.txt', 'f');
         $fixture->writeServer();
         $fixture->newVersion();
     }
