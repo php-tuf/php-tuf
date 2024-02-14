@@ -7,25 +7,34 @@ use Tuf\Tests\FixtureBuilder\Key;
 
 class FixtureGenerator
 {
-    private static string $baseDir;
-
     public static function generateAll(): void
     {
-        self::$baseDir = realpath(__DIR__ . '/../fixtures');
-
-        self::attackRollback();
-        self::delegated();
-        self::nestedDelegated();
-        self::nestedDelegatedErrors();
-        self::nestedTerminatingNonDelegatingDelegation();
+        foreach ([true, false] as $consistent) {
+            self::attackRollback($consistent);
+            self::delegated($consistent);
+            self::nestedDelegated($consistent);
+            self::nestedDelegatedErrors($consistent);
+            self::nestedTerminatingNonDelegatingDelegation($consistent);
+        }
     }
 
-    private static function attackRollback(): void
+    private static function init(string $name, bool $consistent): Fixture
     {
-        $dir = self::$baseDir . '/php/AttackRollback/consistent';
-
+        $dir = sprintf(
+          '%s/php/%s/%s',
+          realpath(__DIR__ . '/../fixtures'),
+          $name,
+          $consistent ? 'consistent' : 'inconsistent',
+        );
         $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
+        $fixture->root->consistentSnapshot = $consistent;
+        return $fixture;
+    }
+
+    private static function attackRollback(bool $consistent): void
+    {
+        $fixture = self::init('AttackRollback', $consistent);
+
         $fixture->createTarget('testtarget.txt');
         $fixture->publish();
         // Because the client will now have newer information than the server,
@@ -34,12 +43,9 @@ class FixtureGenerator
         $fixture->writeClient();
     }
 
-    private static function delegated(): void
+    private static function delegated(bool $consistent): void
     {
-        $dir = self::$baseDir . '/php/Delegated/consistent';
-
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
+        $fixture = self::init('Delegated', $consistent);
         $fixture->createTarget('testtarget.txt');
         $fixture->publish();
 
@@ -60,12 +66,10 @@ class FixtureGenerator
         $fixture->newVersion();
     }
 
-    private static function nestedDelegated(): void
+    private static function nestedDelegated(bool $consistent): void
     {
-        $dir = self::$baseDir . '/php/NestedDelegated/consistent';
+        $fixture = self::init('NestedDelegated', $consistent);
 
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
         $fixture->createTarget('testtarget.txt');
         $fixture->publish();
 
@@ -117,12 +121,10 @@ class FixtureGenerator
         $fixture->writeServer();
     }
 
-    private static function nestedDelegatedErrors(): void
+    private static function nestedDelegatedErrors(bool $consistent): void
     {
-        $dir = self::$baseDir . '/php/NestedDelegatedErrors/consistent';
+        $fixture = self::init('NestedDelegatedErrors', $consistent);
 
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
         $fixture->createTarget('testtarget.txt');
         $fixture->publish();
 
@@ -193,12 +195,9 @@ class FixtureGenerator
         $fixture->newVersion();
     }
 
-    private static function nestedTerminatingNonDelegatingDelegation(): void
+    private static function nestedTerminatingNonDelegatingDelegation(bool $consistent): void
     {
-        $dir = self::$baseDir . '/php/NestedTerminatingNonDelegatingDelegation/consistent';
-
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
+        $fixture = self::init('NestedTerminatingNonDelegatingDelegation', $consistent);
         $fixture->publish();
 
         $fixture->createTarget('targets.txt');
