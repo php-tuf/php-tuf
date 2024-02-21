@@ -72,8 +72,8 @@ class FixtureGenerator
         $fixture->snapshot->addKey();
         $fixture->writeServer();
         $fixture->newVersion();
-        $fixture->targets['targets']->revokeKey(-1);
-        $fixture->snapshot->revokeKey(-1);
+        $fixture->targets['targets']->revokeKey(0);
+        $fixture->snapshot->revokeKey(0);
         $fixture->writeServer();
         $fixture->newVersion();
     }
