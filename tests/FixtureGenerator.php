@@ -241,6 +241,8 @@ class FixtureGenerator
             $name .= "WithRotatedKeys_$rotatedRole";
         }
         $fixture = self::init($name, $consistent);
+        $fixture->timestamp->withLength = true;
+        $fixture->snapshot->withLength = true;
         $fixture->publish();
         $fixture->createTarget('test.txt');
 
