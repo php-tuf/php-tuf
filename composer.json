@@ -49,7 +49,10 @@
             "pipenv install",
             "pipenv run python generate_fixtures.py"
         ],
-        "fixtures:php": "\\Tuf\\Tests\\FixtureGenerator::generateAll",
+        "fixtures:php": [
+            "rm -r -f ./fixtures/php",
+            "\\Tuf\\Tests\\FixtureGenerator::generateAll"
+        ],
         "phpcs": "phpcs",
         "phpcbf": "phpcbf",
         "test": "phpunit --testdox",
