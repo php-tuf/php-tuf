@@ -425,7 +425,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
-        $realPath = static::getFixturePath('Delegated/consistent', "client/metadata/current/$fixtureName.json", false);
+        $realPath = static::getFixturePath('Delegated/consistent', "client/$fixtureName.json", false);
         $data = json_decode(file_get_contents($realPath), true);
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
