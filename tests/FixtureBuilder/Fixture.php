@@ -76,11 +76,11 @@ class Fixture
         file_put_contents($path, "Contents: $name");
 
         if ($signer) {
-            if ($signer instanceof Targets) {
-                $signer = $signer->name;
+            if (is_string($signer)) {
+                $signer = $this->targets[$signer];
             }
-            assert(array_key_exists($signer, $this->targets));
-            $this->targets[$signer]->targets[$name] = $path;
+            assert(in_array($signer, $this->targets, true));
+            $signer->targets[$name] = $path;
         }
     }
 
@@ -101,14 +101,14 @@ class Fixture
 
     public function delegate(string|Targets $delegator, string $name, array $properties = []): Targets
     {
-        if ($delegator instanceof Targets) {
-            $delegator = $delegator->name;
+        if (is_string($delegator)) {
+            $delegator = $this->targets[$delegator];
         }
-        assert(array_key_exists($delegator, $this->targets));
+        assert(in_array($delegator, $this->targets, true));
 
         $role = new Targets($this->expires, [new Key], $name);
         $this->targets[$name] = $role;
-        $this->targets[$delegator]->addDelegation($role);
+        $delegator->addDelegation($role);
 
         foreach ($properties as $key => $value) {
             assert(property_exists($role, $key));
