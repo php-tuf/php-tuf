@@ -37,24 +37,26 @@ class Fixture
           ->addRole($targets);
     }
 
-    public function write(Role $role, string $dir): void
+    private function all(): array
     {
-        self::mkDir($dir);
-
-        $data = (string) $role;
-        file_put_contents($dir . '/' . $role->fileName(), $data);
-        file_put_contents($dir . '/' . $role->fileName(false), $data);
-    }
-
-    private function writeAllToDirectory(string $dir): void
-    {
-        $roles = [
+        return [
           $this->root,
           $this->timestamp,
           $this->snapshot,
           ...$this->targets,
         ];
-        array_walk($roles, fn (Role $role) => $this->write($role, $dir));
+    }
+
+    private function writeAllToDirectory(string $dir): void
+    {
+        self::mkDir($dir);
+
+        /** @var \Tuf\Tests\FixtureBuilder\Role $role */
+        foreach ($this->all() as $role) {
+            $data = (string) $role;
+            file_put_contents($dir . '/' . $role->fileName(), $data);
+            file_put_contents($dir . '/' . $role->fileName(false), $data);
+        }
     }
 
     public function writeServer(): void
@@ -91,13 +93,7 @@ class Fixture
         $this->snapshot->isChanged = true;
         $this->targets['targets']->isChanged = true;
 
-        $roles = [
-          $this->root,
-          $this->timestamp,
-          $this->snapshot,
-          ...$this->targets,
-        ];
-        foreach ($roles as $role) {
+        foreach ($this->all() as $role) {
             if ($role->isChanged) {
                 $role->version++;
             }
