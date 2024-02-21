@@ -17,16 +17,28 @@ final class Targets extends Role
      */
     private array $delegations = [];
 
-    public array $targets = [];
+    private array $targets = [];
 
     public function __construct(\DateTimeImmutable $expires, array $keys = [], public readonly string $name = 'targets')
     {
         parent::__construct($expires, $keys);
     }
 
+    public function add(string $path, ?string $name = null): self
+    {
+        assert(is_file($path));
+
+        $name ??= basename($path);
+        $this->targets[$name] = $path;
+
+        $this->isChanged = true;
+        return $this;
+    }
+
     public function addDelegation(self $role): self
     {
         $this->delegations[$role->name] = $role;
+        $this->isChanged = true;
         return $this;
     }
 

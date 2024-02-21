@@ -15,11 +15,6 @@ class Fixture
      */
     public array $targets = [];
 
-    /**
-     * @var \Tuf\Tests\FixtureBuilder\Role[]
-     */
-    private array $changedRoles = [];
-
     public function __construct(
       public readonly string $baseDir,
       protected ?\DateTimeImmutable $expires = null,
@@ -40,14 +35,6 @@ class Fixture
           ->addRole($this->timestamp)
           ->addRole($this->snapshot)
           ->addRole($targets);
-    }
-
-    private function markAsChanged(Role $role): void
-    {
-        if (in_array($role, $this->changedRoles, true)) {
-            return;
-        }
-        $this->changedRoles[] = $role;
     }
 
     public function write(Role $role, string $dir): void
@@ -93,20 +80,28 @@ class Fixture
                 $signer = $this->targets[$signer];
             }
             assert(in_array($signer, $this->targets, true));
-            $signer->targets[$name] = $path;
-            $this->markAsChanged($signer);
+            $signer->add($path);
         }
     }
 
     public function newVersion(): void
     {
-        $this->markAsChanged($this->root);
-        $this->markAsChanged($this->timestamp);
-        $this->markAsChanged($this->snapshot);
-        $this->markAsChanged($this->targets['targets']);
+        $this->root->isChanged = true;
+        $this->timestamp->isChanged = true;
+        $this->snapshot->isChanged = true;
+        $this->targets['targets']->isChanged = true;
 
-        while ($this->changedRoles) {
-            array_pop($this->changedRoles)->version++;
+        $roles = [
+          $this->root,
+          $this->timestamp,
+          $this->snapshot,
+          ...$this->targets,
+        ];
+        foreach ($roles as $role) {
+            if ($role->isChanged) {
+                $role->version++;
+            }
+            $role->isChanged = false;
         }
     }
 
@@ -127,7 +122,6 @@ class Fixture
         $role = new Targets($this->expires, [new Key], $name);
         $this->targets[$name] = $role;
         $delegator->addDelegation($role);
-        $this->markAsChanged($delegator);
 
         foreach ($properties as $key => $value) {
             assert(property_exists($role, $key));

@@ -22,6 +22,8 @@ abstract class Role implements \Stringable
 
     public int $version = 1;
 
+    public bool $isChanged = false;
+
     public function __construct(
       public \DateTimeImmutable $expires,
       private array $keys = [],
@@ -45,6 +47,8 @@ abstract class Role implements \Stringable
 
         assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
         $this->keys[] = $key;
+        $this->isChanged = true;
+
         return $this;
     }
 
@@ -53,9 +57,10 @@ abstract class Role implements \Stringable
         if ($which instanceof Key) {
             $which = array_search($which, $this->keys, true);
         }
-        if (is_int($which)) {
-            array_splice($this->keys, $which, 1);
+        if (is_int($which) && array_splice($this->keys, $which, 1)) {
+            $this->isChanged = true;
         }
+
         return $this;
     }
 
