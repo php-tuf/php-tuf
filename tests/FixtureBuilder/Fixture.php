@@ -15,6 +15,11 @@ class Fixture
      */
     public array $targets = [];
 
+    /**
+     * @var \Tuf\Tests\FixtureBuilder\Role[]
+     */
+    private array $changedRoles = [];
+
     public function __construct(
       public readonly string $baseDir,
       protected ?\DateTimeImmutable $expires = null,
@@ -35,6 +40,14 @@ class Fixture
           ->addRole($this->timestamp)
           ->addRole($this->snapshot)
           ->addRole($targets);
+    }
+
+    private function markAsChanged(Role $role): void
+    {
+        if (in_array($role, $this->changedRoles, true)) {
+            return;
+        }
+        $this->changedRoles[] = $role;
     }
 
     public function write(Role $role, string $dir): void
@@ -81,15 +94,20 @@ class Fixture
             }
             assert(in_array($signer, $this->targets, true));
             $signer->targets[$name] = $path;
+            $this->markAsChanged($signer);
         }
     }
 
     public function newVersion(): void
     {
-        $this->root->version++;
-        $this->timestamp->version++;
-        $this->snapshot->version++;
-        array_walk($this->targets, fn (Targets $role) => $role->version++);
+        $this->markAsChanged($this->root);
+        $this->markAsChanged($this->timestamp);
+        $this->markAsChanged($this->snapshot);
+        $this->markAsChanged($this->targets['targets']);
+
+        while ($this->changedRoles) {
+            array_pop($this->changedRoles)->version++;
+        }
     }
 
     public function publish(): void
