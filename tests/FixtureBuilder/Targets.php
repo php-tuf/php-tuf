@@ -19,9 +19,24 @@ final class Targets extends Role
 
     private array $targets = [];
 
-    public function __construct(\DateTimeImmutable $expires, array $keys = [], public readonly string $name = 'targets')
+    public function __construct(
+      private readonly Root|Targets $parent,
+      public readonly string $name = 'targets',
+      mixed ...$arguments,
+    ) {
+        if ($parent instanceof Root) {
+            assert($name === 'targets');
+        }
+        parent::__construct(...$arguments);
+    }
+
+    public function __set(string $property, mixed $value): void
     {
-        parent::__construct($expires, $keys);
+        parent::__set($property, $value);
+
+        if ($property === 'isDirty' && $value) {
+            $this->parent->isDirty = $value;
+        }
     }
 
     public function add(string $path, ?string $name = null): self
@@ -31,14 +46,14 @@ final class Targets extends Role
         $name ??= basename($path);
         $this->targets[$name] = $path;
 
-        $this->isChanged = true;
+        $this->isDirty = true;
         return $this;
     }
 
     public function addDelegation(self $role): self
     {
         $this->delegations[$role->name] = $role;
-        $this->isChanged = true;
+        $this->isDirty = true;
         return $this;
     }
 

@@ -22,19 +22,19 @@ class Fixture
     {
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
-        $targets = Targets::create($this->expires);
+        $this->root = new Root($this->expires, [new Key]);
+
+        $targets = new Targets($this->root, 'targets', $this->expires, [new Key]);
         $this->targets[$targets->name] = $targets;
+        $this->root->addRole($targets);
 
-        $this->snapshot = Snapshot::create($this->expires)
-          ->addRole($targets);
+        $this->snapshot = new Snapshot($this->root, $this->expires, [new Key]);
+        $this->snapshot->addRole($targets);
+        $this->root->addRole($this->snapshot);
 
-        $this->timestamp = Timestamp::create($this->expires)
-          ->setSnapshot($this->snapshot);
-
-        $this->root = Root::create($this->expires)
-          ->addRole($this->timestamp)
-          ->addRole($this->snapshot)
-          ->addRole($targets);
+        $this->timestamp = new Timestamp($this->root, $this->expires, [new Key]);
+        $this->timestamp->setSnapshot($this->snapshot);
+        $this->root->addRole($this->timestamp);
     }
 
     private function all(): array
@@ -88,16 +88,17 @@ class Fixture
 
     public function newVersion(): void
     {
-        $this->root->isChanged = true;
-        $this->timestamp->isChanged = true;
-        $this->snapshot->isChanged = true;
-        $this->targets['targets']->isChanged = true;
+        $this->root->isDirty = true;
+        $this->timestamp->isDirty = true;
+        $this->snapshot->isDirty = true;
+        $this->targets['targets']->isDirty = true;
 
+        /** @var Role $role */
         foreach ($this->all() as $role) {
-            if ($role->isChanged) {
+            if ($role->isDirty) {
                 $role->version++;
             }
-            $role->isChanged = false;
+            $role->isDirty = false;
         }
     }
 
@@ -115,7 +116,7 @@ class Fixture
         }
         assert(in_array($delegator, $this->targets, true));
 
-        $role = new Targets($this->expires, [new Key], $name);
+        $role = new Targets($delegator, $name, $this->expires, [new Key]);
         $this->targets[$name] = $role;
         $delegator->addDelegation($role);
 
