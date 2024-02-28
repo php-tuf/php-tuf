@@ -59,23 +59,23 @@ class FixtureGenerator
     {
         $fixture = self::init('Delegated', $consistent);
         $fixture->createTarget('testtarget.txt');
-        $fixture->publish();
+        $fixture->publish(true);
 
         $unclaimed = $fixture->delegate('targets', 'unclaimed');
         $unclaimed->paths = ['level_1_*.txt'];
         $fixture->createTarget('level_1_target.txt', $unclaimed);
-        $fixture->publish();
+        $fixture->publish(true);
 
         // From this point on, we don't write the client. This allows us to test
         // that the client is able to pick up changes from the server.
-        $fixture->targets['targets']->addKey();
-        $fixture->snapshot->addKey();
-        $fixture->writeServer();
-        $fixture->newVersion();
-        $fixture->targets['targets']->revokeKey(0);
-        $fixture->snapshot->revokeKey(0);
-        $fixture->writeServer();
-        $fixture->newVersion();
+        $fixture->addKey('targets');
+        $fixture->addKey('snapshot');
+        $fixture->invalidate();
+        $fixture->publish();
+        $fixture->revokeKey('targets');
+        $fixture->revokeKey('snapshot');
+        $fixture->invalidate();
+        $fixture->publish();
     }
 
     private static function nestedDelegated(bool $consistent): void

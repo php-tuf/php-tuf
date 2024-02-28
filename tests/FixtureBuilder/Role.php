@@ -13,7 +13,6 @@ use Tuf\CanonicalJsonTrait;
  * the role.
  *
  * @property Key[] $keys
- * @property bool $isDirty
  */
 abstract class Role implements \Stringable
 {
@@ -23,8 +22,6 @@ abstract class Role implements \Stringable
 
     public int $version = 1;
 
-    private bool $isDirty = false;
-
     public function __construct(
       public \DateTimeImmutable $expires,
       private array $keys = [],
@@ -33,15 +30,7 @@ abstract class Role implements \Stringable
     public function __get(string $name): mixed
     {
         return match ($name) {
-            'isDirty' => $this->isDirty,
             'keys' => $this->keys,
-        };
-    }
-
-    public function __set(string $property, mixed $value): void
-    {
-        $this->$property = match ($property) {
-            'isDirty' => $value,
         };
     }
 
@@ -51,7 +40,6 @@ abstract class Role implements \Stringable
 
         assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
         $this->keys[] = $key;
-        $this->isDirty = true;
 
         return $this;
     }
@@ -61,8 +49,8 @@ abstract class Role implements \Stringable
         if ($which instanceof Key) {
             $which = array_search($which, $this->keys, true);
         }
-        if (is_int($which) && array_splice($this->keys, $which, 1)) {
-            $this->isDirty = true;
+        if (is_int($which)) {
+            array_splice($this->keys, $which, 1);
         }
 
         return $this;

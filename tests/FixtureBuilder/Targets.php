@@ -20,23 +20,10 @@ final class Targets extends Role
     private array $targets = [];
 
     public function __construct(
-      private readonly Root|Targets $parent,
       public readonly string $name = 'targets',
       mixed ...$arguments,
     ) {
-        if ($parent instanceof Root) {
-            assert($name === 'targets');
-        }
         parent::__construct(...$arguments);
-    }
-
-    public function __set(string $property, mixed $value): void
-    {
-        parent::__set($property, $value);
-
-        if ($property === 'isDirty' && $value) {
-            $this->parent->isDirty = $value;
-        }
     }
 
     public function add(string $path, ?string $name = null): self
@@ -46,14 +33,12 @@ final class Targets extends Role
         $name ??= basename($path);
         $this->targets[$name] = $path;
 
-        $this->isDirty = true;
         return $this;
     }
 
     public function addDelegation(self $role): self
     {
         $this->delegations[$role->name] = $role;
-        $this->isDirty = true;
         return $this;
     }
 
@@ -61,6 +46,10 @@ final class Targets extends Role
     {
         $data = parent::getSigned();
 
+        $data['delegations'] = [
+          'keys' => [],
+          'roles' => [],
+        ];
         foreach ($this->delegations as $delegation) {
             $role = [
               'name' => $delegation->name,
@@ -89,9 +78,13 @@ final class Targets extends Role
             $data['targets'][$name] = [
               'hashes' => [
                 'sha256' => hash_file('sha256', $path),
+                'sha512' => hash_file('sha512', $path),
               ],
               'length' => filesize($path),
             ];
+            if ($this->name !== 'targets') {
+                $data['targets'][$name]['custom'] = [];
+            }
         }
 
         $data['_type'] = 'targets';

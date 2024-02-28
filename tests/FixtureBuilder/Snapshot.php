@@ -17,7 +17,6 @@ final class Snapshot extends MetadataAuthorityRole
     public function addRole(Targets $role): static
     {
         $this->meta[] = $role;
-        $this->isDirty = true;
         return $this;
     }
 

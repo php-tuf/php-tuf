@@ -2,6 +2,8 @@
 
 namespace Tuf\Tests\FixtureBuilder;
 
+use Symfony\Component\Filesystem\Filesystem;
+
 class Fixture
 {
     public Root $root;
@@ -15,6 +17,11 @@ class Fixture
      */
     public array $targets = [];
 
+    /**
+     * @var \Tuf\Tests\FixtureBuilder\Role[]
+     */
+    private array $dirty = [];
+
     public function __construct(
       public readonly string $baseDir,
       protected ?\DateTimeImmutable $expires = null,
@@ -24,17 +31,33 @@ class Fixture
 
         $this->root = new Root($this->expires, [new Key]);
 
-        $targets = new Targets($this->root, 'targets', $this->expires, [new Key]);
+        $targets = new Targets('targets', $this->expires, [new Key]);
         $this->targets[$targets->name] = $targets;
         $this->root->addRole($targets);
 
-        $this->snapshot = new Snapshot($this->root, $this->expires, [new Key]);
+        $this->snapshot = new Snapshot($this->expires, [new Key]);
+        $this->snapshot->withHashes = false;
         $this->snapshot->addRole($targets);
         $this->root->addRole($this->snapshot);
 
-        $this->timestamp = new Timestamp($this->root, $this->expires, [new Key]);
+        $this->timestamp = new Timestamp($this->expires, [new Key]);
         $this->timestamp->setSnapshot($this->snapshot);
         $this->root->addRole($this->timestamp);
+    }
+
+    private function markAsDirty(Role $role): void
+    {
+        if (in_array($role, $this->dirty, true)) {
+            return;
+        }
+        $this->dirty[] = $role;
+
+        if ($role instanceof Targets && $role->name !== 'targets') {
+            $this->markAsDirty($this->targets['targets']);
+        }
+        else {
+            $this->markAsDirty($this->root);
+        }
     }
 
     private function all(): array
@@ -66,7 +89,9 @@ class Fixture
 
     public function writeClient(): void
     {
-        $this->writeAllToDirectory($this->baseDir . '/client');
+        $serverDir = $this->baseDir . '/server';
+        $fs = new Filesystem();
+        $fs->mirror($serverDir, $this->baseDir . '/client');
     }
 
     public function createTarget(string $name, string|Targets|null $signer = 'targets'): void
@@ -78,35 +103,63 @@ class Fixture
         file_put_contents($path, "Contents: $name");
 
         if ($signer) {
-            if (is_string($signer)) {
-                $signer = $this->targets[$signer];
-            }
-            assert(in_array($signer, $this->targets, true));
-            $signer->add($path);
+            $this->addTarget($path, $signer);
         }
+    }
+
+    public function invalidate(): void
+    {
+        $this->markAsDirty($this->root);
+        $this->markAsDirty($this->timestamp);
+        $this->markAsDirty($this->snapshot);
+        $this->markAsDirty($this->targets['targets']);
+    }
+
+    public function addTarget(string $path, string|Targets $signer = 'targets'): void
+    {
+        assert(file_exists($path));
+
+        if (is_string($signer)) {
+            $signer = $this->targets[$signer];
+        }
+        assert(in_array($signer, $this->targets, true));
+        $signer->add($path);
+
+        $this->markAsDirty($this->snapshot);
+        $this->markAsDirty($this->targets['targets']);
+        $this->markAsDirty($this->timestamp);
+        $this->markAsDirty($signer);
+    }
+
+    public function addKey(string $role): void
+    {
+        $role = $this->targets[$role] ?? $this->$role;
+        assert($role instanceof Role);
+        $role->addKey(new Key);
+        $this->markAsDirty($role);
+    }
+
+    public function revokeKey(string $role, int $which = 0): void
+    {
+        $role = $this->targets[$role] ?? $this->$role;
+        assert($role instanceof Role);
+        $role->revokeKey($which);
+        $this->markAsDirty($role);
     }
 
     public function newVersion(): void
     {
-        $this->root->isDirty = true;
-        $this->timestamp->isDirty = true;
-        $this->snapshot->isDirty = true;
-        $this->targets['targets']->isDirty = true;
-
-        /** @var Role $role */
-        foreach ($this->all() as $role) {
-            if ($role->isDirty) {
-                $role->version++;
-            }
-            $role->isDirty = false;
-        }
     }
 
-    public function publish(): void
+    public function publish(bool $withClient = false): void
     {
         $this->writeServer();
-        $this->writeClient();
-        $this->newVersion();
+        if ($withClient) {
+            $this->writeClient();
+        }
+        while ($this->dirty) {
+            array_pop($this->dirty)->version++;
+        }
     }
 
     public function delegate(string|Targets $delegator, string $name, array $properties = []): Targets
@@ -116,7 +169,7 @@ class Fixture
         }
         assert(in_array($delegator, $this->targets, true));
 
-        $role = new Targets($delegator, $name, $this->expires, [new Key]);
+        $role = new Targets($name, $this->expires, [new Key]);
         $this->targets[$name] = $role;
         $delegator->addDelegation($role);
 
