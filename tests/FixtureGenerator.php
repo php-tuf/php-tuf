@@ -92,11 +92,11 @@ class FixtureGenerator
 
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
-        $fixture->writeServer();
+        $fixture->publish();
 
         $fixture->targets['targets']->revokeKey(-1);
         $fixture->snapshot->revokeKey(-1);
-        $fixture->writeServer();
+        $fixture->publish();
 
         # Delegate from level_1_delegation to level_2
         $level_2 = $fixture->delegate($unclaimed, 'level_2');
@@ -128,7 +128,7 @@ class FixtureGenerator
         $level_2_after_terminating_not_match_terminating_path->paths = ['level_1_2a_terminating_plus_1_more_*.txt'];
         $fixture->createTarget('level_1_2a_terminating_plus_1_more_findable.txt', $level_2_after_terminating_not_match_terminating_path);
 
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function nestedDelegatedErrors(bool $consistent): void
@@ -146,11 +146,11 @@ class FixtureGenerator
 
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
-        $fixture->writeServer();
+        $fixture->publish();
 
         $fixture->targets['targets']->revokeKey(-1);
         $fixture->snapshot->revokeKey(-1);
-        $fixture->writeServer();
+        $fixture->publish();
 
         # Delegate from level_1_delegation to level_2
         $level_2 = $fixture->delegate($unclaimed, 'level_2', [
@@ -182,7 +182,7 @@ class FixtureGenerator
         ]);
         $fixture->createTarget('level_1_2_terminating_3_target.txt', 'level_3_below_terminated');
 
-        $fixture->writeServer();
+        $fixture->publish();
 
         # Add a target that does not match the path for the delegation.
         $fixture->createTarget('level_a.txt', $unclaimed);
@@ -198,7 +198,7 @@ class FixtureGenerator
           ]
         ]);
         $fixture->createTarget('level_1_2_terminating_plus_1_more_unfindable.txt', 'level_2_terminating_match_terminating_path');
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function nestedTerminatingNonDelegatingDelegation(bool $consistent): void
@@ -224,7 +224,7 @@ class FixtureGenerator
           'paths' => ['*.txt'],
         ]);
         $fixture->createTarget('d.txt', 'd');
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function publishedTwice(bool $consistent, ?string $rotatedRole): void
@@ -242,7 +242,7 @@ class FixtureGenerator
         if ($rotatedRole) {
             $fixture->$rotatedRole->addKey()->revokeKey(0);
         }
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function simple(bool $consistent): void
@@ -257,7 +257,7 @@ class FixtureGenerator
         $fixture = self::init('TargetsLengthNoSnapshotLength', $consistent);
         $fixture->timestamp->withLength = false;
         $fixture->publish();
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function terminatingDelegation(bool $consistent): void
@@ -282,7 +282,7 @@ class FixtureGenerator
         $fixture->createTarget('e.txt', 'e');
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function threeLevelDelegation(bool $consistent): void
@@ -305,7 +305,7 @@ class FixtureGenerator
         $fixture->createTarget('e.txt', 'e');
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
-        $fixture->writeServer();
+        $fixture->publish();
     }
 
     private static function thresholdTwo(bool $consistent): void
@@ -323,7 +323,7 @@ class FixtureGenerator
         $fixture->timestamp->threshold = 2;
         $fixture->publish();
         $fixture->publish();
-        $fixture->writeServer();
+        $fixture->publish();
         $fixture->timestamp->addKey();
 
         $timestamp_file = $fixture->baseDir . '/server/timestamp.json';
@@ -350,6 +350,6 @@ class FixtureGenerator
           'paths' => ["*.txt"],
         ]);
         $fixture->createTarget('b.txt', 'b');
-        $fixture->writeServer();
+        $fixture->publish();
     }
 }

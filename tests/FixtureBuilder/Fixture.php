@@ -73,11 +73,6 @@ class Fixture
         }
     }
 
-    public function writeServer(): void
-    {
-        $this->writeAllToDirectory($this->baseDir . '/server');
-    }
-
     public function writeClient(): void
     {
         $serverDir = $this->baseDir . '/server';
@@ -140,12 +135,11 @@ class Fixture
 
     public function publish(bool $withClient = false): void
     {
-        $this->writeServer();
+        $this->markAsDirty($this->root);
+
+        $this->writeAllToDirectory($this->baseDir . '/server');
         if ($withClient) {
             $this->writeClient();
-        }
-        while ($this->dirty) {
-            array_pop($this->dirty)->version++;
         }
     }
 
