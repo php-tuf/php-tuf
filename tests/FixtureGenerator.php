@@ -93,12 +93,10 @@ class FixtureGenerator
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
         $fixture->writeServer();
-        $fixture->newVersion();
 
         $fixture->targets['targets']->revokeKey(-1);
         $fixture->snapshot->revokeKey(-1);
         $fixture->writeServer();
-        $fixture->newVersion();
 
         # Delegate from level_1_delegation to level_2
         $level_2 = $fixture->delegate($unclaimed, 'level_2');
@@ -149,12 +147,10 @@ class FixtureGenerator
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
         $fixture->writeServer();
-        $fixture->newVersion();
 
         $fixture->targets['targets']->revokeKey(-1);
         $fixture->snapshot->revokeKey(-1);
         $fixture->writeServer();
-        $fixture->newVersion();
 
         # Delegate from level_1_delegation to level_2
         $level_2 = $fixture->delegate($unclaimed, 'level_2', [
@@ -187,7 +183,6 @@ class FixtureGenerator
         $fixture->createTarget('level_1_2_terminating_3_target.txt', 'level_3_below_terminated');
 
         $fixture->writeServer();
-        $fixture->newVersion();
 
         # Add a target that does not match the path for the delegation.
         $fixture->createTarget('level_a.txt', $unclaimed);
@@ -204,7 +199,6 @@ class FixtureGenerator
         ]);
         $fixture->createTarget('level_1_2_terminating_plus_1_more_unfindable.txt', 'level_2_terminating_match_terminating_path');
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function nestedTerminatingNonDelegatingDelegation(bool $consistent): void
@@ -231,7 +225,6 @@ class FixtureGenerator
         ]);
         $fixture->createTarget('d.txt', 'd');
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function publishedTwice(bool $consistent, ?string $rotatedRole): void
@@ -250,7 +243,6 @@ class FixtureGenerator
             $fixture->$rotatedRole->addKey()->revokeKey(0);
         }
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function simple(bool $consistent): void
@@ -266,7 +258,6 @@ class FixtureGenerator
         $fixture->timestamp->withLength = false;
         $fixture->publish();
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function terminatingDelegation(bool $consistent): void
@@ -292,7 +283,6 @@ class FixtureGenerator
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function threeLevelDelegation(bool $consistent): void
@@ -316,7 +306,6 @@ class FixtureGenerator
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 
     private static function thresholdTwo(bool $consistent): void
@@ -335,7 +324,6 @@ class FixtureGenerator
         $fixture->publish();
         $fixture->publish();
         $fixture->writeServer();
-        $fixture->newVersion();
         $fixture->timestamp->addKey();
 
         $timestamp_file = $fixture->baseDir . '/server/timestamp.json';
@@ -363,6 +351,5 @@ class FixtureGenerator
         ]);
         $fixture->createTarget('b.txt', 'b');
         $fixture->writeServer();
-        $fixture->newVersion();
     }
 }

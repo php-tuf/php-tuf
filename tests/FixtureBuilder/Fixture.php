@@ -43,6 +43,8 @@ class Fixture
         $this->timestamp = new Timestamp($this->expires, [new Key]);
         $this->timestamp->setSnapshot($this->snapshot);
         $this->root->addRole($this->timestamp);
+
+        $this->invalidate();
     }
 
     private function markAsDirty(Role $role): void
@@ -60,22 +62,11 @@ class Fixture
         }
     }
 
-    private function all(): array
-    {
-        return [
-          $this->root,
-          $this->timestamp,
-          $this->snapshot,
-          ...$this->targets,
-        ];
-    }
-
     private function writeAllToDirectory(string $dir): void
     {
         self::mkDir($dir);
 
-        /** @var \Tuf\Tests\FixtureBuilder\Role $role */
-        foreach ($this->all() as $role) {
+        foreach ($this->dirty as $role) {
             $data = (string) $role;
             file_put_contents($dir . '/' . $role->fileName(), $data);
             file_put_contents($dir . '/' . $role->fileName(false), $data);
@@ -145,10 +136,6 @@ class Fixture
         assert($role instanceof Role);
         $role->revokeKey($which);
         $this->markAsDirty($role);
-    }
-
-    public function newVersion(): void
-    {
     }
 
     public function publish(bool $withClient = false): void
