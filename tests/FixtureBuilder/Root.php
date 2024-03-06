@@ -30,13 +30,12 @@ final class Root extends Role
         $data = parent::getSigned();
 
         foreach ([$this, ...$this->roles] as $role) {
-            $name = basename($role->fileName(false), '.json');
-            $data['roles'][$name]['threshold'] = $role->threshold;
+            $data['roles'][$role->name]['threshold'] = $role->threshold;
 
             foreach ($role->keys as $key) {
                 $id = $key->id();
                 $data['keys'][$id] = $key->toArray();
-                $data['roles'][$name]['keyids'][] = $id;
+                $data['roles'][$role->name]['keyids'][] = $id;
             }
         }
 

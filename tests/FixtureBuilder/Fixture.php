@@ -66,10 +66,13 @@ class Fixture
     {
         self::mkDir($dir);
 
-        foreach ($this->dirty as $role) {
+        while ($this->dirty) {
+            $role = array_pop($this->dirty);
+
             $data = (string) $role;
-            file_put_contents($dir . '/' . $role->fileName(), $data);
-            file_put_contents($dir . '/' . $role->fileName(false), $data);
+            $name = $role->name . '.' . $role::FILE_EXTENSION;
+            file_put_contents($dir . '/' . $role->version . ".$name", $data);
+            file_put_contents($dir . '/' . $name, $data);
         }
     }
 
@@ -139,9 +142,6 @@ class Fixture
         $this->writeAllToDirectory($this->baseDir . '/server');
         if ($withClient) {
             $this->writeClient();
-        }
-        while ($this->dirty) {
-            array_pop($this->dirty)->version++;
         }
     }
 

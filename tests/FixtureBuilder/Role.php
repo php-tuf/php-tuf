@@ -13,6 +13,7 @@ use Tuf\CanonicalJsonTrait;
  * the role.
  *
  * @property Key[] $keys
+ * @property string $name
  */
 abstract class Role implements \Stringable
 {
@@ -21,6 +22,8 @@ abstract class Role implements \Stringable
     public int $threshold = 1;
 
     public int $version = 1;
+
+    final public const FILE_EXTENSION = 'json';
 
     public function __construct(
       public \DateTimeImmutable $expires,
@@ -78,13 +81,5 @@ abstract class Role implements \Stringable
           'spec_version' => '1.0.0',
           'version' => $this->version,
         ];
-    }
-
-    public function fileName(bool $withVersion = true): string
-    {
-        assert(is_string($this->name));
-
-        $name = $this->name . '.json';
-        return $withVersion ? $this->version . '.' . $name : $name;
     }
 }

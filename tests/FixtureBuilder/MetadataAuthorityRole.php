@@ -17,7 +17,7 @@ abstract class MetadataAuthorityRole extends Role
         $data = parent::getSigned();
 
         foreach ($this->meta as $meta) {
-            $name = $meta->fileName(false);
+            $name = $meta->name . '.' . static::FILE_EXTENSION;
             $data['meta'][$name]['version'] = $meta->version;
 
             if ($this->withHashes || $this->withLength) {
