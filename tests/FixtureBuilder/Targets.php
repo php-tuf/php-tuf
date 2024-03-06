@@ -66,14 +66,7 @@ final class Targets extends Role
             }
             $data['delegations']['roles'][] = $role;
         }
-        $data += [
-          'delegations' => [
-            'keys' => (object) [],
-            'roles' => [],
-          ],
-        ];
 
-        $data['targets'] = [];
         foreach ($this->targets as $name => $path) {
             assert(is_file($path));
 
@@ -88,8 +81,15 @@ final class Targets extends Role
                 $data['targets'][$name]['custom'] = (object) [];
             }
         }
-
         $data['_type'] = 'targets';
+
+        $data += [
+          'delegations' => [
+            'keys' => (object) [],
+            'roles' => [],
+          ],
+          'targets' => (object) [],
+        ];
         return $data;
     }
 }

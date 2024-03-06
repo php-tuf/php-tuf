@@ -257,6 +257,7 @@ class FixtureGenerator
     {
         $fixture = self::init('TargetsLengthNoSnapshotLength', $consistent);
         $fixture->timestamp->withLength = false;
+        $fixture->snapshot->withLength = true;
         $fixture->publish(true);
         $fixture->publish();
     }
