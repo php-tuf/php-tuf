@@ -1038,7 +1038,7 @@ abstract class UpdaterTest extends ClientTestBase
             'known snapshot length' => [
                 'Simple',
                 'snapshot.json',
-                683,
+                845,
             ],
             'known targets length' => [
                 'TargetsLengthNoSnapshotLength',
