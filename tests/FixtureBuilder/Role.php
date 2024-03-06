@@ -81,7 +81,7 @@ abstract class Role implements \Stringable
     public function getSigned(): array
     {
         return [
-          'expires' => $this->expires->format(\DateTimeImmutable::ISO8601),
+          'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
           'spec_version' => '1.0.0',
           'version' => $this->version,
         ];
