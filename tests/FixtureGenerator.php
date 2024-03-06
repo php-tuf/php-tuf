@@ -4,6 +4,7 @@ namespace Tuf\Tests;
 
 use Tuf\CanonicalJsonTrait;
 use Tuf\Tests\FixtureBuilder\Fixture;
+use Tuf\Tests\FixtureBuilder\Key;
 
 class FixtureGenerator
 {
@@ -68,12 +69,12 @@ class FixtureGenerator
 
         // From this point on, we don't write the client. This allows us to test
         // that the client is able to pick up changes from the server.
-        $fixture->addKey('targets');
-        $fixture->addKey('snapshot');
+        $fixture->targets['targets']->addKey();
+        $fixture->snapshot->addKey();
         $fixture->invalidate();
         $fixture->publish();
-        $fixture->revokeKey('targets');
-        $fixture->revokeKey('snapshot');
+        $fixture->targets['targets']->revokeKey(0);
+        $fixture->snapshot->revokeKey(0);
         $fixture->invalidate();
         $fixture->publish();
     }

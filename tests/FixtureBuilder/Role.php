@@ -21,7 +21,9 @@ abstract class Role implements \Stringable
 
     public int $threshold = 1;
 
-    public int $version = 1;
+    public int $version = 0;
+
+    public bool $isDirty = false;
 
     final public const FILE_EXTENSION = 'json';
 

@@ -17,11 +17,6 @@ class Fixture
      */
     public array $targets = [];
 
-    /**
-     * @var \Tuf\Tests\FixtureBuilder\Role[]
-     */
-    private array $dirty = [];
-
     public function __construct(
       public readonly string $baseDir,
       protected ?\DateTimeImmutable $expires = null,
@@ -49,16 +44,10 @@ class Fixture
 
     private function markAsDirty(Role $role): void
     {
-        if (in_array($role, $this->dirty, true)) {
-            return;
-        }
-        $this->dirty[] = $role;
+        $role->isDirty = true;
 
         if ($role instanceof Targets && $role->name !== 'targets') {
-            $this->markAsDirty($this->targets['targets']);
-        }
-        else {
-            $this->markAsDirty($this->root);
+            $this->targets['targets']->isDirty = true;
         }
     }
 
@@ -66,13 +55,24 @@ class Fixture
     {
         self::mkDir($dir);
 
-        while ($this->dirty) {
-            $role = array_pop($this->dirty);
+        $roles = [
+          ...array_slice($this->targets, 1),
+          $this->root,
+          $this->targets['targets'],
+          $this->snapshot,
+          $this->timestamp,
+        ];
+        $roles = array_filter($roles, fn (Role $role) => $role->isDirty);
+
+        foreach ($roles as $role) {
+            $role->version++;
 
             $data = (string) $role;
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents($dir . '/' . $role->version . ".$name", $data);
             file_put_contents($dir . '/' . $name, $data);
+
+            $role->isDirty = false;
         }
     }
 
@@ -120,22 +120,6 @@ class Fixture
         $this->markAsDirty($signer);
     }
 
-    public function addKey(string $role): void
-    {
-        $role = $this->targets[$role] ?? $this->$role;
-        assert($role instanceof Role);
-        $role->addKey(new Key);
-        $this->markAsDirty($role);
-    }
-
-    public function revokeKey(string $role, int $which = 0): void
-    {
-        $role = $this->targets[$role] ?? $this->$role;
-        assert($role instanceof Role);
-        $role->revokeKey($which);
-        $this->markAsDirty($role);
-    }
-
     public function publish(bool $withClient = false): void
     {
         $this->markAsDirty($this->root);
@@ -162,6 +146,7 @@ class Fixture
         }
 
         $this->snapshot->addRole($role);
+        $this->markAsDirty($this->snapshot);
         return $role;
     }
 
