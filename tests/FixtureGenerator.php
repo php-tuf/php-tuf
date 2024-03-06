@@ -249,6 +249,7 @@ class FixtureGenerator
     private static function simple(bool $consistent): void
     {
         $fixture = self::init('Simple', $consistent);
+        $fixture->snapshot->withHashes = true;
         $fixture->createTarget('testtarget.txt');
         $fixture->publish(true);
     }
