@@ -55,7 +55,7 @@ trait CanonicalJsonTrait
      */
     private static function sortKeys(array &$data): void
     {
-        if (!ksort($data, SORT_STRING)) {
+        if (!array_is_list($data) && !ksort($data, SORT_STRING)) {
             throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
         }
 
