@@ -51,6 +51,7 @@ class Fixture
         }
         else {
             $this->root->isDirty = true;
+            $this->timestamp->isDirty = true;
         }
     }
 
