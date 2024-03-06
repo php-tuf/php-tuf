@@ -46,10 +46,6 @@ final class Targets extends Role
     {
         $data = parent::getSigned();
 
-        $data['delegations'] = [
-          'keys' => [],
-          'roles' => [],
-        ];
         foreach ($this->delegations as $delegation) {
             $role = [
               'name' => $delegation->name,
@@ -70,6 +66,12 @@ final class Targets extends Role
             }
             $data['delegations']['roles'][] = $role;
         }
+        $data += [
+          'delegations' => [
+            'keys' => (object) [],
+            'roles' => [],
+          ],
+        ];
 
         $data['targets'] = [];
         foreach ($this->targets as $name => $path) {
