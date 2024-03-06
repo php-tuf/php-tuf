@@ -67,6 +67,7 @@ class FixtureGenerator
     private static function delegated(bool $consistent): void
     {
         $fixture = self::init('Delegated', $consistent);
+        $fixture->timestamp->withLength = false;
         $fixture->createTarget('testtarget.txt');
         $fixture->publish(true);
 
