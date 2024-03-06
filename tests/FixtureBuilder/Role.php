@@ -25,6 +25,8 @@ abstract class Role implements \Stringable
 
     public bool $isDirty = false;
 
+    protected array $revokedKeys = [];
+
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
@@ -56,7 +58,7 @@ abstract class Role implements \Stringable
             $which = array_search($which, $this->keys, true);
         }
         if (is_int($which)) {
-            array_splice($this->keys, $which, 1);
+            array_push($this->revokedKeys, ...array_slice($this->keys, $which, 1));
         }
 
         $this->isDirty = true;

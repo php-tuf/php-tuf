@@ -33,6 +33,9 @@ final class Root extends Role
             $data['roles'][$role->name]['threshold'] = $role->threshold;
 
             foreach ($role->keys as $key) {
+                if (in_array($key, $role->revokedKeys, true)) {
+                    continue;
+                }
                 $id = $key->id();
                 $data['keys'][$id] = $key->toArray();
                 $data['roles'][$role->name]['keyids'][] = $id;
