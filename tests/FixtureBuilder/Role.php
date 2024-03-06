@@ -46,6 +46,7 @@ abstract class Role implements \Stringable
         assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
         $this->keys[] = $key;
 
+        $this->isDirty = true;
         return $this;
     }
 
@@ -58,6 +59,7 @@ abstract class Role implements \Stringable
             array_splice($this->keys, $which, 1);
         }
 
+        $this->isDirty = true;
         return $this;
     }
 
