@@ -2,6 +2,7 @@
 
 namespace Tuf\Tests;
 
+use Symfony\Component\Filesystem\Filesystem;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Tests\FixtureBuilder\Fixture;
 use Tuf\Tests\FixtureBuilder\Key;
@@ -49,11 +50,18 @@ class FixtureGenerator
         $fixture = self::init('AttackRollback', $consistent);
 
         $fixture->createTarget('testtarget.txt');
-        $fixture->publish();
+        $fixture->publish(true);
+
+        $fs = new Filesystem();
+        $fs->rename($fixture->baseDir . '/server', $fixture->baseDir . '/server_backup');
+
         // Because the client will now have newer information than the server,
         // TUF will consider this a rollback attack.
         $fixture->createTarget('testtarget2.txt');
-        $fixture->writeClient();
+        $fixture->publish(true);
+
+        $fs->remove($fixture->baseDir . '/server');
+        $fs->rename($fixture->baseDir . '/server_backup', $fixture->baseDir . '/server');
     }
 
     private static function delegated(bool $consistent): void
