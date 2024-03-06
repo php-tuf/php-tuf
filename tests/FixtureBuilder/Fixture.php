@@ -32,11 +32,11 @@ class Fixture
 
         $this->snapshot = new Snapshot($this->expires, [new Key]);
         $this->snapshot->withHashes = false;
+        $this->snapshot->withLength = false;
         $this->snapshot->addRole($targets);
         $this->root->addRole($this->snapshot);
 
         $this->timestamp = new Timestamp($this->expires, [new Key]);
-        $this->timestamp->withLength = true;
         $this->timestamp->setSnapshot($this->snapshot);
         $this->root->addRole($this->timestamp);
 

@@ -10,7 +10,7 @@ abstract class MetadataAuthorityRole extends Role
 
     public bool $withHashes = true;
 
-    public bool $withLength = false;
+    public bool $withLength = true;
 
     public function getSigned(): array
     {
