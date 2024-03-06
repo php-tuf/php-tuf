@@ -83,7 +83,7 @@ final class Targets extends Role
               'length' => filesize($path),
             ];
             if ($this->name !== 'targets') {
-                $data['targets'][$name]['custom'] = [];
+                $data['targets'][$name]['custom'] = (object) [];
             }
         }
 
