@@ -84,12 +84,12 @@ class FixtureGenerator
         $fixture = self::init('NestedDelegated', $consistent);
 
         $fixture->createTarget('testtarget.txt');
-        $fixture->publish();
+        $fixture->publish(true);
 
         $unclaimed = $fixture->delegate('targets', 'unclaimed');
         $unclaimed->paths = ['level_1_*.txt'];
         $fixture->createTarget('level_1_target.txt', 'unclaimed');
-        $fixture->publish();
+        $fixture->publish(true);
 
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
@@ -137,13 +137,13 @@ class FixtureGenerator
         $fixture = self::init('NestedDelegatedErrors', $consistent);
 
         $fixture->createTarget('testtarget.txt');
-        $fixture->publish();
+        $fixture->publish(true);
 
         $unclaimed = $fixture->delegate('targets', 'unclaimed', [
           'paths' => ['level_1_*.txt'],
         ]);
         $fixture->createTarget('level_1_target.txt', $unclaimed);
-        $fixture->publish();
+        $fixture->publish(true);
 
         $fixture->targets['targets']->addKey();
         $fixture->snapshot->addKey();
@@ -205,7 +205,7 @@ class FixtureGenerator
     private static function nestedTerminatingNonDelegatingDelegation(bool $consistent): void
     {
         $fixture = self::init('NestedTerminatingNonDelegatingDelegation', $consistent);
-        $fixture->publish();
+        $fixture->publish(true);
 
         $fixture->createTarget('targets.txt');
         $fixture->delegate('targets', 'a', [
@@ -237,7 +237,7 @@ class FixtureGenerator
         $fixture = self::init($name, $consistent);
         $fixture->timestamp->withLength = true;
         $fixture->snapshot->withLength = true;
-        $fixture->publish();
+        $fixture->publish(true);
         $fixture->createTarget('test.txt');
 
         if ($rotatedRole) {
@@ -250,21 +250,21 @@ class FixtureGenerator
     {
         $fixture = self::init('Simple', $consistent);
         $fixture->createTarget('testtarget.txt');
-        $fixture->publish();
+        $fixture->publish(true);
     }
 
     private static function targetsLengthNoSnapshotLength(bool $consistent): void
     {
         $fixture = self::init('TargetsLengthNoSnapshotLength', $consistent);
         $fixture->timestamp->withLength = false;
-        $fixture->publish();
+        $fixture->publish(true);
         $fixture->publish();
     }
 
     private static function terminatingDelegation(bool $consistent): void
     {
         $fixture = self::init('TerminatingDelegation', $consistent);
-        $fixture->publish();
+        $fixture->publish(true);
         $fixture->createTarget('targets.txt');
         $properties = [
           'paths' => ['*.txt'],
@@ -289,7 +289,7 @@ class FixtureGenerator
     private static function threeLevelDelegation(bool $consistent): void
     {
         $fixture = self::init('ThreeLevelDelegation', $consistent);
-        $fixture->publish();
+        $fixture->publish(true);
         $fixture->createTarget('targets.txt');
         $properties = [
           'paths' => ['*.txt'],
@@ -314,7 +314,7 @@ class FixtureGenerator
         $fixture = self::init('ThresholdTwo', $consistent);
         $fixture->timestamp->addKey();
         $fixture->timestamp->threshold = 2;
-        $fixture->publish();
+        $fixture->publish(true);
     }
 
     private static function thresholdTwoAttack(bool $consistent): void
@@ -340,7 +340,7 @@ class FixtureGenerator
     private static function topLevelLTerminating(bool $consistent): void
     {
         $fixture = self::init('TopLevelTerminating', $consistent);
-        $fixture->publish();
+        $fixture->publish(true);
         $fixture->createTarget('targets.txt');
         $fixture->delegate('targets', 'a', [
           'paths' => ["*.txt"],
