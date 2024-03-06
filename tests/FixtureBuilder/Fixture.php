@@ -36,6 +36,7 @@ class Fixture
         $this->root->addRole($this->snapshot);
 
         $this->timestamp = new Timestamp($this->expires, [new Key]);
+        $this->timestamp->withLength = true;
         $this->timestamp->setSnapshot($this->snapshot);
         $this->root->addRole($this->timestamp);
 
