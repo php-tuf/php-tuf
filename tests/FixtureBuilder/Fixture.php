@@ -49,6 +49,9 @@ class Fixture
         if ($role instanceof Targets && $role->name !== 'targets') {
             $this->targets['targets']->isDirty = true;
         }
+        else {
+            $this->root->isDirty = true;
+        }
     }
 
     private function writeAllToDirectory(string $dir): void
