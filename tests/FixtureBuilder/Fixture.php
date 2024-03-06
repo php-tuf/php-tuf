@@ -86,7 +86,10 @@ class Fixture
     {
         $serverDir = $this->baseDir . '/server';
         $fs = new Filesystem();
-        $fs->mirror($serverDir, $this->baseDir . '/client');
+        $fs->mirror($serverDir, $this->baseDir . '/client', options: [
+          'override' => true,
+          'delete' => true,
+        ]);
     }
 
     public function createTarget(string $name, string|Targets|null $signer = 'targets'): void
