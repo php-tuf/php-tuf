@@ -1043,7 +1043,7 @@ abstract class UpdaterTest extends ClientTestBase
             'known targets length' => [
                 'TargetsLengthNoSnapshotLength',
                 'targets.json',
-                441,
+                543,
             ],
         ];
     }
