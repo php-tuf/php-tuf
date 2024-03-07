@@ -86,7 +86,7 @@ abstract class Payload implements \Stringable
         $this->markAsDirty();
     }
 
-    public function __toString(): string
+    final public function __toString(): string
     {
         $payload = $this->toArray();
 
@@ -100,7 +100,7 @@ abstract class Payload implements \Stringable
         return self::encodeJson($data, JSON_PRETTY_PRINT);
     }
 
-    public function toArray(): array
+    protected function toArray(): array
     {
         return [
           'expires' => $this->expires->format('Y-m-d\TH:i:sp'),

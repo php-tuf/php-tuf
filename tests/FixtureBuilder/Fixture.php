@@ -41,7 +41,9 @@ class Fixture
     {
         self::mkDir($dir);
 
-        $this->root->markAsDirty();
+        if ($this->root->consistentSnapshot) {
+            $this->root->markAsDirty();
+        }
 
         $roles = [
           ...$this->targets,
