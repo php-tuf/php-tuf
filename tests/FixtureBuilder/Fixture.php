@@ -41,12 +41,15 @@ class Fixture
     {
         self::mkDir($dir);
 
+        $this->root->isDirty = true;
+
         $roles = [
           ...$this->targets,
           $this->snapshot,
           $this->timestamp,
           $this->root,
         ];
+        $roles = array_filter($roles, fn (Payload $role) => $role->isDirty);
 
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
@@ -54,10 +57,8 @@ class Fixture
             copy("$dir/$name", "$dir/$role->version.$name");
         }
         foreach ($roles as $role) {
-            if ($role->isDirty) {
-                $role->isDirty = false;
-                $role->version++;
-            }
+            $role->isDirty = false;
+            $role->version++;
         }
     }
 
