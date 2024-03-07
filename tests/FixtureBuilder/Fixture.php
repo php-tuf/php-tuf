@@ -51,14 +51,13 @@ class Fixture
         $roles = array_filter($roles, fn (Payload $role) => $role->isDirty);
 
         foreach ($roles as $role) {
-            $role->version++;
-
             $data = (string) $role;
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents($dir . '/' . $role->version . ".$name", $data);
             file_put_contents($dir . '/' . $name, $data);
 
             $role->isDirty = false;
+            $role->version++;
         }
     }
 
