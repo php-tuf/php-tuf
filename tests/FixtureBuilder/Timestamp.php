@@ -6,16 +6,16 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Timestamp extends MetadataAuthorityPayload
 {
-    public function __construct(Root $signer, mixed ...$arguments)
+    public function __construct(Root $keyRing, mixed ...$arguments)
     {
-        parent::__construct($signer, 'timestamp', ...$arguments);
+        parent::__construct('timestamp', $keyRing, $keyRing, ...$arguments);
     }
 
-    protected function addPayload(Payload $payload): void
+    protected function watch(Payload $payload): void
     {
         assert($payload instanceof Snapshot);
 
         $this->payloads = [];
-        parent::addPayload($payload);
+        parent::watch($payload);
     }
 }

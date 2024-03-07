@@ -10,7 +10,7 @@ final class Root extends Payload
 
     public function __construct(mixed ...$arguments)
     {
-        parent::__construct(null, 'root', ...$arguments);
+        parent::__construct('root', null, null, ...$arguments);
     }
 
     public function toArray(): array

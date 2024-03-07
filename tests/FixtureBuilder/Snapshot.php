@@ -6,16 +6,14 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Snapshot extends MetadataAuthorityPayload
 {
-    public function __construct(Root $signer, Timestamp $snapshot, mixed ...$arguments)
+    public function __construct(Root $keyRing, Timestamp $parent, mixed ...$arguments)
     {
-        parent::__construct($signer, 'snapshot', ...$arguments);
-
-        $snapshot->addPayload($this);
+        parent::__construct('snapshot', $keyRing, $parent, ...$arguments);
     }
 
-    public function addPayload(Payload $payload): void
+    public function watch(Payload $payload): void
     {
         assert($payload instanceof Targets);
-        parent::addPayload($payload);
+        parent::watch($payload);
     }
 }

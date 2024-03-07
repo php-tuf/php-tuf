@@ -15,17 +15,15 @@ final class Targets extends Payload
     private array $targets = [];
 
     public function __construct(
-      Root|self $signer,
-      Snapshot $snapshot,
+      Root|self $keyRing,
+      Snapshot $parent,
       string $name = 'targets',
       mixed ...$arguments,
     ) {
-        if ($signer instanceof Root) {
+        if ($keyRing instanceof Root) {
             assert($name === 'targets');
         }
-        parent::__construct($signer, $name, ...$arguments);
-        $signer->addPayload($this);
-        $snapshot->addPayload($this);
+        parent::__construct($name, $keyRing, $parent, ...$arguments);
     }
 
     public function add(string $path, ?string $name = null): void

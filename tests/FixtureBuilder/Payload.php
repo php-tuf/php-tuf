@@ -25,11 +25,15 @@ abstract class Payload implements \Stringable
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
-      protected readonly ?Payload $signer,
       public readonly string $name,
+      protected readonly ?Payload $keyRing,
+      protected readonly ?Payload $parent,
       public \DateTimeImmutable $expires,
       protected array $signingKeys = [],
-    ) {}
+    ) {
+        $keyRing?->watch($this);
+        $parent?->watch($this);
+    }
 
     public function addKey(Key $key = null): void
     {
@@ -39,8 +43,8 @@ abstract class Payload implements \Stringable
         $this->signingKeys[] = $key;
 
         $this->isDirty = true;
-        if ($this->signer) {
-            $this->signer->isDirty = true;
+        if ($this->keyRing) {
+            $this->keyRing->isDirty = true;
         }
     }
 
@@ -49,12 +53,12 @@ abstract class Payload implements \Stringable
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
         $this->isDirty = true;
-        if ($this->signer) {
-            $this->signer->isDirty = true;
+        if ($this->keyRing) {
+            $this->keyRing->isDirty = true;
         }
     }
 
-    protected function addPayload(Payload $payload): void
+    protected function watch(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
         $this->isDirty = true;
