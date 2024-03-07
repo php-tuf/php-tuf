@@ -48,6 +48,8 @@ final class Targets extends Payload
     {
         $data = parent::getSigned();
 
+        $data['_type'] = 'targets';
+
         /** @var self $delegation */
         foreach ($this->payloads as $delegation) {
             $role = [
@@ -84,7 +86,6 @@ final class Targets extends Payload
                 $data['targets'][$name]['custom'] = (object) [];
             }
         }
-        $data['_type'] = 'targets';
 
         $data += [
           'delegations' => [

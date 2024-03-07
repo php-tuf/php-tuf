@@ -6,8 +6,6 @@ namespace Tuf\Tests\FixtureBuilder;
 
 abstract class MetadataAuthorityPayload extends Payload
 {
-    protected array $meta = [];
-
     public bool $withHashes = true;
 
     public bool $withLength = true;
@@ -16,21 +14,21 @@ abstract class MetadataAuthorityPayload extends Payload
     {
         $data = parent::getSigned();
 
-        foreach ($this->meta as $meta) {
-            $name = $meta->name . '.' . static::FILE_EXTENSION;
-            $data['meta'][$name]['version'] = $meta->version;
+        foreach ($this->payloads as $name => $payload) {
+            $name .= '.' . static::FILE_EXTENSION;
+            $data['meta'][$name]['version'] = $payload->version;
 
             if ($this->withHashes || $this->withLength) {
-                $meta = (string) $meta;
+                $payload = (string) $payload;
             }
             if ($this->withHashes) {
                 $data['meta'][$name]['hashes'] = [
-                  'sha256' => hash('sha256', $meta),
-                  'sha512' => hash('sha512', $meta),
+                  'sha256' => hash('sha256', $payload),
+                  'sha512' => hash('sha512', $payload),
                 ];
             }
             if ($this->withLength) {
-                $data['meta'][$name]['length'] = mb_strlen($meta);
+                $data['meta'][$name]['length'] = mb_strlen($payload);
             }
         }
         return $data;

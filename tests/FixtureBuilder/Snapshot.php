@@ -18,12 +18,4 @@ final class Snapshot extends MetadataAuthorityPayload
         assert($payload instanceof Targets);
         parent::addPayload($payload);
     }
-
-    public function getSigned(): array
-    {
-        $data = parent::getSigned();
-
-        $data['_type'] = 'snapshot';
-        return $data;
-    }
 }

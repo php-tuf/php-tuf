@@ -16,12 +16,4 @@ final class Timestamp extends MetadataAuthorityPayload
         assert($payload instanceof Snapshot);
         $this->payloads = [$payload];
     }
-
-    public function getSigned(): array
-    {
-        $data = parent::getSigned();
-
-        $data['_type'] = 'timestamp';
-        return $data;
-    }
 }

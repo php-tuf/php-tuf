@@ -31,7 +31,6 @@ final class Root extends Payload
         if (is_bool($this->consistentSnapshot)) {
             $data['consistent_snapshot'] = $this->consistentSnapshot;
         }
-        $data['_type'] = 'root';
 
         return $data;
     }

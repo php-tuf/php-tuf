@@ -83,6 +83,7 @@ abstract class Payload implements \Stringable
           'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
           'spec_version' => '1.0.0',
           'version' => $this->version,
+          '_type' => $this->name,
         ];
     }
 }
