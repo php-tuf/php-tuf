@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
-final class Targets extends Role
+final class Targets extends Payload
 {
     public ?array $paths = null;
 
@@ -59,7 +59,7 @@ final class Targets extends Role
                 $role['path_hash_prefixes'] = $delegation->pathHashPrefixes;
             }
 
-            foreach ($delegation->keys as $key) {
+            foreach ($delegation->signingKeys as $key) {
                 $id = $key->id();
                 $data['delegations']['keys'][$id] = $key->toArray();
                 $role['keyids'][] = $id;

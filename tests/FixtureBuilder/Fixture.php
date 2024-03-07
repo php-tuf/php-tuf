@@ -42,7 +42,7 @@ class Fixture
         $this->invalidate();
     }
 
-    private function markAsDirty(Role $role): void
+    private function markAsDirty(Payload $role): void
     {
         $role->isDirty = true;
 
@@ -66,7 +66,7 @@ class Fixture
           $this->snapshot,
           $this->timestamp,
         ];
-        $roles = array_filter($roles, fn (Role $role) => $role->isDirty);
+        $roles = array_filter($roles, fn (Payload $role) => $role->isDirty);
 
         foreach ($roles as $role) {
             $role->version++;

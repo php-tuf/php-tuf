@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
-abstract class MetadataAuthorityRole extends Role
+abstract class MetadataAuthorityPayload extends Payload
 {
     protected array $meta = [];
 

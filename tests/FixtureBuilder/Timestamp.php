@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
-final class Timestamp extends MetadataAuthorityRole
+final class Timestamp extends MetadataAuthorityPayload
 {
     public function __construct(private readonly Root $signer, Snapshot $snapshot, mixed ...$arguments)
     {
@@ -16,7 +16,6 @@ final class Timestamp extends MetadataAuthorityRole
     {
         return match ($name) {
             'name' => 'timestamp',
-            default => parent::__get($name),
         };
     }
 

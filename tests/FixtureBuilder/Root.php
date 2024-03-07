@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
-final class Root extends Role
+final class Root extends Payload
 {
     public ?bool $consistentSnapshot = null;
 
-    private array $roles = [];
+    private array $payloads = [];
 
     public function __get(string $name): mixed
     {
         return match ($name) {
             'name' => 'root',
-            default => parent::__get($name),
         };
     }
 
@@ -23,7 +22,7 @@ final class Root extends Role
         if ($role instanceof Targets) {
             assert($role->name === 'targets');
         }
-        $this->roles[$role->name] = $role;
+        $this->payloads[$role->name] = $role;
         return $this;
     }
 
@@ -31,13 +30,11 @@ final class Root extends Role
     {
         $data = parent::getSigned();
 
-        foreach ([$this, ...$this->roles] as $role) {
+        /** @var Payload $role */
+        foreach ([$this, ...$this->payloads] as $role) {
             $data['roles'][$role->name]['threshold'] = $role->threshold;
 
-            foreach ($role->keys as $key) {
-                if (in_array($key, $role->revokedKeys, true)) {
-                    continue;
-                }
+            foreach ($role->signingKeys as $key) {
                 $id = $key->id();
                 $data['keys'][$id] = $key->toArray();
                 $data['roles'][$role->name]['keyids'][] = $id;

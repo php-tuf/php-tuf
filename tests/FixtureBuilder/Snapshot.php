@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
-final class Snapshot extends MetadataAuthorityRole
+final class Snapshot extends MetadataAuthorityPayload
 {
     public function __construct(private readonly Root $signer, mixed ...$arguments)
     {
@@ -15,7 +15,6 @@ final class Snapshot extends MetadataAuthorityRole
     {
         return match ($name) {
             'name' => 'snapshot',
-            default => parent::__get($name),
         };
     }
 

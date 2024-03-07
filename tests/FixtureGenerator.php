@@ -339,11 +339,15 @@ class FixtureGenerator
         $fixture->publish();
         $fixture->timestamp->addKey();
 
+        $reflector = new \ReflectionObject($fixture->timestamp);
+        $property = $reflector->getProperty('signingKeys');
+        $keys = $property->getValue($fixture->timestamp);
+
         $timestamp_file = $fixture->baseDir . '/server/timestamp.json';
         $timestamp_data = file_get_contents($timestamp_file);
         $timestamp_data = static::decodeJson($timestamp_data);
         $timestamp_data['signatures'][1] = [
-          'keyid' => $fixture->timestamp->keys[2]->id(),
+          'keyid' => $keys[2]->id(),
           'sig' => 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545',
         ];
         file_put_contents($timestamp_file, static::encodeJson($timestamp_data, JSON_PRETTY_PRINT));

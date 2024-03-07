@@ -12,10 +12,9 @@ use Tuf\CanonicalJsonTrait;
  * When cast to a string, this will be the canonical JSON representation of
  * the role.
  *
- * @property Key[] $keys
  * @property string $name
  */
-abstract class Role implements \Stringable
+abstract class Payload implements \Stringable
 {
     use CanonicalJsonTrait;
 
@@ -25,28 +24,21 @@ abstract class Role implements \Stringable
 
     public bool $isDirty = false;
 
-    protected array $revokedKeys = [];
+    private array $revokedKeys = [];
 
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
       public \DateTimeImmutable $expires,
-      private array $keys = [],
+      protected array $signingKeys = [],
     ) {}
-
-    public function __get(string $name): mixed
-    {
-        return match ($name) {
-            'keys' => $this->keys,
-        };
-    }
 
     public function addKey(Key $key = null): static
     {
         $key ??= new Key;
 
-        assert(! in_array($key, $this->keys, true), 'A role cannot have the same key twice.');
-        $this->keys[] = $key;
+        assert(! in_array($key, $this->signingKeys, true), 'A role cannot have the same key twice.');
+        $this->signingKeys[] = $key;
 
         $this->isDirty = true;
         return $this;
@@ -55,10 +47,10 @@ abstract class Role implements \Stringable
     public function revokeKey(Key|int $which): static
     {
         if ($which instanceof Key) {
-            $which = array_search($which, $this->keys, true);
+            $which = array_search($which, $this->signingKeys, true);
         }
         if (is_int($which)) {
-            array_push($this->revokedKeys, ...array_slice($this->keys, $which, 1));
+            array_push($this->revokedKeys, ...array_slice($this->signingKeys, $which, 1));
         }
 
         $this->isDirty = true;
@@ -75,7 +67,10 @@ abstract class Role implements \Stringable
         $data = $this->getSigned();
 
         return [
-          'signatures' => array_map(fn (Key $key) => $key->sign($data), $this->keys),
+          'signatures' => array_map(fn (Key $key) => $key->sign($data), [
+            ...$this->signingKeys,
+            ...$this->revokedKeys,
+          ]),
           'signed' => $data,
         ];
     }
