@@ -38,9 +38,9 @@ final class Targets extends Payload
         $this->isDirty = true;
     }
 
-    public function getSigned(): array
+    public function toArray(): array
     {
-        $data = parent::getSigned();
+        $data = parent::toArray();
 
         $data['_type'] = 'targets';
 

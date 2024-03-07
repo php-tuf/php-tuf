@@ -10,9 +10,9 @@ abstract class MetadataAuthorityPayload extends Payload
 
     public bool $withLength = true;
 
-    public function getSigned(): array
+    public function toArray(): array
     {
-        $data = parent::getSigned();
+        $data = parent::toArray();
 
         foreach ($this->payloads as $name => $payload) {
             $name .= '.' . static::FILE_EXTENSION;

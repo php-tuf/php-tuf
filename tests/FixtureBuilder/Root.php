@@ -13,9 +13,9 @@ final class Root extends Payload
         parent::__construct(null, 'root', ...$arguments);
     }
 
-    public function getSigned(): array
+    public function toArray(): array
     {
-        $data = parent::getSigned();
+        $data = parent::toArray();
 
         /** @var Payload $role */
         foreach ([$this, ...$this->payloads] as $role) {

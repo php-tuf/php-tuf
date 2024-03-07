@@ -62,23 +62,19 @@ abstract class Payload implements \Stringable
 
     public function __toString(): string
     {
-        return self::encodeJson($this->toArray(), JSON_PRETTY_PRINT);
-    }
+        $payload = $this->toArray();
 
-    public function toArray(): array
-    {
-        $data = $this->getSigned();
-
-        return [
-          'signatures' => array_map(fn (Key $key) => $key->sign($data), [
+        $data = [
+          'signatures' => array_map(fn (Key $key) => $key->sign($payload), [
             ...$this->signingKeys,
             ...$this->revokedKeys,
           ]),
-          'signed' => $data,
+          'signed' => $payload,
         ];
+        return self::encodeJson($data, JSON_PRETTY_PRINT);
     }
 
-    public function getSigned(): array
+    public function toArray(): array
     {
         return [
           'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
