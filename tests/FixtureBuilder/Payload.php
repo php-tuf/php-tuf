@@ -64,7 +64,7 @@ abstract class Payload implements \Stringable
         $this->version++;
     }
 
-    final public function addKey(): void
+    public function addKey(): void
     {
         $this->signingKeys[] = new Key;
 
@@ -72,7 +72,7 @@ abstract class Payload implements \Stringable
         $this->keyRing?->markAsDirty();
     }
 
-    final public function revokeKey(int $which): void
+    public function revokeKey(int $which): void
     {
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 

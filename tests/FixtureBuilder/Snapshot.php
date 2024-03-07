@@ -18,4 +18,16 @@ final class Snapshot extends MetadataAuthorityPayload
 
         $this->parent->markAsDirty();
     }
+
+    public function addKey(): void
+    {
+        parent::addKey();
+        $this->parent->markAsDirty();
+    }
+
+    public function revokeKey(int $which): void
+    {
+        parent::revokeKey($which);
+        $this->parent->markAsDirty();
+    }
 }
