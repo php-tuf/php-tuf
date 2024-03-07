@@ -11,9 +11,11 @@ final class Timestamp extends MetadataAuthorityPayload
         parent::__construct($signer, 'timestamp', ...$arguments);
     }
 
-    public function addPayload(Payload $payload): void
+    protected function addPayload(Payload $payload): void
     {
         assert($payload instanceof Snapshot);
-        $this->payloads = [$payload];
+
+        $this->payloads = [];
+        parent::addPayload($payload);
     }
 }

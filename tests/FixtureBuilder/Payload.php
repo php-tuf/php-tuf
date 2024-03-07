@@ -57,6 +57,7 @@ abstract class Payload implements \Stringable
     protected function addPayload(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
+        $this->isDirty = true;
     }
 
     public function __toString(): string

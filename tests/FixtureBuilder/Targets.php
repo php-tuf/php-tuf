@@ -16,7 +16,7 @@ final class Targets extends Payload
 
     public function __construct(
       Root|self $signer,
-      Snapshot $parent,
+      Snapshot $snapshot,
       string $name = 'targets',
       mixed ...$arguments,
     ) {
@@ -24,24 +24,18 @@ final class Targets extends Payload
             assert($name === 'targets');
         }
         parent::__construct($signer, $name, ...$arguments);
-
-        $parent->addPayload($this);
+        $signer->addPayload($this);
+        $snapshot->addPayload($this);
     }
 
-    public function add(string $path, ?string $name = null): self
+    public function add(string $path, ?string $name = null): void
     {
         assert(is_file($path));
 
         $name ??= basename($path);
         $this->targets[$name] = $path;
 
-        return $this;
-    }
-
-    public function addDelegation(self $role): self
-    {
-        $this->payloads[$role->name] = $role;
-        return $this;
+        $this->isDirty = true;
     }
 
     public function getSigned(): array

@@ -140,15 +140,12 @@ class Fixture
 
         $role = new Targets($delegator, $this->snapshot, $name, $this->expires, [new Key]);
         $this->targets[$name] = $role;
-        $delegator->addDelegation($role);
-        $this->markAsDirty($delegator);
 
         foreach ($properties as $key => $value) {
             assert(property_exists($role, $key));
             $role->$key = $value;
         }
 
-        $this->markAsDirty($this->snapshot);
         return $role;
     }
 
