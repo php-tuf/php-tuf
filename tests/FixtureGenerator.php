@@ -58,6 +58,7 @@ class FixtureGenerator
         // Because the client will now have newer information than the server,
         // TUF will consider this a rollback attack.
         $fixture->createTarget('testtarget2.txt');
+        $fixture->invalidate();
         $fixture->publish(true);
 
         $fs->remove($fixture->baseDir . '/server');
