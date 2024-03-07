@@ -16,6 +16,6 @@ final class Snapshot extends MetadataAuthorityPayload
         assert($payload instanceof Targets);
         parent::watch($payload);
 
-        $this->parent->markAsDirty();
+        $this->parent->isDirty = true;
     }
 }

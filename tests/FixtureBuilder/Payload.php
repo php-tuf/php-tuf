@@ -55,15 +55,10 @@ abstract class Payload implements \Stringable
         }
     }
 
-    protected function markAsDirty(): void
-    {
-        $this->isDirty = true;
-    }
-
     protected function watch(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
-        $this->markAsDirty();
+        $this->isDirty = true;
     }
 
     public function __toString(): string

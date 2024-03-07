@@ -42,18 +42,18 @@ class Fixture
         self::mkDir($dir);
 
         $roles = [
-          ...array_slice($this->targets, 1),
-          $this->root,
-          $this->targets['targets'],
+          ...$this->targets,
           $this->snapshot,
           $this->timestamp,
+          $this->root,
         ];
 
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents("$dir/$name", (string) $role);
             copy("$dir/$name", "$dir/$role->version.$name");
-
+        }
+        foreach ($roles as $role) {
             if ($role->isDirty) {
                 $role->isDirty = false;
                 $role->version++;

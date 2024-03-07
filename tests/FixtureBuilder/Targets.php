@@ -38,8 +38,8 @@ final class Targets extends Payload
         $name ??= basename($path);
         $this->targets[$name] = $path;
 
-        $this->markAsDirty();
-        $this->parent->markAsDirty();
+        $this->isDirty = true;
+        $this->parent->isDirty = true;
     }
 
     public function toArray(): array
