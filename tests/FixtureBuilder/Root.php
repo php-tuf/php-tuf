@@ -18,10 +18,12 @@ final class Root extends Role
         };
     }
 
-    public function addRole(Role $role): static
+    public function addRole(Snapshot|Targets|Timestamp $role): static
     {
-        assert (! in_array($role, $this->roles, true));
-        $this->roles[] = $role;
+        if ($role instanceof Targets) {
+            assert($role->name === 'targets');
+        }
+        $this->roles[$role->name] = $role;
         return $this;
     }
 
