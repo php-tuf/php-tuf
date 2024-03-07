@@ -24,9 +24,9 @@ class Fixture
     {
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
-        $this->root = new Root($this->expires, [new Key]);
+        $this->root = new Root(null, $this->expires, [new Key]);
 
-        $targets = new Targets('targets', $this->expires, [new Key]);
+        $targets = new Targets($this->root, 'targets', $this->expires, [new Key]);
         $this->targets[$targets->name] = $targets;
         $this->root->addRole($targets);
 
@@ -143,7 +143,7 @@ class Fixture
         }
         assert(in_array($delegator, $this->targets, true));
 
-        $role = new Targets($name, $this->expires, [new Key]);
+        $role = new Targets($delegator, $name, $this->expires, [new Key]);
         $this->targets[$name] = $role;
         $delegator->addDelegation($role);
         $this->markAsDirty($delegator);

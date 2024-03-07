@@ -20,10 +20,14 @@ final class Targets extends Payload
     private array $targets = [];
 
     public function __construct(
+      Root|self $signer,
       public readonly string $name = 'targets',
       mixed ...$arguments,
     ) {
-        parent::__construct(...$arguments);
+        if ($signer instanceof Root) {
+            assert($name === 'targets');
+        }
+        parent::__construct($signer, ...$arguments);
     }
 
     public function add(string $path, ?string $name = null): self

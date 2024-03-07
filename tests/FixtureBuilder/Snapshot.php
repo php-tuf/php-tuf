@@ -6,9 +6,9 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Snapshot extends MetadataAuthorityPayload
 {
-    public function __construct(private readonly Root $signer, mixed ...$arguments)
+    public function __construct(Root $signer, mixed ...$arguments)
     {
-        parent::__construct(...$arguments);
+        parent::__construct($signer, ...$arguments);
     }
 
     public function __get(string $name): mixed

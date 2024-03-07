@@ -29,6 +29,7 @@ abstract class Payload implements \Stringable
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
+      protected readonly ?Payload $signer,
       public \DateTimeImmutable $expires,
       protected array $signingKeys = [],
     ) {}
