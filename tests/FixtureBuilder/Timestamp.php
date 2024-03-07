@@ -6,7 +6,7 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Timestamp extends MetadataAuthorityRole
 {
-    public function __construct(Snapshot $snapshot, mixed ...$arguments)
+    public function __construct(private readonly Root $signer, Snapshot $snapshot, mixed ...$arguments)
     {
         parent::__construct(...$arguments);
         $this->meta = [$snapshot];
@@ -18,6 +18,20 @@ final class Timestamp extends MetadataAuthorityRole
             'name' => 'timestamp',
             default => parent::__get($name),
         };
+    }
+
+    public function addKey(Key $key = null): static
+    {
+        parent::addKey($key);
+        $this->signer->isDirty = true;
+        return $this;
+    }
+
+    public function revokeKey(Key|int $which): static
+    {
+        parent::revokeKey($which);
+        $this->signer->isDirty = true;
+        return $this;
     }
 
     public function getSigned(): array

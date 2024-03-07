@@ -30,13 +30,13 @@ class Fixture
         $this->targets[$targets->name] = $targets;
         $this->root->addRole($targets);
 
-        $this->snapshot = new Snapshot($this->expires, [new Key]);
+        $this->snapshot = new Snapshot($this->root, $this->expires, [new Key]);
         $this->snapshot->withHashes = false;
         $this->snapshot->withLength = false;
         $this->snapshot->addRole($targets);
         $this->root->addRole($this->snapshot);
 
-        $this->timestamp = new Timestamp($this->snapshot, $this->expires, [new Key]);
+        $this->timestamp = new Timestamp($this->root, $this->snapshot, $this->expires, [new Key]);
         $this->root->addRole($this->timestamp);
 
         $this->invalidate();
