@@ -254,6 +254,8 @@ class FixtureGenerator
             $fixture->$rotatedRole->addKey();
             $fixture->$rotatedRole->revokeKey(0);
         }
+        $fixture->timestamp->markAsDirty();
+        $fixture->snapshot->markAsDirty();
         $fixture->publish();
     }
 
