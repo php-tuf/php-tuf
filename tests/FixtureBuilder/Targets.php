@@ -12,11 +12,6 @@ final class Targets extends Payload
 
     public bool $terminating = false;
 
-    /**
-     * @var self[]
-     */
-    private array $delegations = [];
-
     private array $targets = [];
 
     public function __construct(
@@ -42,7 +37,7 @@ final class Targets extends Payload
 
     public function addDelegation(self $role): self
     {
-        $this->delegations[$role->name] = $role;
+        $this->payloads[$role->name] = $role;
         return $this;
     }
 
@@ -50,7 +45,8 @@ final class Targets extends Payload
     {
         $data = parent::getSigned();
 
-        foreach ($this->delegations as $delegation) {
+        /** @var self $delegation */
+        foreach ($this->payloads as $delegation) {
             $role = [
               'name' => $delegation->name,
               'threshold' => $delegation->threshold,
