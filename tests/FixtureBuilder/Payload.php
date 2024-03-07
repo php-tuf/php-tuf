@@ -54,6 +54,11 @@ abstract class Payload implements \Stringable
         }
     }
 
+    protected function addPayload(Payload $payload): void
+    {
+        $this->payloads[$payload->name] = $payload;
+    }
+
     public function __toString(): string
     {
         return self::encodeJson($this->toArray(), JSON_PRETTY_PRINT);

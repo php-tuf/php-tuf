@@ -16,6 +16,7 @@ final class Targets extends Payload
 
     public function __construct(
       Root|self $signer,
+      Snapshot $parent,
       string $name = 'targets',
       mixed ...$arguments,
     ) {
@@ -23,6 +24,8 @@ final class Targets extends Payload
             assert($name === 'targets');
         }
         parent::__construct($signer, $name, ...$arguments);
+
+        $parent->addPayload($this);
     }
 
     public function add(string $path, ?string $name = null): self
