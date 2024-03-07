@@ -8,13 +8,9 @@ final class Root extends Payload
 {
     public ?bool $consistentSnapshot = null;
 
-    private array $payloads = [];
-
-    public function __get(string $name): mixed
+    public function __construct(mixed ...$arguments)
     {
-        return match ($name) {
-            'name' => 'root',
-        };
+        parent::__construct(null, 'root', ...$arguments);
     }
 
     public function getSigned(): array

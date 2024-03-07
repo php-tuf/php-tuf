@@ -7,12 +7,6 @@ namespace Tuf\Tests\FixtureBuilder;
 use Tuf\CanonicalJsonTrait;
 
 /**
- * Base class for all roles in a TUF repository.
- *
- * When cast to a string, this will be the canonical JSON representation of
- * the role.
- *
- * @property string $name
  */
 abstract class Payload implements \Stringable
 {
@@ -20,21 +14,24 @@ abstract class Payload implements \Stringable
 
     public int $threshold = 1;
 
-    public int $version = 0;
+    public int $version = 1;
 
     public bool $isDirty = false;
 
-    private array $revokedKeys = [];
+    protected array $revokedKeys = [];
+
+    protected array $payloads = [];
 
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
       protected readonly ?Payload $signer,
+      public readonly string $name,
       public \DateTimeImmutable $expires,
       protected array $signingKeys = [],
     ) {}
 
-    public function addKey(Key $key = null): static
+    public function addKey(Key $key = null): void
     {
         $key ??= new Key;
 
@@ -45,7 +42,6 @@ abstract class Payload implements \Stringable
         if ($this->signer) {
             $this->signer->isDirty = true;
         }
-        return $this;
     }
 
     public function revokeKey(int $which): void

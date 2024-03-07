@@ -24,7 +24,7 @@ class Fixture
     {
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
-        $this->root = new Root(null, $this->expires, [new Key]);
+        $this->root = new Root($this->expires, [new Key]);
 
         $targets = new Targets($this->root, 'targets', $this->expires, [new Key]);
         $this->targets[$targets->name] = $targets;
@@ -163,4 +163,3 @@ class Fixture
         assert(mkdir($path, recursive: true));
     }
 }
-

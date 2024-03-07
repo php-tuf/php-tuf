@@ -250,7 +250,8 @@ class FixtureGenerator
         $fixture->createTarget('test.txt');
 
         if ($rotatedRole) {
-            $fixture->$rotatedRole->addKey()->revokeKey(0);
+            $fixture->$rotatedRole->addKey();
+            $fixture->$rotatedRole->revokeKey(0);
         }
         $fixture->publish();
     }

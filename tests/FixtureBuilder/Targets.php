@@ -21,13 +21,13 @@ final class Targets extends Payload
 
     public function __construct(
       Root|self $signer,
-      public readonly string $name = 'targets',
+      string $name = 'targets',
       mixed ...$arguments,
     ) {
         if ($signer instanceof Root) {
             assert($name === 'targets');
         }
-        parent::__construct($signer, ...$arguments);
+        parent::__construct($signer, $name, ...$arguments);
     }
 
     public function add(string $path, ?string $name = null): self
