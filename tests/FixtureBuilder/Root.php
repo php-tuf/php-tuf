@@ -17,15 +17,6 @@ final class Root extends Payload
         };
     }
 
-    public function addRole(Snapshot|Targets|Timestamp $role): static
-    {
-        if ($role instanceof Targets) {
-            assert($role->name === 'targets');
-        }
-        $this->payloads[$role->name] = $role;
-        return $this;
-    }
-
     public function getSigned(): array
     {
         $data = parent::getSigned();
