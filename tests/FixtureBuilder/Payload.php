@@ -44,17 +44,11 @@ abstract class Payload implements \Stringable
         return $this;
     }
 
-    public function revokeKey(Key|int $which): static
+    public function revokeKey(int $which): void
     {
-        if ($which instanceof Key) {
-            $which = array_search($which, $this->signingKeys, true);
-        }
-        if (is_int($which)) {
-            array_push($this->revokedKeys, ...array_slice($this->signingKeys, $which, 1));
-        }
+        array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
         $this->isDirty = true;
-        return $this;
     }
 
     public function __toString(): string

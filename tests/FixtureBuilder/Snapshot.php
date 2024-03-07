@@ -31,11 +31,10 @@ final class Snapshot extends MetadataAuthorityPayload
         return $this;
     }
 
-    public function revokeKey(Key|int $which): static
+    public function revokeKey(int $which): void
     {
         parent::revokeKey($which);
         $this->signer->isDirty = true;
-        return $this;
     }
 
     public function getSigned(): array
