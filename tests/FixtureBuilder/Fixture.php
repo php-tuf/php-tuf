@@ -45,6 +45,7 @@ class Fixture
             $this->root->markAsDirty();
         }
 
+        $clientVersions = [];
         $roles = [
           ...$this->targets,
           $this->snapshot,
@@ -52,12 +53,15 @@ class Fixture
           $this->root,
         ];
         foreach ($roles as $role) {
+            $clientVersions[] = "$role->name = $role->version";
+
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents("$dir/$name", (string) $role);
             copy("$dir/$name", "$dir/$role->version.$name");
 
             $role->isDirty = false;
         }
+        file_put_contents($this->baseDir . '/client_versions.ini', implode("\n", $clientVersions));
     }
 
     public function writeClient(): void
