@@ -246,6 +246,7 @@ class FixtureGenerator
         $fixture = self::init($name, $consistent);
         $fixture->timestamp->withLength = true;
         $fixture->snapshot->withLength = true;
+        $fixture->snapshot->withHashes = true;
         $fixture->publish(true);
         $fixture->createTarget('test.txt');
 
