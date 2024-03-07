@@ -42,6 +42,9 @@ abstract class Payload implements \Stringable
         $this->signingKeys[] = $key;
 
         $this->isDirty = true;
+        if ($this->signer) {
+            $this->signer->isDirty = true;
+        }
         return $this;
     }
 
@@ -50,6 +53,9 @@ abstract class Payload implements \Stringable
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
         $this->isDirty = true;
+        if ($this->signer) {
+            $this->signer->isDirty = true;
+        }
     }
 
     public function __toString(): string
