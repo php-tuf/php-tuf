@@ -48,15 +48,16 @@ class Fixture
           $this->snapshot,
           $this->timestamp,
         ];
-        $roles = array_filter($roles, fn (Payload $role) => $role->isDirty);
 
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents("$dir/$name", (string) $role);
             copy("$dir/$name", "$dir/$role->version.$name");
 
-            $role->isDirty = false;
-            $role->version++;
+            if ($role->isDirty) {
+                $role->isDirty = false;
+                $role->version++;
+            }
         }
     }
 
