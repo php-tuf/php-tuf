@@ -41,7 +41,7 @@ class Fixture
     {
         self::mkDir($dir);
 
-        $this->root->isDirty = true;
+        $this->root->markAsDirty();
 
         $roles = [
           ...$this->targets,
@@ -49,16 +49,12 @@ class Fixture
           $this->timestamp,
           $this->root,
         ];
-        $roles = array_filter($roles, fn (Payload $role) => $role->isDirty);
-
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
             file_put_contents("$dir/$name", (string) $role);
             copy("$dir/$name", "$dir/$role->version.$name");
-        }
-        foreach ($roles as $role) {
+
             $role->isDirty = false;
-            $role->version++;
         }
     }
 
@@ -87,10 +83,10 @@ class Fixture
 
     public function invalidate(): void
     {
-        $this->root->isDirty = true;
-        $this->timestamp->isDirty = true;
-        $this->snapshot->isDirty = true;
-        $this->targets['targets']->isDirty = true;
+        $this->root->markAsDirty();
+        $this->timestamp->markAsDirty();
+        $this->snapshot->markAsDirty();
+        $this->targets['targets']->markAsDirty();
     }
 
     public function addTarget(string $path, string|Targets $signer = 'targets'): void

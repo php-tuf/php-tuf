@@ -36,7 +36,7 @@ abstract class Payload implements \Stringable
 
     public int $version = 1;
 
-    public bool $isDirty = false;
+    public bool $isDirty = true;
 
     protected array $revokedKeys = [];
 
@@ -55,30 +55,35 @@ abstract class Payload implements \Stringable
         $parent?->watch($this);
     }
 
+    final public function markAsDirty(): void
+    {
+        if ($this->isDirty) {
+            return;
+        }
+        $this->isDirty = true;
+        $this->version++;
+    }
+
     final public function addKey(): void
     {
         $this->signingKeys[] = new Key;
 
-        $this->isDirty = true;
-        if ($this->keyRing) {
-            $this->keyRing->isDirty = true;
-        }
+        $this->markAsDirty();
+        $this->keyRing?->markAsDirty();
     }
 
     final public function revokeKey(int $which): void
     {
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
-        $this->isDirty = true;
-        if ($this->keyRing) {
-            $this->keyRing->isDirty = true;
-        }
+        $this->markAsDirty();
+        $this->keyRing?->markAsDirty();
     }
 
     protected function watch(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
-        $this->isDirty = true;
+        $this->markAsDirty();
     }
 
     public function __toString(): string
