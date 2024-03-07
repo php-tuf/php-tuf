@@ -37,19 +37,6 @@ class Fixture
         $this->invalidate();
     }
 
-    private function markAsDirty(Payload $role): void
-    {
-        $role->isDirty = true;
-
-        if ($role instanceof Targets && $role->name !== 'targets') {
-            $this->targets['targets']->isDirty = true;
-        }
-        else {
-            $this->root->isDirty = true;
-            $this->timestamp->isDirty = true;
-        }
-    }
-
     private function writeAllToDirectory(string $dir): void
     {
         self::mkDir($dir);
@@ -100,10 +87,10 @@ class Fixture
 
     public function invalidate(): void
     {
-        $this->markAsDirty($this->root);
-        $this->markAsDirty($this->timestamp);
-        $this->markAsDirty($this->snapshot);
-        $this->markAsDirty($this->targets['targets']);
+        $this->root->isDirty = true;
+        $this->timestamp->isDirty = true;
+        $this->snapshot->isDirty = true;
+        $this->targets['targets']->isDirty = true;
     }
 
     public function addTarget(string $path, string|Targets $signer = 'targets'): void
@@ -115,16 +102,10 @@ class Fixture
         }
         assert(in_array($signer, $this->targets, true));
         $signer->add($path);
-
-        $this->markAsDirty($this->snapshot);
-        $this->markAsDirty($this->targets['targets']);
-        $this->markAsDirty($this->timestamp);
-        $this->markAsDirty($signer);
     }
 
     public function publish(bool $withClient = false): void
     {
-        $this->markAsDirty($this->root);
         $this->writeAllToDirectory($this->baseDir . '/server');
         if ($withClient) {
             $this->writeClient();
