@@ -40,6 +40,10 @@ final class Targets extends Payload
 
         $this->markAsDirty();
         $this->parent->markAsDirty();
+
+        if ($this->name !== 'targets') {
+            $this->parent->payloads['targets']?->markAsDirty();
+        }
     }
 
     public function toArray(): array
