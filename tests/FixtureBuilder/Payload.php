@@ -35,12 +35,9 @@ abstract class Payload implements \Stringable
         $parent?->watch($this);
     }
 
-    public function addKey(Key $key = null): void
+    final public function addKey(): void
     {
-        $key ??= new Key;
-
-        assert(! in_array($key, $this->signingKeys, true), 'A role cannot have the same key twice.');
-        $this->signingKeys[] = $key;
+        $this->signingKeys[] = new Key;
 
         $this->isDirty = true;
         if ($this->keyRing) {
@@ -48,7 +45,7 @@ abstract class Payload implements \Stringable
         }
     }
 
-    public function revokeKey(int $which): void
+    final public function revokeKey(int $which): void
     {
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
@@ -58,10 +55,15 @@ abstract class Payload implements \Stringable
         }
     }
 
+    protected function markAsDirty(): void
+    {
+        $this->isDirty = true;
+    }
+
     protected function watch(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
-        $this->isDirty = true;
+        $this->markAsDirty();
     }
 
     public function __toString(): string

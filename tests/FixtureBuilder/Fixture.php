@@ -138,7 +138,7 @@ class Fixture
         }
         assert(in_array($delegator, $this->targets, true));
 
-        $role = new Targets($delegator, $this->snapshot, $name, $this->expires, [new Key]);
+        $role = $delegator->delegate($name);
         $this->targets[$name] = $role;
 
         foreach ($properties as $key => $value) {

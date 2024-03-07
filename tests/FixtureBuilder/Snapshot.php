@@ -11,9 +11,11 @@ final class Snapshot extends MetadataAuthorityPayload
         parent::__construct('snapshot', $keyRing, $parent, ...$arguments);
     }
 
-    public function watch(Payload $payload): void
+    protected function watch(Payload $payload): void
     {
         assert($payload instanceof Targets);
         parent::watch($payload);
+
+        $this->parent->markAsDirty();
     }
 }

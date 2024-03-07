@@ -26,6 +26,11 @@ final class Targets extends Payload
         parent::__construct($name, $keyRing, $parent, ...$arguments);
     }
 
+    public function delegate(string $name): self
+    {
+        return new self($this, $this->parent, $name, $this->expires, [new Key]);
+    }
+
     public function add(string $path, ?string $name = null): void
     {
         assert(is_file($path));
@@ -33,7 +38,8 @@ final class Targets extends Payload
         $name ??= basename($path);
         $this->targets[$name] = $path;
 
-        $this->isDirty = true;
+        $this->markAsDirty();
+        $this->parent->markAsDirty();
     }
 
     public function toArray(): array
