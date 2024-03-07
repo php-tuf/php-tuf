@@ -7,6 +7,26 @@ namespace Tuf\Tests\FixtureBuilder;
 use Tuf\CanonicalJsonTrait;
 
 /**
+ * A payload is a builder for a server-side TUF metadata file.
+ *
+ * A payload represents a single role in the TUF repository. This could be one
+ * of the four top-level roles (root, timestamp, snapshot, and targets), or it
+ * could be a delegated targets role at any level of nesting.
+ *
+ * Every payload has relationships to other payloads. There are two kinds
+ * of relationships:
+ *
+ * - A "parent" relationship is for a payload that enumerates other payloads.
+ *   For example, a snapshot has a parent relationship to all targets roles,
+ *   regardless of nesting level. The parent may needs to be updated when one
+ *   of its children change something. (For example, the snapshot payload needs
+ *   to be updated if any of the targets roles add or remove a target.)
+ * - A "key ring" relationship is for payloads which sign other payloads. There
+ *   are really two possible key rings in a TUF tree -- the root payload signs
+ *   the top-level roles (including itself), so it is the key ring for those
+ *   payloads. A targets role can sign its delegates, so it is the key ring for
+ *   any roles it delegates to. Key rings only need to be updated if their
+ *   children add or revoke any keys.
  */
 abstract class Payload implements \Stringable
 {
