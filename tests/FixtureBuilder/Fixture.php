@@ -12,6 +12,7 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class Fixture
 {
+
     public readonly Root $root;
 
     public readonly Timestamp $timestamp;
@@ -30,45 +31,46 @@ class Fixture
     private readonly string $targetsDir;
 
     public function __construct(
-      public readonly string $baseDir,
-      protected ?\DateTimeImmutable $expires = null,
-      private readonly Filesystem $fileSystem = new Filesystem(),
-    )
-    {
+        public readonly string $baseDir,
+        protected ?\DateTimeImmutable $expires = null,
+        private readonly Filesystem $fileSystem = new Filesystem(),
+    ) {
         $this->serverDir = $baseDir . '/server';
         $this->clientDir = $baseDir . '/client';
         $this->targetsDir = $baseDir . '/targets';
         $fileSystem->remove([
-          $this->serverDir,
-          $this->clientDir,
-          $this->targetsDir,
+            $this->serverDir,
+            $this->clientDir,
+            $this->targetsDir,
         ]);
 
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
         $this->root = new Root($this->expires, [
-          Key::fromStaticList(),
+            Key::fromStaticList(),
         ]);
         $this->timestamp = new Timestamp($this->root, $this->expires, [
-          Key::fromStaticList(),
+            Key::fromStaticList(),
         ]);
 
         $this->snapshot = new Snapshot($this->root, $this->timestamp, $this->expires, [
-          Key::fromStaticList(),
+            Key::fromStaticList(),
         ]);
         $this->snapshot->withHashes = false;
         $this->snapshot->withLength = false;
 
         $targets = new Targets($this->root, $this->snapshot, 'targets', $this->expires, [
-          Key::fromStaticList(),
+            Key::fromStaticList(),
         ]);
         $this->targets[$targets->name] = $targets;
 
         $this->invalidate();
     }
 
-    public function createTarget(string $name, string|Targets|null $signer = 'targets'): string
-    {
+    public function createTarget(
+        string $name,
+        string|Targets|null $signer = 'targets'
+    ): string {
         $this->fileSystem->mkdir($this->targetsDir);
 
         $path = $this->targetsDir . '/' . $name;
@@ -88,8 +90,10 @@ class Fixture
         $this->targets['targets']->markAsDirty();
     }
 
-    public function addTarget(string $path, string|Targets $signer = 'targets'): void
-    {
+    public function addTarget(
+        string $path,
+        string|Targets $signer = 'targets'
+    ): void {
         assert(file_exists($path));
 
         if (is_string($signer)) {
@@ -108,14 +112,14 @@ class Fixture
         }
 
         $roles = [
-          ...$this->targets,
-          $this->snapshot,
-          $this->timestamp,
-          $this->root,
+            ...$this->targets,
+            $this->snapshot,
+            $this->timestamp,
+            $this->root,
         ];
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
-            file_put_contents("$this->serverDir/$name", (string) $role);
+            file_put_contents("$this->serverDir/$name", (string)$role);
             copy("$this->serverDir/$name", "$this->serverDir/$role->version.$name");
 
             $role->isDirty = false;
@@ -123,14 +127,17 @@ class Fixture
 
         if ($withClient) {
             $this->fileSystem->mirror($this->serverDir, $this->clientDir, options: [
-              'override' => true,
-              'delete' => true,
+                'override' => true,
+                'delete' => true,
             ]);
         }
     }
 
-    public function delegate(string|Targets $delegator, string $name, array $properties = []): Targets
-    {
+    public function delegate(
+        string|Targets $delegator,
+        string $name,
+        array $properties = []
+    ): Targets {
         if (is_string($delegator)) {
             $delegator = $this->targets[$delegator];
         }
@@ -159,15 +166,13 @@ class Fixture
 
             if ($x === $high) {
                 $name = sprintf("%0{$prefixLength}x", $x);
-            }
-            else {
+            } else {
                 $name = sprintf("%0{$prefixLength}x-%0{$prefixLength}x", $x, $high);
             }
 
             if ($binSize === 1) {
                 $prefixes = [$name];
-            }
-            else {
+            } else {
                 $prefixes = [];
                 for ($y = 0; $y < $x + $binSize; $y++) {
                     $prefixes[] = sprintf("%0{$prefixLength}x", $y);

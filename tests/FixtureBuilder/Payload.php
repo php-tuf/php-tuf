@@ -30,6 +30,7 @@ use Tuf\CanonicalJsonTrait;
  */
 abstract class Payload implements \Stringable
 {
+
     use CanonicalJsonTrait;
 
     public int $threshold = 1;
@@ -45,11 +46,11 @@ abstract class Payload implements \Stringable
     final public const FILE_EXTENSION = 'json';
 
     public function __construct(
-      public readonly string $name,
-      protected readonly ?Payload $keyRing,
-      protected readonly ?Payload $parent,
-      public \DateTimeImmutable $expires,
-      protected array $signingKeys = [],
+        public readonly string $name,
+        protected readonly ?Payload $keyRing,
+        protected readonly ?Payload $parent,
+        public \DateTimeImmutable $expires,
+        protected array $signingKeys = [],
     ) {
         $keyRing?->watch($this);
         $parent?->watch($this);
@@ -74,7 +75,8 @@ abstract class Payload implements \Stringable
 
     public function revokeKey(int $which): void
     {
-        array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
+        array_push($this->revokedKeys, ...
+            array_splice($this->signingKeys, $which, 1));
 
         $this->markAsDirty();
         $this->keyRing?->markAsDirty();
@@ -91,11 +93,11 @@ abstract class Payload implements \Stringable
         $payload = $this->toArray();
 
         $data = [
-          'signatures' => array_map(fn (Key $key) => $key->sign($payload), [
-            ...$this->signingKeys,
-            ...$this->revokedKeys,
-          ]),
-          'signed' => $payload,
+            'signatures' => array_map(fn(Key $key) => $key->sign($payload), [
+                ...$this->signingKeys,
+                ...$this->revokedKeys,
+            ]),
+            'signed' => $payload,
         ];
         return self::encodeJson($data, JSON_PRETTY_PRINT);
     }
@@ -103,10 +105,10 @@ abstract class Payload implements \Stringable
     protected function toArray(): array
     {
         return [
-          'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
-          'spec_version' => '1.0.0',
-          'version' => $this->version,
-          '_type' => $this->name,
+            'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
+            'spec_version' => '1.0.0',
+            'version' => $this->version,
+            '_type' => $this->name,
         ];
     }
 }

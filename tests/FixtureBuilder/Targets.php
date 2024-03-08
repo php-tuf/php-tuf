@@ -6,6 +6,7 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Targets extends Payload
 {
+
     public ?array $paths = null;
 
     public ?array $pathHashPrefixes = null;
@@ -15,10 +16,10 @@ final class Targets extends Payload
     private array $targets = [];
 
     public function __construct(
-      Root|self $keyRing,
-      Snapshot $parent,
-      string $name = 'targets',
-      mixed ...$arguments,
+        Root|self $keyRing,
+        Snapshot $parent,
+        string $name = 'targets',
+        mixed ...$arguments,
     ) {
         if ($keyRing instanceof Root) {
             assert($name === 'targets');
@@ -29,7 +30,7 @@ final class Targets extends Payload
     public function delegate(string $name): self
     {
         return new self($this, $this->parent, $name, $this->expires, [
-          Key::fromStaticList(),
+            Key::fromStaticList(),
         ]);
     }
 
@@ -57,9 +58,9 @@ final class Targets extends Payload
         /** @var self $delegation */
         foreach ($this->payloads as $delegation) {
             $role = [
-              'name' => $delegation->name,
-              'threshold' => $delegation->threshold,
-              'terminating' => $delegation->terminating,
+                'name' => $delegation->name,
+                'threshold' => $delegation->threshold,
+                'terminating' => $delegation->terminating,
             ];
             if (is_array($delegation->paths)) {
                 $role['paths'] = $delegation->paths;
@@ -80,23 +81,23 @@ final class Targets extends Payload
             assert(is_file($path));
 
             $data['targets'][$name] = [
-              'hashes' => [
-                'sha256' => hash_file('sha256', $path),
-                'sha512' => hash_file('sha512', $path),
-              ],
-              'length' => filesize($path),
+                'hashes' => [
+                    'sha256' => hash_file('sha256', $path),
+                    'sha512' => hash_file('sha512', $path),
+                ],
+                'length' => filesize($path),
             ];
             if ($this->name !== 'targets') {
-                $data['targets'][$name]['custom'] = (object) [];
+                $data['targets'][$name]['custom'] = (object)[];
             }
         }
 
         $data += [
-          'delegations' => [
-            'keys' => (object) [],
-            'roles' => [],
-          ],
-          'targets' => (object) [],
+            'delegations' => [
+                'keys' => (object)[],
+                'roles' => [],
+            ],
+            'targets' => (object)[],
         ];
         return $data;
     }

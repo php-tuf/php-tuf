@@ -23,8 +23,8 @@ abstract class MetadataAuthorityPayload extends Payload
             }
             if ($this->withHashes) {
                 $data['meta'][$name]['hashes'] = [
-                  'sha256' => hash('sha256', $payload),
-                  'sha512' => hash('sha512', $payload),
+                    'sha256' => hash('sha256', $payload),
+                    'sha512' => hash('sha512', $payload),
                 ];
             }
             if ($this->withLength) {
