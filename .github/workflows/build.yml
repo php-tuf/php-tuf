@@ -72,7 +72,6 @@ jobs:
 
   build-lowest-version:
     name: Build lowest version
-    needs: fixtures
     runs-on: ubuntu-latest
 
     steps:
@@ -94,13 +93,8 @@ jobs:
       - name: Download dependencies
         run: 'composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest'
 
-      - name: Download fixtures
-        uses: actions/download-artifact@v3
-        with:
-          name: fixtures
-
-      - name: Extract fixtures
-        run: tar -x -z -f fixtures.tar.gz
+      - name: Generate fixtures
+        run: composer fixtures
 
       - name: Run test suite
         run: composer test

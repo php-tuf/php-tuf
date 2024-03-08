@@ -66,7 +66,7 @@ abstract class Payload implements \Stringable
 
     public function addKey(): void
     {
-        $this->signingKeys[] = new Key;
+        $this->signingKeys[] = Key::fromStaticList();
 
         $this->markAsDirty();
         $this->keyRing?->markAsDirty();

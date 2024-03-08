@@ -28,7 +28,9 @@ final class Targets extends Payload
 
     public function delegate(string $name): self
     {
-        return new self($this, $this->parent, $name, $this->expires, [new Key]);
+        return new self($this, $this->parent, $name, $this->expires, [
+          Key::fromStaticList(),
+        ]);
     }
 
     public function add(string $path, ?string $name = null): void

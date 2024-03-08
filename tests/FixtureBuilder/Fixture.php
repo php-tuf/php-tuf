@@ -24,14 +24,22 @@ class Fixture
     {
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
-        $this->root = new Root($this->expires, [new Key]);
-        $this->timestamp = new Timestamp($this->root, $this->expires, [new Key]);
+        $this->root = new Root($this->expires, [
+          Key::fromStaticList(),
+        ]);
+        $this->timestamp = new Timestamp($this->root, $this->expires, [
+          Key::fromStaticList(),
+        ]);
 
-        $this->snapshot = new Snapshot($this->root, $this->timestamp, $this->expires, [new Key]);
+        $this->snapshot = new Snapshot($this->root, $this->timestamp, $this->expires, [
+          Key::fromStaticList(),
+        ]);
         $this->snapshot->withHashes = false;
         $this->snapshot->withLength = false;
 
-        $targets = new Targets($this->root, $this->snapshot, 'targets', $this->expires, [new Key]);
+        $targets = new Targets($this->root, $this->snapshot, 'targets', $this->expires, [
+          Key::fromStaticList(),
+        ]);
         $this->targets[$targets->name] = $targets;
 
         $this->invalidate();
