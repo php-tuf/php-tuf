@@ -38,6 +38,8 @@ abstract class MetadataBase
      */
     private bool $isTrusted = false;
 
+    public readonly array $signed;
+
 
     /**
      * MetadataBase constructor.
@@ -49,6 +51,7 @@ abstract class MetadataBase
      */
     public function __construct(protected array $metadata, public readonly string $source)
     {
+        ['signed' => $this->signed] = $metadata;
     }
 
     /**
@@ -61,7 +64,7 @@ abstract class MetadataBase
      */
     protected function toNormalizedArray(): array
     {
-        return $this->getSigned();
+        return $this->signed;
     }
 
     /**
@@ -176,17 +179,6 @@ abstract class MetadataBase
     }
 
     /**
-     * Get signed.
-     *
-     * @return array
-     *   The "signed" section of the data.
-     */
-    public function getSigned(): array
-    {
-        return $this->metadata['signed'];
-    }
-
-    /**
      * Get version.
      *
      * @return integer
@@ -194,7 +186,7 @@ abstract class MetadataBase
      */
     public function getVersion(): int
     {
-        return $this->getSigned()['version'];
+        return $this->signed['version'];
     }
 
     /**
@@ -208,7 +200,7 @@ abstract class MetadataBase
      */
     public function getExpires(): \DateTimeImmutable
     {
-        $timestamp = $this->getSigned()['expires'];
+        $timestamp = $this->signed['expires'];
         return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp) ?: throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
     }
 
@@ -231,7 +223,7 @@ abstract class MetadataBase
      */
     public function getType(): string
     {
-        return $this->getSigned()['_type'];
+        return $this->signed['_type'];
     }
 
     /**

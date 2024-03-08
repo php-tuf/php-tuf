@@ -59,7 +59,7 @@ class RootMetadata extends MetadataBase
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
         $roles = [];
-        foreach ($this->getSigned()['roles'] as $roleName => $roleInfo) {
+        foreach ($this->signed['roles'] as $roleName => $roleInfo) {
             $roles[$roleName] = Role::createFromMetadata($roleInfo, $roleName);
         }
         return $roles;
@@ -78,7 +78,7 @@ class RootMetadata extends MetadataBase
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
         $keys = [];
-        foreach ($this->getSigned()['keys'] as $keyId => $keyInfo) {
+        foreach ($this->signed['keys'] as $keyId => $keyInfo) {
             $keys[$keyId] = Key::createFromMetadata($keyInfo);
         }
         return $keys;
@@ -93,6 +93,6 @@ class RootMetadata extends MetadataBase
     public function supportsConsistentSnapshots(): bool
     {
         $this->ensureIsTrusted();
-        return $this->getSigned()['consistent_snapshot'];
+        return $this->signed['consistent_snapshot'];
     }
 }
