@@ -6,11 +6,11 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class Fixture
 {
-    public Root $root;
+    public readonly Root $root;
 
-    public Timestamp $timestamp;
+    public readonly Timestamp $timestamp;
 
-    public Snapshot $snapshot;
+    public readonly Snapshot $snapshot;
 
     /**
      * @var \Tuf\Tests\FixtureBuilder\Targets[]
