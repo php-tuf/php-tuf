@@ -138,7 +138,7 @@ class ClientTestBase extends TestCase
             }
         }
 
-         $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
+        $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
     }
 
     /**

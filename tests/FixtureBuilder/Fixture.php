@@ -67,10 +67,8 @@ class Fixture
         $this->invalidate();
     }
 
-    public function createTarget(
-        string $name,
-        string|Targets|null $signer = 'targets'
-    ): string {
+    public function createTarget(string $name, string|Targets|null $signer = 'targets'): string
+    {
         $this->fileSystem->mkdir($this->targetsDir);
 
         $path = $this->targetsDir . '/' . $name;
@@ -90,10 +88,8 @@ class Fixture
         $this->targets['targets']->markAsDirty();
     }
 
-    public function addTarget(
-        string $path,
-        string|Targets $signer = 'targets'
-    ): void {
+    public function addTarget(string $path, string|Targets $signer = 'targets'): void
+    {
         assert(file_exists($path));
 
         if (is_string($signer)) {
@@ -133,11 +129,8 @@ class Fixture
         }
     }
 
-    public function delegate(
-        string|Targets $delegator,
-        string $name,
-        array $properties = []
-    ): Targets {
+    public function delegate(string|Targets $delegator, string $name, array $properties = []): Targets
+    {
         if (is_string($delegator)) {
             $delegator = $this->targets[$delegator];
         }
@@ -171,16 +164,13 @@ class Fixture
             }
 
             if ($binSize === 1) {
-                $prefixes = [$name];
+                $properties['pathHashPrefixes'] = [$name];
             } else {
-                $prefixes = [];
                 for ($y = 0; $y < $x + $binSize; $y++) {
-                    $prefixes[] = sprintf("%0{$prefixLength}x", $y);
+                    $properties['pathHashPrefixes'][] = sprintf("%0{$prefixLength}x", $y);
                 }
             }
-
-            $role = $this->delegate('targets', $name, $properties);
-            $role->pathHashPrefixes = $prefixes;
+            $this->delegate('targets', $name, $properties);
         }
     }
 
