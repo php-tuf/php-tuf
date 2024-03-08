@@ -58,7 +58,7 @@ abstract class VerifierBase
      */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
-        $type = $this->trustedMetadata->getType();
+        $type = $this->trustedMetadata->type;
         $remoteVersion = $untrustedMetadata->getVersion();
         $localVersion = $this->trustedMetadata->getVersion();
         if ($remoteVersion < $localVersion) {

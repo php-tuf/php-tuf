@@ -113,15 +113,10 @@ abstract class MetadataBaseTest extends TestCase
         static::callCreateFromJson(json_encode($metadata));
     }
 
-    /**
-     * @covers ::getType
-     *
-     *  @return void
-     */
     public function testGetType(): void
     {
         $metadata = static::callCreateFromJson($this->clientStorage->read($this->validJson));
-        $this->assertSame($metadata->getType(), $this->expectedType);
+        $this->assertSame($metadata->type, $this->expectedType);
     }
 
     /**

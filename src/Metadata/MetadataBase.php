@@ -42,6 +42,8 @@ abstract class MetadataBase
 
     public readonly array $signatures;
 
+    public readonly string $type;
+
 
     /**
      * MetadataBase constructor.
@@ -54,6 +56,8 @@ abstract class MetadataBase
     public function __construct(array $metadata, public readonly string $source)
     {
         ['signed' => $this->signed, 'signatures' => $this->signatures] = $metadata;
+
+        $this->type = $this->signed['_type'];
     }
 
     /**
@@ -207,17 +211,6 @@ abstract class MetadataBase
     }
 
     /**
-     * Get the metadata type.
-     *
-     * @return string
-     *   The type.
-     */
-    public function getType(): string
-    {
-        return $this->signed['_type'];
-    }
-
-    /**
      * Gets the role for the metadata.
      *
      * @return string
@@ -228,7 +221,7 @@ abstract class MetadataBase
         // For most metadata types the 'type' and the 'role' are the same.
         // Metadata types that need to specify a different role should override
         // this method.
-        return $this->getType();
+        return $this->type;
     }
 
     /**

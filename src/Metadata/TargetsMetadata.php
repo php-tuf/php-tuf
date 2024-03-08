@@ -170,7 +170,7 @@ class TargetsMetadata extends MetadataBase
      */
     public function getRole(): string
     {
-        return $this->role ?? $this->getType();
+        return $this->role ?? $this->type;
     }
 
     /**

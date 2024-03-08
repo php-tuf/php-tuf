@@ -49,7 +49,7 @@ trait TrustedAuthorityTrait
             foreach ($fileInfo['hashes'] as $algo => $hash) {
                 if ($hash !== hash($algo, $untrustedMetadata->source)) {
                     /** @var \Tuf\Metadata\MetadataBase $authorityMetadata */
-                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->authority->getType()}' metadata.");
+                    throw new MetadataException("The '{$role}' contents does not match hash '$algo' specified in the '{$this->authority->type}' metadata.");
                 }
             }
         }

@@ -112,7 +112,10 @@ class FileStorageTest extends TestCase
 
         $metadata = $this->prophesize($metadataClass)
             ->willBeConstructedWith([
-                ['signed' => [], 'signatures' => []],
+                [
+                    'signed' => ['_type' => $metadataClass::TYPE],
+                    'signatures' => [],
+                ],
                 "From hell's heart, I refactor thee!",
             ]);
         $metadata->getRole()->willReturn($role);
@@ -146,7 +149,7 @@ class FileStorageTest extends TestCase
 
         $metadata = $this->prophesize(MetadataBase::class)
             ->willBeConstructedWith([
-                ['signed' => [], 'signatures' => []],
+                ['signed' => ['_type' => 'any',], 'signatures' => []],
                 $fileContents,
             ]);
         $metadata->getRole()->willReturn($roleName);
