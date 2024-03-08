@@ -71,8 +71,8 @@ trait TrustedAuthorityTrait
         $role = $untrustedMetadata->getRole();
         $fileInfo = $this->authority->getFileMetaInfo($role . '.json');
         $expectedVersion = $fileInfo['version'];
-        if ($expectedVersion !== $untrustedMetadata->getVersion()) {
-            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$untrustedMetadata->getVersion()}.");
+        if ($expectedVersion !== $untrustedMetadata->version) {
+            throw new MetadataException("Expected {$role} version {$expectedVersion} does not match actual version {$untrustedMetadata->version}.");
         }
     }
 }

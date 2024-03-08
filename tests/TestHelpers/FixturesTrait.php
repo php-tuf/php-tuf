@@ -97,7 +97,7 @@ trait FixturesTrait
             }
             Assert::assertNotNull($metadata, "'$role.json' not found in local repo.");
 
-            $actualVersion = $metadata->getVersion();
+            $actualVersion = $metadata->version;
             Assert::assertSame(
                 $version,
                 $actualVersion,

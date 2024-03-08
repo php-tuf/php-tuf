@@ -30,9 +30,9 @@ class RootVerifier extends VerifierBase
      */
     protected function checkRollbackAttack(MetadataBase $untrustedMetadata): void
     {
-        $expectedUntrustedVersion = $this->trustedMetadata->getVersion() + 1;
-        $untrustedVersion = $untrustedMetadata->getVersion();
-        if ($expectedUntrustedVersion && ($untrustedMetadata->getVersion() !== $expectedUntrustedVersion)) {
+        $expectedUntrustedVersion = $this->trustedMetadata->version + 1;
+        $untrustedVersion = $untrustedMetadata->version;
+        if ($expectedUntrustedVersion && ($untrustedMetadata->version !== $expectedUntrustedVersion)) {
             throw new RollbackAttackException("Remote 'root' metadata version \"$$untrustedVersion\" " .
               "does not the expected version \"$$expectedUntrustedVersion\"");
         }

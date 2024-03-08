@@ -44,6 +44,8 @@ abstract class MetadataBase
 
     public readonly string $type;
 
+    public readonly int $version;
+
 
     /**
      * MetadataBase constructor.
@@ -56,8 +58,7 @@ abstract class MetadataBase
     public function __construct(array $metadata, public readonly string $source)
     {
         ['signed' => $this->signed, 'signatures' => $this->signatures] = $metadata;
-
-        $this->type = $this->signed['_type'];
+        ['_type' => $this->type, 'version' => $this->version] = $this->signed;
     }
 
     /**
@@ -182,17 +183,6 @@ abstract class MetadataBase
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
         ];
-    }
-
-    /**
-     * Get version.
-     *
-     * @return integer
-     *   The version.
-     */
-    public function getVersion(): int
-    {
-        return $this->signed['version'];
     }
 
     /**

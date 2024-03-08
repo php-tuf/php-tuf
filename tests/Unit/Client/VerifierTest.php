@@ -26,11 +26,13 @@ class VerifierTest extends TestCase
 
         $localMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 1],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn(1);
 
         $verifier = new class ($localMetadata) extends VerifierBase
         {
@@ -49,15 +51,16 @@ class VerifierTest extends TestCase
         // rollback attack is present.
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 2],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $verifier->verify($incomingMetadata);
 
         // Incoming at same version as local.
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $verifier->verify($incomingMetadata);
     }
 
@@ -77,11 +80,13 @@ class VerifierTest extends TestCase
         // be identified as a rollback attack.
         $localMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 2],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
 
         $verifier = new class ($localMetadata) extends VerifierBase
         {
@@ -98,11 +103,13 @@ class VerifierTest extends TestCase
 
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 1],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(1);
         $verifier->verify($incomingMetadata);
     }
 
@@ -125,11 +132,13 @@ class VerifierTest extends TestCase
         // be identified as a rollback attack.
         $localMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 2],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
-        $localMetadata->expects(self::any())->method('getVersion')->willReturn(2);
 
         $verifier = new class ($localMetadata) extends RootVerifier
         {
@@ -146,10 +155,12 @@ class VerifierTest extends TestCase
 
         $incomingMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 2],
+                    'signatures' => [],
+                ],
                 '{}',
             ])->getMock();
-        $incomingMetadata->expects(self::any())->method('getVersion')->willReturn(2);
         $verifier->verify($incomingMetadata);
     }
 
@@ -168,7 +179,10 @@ class VerifierTest extends TestCase
         $dateFormat = "Y-m-d\TH:i:sT";
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 1],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
@@ -206,7 +220,10 @@ class VerifierTest extends TestCase
         $dateFormat = "Y-m-d\TH:i:sT";
         $signedMetadata = $this->getMockBuilder(MetadataBase::class)
             ->setConstructorArgs([
-                ['signed' => ['_type' => 'any'], 'signatures' => []],
+                [
+                    'signed' => ['_type' => 'any', 'version' => 1],
+                    'signatures' => [],
+                ],
                 '{}',
             ])
             ->getMock();
