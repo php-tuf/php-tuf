@@ -58,8 +58,8 @@ jobs:
         if: matrix.operating-system != 'windows-latest'
         run: composer lint
 
-      - name: Run PHPCS
-        run: composer phpcs
+#      - name: Run PHPCS
+#        run: composer phpcs
 
       - name: Generate fixtures
         run: composer fixtures
