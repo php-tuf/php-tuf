@@ -13,33 +13,8 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
 
 jobs:
-  fixtures:
-    name: Confirm test fixtures generation
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Generate fixtures
-      run: |
-        pipenv run python generate_fixtures.py
-        if [[ $(git status --porcelain) ]];
-        then
-            echo "Fixture generation produced changes!"
-            git status
-            exit 1
-        else
-            tar -c -z -f fixtures.tar.gz fixtures
-            exit 0
-        fi
-    - name: Store fixtures as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: fixtures
-        path: fixtures.tar.gz
-        retention-days: 5
-
   build:
     name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
-    needs: fixtures
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
