@@ -4,6 +4,12 @@ namespace Tuf\Tests\FixtureBuilder;
 
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * This is our in-house TUF fixture builder.
+ *
+ * This class is MEANT FOR TESTING PURPOSES ONLY and should absolutely not be
+ * used in production.
+ */
 class Fixture
 {
     public readonly Root $root;
