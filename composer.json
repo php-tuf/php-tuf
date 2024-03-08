@@ -47,9 +47,6 @@
             "phpunit --coverage-text --color=always --testdox"
         ],
         "fixtures": [
-            "rm -r -f ./fixtures/php/**/client",
-            "rm -r -f ./fixtures/php/**/server",
-            "rm -r -f ./fixtures/php/**/targets",
             "\\Tuf\\Tests\\FixtureGenerator::generateAll"
         ],
         "phpcs": "phpcs",

@@ -17,11 +17,27 @@ class Fixture
      */
     public array $targets = [];
 
+    private readonly string $serverDir;
+
+    private readonly string $clientDir;
+
+    private readonly string $targetsDir;
+
     public function __construct(
       public readonly string $baseDir,
       protected ?\DateTimeImmutable $expires = null,
+      private readonly Filesystem $fileSystem = new Filesystem(),
     )
     {
+        $this->serverDir = $baseDir . '/server';
+        $this->clientDir = $baseDir . '/client';
+        $this->targetsDir = $baseDir . '/targets';
+        $fileSystem->remove([
+          $this->serverDir,
+          $this->clientDir,
+          $this->targetsDir,
+        ]);
+
         $this->expires ??= new \DateTimeImmutable('+1 year');
 
         $this->root = new Root($this->expires, [
@@ -47,10 +63,9 @@ class Fixture
 
     public function createTarget(string $name, string|Targets|null $signer = 'targets'): string
     {
-        $dir = $this->baseDir . '/targets';
-        self::mkDir($dir);
+        $this->fileSystem->mkdir($this->targetsDir);
 
-        $path = $dir . '/' . $name;
+        $path = $this->targetsDir . '/' . $name;
         file_put_contents($path, "Contents: $name");
 
         if ($signer) {
@@ -80,9 +95,7 @@ class Fixture
 
     public function publish(bool $withClient = false): void
     {
-        $serverDir = $this->baseDir . '/server';
-
-        self::mkDir($serverDir);
+        $this->fileSystem->mkdir($this->serverDir);
 
         if ($this->root->consistentSnapshot) {
             $this->root->markAsDirty();
@@ -96,15 +109,14 @@ class Fixture
         ];
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
-            file_put_contents("$serverDir/$name", (string) $role);
-            copy("$serverDir/$name", "$serverDir/$role->version.$name");
+            file_put_contents("$this->serverDir/$name", (string) $role);
+            copy("$this->serverDir/$name", "$this->serverDir/$role->version.$name");
 
             $role->isDirty = false;
         }
 
         if ($withClient) {
-            $fs = new Filesystem();
-            $fs->mirror($serverDir, $this->baseDir . '/client', options: [
+            $this->fileSystem->mirror($this->serverDir, $this->clientDir, options: [
               'override' => true,
               'delete' => true,
             ]);
@@ -163,7 +175,7 @@ class Fixture
 
     public function addToHashBin(string $path): void
     {
-        $search = hash('sha256', str_replace($this->baseDir . '/targets/', '', $path));
+        $search = hash('sha256', str_replace("$this->targetsDir/", '', $path));
 
         foreach ($this->targets as $role) {
             foreach ($role->pathHashPrefixes ?? [] as $prefix) {
@@ -174,11 +186,5 @@ class Fixture
             }
         }
         assert(false, "There is no hash bin for $path ($search).");
-    }
-
-    private static function mkDir(string $path): void
-    {
-        $fs = new Filesystem();
-        $fs->mkdir($path);
     }
 }
