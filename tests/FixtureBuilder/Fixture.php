@@ -74,7 +74,7 @@ class Fixture
         ]);
     }
 
-    public function createTarget(string $name, string|Targets|null $signer = 'targets'): void
+    public function createTarget(string $name, string|Targets|null $signer = 'targets'): string
     {
         $dir = $this->baseDir . '/targets';
         self::mkDir($dir);
@@ -85,6 +85,7 @@ class Fixture
         if ($signer) {
             $this->addTarget($path, $signer);
         }
+        return $path;
     }
 
     public function invalidate(): void
@@ -130,6 +131,42 @@ class Fixture
         }
 
         return $role;
+    }
+
+    public function createHashBins(int $binCount = 1024, array $properties = []): void
+    {
+        $prefixLength = strlen(sprintf('%x', $binCount - 1));
+        $prefixCount = 16 ** $prefixLength;
+        $binSize = floor($prefixCount / $binCount);
+        assert($prefixCount % $binCount === 0);
+
+        for ($x = 0; $x < $prefixCount; $x += $binSize) {
+            $high = $x + $binSize - 1;
+
+            if ($x === $high) {
+                $name = sprintf("%0{$prefixLength}x", $x);
+            }
+            else {
+                $name = sprintf("%0{$prefixLength}x-%0{$prefixLength}x", $x, $high);
+            }
+
+            if ($binSize === 1) {
+                $prefixes = [$name];
+            }
+            else {
+                $prefixes = [];
+                for ($y = 0; $y < $x + $binSize; $y++) {
+                    $prefixes[] = sprintf("%0{$prefixLength}x", $y);
+                }
+            }
+
+            $role = $this->delegate('targets', $name, $properties);
+            $role->pathHashPrefixes = $prefixes;
+        }
+    }
+
+    public function addToHashBin(string $path): void
+    {
     }
 
     private static function mkDir(string $path): void

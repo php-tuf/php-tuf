@@ -16,6 +16,7 @@ class FixtureGenerator
         foreach ([true, false] as $consistent) {
             self::attackRollback($consistent);
             self::delegated($consistent);
+            self::hashedBins($consistent);
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
@@ -85,6 +86,21 @@ class FixtureGenerator
         $fixture->publish();
         $fixture->targets['targets']->revokeKey(0);
         $fixture->snapshot->revokeKey(0);
+        $fixture->invalidate();
+        $fixture->publish();
+    }
+
+    private static function hashedBins(bool $consistent): void
+    {
+        $fixture = self::init('HashedBins', $consistent);
+        $fixture->publish(true);
+        $fixture->createHashBins(8, ['terminating' => true]);
+
+        for ($c = 97; $c < 123; $c++) {
+            $path = $fixture->createTarget(chr($c) . '.txt', null);
+            $fixture->addToHashBin($path);
+        }
+
         $fixture->invalidate();
         $fixture->publish();
     }
