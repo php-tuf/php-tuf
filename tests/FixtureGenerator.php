@@ -35,12 +35,11 @@ class FixtureGenerator
 
     private static function init(string $name, bool $consistent): Fixture
     {
-        $dir = sprintf(
-            '%s/php/%s/%s',
+        $dir = implode('/', [
             realpath(__DIR__ . '/../fixtures'),
             $name,
             $consistent ? 'consistent' : 'inconsistent',
-        );
+        ]);
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = $consistent;
         return $fixture;
