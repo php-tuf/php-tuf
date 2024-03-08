@@ -112,8 +112,8 @@ class FileStorageTest extends TestCase
 
         $metadata = $this->prophesize($metadataClass)
             ->willBeConstructedWith([
-               [],
-               "From hell's heart, I refactor thee!",
+                [],
+                "From hell's heart, I refactor thee!",
             ]);
         $metadata->getRole()->willReturn($role);
         $metadata->ensureIsTrusted()->shouldBeCalled();
@@ -146,8 +146,8 @@ class FileStorageTest extends TestCase
 
         $metadata = $this->prophesize(MetadataBase::class)
             ->willBeConstructedWith([
-               [],
-               $fileContents
+                [],
+                $fileContents,
             ]);
         $metadata->getRole()->willReturn($roleName);
         $metadata->ensureIsTrusted()->shouldBeCalled();
