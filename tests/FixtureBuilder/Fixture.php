@@ -167,6 +167,17 @@ class Fixture
 
     public function addToHashBin(string $path): void
     {
+        $search = hash('sha256', str_replace($this->baseDir . '/targets/', '', $path));
+
+        foreach ($this->targets as $role) {
+            foreach ($role->pathHashPrefixes ?? [] as $prefix) {
+                if (str_starts_with($search, $prefix)) {
+                    $role->add($path);
+                    return;
+                }
+            }
+        }
+        assert(false, "There is no hash bin for $path ($search).");
     }
 
     private static function mkDir(string $path): void

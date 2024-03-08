@@ -16,7 +16,6 @@ class FixtureGenerator
         foreach ([true, false] as $consistent) {
             self::attackRollback($consistent);
             self::delegated($consistent);
-            self::hashedBins($consistent);
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
@@ -31,6 +30,7 @@ class FixtureGenerator
             self::thresholdTwoAttack($consistent);
             self::topLevelLTerminating($consistent);
         }
+        self::hashedBins();
     }
 
     private static function init(string $name, bool $consistent): Fixture
@@ -90,9 +90,15 @@ class FixtureGenerator
         $fixture->publish();
     }
 
-    private static function hashedBins(bool $consistent): void
+    private static function hashedBins(): void
     {
-        $fixture = self::init('HashedBins', $consistent);
+        $dir = sprintf(
+          '%s/php/HashedBins',
+          realpath(__DIR__ . '/../fixtures'),
+        );
+        $fixture = new Fixture($dir);
+        $fixture->root->consistentSnapshot = true;
+
         $fixture->publish(true);
         $fixture->createHashBins(8, ['terminating' => true]);
 
