@@ -75,6 +75,6 @@ abstract class StorageBase implements StorageInterface
     public function save(MetadataBase $metadata): void
     {
         $metadata->ensureIsTrusted();
-        $this->write($metadata->getRole(), $metadata->getSource());
+        $this->write($metadata->getRole(), $metadata->source);
     }
 }

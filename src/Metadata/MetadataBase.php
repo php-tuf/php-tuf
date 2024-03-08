@@ -44,10 +44,10 @@ abstract class MetadataBase
      *
      * @param array $metadata
      *   The data.
-     * @param string $sourceJson
+     * @param string $source
      *   The source JSON.
      */
-    public function __construct(protected array $metadata, protected string $sourceJson)
+    public function __construct(protected array $metadata, public readonly string $source)
     {
     }
 
@@ -73,17 +73,6 @@ abstract class MetadataBase
     public function toCanonicalJson(): string
     {
         return static::encodeJson($this->toNormalizedArray());
-    }
-
-    /**
-     * Gets the original JSON source.
-     *
-     * @return string
-     *   The JSON source.
-     */
-    public function getSource(): string
-    {
-        return $this->sourceJson;
     }
 
     /**

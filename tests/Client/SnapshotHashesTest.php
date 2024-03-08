@@ -28,9 +28,12 @@ class SnapshotHashesTest extends ClientTestBase
             $this->clientStorage->delete($name);
         }
 
-        $targetsMetadata = $this->prophesize(TargetsMetadata::class);
+        $targetsMetadata = $this->prophesize(TargetsMetadata::class)
+            ->willBeConstructedWith([
+               [],
+               'invalid data',
+            ]);
         $targetsMetadata->getRole()->willReturn('targets');
-        $targetsMetadata->getSource()->willReturn('invalid data');
         $this->serverMetadata->targets['targets'][1] = $targetsMetadata->reveal();
 
         $this->expectException(MetadataException::class);

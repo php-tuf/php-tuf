@@ -110,9 +110,12 @@ class FileStorageTest extends TestCase
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
 
-        $metadata = $this->prophesize($metadataClass);
+        $metadata = $this->prophesize($metadataClass)
+            ->willBeConstructedWith([
+               [],
+               "From hell's heart, I refactor thee!",
+            ]);
         $metadata->getRole()->willReturn($role);
-        $metadata->getSource()->willReturn("From hell's heart, I refactor thee!");
         $metadata->ensureIsTrusted()->shouldBeCalled();
         $storage->save($metadata->reveal());
 
@@ -141,9 +144,12 @@ class FileStorageTest extends TestCase
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
 
-        $metadata = $this->prophesize(MetadataBase::class);
+        $metadata = $this->prophesize(MetadataBase::class)
+            ->willBeConstructedWith([
+               [],
+               $fileContents
+            ]);
         $metadata->getRole()->willReturn($roleName);
-        $metadata->getSource()->willReturn($fileContents);
         $metadata->ensureIsTrusted()->shouldBeCalled();
         $storage->save($metadata->reveal());
 
