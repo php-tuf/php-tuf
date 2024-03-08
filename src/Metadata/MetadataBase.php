@@ -40,6 +40,8 @@ abstract class MetadataBase
 
     public readonly array $signed;
 
+    public readonly array $signatures;
+
 
     /**
      * MetadataBase constructor.
@@ -49,9 +51,9 @@ abstract class MetadataBase
      * @param string $source
      *   The source JSON.
      */
-    public function __construct(protected array $metadata, public readonly string $source)
+    public function __construct(array $metadata, public readonly string $source)
     {
-        ['signed' => $this->signed] = $metadata;
+        ['signed' => $this->signed, 'signatures' => $this->signatures] = $metadata;
     }
 
     /**
@@ -202,17 +204,6 @@ abstract class MetadataBase
     {
         $timestamp = $this->signed['expires'];
         return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp) ?: throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
-    }
-
-    /**
-     * Get signatures.
-     *
-     * @return array
-     *   The "signatures" section of the data.
-     */
-    public function getSignatures(): array
-    {
-        return $this->metadata['signatures'];
     }
 
     /**

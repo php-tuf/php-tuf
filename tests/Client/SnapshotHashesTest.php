@@ -30,7 +30,7 @@ class SnapshotHashesTest extends ClientTestBase
 
         $targetsMetadata = $this->prophesize(TargetsMetadata::class)
             ->willBeConstructedWith([
-                ['signed' => []],
+                ['signed' => [], 'signatures' => []],
                 'invalid data',
             ]);
         $targetsMetadata->getRole()->willReturn('targets');

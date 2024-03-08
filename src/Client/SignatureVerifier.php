@@ -63,7 +63,7 @@ final class SignatureVerifier
         $needVerified = $role->getThreshold();
         $verifiedKeySignatures = [];
 
-        foreach ($metadata->getSignatures() as $signature) {
+        foreach ($metadata->signatures as $signature) {
             // Don't allow the same key to be counted twice.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
