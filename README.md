@@ -28,37 +28,11 @@ Composer project. Contributing projects:
 The PHP-TUF client is designed to provide TUF verification to PHP applications
 for target signatures.
 
-- Minimum required PHP version: 8.0
+- Minimum required PHP version: 8.1
 - Requires `ext-json`
 - The `paragonie/sodium_compat` dependency provides a polyfill for the Sodium
   cryptography library; however, installing `ext-sodium` is recommended for
   better performance and security.
-
-## PHP-TUF development requirements
-
-We recommend using the [default CLI
-implementation](https://github.com/theupdateframework/tuf/blob/develop/docs/CLI.md)
-(a Python application) to generate keys and signatures as a part of your
-project's release creation process. This will require:
-- Python 3.9+
-- PIP 19+
-
-@todo More detailed instructions. https://github.com/php-tuf/php-tuf/issues/170
-
-### Server environment setup for the Python TUF CLI
-
-1. Install OS-level dependencies:
-   - On Fedora 33:
-
-         sudo dnf install pipenv python3-devel libffi-devel
-
-   - On Ubuntu 20.10:
-
-         sudo apt-get install pipenv python3-dev libffi-dev
-
-2. Configure the virtual environment:
-
-       pipenv install
 
 ## Code style
 
@@ -82,19 +56,6 @@ Fixtures should appear in `fixtures/`.
 
 1. Ensure you have all required dependencies by running `composer install`.
 2. Run `composer test` at the project's root.
-
-### Leveraging test fixtures directly
-
-1. From `fixtures/*/tufrepo`:
-
-       python3 -m http.server 8001
-
-1. From `fixtures/*/tufclient`:
-
-       mkdir -p tuftargets
-       curl http://localhost:8001/targets/testtarget.txt > tuftargets/testtarget.txt
-       client.py --repo http://localhost:8001 testtarget.txt
-       # A 404 is expected for N.root.json unless a key has been rotated.
 
 ## Dependency policies and information
 
