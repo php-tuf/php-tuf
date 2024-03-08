@@ -91,10 +91,10 @@ class FixtureGenerator
 
     private static function hashedBins(): void
     {
-        $dir = sprintf(
-            '%s/php/HashedBins',
+        $dir = implode('/', [
             realpath(__DIR__ . '/../fixtures'),
-        );
+            'HashedBins',
+        ]);
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = true;
 
