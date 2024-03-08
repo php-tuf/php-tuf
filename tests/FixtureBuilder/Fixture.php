@@ -189,6 +189,7 @@ class Fixture
     private static function mkDir(string $path): void
     {
         if (is_dir($path)) {
+            assert(chmod($path, 0777));
             return;
         }
         assert(mkdir($path, recursive: true));
