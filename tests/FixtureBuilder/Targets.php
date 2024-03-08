@@ -46,7 +46,7 @@ final class Targets extends Payload
         }
     }
 
-    public function toArray(): array
+    protected function toArray(): array
     {
         $data = parent::toArray();
 

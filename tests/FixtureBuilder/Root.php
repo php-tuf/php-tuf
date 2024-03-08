@@ -13,7 +13,7 @@ final class Root extends Payload
         parent::__construct('root', null, null, ...$arguments);
     }
 
-    public function toArray(): array
+    protected function toArray(): array
     {
         $data = parent::toArray();
 

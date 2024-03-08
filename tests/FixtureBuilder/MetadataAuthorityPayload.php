@@ -10,7 +10,7 @@ abstract class MetadataAuthorityPayload extends Payload
 
     public bool $withLength = true;
 
-    public function toArray(): array
+    protected function toArray(): array
     {
         $data = parent::toArray();
 
