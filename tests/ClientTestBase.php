@@ -138,8 +138,7 @@ class ClientTestBase extends TestCase
             }
         }
 
-        // @todo Restore this once all fixtures are converted to PHP.
-        // $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
+         $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
     }
 
     /**

@@ -53,7 +53,6 @@ class Fixture
             $this->root->markAsDirty();
         }
 
-        $clientVersions = [];
         $roles = [
           ...$this->targets,
           $this->snapshot,
@@ -69,7 +68,6 @@ class Fixture
 
             $role->isDirty = false;
         }
-        file_put_contents($this->baseDir . '/client_versions.ini', implode("\n", $clientVersions));
     }
 
     public function writeClient(): void
