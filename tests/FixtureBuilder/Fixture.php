@@ -45,41 +45,6 @@ class Fixture
         $this->invalidate();
     }
 
-    private function writeAllToDirectory(string $dir): void
-    {
-        self::mkDir($dir);
-
-        if ($this->root->consistentSnapshot) {
-            $this->root->markAsDirty();
-        }
-
-        $roles = [
-          ...$this->targets,
-          $this->snapshot,
-          $this->timestamp,
-          $this->root,
-        ];
-        foreach ($roles as $role) {
-            $clientVersions[] = "$role->name = $role->version";
-
-            $name = $role->name . '.' . $role::FILE_EXTENSION;
-            file_put_contents("$dir/$name", (string) $role);
-            copy("$dir/$name", "$dir/$role->version.$name");
-
-            $role->isDirty = false;
-        }
-    }
-
-    public function writeClient(): void
-    {
-        $serverDir = $this->baseDir . '/server';
-        $fs = new Filesystem();
-        $fs->mirror($serverDir, $this->baseDir . '/client', options: [
-          'override' => true,
-          'delete' => true,
-        ]);
-    }
-
     public function createTarget(string $name, string|Targets|null $signer = 'targets'): string
     {
         $dir = $this->baseDir . '/targets';
@@ -115,9 +80,34 @@ class Fixture
 
     public function publish(bool $withClient = false): void
     {
-        $this->writeAllToDirectory($this->baseDir . '/server');
+        $serverDir = $this->baseDir . '/server';
+
+        self::mkDir($serverDir);
+
+        if ($this->root->consistentSnapshot) {
+            $this->root->markAsDirty();
+        }
+
+        $roles = [
+          ...$this->targets,
+          $this->snapshot,
+          $this->timestamp,
+          $this->root,
+        ];
+        foreach ($roles as $role) {
+            $name = $role->name . '.' . $role::FILE_EXTENSION;
+            file_put_contents("$serverDir/$name", (string) $role);
+            copy("$serverDir/$name", "$serverDir/$role->version.$name");
+
+            $role->isDirty = false;
+        }
+
         if ($withClient) {
-            $this->writeClient();
+            $fs = new Filesystem();
+            $fs->mirror($serverDir, $this->baseDir . '/client', options: [
+              'override' => true,
+              'delete' => true,
+            ]);
         }
     }
 
