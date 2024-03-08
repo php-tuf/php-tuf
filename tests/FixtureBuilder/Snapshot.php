@@ -11,23 +11,39 @@ final class Snapshot extends MetadataAuthorityPayload
         parent::__construct('snapshot', $keyRing, $parent, ...$arguments);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function watch(Payload $payload): void
     {
+        // The snapshot role only watches for changes in targets roles.
         assert($payload instanceof Targets);
         parent::watch($payload);
 
+        // Because we've changed, the timestamp role will need to be updated as
+        // well.
         $this->parent->markAsDirty();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function addKey(): void
     {
         parent::addKey();
+        // Because we've changed, the timestamp role will need to be updated as
+        // well.
         $this->parent->markAsDirty();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function revokeKey(int $which): void
     {
         parent::revokeKey($which);
+        // Because we've changed, the timestamp role will need to be updated as
+        // well.
         $this->parent->markAsDirty();
     }
 }

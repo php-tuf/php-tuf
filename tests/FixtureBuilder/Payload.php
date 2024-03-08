@@ -30,7 +30,6 @@ use Tuf\CanonicalJsonTrait;
  */
 abstract class Payload implements \Stringable
 {
-
     use CanonicalJsonTrait;
 
     public int $threshold = 1;
@@ -58,11 +57,10 @@ abstract class Payload implements \Stringable
 
     final public function markAsDirty(): void
     {
-        if ($this->isDirty) {
-            return;
+        if ($this->isDirty === false) {
+            $this->isDirty = true;
+            $this->version++;
         }
-        $this->isDirty = true;
-        $this->version++;
     }
 
     public function addKey(): void
@@ -70,15 +68,18 @@ abstract class Payload implements \Stringable
         $this->signingKeys[] = Key::fromStaticList();
 
         $this->markAsDirty();
+        // Since we have added a key, our key ring (the role that signs us)
+        // will need to be updated as well.
         $this->keyRing?->markAsDirty();
     }
 
     public function revokeKey(int $which): void
     {
-        array_push($this->revokedKeys, ...
-            array_splice($this->signingKeys, $which, 1));
+        array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
         $this->markAsDirty();
+        // Since we have revoked a key, our key ring (the role that signs us)
+        // will need to be updated as well.
         $this->keyRing?->markAsDirty();
     }
 

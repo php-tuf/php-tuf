@@ -20,6 +20,8 @@ trait CanonicalJsonTrait
      *
      * @param array $data
      *   The associative array of data.
+     * @param int $flags
+     *   (optional) Additional flags to pass to json_encode().
      *
      * @return string
      *   An encoded string of normalized, canonical JSON data.
@@ -55,6 +57,7 @@ trait CanonicalJsonTrait
      */
     private static function sortKeys(array &$data): void
     {
+        // We only need to sort non-indexed arrays.
         if (!array_is_list($data) && !ksort($data, SORT_STRING)) {
             throw new \RuntimeException("Failure sorting keys. Canonicalization is not possible.");
         }

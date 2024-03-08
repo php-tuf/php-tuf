@@ -6,7 +6,6 @@ namespace Tuf\Tests\FixtureBuilder;
 
 final class Targets extends Payload
 {
-
     public ?array $paths = null;
 
     public ?array $pathHashPrefixes = null;
@@ -15,12 +14,8 @@ final class Targets extends Payload
 
     private array $targets = [];
 
-    public function __construct(
-        Root|self $keyRing,
-        Snapshot $parent,
-        string $name = 'targets',
-        mixed ...$arguments,
-    ) {
+    public function __construct(Root|self $keyRing, Snapshot $parent, string $name = 'targets', mixed ...$arguments)
+    {
         if ($keyRing instanceof Root) {
             assert($name === 'targets');
         }
@@ -42,8 +37,11 @@ final class Targets extends Payload
         $this->targets[$name] = $path;
 
         $this->markAsDirty();
+        // Because we have changed, the snapshot will need to be updated too.
         $this->parent->markAsDirty();
 
+        // If we are a delegated role, the top-level targets role also needs to
+        // be updated when we've changed.
         if ($this->name !== 'targets') {
             $this->parent->payloads['targets']?->markAsDirty();
         }
@@ -78,8 +76,6 @@ final class Targets extends Payload
         }
 
         foreach ($this->targets as $name => $path) {
-            assert(is_file($path));
-
             $data['targets'][$name] = [
                 'hashes' => [
                     'sha256' => hash_file('sha256', $path),
@@ -88,16 +84,16 @@ final class Targets extends Payload
                 'length' => filesize($path),
             ];
             if ($this->name !== 'targets') {
-                $data['targets'][$name]['custom'] = (object)[];
+                $data['targets'][$name]['custom'] = (object) [];
             }
         }
 
         $data += [
             'delegations' => [
-                'keys' => (object)[],
+                'keys' => (object) [],
                 'roles' => [],
             ],
-            'targets' => (object)[],
+            'targets' => (object) [],
         ];
         return $data;
     }

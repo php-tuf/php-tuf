@@ -10,14 +10,21 @@ final class Root extends Payload
 
     public function __construct(mixed ...$arguments)
     {
+        // The root role signs itself, so it has no key ring, and it has no
+        // parent because no other role needs to be changed if this one does.
         parent::__construct('root', null, null, ...$arguments);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function toArray(): array
     {
         $data = parent::toArray();
 
         /** @var Payload $role */
+        // Loop through every role that we're watching (which should just be
+        // the four top-level ones).
         foreach ([$this, ...$this->payloads] as $role) {
             $data['roles'][$role->name]['threshold'] = $role->threshold;
 
