@@ -60,7 +60,7 @@ final class SignatureVerifier
     {
         $roleName = $metadata->getRole();
         $role = $this->roles[$roleName] ?? throw new NotFoundException($roleName, 'role');
-        $needVerified = $role->getThreshold();
+        $needVerified = $role->threshold;
         $verifiedKeySignatures = [];
 
         foreach ($metadata->signatures as $signature) {

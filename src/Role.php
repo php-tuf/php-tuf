@@ -21,7 +21,7 @@ class Role
      * @param array $keyIds
      *   The key IDs.
      */
-    protected function __construct(public readonly string $name, protected int $threshold, protected array $keyIds)
+    protected function __construct(public readonly string $name, public readonly int $threshold, protected array $keyIds)
     {
     }
 
@@ -58,18 +58,6 @@ class Role
     {
         return $this->keyIds === $other->keyIds;
     }
-
-    /**
-     * Gets the threshold required.
-     *
-     * @return int
-     *   The threshold number of signatures required for the role.
-     */
-    public function getThreshold(): int
-    {
-        return $this->threshold;
-    }
-
 
     /**
      * Checks whether the given key is authorized for the role.
