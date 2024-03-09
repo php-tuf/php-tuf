@@ -83,26 +83,26 @@ class TargetsMetadata extends MetadataBase
                     new All([
                         new Collection([
                             'fields' => [
-                                    'name' => [
-                                        new NotBlank(),
+                                'name' => [
+                                    new NotBlank(),
+                                    new Type('string'),
+                                ],
+                                'paths' => new Optional([
+                                    new All([
                                         new Type('string'),
-                                    ],
-                                    'paths' => new Optional([
-                                        new All([
-                                            new Type('string'),
-                                            new NotBlank(),
-                                        ]),
+                                        new NotBlank(),
                                     ]),
-                                    'path_hash_prefixes' => new Optional([
-                                        new All([
-                                            new Type('string'),
-                                            new NotBlank(),
-                                        ]),
+                                ]),
+                                'path_hash_prefixes' => new Optional([
+                                    new All([
+                                        new Type('string'),
+                                        new NotBlank(),
                                     ]),
-                                    'terminating' => [
-                                        new Type('boolean'),
-                                    ],
-                                ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
+                                ]),
+                                'terminating' => [
+                                    new Type('boolean'),
+                                ],
+                            ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
                         ]),
                     ]),
                     new Unique([
