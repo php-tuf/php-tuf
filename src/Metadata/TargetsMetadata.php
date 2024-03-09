@@ -3,9 +3,8 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
-use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Collection;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Constraints\Unique;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Optional;
@@ -44,28 +43,6 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
-     * Validates that delegated role names are unique.
-     *
-     * @todo Use Symfony's Unique constraint for this when at least Symfony
-     *   6.1 is required in https://github.com/php-tuf/php-tuf/issues/317.
-     *
-     * @param mixed $delegations
-     *   The value to be validated.
-     * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
-     *   The validation context.
-     */
-    public static function validateDelegatedRoles(mixed $delegations, ExecutionContextInterface $context): void
-    {
-        if (!is_array($delegations)) {
-            return;
-        }
-        $names = array_column($delegations['roles'] ?? [], 'name');
-        if ($names !== array_unique($names)) {
-            $context->addViolation('Delegated role names must be unique.');
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     protected function toNormalizedArray(): array
@@ -98,41 +75,42 @@ class TargetsMetadata extends MetadataBase
         $options['fields']['delegations'] = new Optional([
             new Collection([
                 'keys' => new Required([
-                    new Type('array'),
                     new All([
                         static::getKeyConstraints(),
                     ]),
                 ]),
-                'roles' => new All([
-                    new Type('array'),
-                    new Collection([
-                        'fields' => [
-                            'name' => [
-                                new NotBlank(),
-                                new Type('string'),
-                            ],
-                            'paths' => new Optional([
-                                new Type('array'),
-                                new All([
-                                    new Type('string'),
-                                    new NotBlank(),
-                                ]),
-                            ]),
-                            'path_hash_prefixes' => new Optional([
-                                new Type('array'),
-                                new All([
-                                    new Type('string'),
-                                    new NotBlank(),
-                                ]),
-                            ]),
-                            'terminating' => [
-                                new Type('boolean'),
-                            ],
-                        ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
+                'roles' => new Required([
+                    new All([
+                        new Collection([
+                            'fields' => [
+                                    'name' => [
+                                        new NotBlank(),
+                                        new Type('string'),
+                                    ],
+                                    'paths' => new Optional([
+                                        new All([
+                                            new Type('string'),
+                                            new NotBlank(),
+                                        ]),
+                                    ]),
+                                    'path_hash_prefixes' => new Optional([
+                                        new All([
+                                            new Type('string'),
+                                            new NotBlank(),
+                                        ]),
+                                    ]),
+                                    'terminating' => [
+                                        new Type('boolean'),
+                                    ],
+                                ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
+                        ]),
+                    ]),
+                    new Unique([
+                        'fields' => ['name'],
+                        'message' => 'Delegated role names must be unique.',
                     ]),
                 ]),
             ]),
-            new Callback([static::class, 'validateDelegatedRoles']),
         ]);
         $options['fields']['targets'] = new Required([
             new All([
