@@ -21,7 +21,7 @@ class Role
      * @param array $keyIds
      *   The key IDs.
      */
-    protected function __construct(protected string $name, protected int $threshold, protected array $keyIds)
+    protected function __construct(public readonly string $name, protected int $threshold, protected array $keyIds)
     {
     }
 
@@ -57,16 +57,6 @@ class Role
     public function keysMatch(Role $other): bool
     {
         return $this->keyIds === $other->keyIds;
-    }
-
-    /**
-     * Gets the role name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
     }
 
     /**

@@ -21,14 +21,13 @@ class RoleTest extends TestCase
 
     /**
      * @covers ::createFromMetadata
-     * @covers ::getName
      * @covers ::getThreshold
      */
     public function testCreateFromMetadata(): void
     {
         $this->role = $this->createTestRole();
         self::assertSame(1000, $this->role->getThreshold());
-        self::assertSame('my_role', $this->role->getName());
+        self::assertSame('my_role', $this->role->name);
     }
 
     /**

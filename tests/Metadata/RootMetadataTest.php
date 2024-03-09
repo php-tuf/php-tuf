@@ -184,7 +184,7 @@ class RootMetadataTest extends MetadataBaseTest
         self::assertCount(4, $roles);
         foreach ($expectRoleNames as $expectRoleName) {
             self::assertSame($data['signed']['roles'][$expectRoleName]['threshold'], $roles[$expectRoleName]->getThreshold());
-            self::assertSame($expectRoleName, $roles[$expectRoleName]->getName());
+            self::assertSame($expectRoleName, $roles[$expectRoleName]->name);
             foreach ($data['signed']['roles'][$expectRoleName]['keyids'] as $keyId) {
                 self::assertTrue($roles[$expectRoleName]->isKeyIdAcceptable($keyId));
             }

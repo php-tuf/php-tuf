@@ -443,7 +443,7 @@ class Updater
         }
 
         foreach ($delegatedRoles as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->getName();
+            $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).

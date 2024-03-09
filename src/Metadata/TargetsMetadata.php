@@ -254,7 +254,7 @@ class TargetsMetadata extends MetadataBase
         $roles = [];
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
             $role = DelegatedRole::createFromMetadata($roleInfo);
-            $roles[$role->getName()] = $role;
+            $roles[$role->name] = $role;
         }
         return $roles;
     }

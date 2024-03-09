@@ -122,7 +122,7 @@ final class SignatureVerifier
      */
     public function addRole(Role $role): void
     {
-        $name = $role->getName();
+        $name = $role->name;
         if (!array_key_exists($name, $this->roles)) {
             $this->roles[$name] = $role;
         }
