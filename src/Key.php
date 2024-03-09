@@ -22,7 +22,7 @@ final class Key
      * @param string $public
      *   The public key value.
      */
-    private function __construct(private string $type, private string $scheme, public readonly string $public)
+    private function __construct(public readonly string $type, private string $scheme, public readonly string $public)
     {
     }
 
@@ -51,17 +51,6 @@ final class Key
     }
 
     /**
-     * Gets the key type.
-     *
-     * @return string
-     *   The key type.
-     */
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /**
      * Computes the key ID.
      *
      * Per specification section 4.2, the KEYID is a hexdigest of the SHA-256
@@ -85,7 +74,7 @@ final class Key
         // any value for keyid_hash_algorithms in the key data in root.json is
         // ignored.
         $canonical = self::encodeJson([
-            'keytype' => $this->getType(),
+            'keytype' => $this->type,
             'scheme' => $this->scheme,
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keyval' => [

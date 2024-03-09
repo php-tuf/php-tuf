@@ -157,7 +157,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         foreach ($keys as $key) {
             $computedId = $key->getComputedKeyId();
             self::assertArrayHasKey($computedId, $expectedKeys);
-            self::assertSame($expectedKeys[$computedId]['keytype'], $key->getType());
+            self::assertSame($expectedKeys[$computedId]['keytype'], $key->type);
             self::assertSame($expectedKeys[$computedId]['keyval']['public'], $key->public);
         }
     }

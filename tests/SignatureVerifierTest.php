@@ -41,7 +41,7 @@ class SignatureVerifierTest extends TestCase
         foreach ($rootMetadata->getKeys() as $keyId => $key) {
             $this->assertArrayHasKey($keyId, $verifierKeys);
             self::assertSame($key->public, $verifierKeys[$keyId]->public);
-            self::assertSame($key->getType(), $verifierKeys[$keyId]->getType());
+            self::assertSame($key->type, $verifierKeys[$keyId]->type);
             self::assertSame($key->getComputedKeyId(), $verifierKeys[$keyId]->getComputedKeyId());
         }
     }
