@@ -13,7 +13,6 @@ class KeyTest extends TestCase
     /**
      * @covers ::createFromMetadata
      * @covers ::getComputedKeyId
-     * @covers ::getPublic
      * @covers ::getType
      *
      * @dataProvider providerCreateFromMetadata
@@ -28,7 +27,7 @@ class KeyTest extends TestCase
         $key = Key::createFromMetadata($data);
         self::assertInstanceOf(Key::class, $key);
         self::assertSame('ed25519', $key->getType());
-        self::assertSame('12345', $key->getPublic());
+        self::assertSame('12345', $key->public);
         $keySortedCanonicalStruct = [
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keytype' => 'ed25519',

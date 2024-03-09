@@ -22,7 +22,7 @@ final class Key
      * @param string $public
      *   The public key value.
      */
-    private function __construct(private string $type, private string $scheme, private string $public)
+    private function __construct(private string $type, private string $scheme, public readonly string $public)
     {
     }
 
@@ -48,17 +48,6 @@ final class Key
             $keyInfo['scheme'],
             $keyInfo['keyval']['public']
         );
-    }
-
-    /**
-     * Gets the public key value.
-     *
-     * @return string
-     *   The public key value.
-     */
-    public function getPublic(): string
-    {
-        return $this->public;
     }
 
     /**
@@ -100,7 +89,7 @@ final class Key
             'scheme' => $this->scheme,
             'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keyval' => [
-                'public' => $this->getPublic(),
+                'public' => $this->public,
             ],
         ]);
         return hash('sha256', $canonical);

@@ -106,7 +106,7 @@ final class SignatureVerifier
         if (!array_key_exists($keyId, $this->keys)) {
             throw new NotFoundException($keyId, 'key');
         }
-        $pubkey = $this->keys[$keyId]->getPublic();
+        $pubkey = $this->keys[$keyId]->public;
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
