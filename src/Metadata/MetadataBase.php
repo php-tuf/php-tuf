@@ -52,19 +52,6 @@ abstract class MetadataBase
     }
 
     /**
-     * Returns a normalized array version of this object for JSON encoding.
-     *
-     * @see ::toCanonicalJson()
-     *
-     * @return array
-     *   A normalized array representation of this object.
-     */
-    protected function toNormalizedArray(): array
-    {
-        return $this->getSigned();
-    }
-
-    /**
      * Returns a canonical JSON representation of this metadata object.
      *
      * @return string
@@ -72,7 +59,7 @@ abstract class MetadataBase
      */
     public function toCanonicalJson(): string
     {
-        return static::encodeJson($this->toNormalizedArray());
+        return static::encodeJson($this->getSigned());
     }
 
     /**

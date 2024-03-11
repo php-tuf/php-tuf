@@ -66,27 +66,33 @@ class TargetsMetadata extends MetadataBase
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a canonical JSON representation of this metadata object.
+     *
+     * @return string
+     *   The canonical JSON representation of this object.
      */
-    protected function toNormalizedArray(): array
+    public function toCanonicalJson(): string
     {
-        $normalized = parent::toNormalizedArray();
+        $metadata = $this->getSigned();
 
-        foreach ($normalized['targets'] as $path => $target) {
+        // Apply sorting
+        self::sortKeys($metadata);
+
+        foreach ($metadata['targets'] as $path => $target) {
             // Custom target info should always encode to an object, even if
             // it's empty.
             if (array_key_exists('custom', $target)) {
-                $normalized['targets'][$path]['custom'] = (object) $target['custom'];
+                $metadata['targets'][$path]['custom'] = (object) $target['custom'];
             }
         }
 
         // Ensure that these will encode as objects even if they're empty.
-        $normalized['targets'] = (object) $normalized['targets'];
-        if (array_key_exists('delegations', $normalized)) {
-            $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+        $metadata['targets'] = (object) $metadata['targets'];
+        if (array_key_exists('delegations', $metadata)) {
+            $metadata['delegations']['keys'] = (object) $metadata['delegations']['keys'];
         }
 
-        return $normalized;
+        return static::encodeJson($metadata);
     }
 
     /**

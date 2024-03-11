@@ -55,7 +55,7 @@ trait CanonicalJsonTrait
      * @throws \RuntimeException
      *     Thrown if sorting the array fails.
      */
-    private static function sortKeys(array &$data): void
+    protected static function sortKeys(array &$data): void
     {
         // We only need to sort non-indexed arrays.
         if (!array_is_list($data) && !ksort($data, SORT_STRING)) {
