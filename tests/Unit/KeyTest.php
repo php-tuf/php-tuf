@@ -13,8 +13,6 @@ class KeyTest extends TestCase
     /**
      * @covers ::createFromMetadata
      * @covers ::getComputedKeyId
-     * @covers ::getPublic
-     * @covers ::getType
      */
     public function testCreateFromMetadata(): void
     {
@@ -25,8 +23,8 @@ class KeyTest extends TestCase
         ];
         $key = Key::createFromMetadata($data);
         self::assertInstanceOf(Key::class, $key);
-        self::assertSame('ed25519', $key->getType());
-        self::assertSame('12345', $key->getPublic());
+        self::assertSame('ed25519', $key->type);
+        self::assertSame('12345', $key->public);
         $keySortedCanonicalStruct = [
             'keytype' => 'ed25519',
             'keyval' => ['public' => '12345'],

@@ -28,10 +28,19 @@ class SnapshotHashesTest extends ClientTestBase
             $this->clientStorage->delete($name);
         }
 
-        $targetsMetadata = $this->prophesize(TargetsMetadata::class);
-        $targetsMetadata->getRole()->willReturn('targets');
-        $targetsMetadata->getSource()->willReturn('invalid data');
-        $this->serverMetadata->targets['targets'][1] = $targetsMetadata->reveal();
+        $targetsMetadata = $this->getMockBuilder(TargetsMetadata::class)
+            ->setConstructorArgs([
+                [
+                    'signed' => ['_type' => 'targets', 'version' => 1],
+                    'signatures' => [],
+                ],
+                'invalid data',
+            ])
+            ->getMock();
+        $targetsMetadata->expects($this->any())
+            ->method('getRole')
+            ->willReturn('targets');
+        $this->serverMetadata->targets['targets'][1] = $targetsMetadata;
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage("The 'targets' contents does not match hash 'sha256' specified in the 'snapshot' metadata.");

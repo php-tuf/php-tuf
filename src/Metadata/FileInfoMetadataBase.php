@@ -21,7 +21,6 @@ abstract class FileInfoMetadataBase extends MetadataBase
     public function getFileMetaInfo(string $key, bool $allowUntrustedAccess = false): ?array
     {
         $this->ensureIsTrusted($allowUntrustedAccess);
-        $signed = $this->getSigned();
-        return $signed['meta'][$key] ?? null;
+        return $this->signed['meta'][$key] ?? null;
     }
 }

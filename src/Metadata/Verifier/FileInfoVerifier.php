@@ -24,8 +24,8 @@ abstract class FileInfoVerifier extends VerifierBase
         // the same files in the new metadata info.
         // For 'snapshot' type this is § 5.5.5.
         // For 'timestamp' type this is § 5.4.3.?.
-        $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
-        $type = $this->trustedMetadata->getType();
+        $localMetaFileInfos = $this->trustedMetadata->signed['meta'];
+        $type = $this->trustedMetadata->type;
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
             if ($remoteFileInfo = $untrustedMetadata->getFileMetaInfo($fileName, true)) {

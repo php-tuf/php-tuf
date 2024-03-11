@@ -37,17 +37,27 @@ abstract class MetadataBase
      */
     private bool $isTrusted = false;
 
+    public readonly array $signed;
+
+    public readonly array $signatures;
+
+    public readonly string $type;
+
+    public readonly int $version;
+
 
     /**
      * MetadataBase constructor.
      *
      * @param array $metadata
      *   The data.
-     * @param string $sourceJson
+     * @param string $source
      *   The source JSON.
      */
-    public function __construct(protected array $metadata, protected string $sourceJson)
+    public function __construct(array $metadata, public readonly string $source)
     {
+        ['signed' => $this->signed, 'signatures' => $this->signatures] = $metadata;
+        ['_type' => $this->type, 'version' => $this->version] = $this->signed;
     }
 
     /**
@@ -60,7 +70,7 @@ abstract class MetadataBase
      */
     protected function toNormalizedArray(): array
     {
-        return $this->getSigned();
+        return $this->signed;
     }
 
     /**
@@ -72,17 +82,6 @@ abstract class MetadataBase
     public function toCanonicalJson(): string
     {
         return static::encodeJson($this->toNormalizedArray());
-    }
-
-    /**
-     * Gets the original JSON source.
-     *
-     * @return string
-     *   The JSON source.
-     */
-    public function getSource(): string
-    {
-        return $this->sourceJson;
     }
 
     /**
@@ -166,28 +165,6 @@ abstract class MetadataBase
     }
 
     /**
-     * Get signed.
-     *
-     * @return array
-     *   The "signed" section of the data.
-     */
-    public function getSigned(): array
-    {
-        return $this->metadata['signed'];
-    }
-
-    /**
-     * Get version.
-     *
-     * @return integer
-     *   The version.
-     */
-    public function getVersion(): int
-    {
-        return $this->getSigned()['version'];
-    }
-
-    /**
      * Get the expiration date of this metadata.
      *
      * @return \DateTimeImmutable
@@ -198,30 +175,8 @@ abstract class MetadataBase
      */
     public function getExpires(): \DateTimeImmutable
     {
-        $timestamp = $this->getSigned()['expires'];
+        $timestamp = $this->signed['expires'];
         return \DateTimeImmutable::createFromFormat("Y-m-d\TH:i:sT", $timestamp) ?: throw new FormatException($timestamp, "Could not be interpreted as a DateTime");
-    }
-
-    /**
-     * Get signatures.
-     *
-     * @return array
-     *   The "signatures" section of the data.
-     */
-    public function getSignatures(): array
-    {
-        return $this->metadata['signatures'];
-    }
-
-    /**
-     * Get the metadata type.
-     *
-     * @return string
-     *   The type.
-     */
-    public function getType(): string
-    {
-        return $this->getSigned()['_type'];
     }
 
     /**
@@ -235,7 +190,7 @@ abstract class MetadataBase
         // For most metadata types the 'type' and the 'role' are the same.
         // Metadata types that need to specify a different role should override
         // this method.
-        return $this->getType();
+        return $this->type;
     }
 
     /**

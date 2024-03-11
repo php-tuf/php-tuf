@@ -60,10 +60,10 @@ final class SignatureVerifier
     {
         $roleName = $metadata->getRole();
         $role = $this->roles[$roleName] ?? throw new NotFoundException($roleName, 'role');
-        $needVerified = $role->getThreshold();
+        $needVerified = $role->threshold;
         $verifiedKeySignatures = [];
 
-        foreach ($metadata->getSignatures() as $signature) {
+        foreach ($metadata->signatures as $signature) {
             // Don't allow the same key to be counted twice.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
@@ -106,7 +106,7 @@ final class SignatureVerifier
         if (!array_key_exists($keyId, $this->keys)) {
             throw new NotFoundException($keyId, 'key');
         }
-        $pubkey = $this->keys[$keyId]->getPublic();
+        $pubkey = $this->keys[$keyId]->public;
 
         // Encode the pubkey and signature, and check that the signature is
         // valid for the given data and pubkey.
@@ -122,7 +122,7 @@ final class SignatureVerifier
      */
     public function addRole(Role $role): void
     {
-        $name = $role->getName();
+        $name = $role->name;
         if (!array_key_exists($name, $this->roles)) {
             $this->roles[$name] = $role;
         }

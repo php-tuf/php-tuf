@@ -147,7 +147,7 @@ class Updater
         $currentTimestamp = $this->storage->getTimestamp();
         $newTimestampData = $this->updateTimestamp();
         // § 5.4.3.1
-        if ($currentTimestamp && $currentTimestamp->getVersion() === $newTimestampData->getVersion()) {
+        if ($currentTimestamp && $currentTimestamp->version === $newTimestampData->version) {
             $this->storage->save($currentTimestamp);
             $this->isRefreshed = true;
             return true;
@@ -214,7 +214,7 @@ class Updater
         $rootsDownloaded = 0;
         $originalRootData = $rootData;
         // § 5.3.2 and 5.3.3
-        $nextVersion = $rootData->getVersion() + 1;
+        $nextVersion = $rootData->version + 1;
 
         while ($nextRoot = $this->server->getRoot($nextVersion)) {
             $rootsDownloaded++;
@@ -232,7 +232,7 @@ class Updater
             // § 5.3.8
             $this->storage->save($nextRoot);
             // § 5.3.9: repeat from § 5.3.2.
-            $nextVersion = $rootData->getVersion() + 1;
+            $nextVersion = $rootData->version + 1;
         }
         // § 5.3.10
         RootVerifier::checkFreezeAttack($rootData, $this->metadataExpiration);
@@ -443,7 +443,7 @@ class Updater
         }
 
         foreach ($delegatedRoles as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->getName();
+            $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).

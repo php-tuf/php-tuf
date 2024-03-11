@@ -65,7 +65,7 @@ class SnapshotVerifier extends FileInfoVerifier
         // TUF-SPEC-v1.0.16 Section 5.4.4
         /** @var TimestampMetadata $untrustedMetadata */
         $this->checkFileInfoVersions($untrustedMetadata);
-        $localMetaFileInfos = $this->trustedMetadata->getSigned()['meta'];
+        $localMetaFileInfos = $this->trustedMetadata->signed['meta'];
         foreach ($localMetaFileInfos as $fileName => $localFileInfo) {
             /** @var \Tuf\Metadata\SnapshotMetadata|\Tuf\Metadata\TimestampMetadata $untrustedMetadata */
             if (!$untrustedMetadata->getFileMetaInfo($fileName, true)) {

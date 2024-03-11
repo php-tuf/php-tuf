@@ -40,8 +40,8 @@ class SignatureVerifierTest extends TestCase
         // All of the root metadata keys should be loaded into the verifier.
         foreach ($rootMetadata->getKeys() as $keyId => $key) {
             $this->assertArrayHasKey($keyId, $verifierKeys);
-            self::assertSame($key->getPublic(), $verifierKeys[$keyId]->getPublic());
-            self::assertSame($key->getType(), $verifierKeys[$keyId]->getType());
+            self::assertSame($key->public, $verifierKeys[$keyId]->public);
+            self::assertSame($key->type, $verifierKeys[$keyId]->type);
             self::assertSame($key->getComputedKeyId(), $verifierKeys[$keyId]->getComputedKeyId());
         }
     }

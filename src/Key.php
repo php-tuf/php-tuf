@@ -22,7 +22,7 @@ final class Key
      * @param string $public
      *   The public key value.
      */
-    private function __construct(private string $type, private string $scheme, private string $public)
+    private function __construct(public readonly string $type, private string $scheme, public readonly string $public)
     {
     }
 
@@ -51,28 +51,6 @@ final class Key
     }
 
     /**
-     * Gets the public key value.
-     *
-     * @return string
-     *   The public key value.
-     */
-    public function getPublic(): string
-    {
-        return $this->public;
-    }
-
-    /**
-     * Gets the key type.
-     *
-     * @return string
-     *   The key type.
-     */
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    /**
      * Computes the key ID.
      *
      * Per specification section 4.2, the KEYID is a hexdigest of the SHA-256
@@ -89,10 +67,10 @@ final class Key
     {
         // @see https://github.com/secure-systems-lab/securesystemslib/blob/master/securesystemslib/keys.py
         $canonical = self::encodeJson([
-            'keytype' => $this->getType(),
+            'keytype' => $this->type,
             'scheme' => $this->scheme,
             'keyval' => [
-                'public' => $this->getPublic(),
+                'public' => $this->public,
             ],
         ]);
         return hash('sha256', $canonical);

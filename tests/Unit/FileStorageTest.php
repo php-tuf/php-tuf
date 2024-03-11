@@ -110,11 +110,21 @@ class FileStorageTest extends TestCase
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
 
-        $metadata = $this->prophesize($metadataClass);
-        $metadata->getRole()->willReturn($role);
-        $metadata->getSource()->willReturn("From hell's heart, I refactor thee!");
-        $metadata->ensureIsTrusted()->shouldBeCalled();
-        $storage->save($metadata->reveal());
+        $metadata = $this->getMockBuilder($metadataClass)
+            ->setConstructorArgs([
+                [
+                    'signed' => [
+                        '_type' => $metadataClass::TYPE,
+                        'version' => 1,
+                    ],
+                    'signatures' => [],
+                ],
+                "From hell's heart, I refactor thee!",
+            ])
+            ->getMock();
+        $metadata->expects($this->any())->method('getRole')->willReturn($role);
+        $metadata->expects($this->atLeastOnce())->method('ensureIsTrusted');
+        $storage->save($metadata);
 
         $filePath = $dir . '/' . $expectedFileName;
         $this->assertFileExists($filePath);
@@ -141,11 +151,18 @@ class FileStorageTest extends TestCase
         $dir = sys_get_temp_dir();
         $storage = new FileStorage($dir);
 
-        $metadata = $this->prophesize(MetadataBase::class);
-        $metadata->getRole()->willReturn($roleName);
-        $metadata->getSource()->willReturn($fileContents);
-        $metadata->ensureIsTrusted()->shouldBeCalled();
-        $storage->save($metadata->reveal());
+        $metadata = $this->getMockBuilder(MetadataBase::class)
+            ->setConstructorArgs([
+                [
+                    'signed' => ['_type' => 'any', 'version' => 1],
+                    'signatures' => [],
+                ],
+                $fileContents,
+            ])
+            ->getMock();
+        $metadata->expects($this->any())->method('getRole')->willReturn($roleName);
+        $metadata->expects($this->atLeastOnce())->method('ensureIsTrusted');
+        $storage->save($metadata);
 
         $expectedFileName = 'hello%2F..%2Fthere%21.json';
         $this->assertFileExists($dir . '/' . $expectedFileName);

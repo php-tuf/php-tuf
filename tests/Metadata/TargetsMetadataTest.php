@@ -157,8 +157,8 @@ class TargetsMetadataTest extends MetadataBaseTest
         foreach ($keys as $key) {
             $computedId = $key->getComputedKeyId();
             self::assertArrayHasKey($computedId, $expectedKeys);
-            self::assertSame($expectedKeys[$computedId]['keytype'], $key->getType());
-            self::assertSame($expectedKeys[$computedId]['keyval']['public'], $key->getPublic());
+            self::assertSame($expectedKeys[$computedId]['keytype'], $key->type);
+            self::assertSame($expectedKeys[$computedId]['keyval']['public'], $key->public);
         }
     }
 
@@ -177,8 +177,8 @@ class TargetsMetadataTest extends MetadataBaseTest
         self::assertCount(1, $delegatedRoles);
         foreach ($expectedRoles as $expectedRole) {
             $delegatedRole = $delegatedRoles[$expectedRole['name']];
-            self::assertSame($expectedRole['threshold'], $delegatedRole->getThreshold());
-            self::assertSame($expectedRole['name'], $delegatedRole->getName());
+            self::assertSame($expectedRole['threshold'], $delegatedRole->threshold);
+            self::assertSame($expectedRole['name'], $delegatedRole->name);
             foreach ($expectedRole['keyids'] as $keyId) {
                 self::assertTrue($delegatedRole->isKeyIdAcceptable($keyId));
             }
