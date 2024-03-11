@@ -25,17 +25,20 @@ class Fixture
      */
     public array $targets = [];
 
-    private readonly string $serverDir;
+    public readonly string $serverDir;
 
     private readonly string $clientDir;
 
     private readonly string $targetsDir;
 
     public function __construct(
-        public readonly string $baseDir,
+        ?string $baseDir = null,
         ?\DateTimeImmutable $expires = null,
         private readonly Filesystem $fileSystem = new Filesystem(),
     ) {
+        // By default, create the fixture in a temporary directory.
+        $baseDir ??= uniqid(sys_get_temp_dir() . '/TUF_Fixture_');
+
         // If there's any previous data in the directory, delete it.
         $this->serverDir = $baseDir . '/server';
         $this->clientDir = $baseDir . '/client';

@@ -53,7 +53,7 @@ class FixtureGenerator
         $fixture->publish(true);
 
         $fs = new Filesystem();
-        $fs->rename($fixture->baseDir . '/server', $fixture->baseDir . '/server_backup');
+        $fs->rename($fixture->serverDir, $fixture->serverDir . '_backup');
 
         // Because the client will now have newer information than the server,
         // TUF will consider this a rollback attack.
@@ -61,8 +61,8 @@ class FixtureGenerator
         $fixture->invalidate();
         $fixture->publish(true);
 
-        $fs->remove($fixture->baseDir . '/server');
-        $fs->rename($fixture->baseDir . '/server_backup', $fixture->baseDir . '/server');
+        $fs->remove($fixture->serverDir);
+        $fs->rename($fixture->serverDir . '_backup', $fixture->serverDir);
     }
 
     private static function delegated(bool $consistent): void
@@ -363,7 +363,7 @@ class FixtureGenerator
         $property = $reflector->getProperty('signingKeys');
         $keys = $property->getValue($fixture->timestamp);
 
-        $timestampFile = $fixture->baseDir . '/server/timestamp.json';
+        $timestampFile = $fixture->serverDir . '/timestamp.json';
         $timestampData = file_get_contents($timestampFile);
         $timestampData = static::decodeJson($timestampData);
         $timestampData['signatures'][1] = [
