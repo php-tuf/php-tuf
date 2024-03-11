@@ -56,7 +56,6 @@ final class Key
             'keyval' => [
                 'public' => sodium_bin2hex($this->publicKey),
             ],
-            'keyid_hash_algorithms' => ['sha256', 'sha512'],
         ];
     }
 
