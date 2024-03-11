@@ -10,7 +10,8 @@ use Symfony\Component\Filesystem\Filesystem;
  * This class is MEANT FOR TESTING PURPOSES ONLY and should absolutely not be
  * used in production. It is meant to generate complete TUF repositories, but
  * doesn't necessarily support all of the functionality from the Python TUF
- * tool it was derived from.
+ * tool it was derived from, which was v0.19.0 of python-tuf:
+ * https://github.com/theupdateframework/python-tuf/tree/v0.19.0
  */
 class Fixture
 {
