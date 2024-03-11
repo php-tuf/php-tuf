@@ -88,17 +88,9 @@ final class Key
     public function getComputedKeyId(): string
     {
         // @see https://github.com/secure-systems-lab/securesystemslib/blob/master/securesystemslib/keys.py
-        // The keyid_hash_algorithms array value is based on the TUF settings,
-        // it's not expected to be part of the key metadata. The fact that it is
-        // currently included is a quirk of the TUF python code that may be
-        // fixed in future versions. Calculate using the normal TUF settings
-        // since this is how it's calculated in the securesystemslib code and
-        // any value for keyid_hash_algorithms in the key data in root.json is
-        // ignored.
         $canonical = self::encodeJson([
             'keytype' => $this->getType(),
             'scheme' => $this->scheme,
-            'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keyval' => [
                 'public' => $this->getPublic(),
             ],

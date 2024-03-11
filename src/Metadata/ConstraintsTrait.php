@@ -6,11 +6,9 @@ namespace Tuf\Metadata;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
-use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\IdenticalTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Validation;
 use Tuf\Exception\MetadataException;
@@ -129,15 +127,6 @@ trait ConstraintsTrait
     protected static function getKeyConstraints(): Collection
     {
         return new Collection([
-            // This field is not part of the TUF specification and is being
-            // removed from the Python TUF reference implementation in
-            // https://github.com/theupdateframework/tuf/issues/848.
-            // If it is provided though we only support the default value which
-            // is passed on from a setting in the Python `securesystemslib`
-            // library.
-            'keyid_hash_algorithms' => new Optional([
-                new EqualTo(['value' => ["sha256", "sha512"]]),
-            ]),
             'keytype' => [
                 new Type('string'),
                 new IdenticalTo('ed25519'),

@@ -201,24 +201,6 @@ class TargetsMetadataTest extends MetadataBaseTest
         $this->assertSame('other_role', $metadata->getRole());
     }
 
-    /**
-     * Test that keyid_hash_algorithms must equal the exact value.
-     *
-     * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
-     */
-    public function testKeyidHashAlgorithms()
-    {
-        $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
-        $keyId = key($data['signed']['delegations']['keys']);
-        $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
-        self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Array[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
-        $expectedMessage .= '.* This value should be equal to array';
-        self::expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($data));
-    }
-
     public function testDuplicateDelegatedRoleNames(): void
     {
         $json = $this->clientStorage->read($this->validJson);
