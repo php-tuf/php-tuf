@@ -34,9 +34,8 @@ class TestLoader extends \ArrayObject implements LoaderInterface
         $this->exchangeArray([]);
 
         // Store the file contents in memory so they can be easily altered.
-        $fixturesPath = "$basePath/server";
-        $files = glob("$fixturesPath/metadata/*.json");
-        $targetsPath = "$fixturesPath/targets";
+        $files = glob("$basePath/server/*.json");
+        $targetsPath = "$basePath/targets";
         if (is_dir($targetsPath)) {
             $files = array_merge($files, glob("$targetsPath/*"));
         }
