@@ -34,8 +34,20 @@ abstract class Payload implements \Stringable
 
     public int $threshold = 1;
 
+    /**
+     * The current version of this payload.
+     *
+     * Should not, generally, be changed by external code.
+     *
+     * @var int
+     */
     public int $version = 1;
 
+    /**
+     * Whether this payload has changes that necessitate a version bump.
+     *
+     * @var bool
+     */
     public bool $isDirty = true;
 
     protected array $revokedKeys = [];
@@ -63,6 +75,9 @@ abstract class Payload implements \Stringable
         }
     }
 
+    /**
+     * Adds an additional key which will sign this payload.
+     */
     public function addKey(): void
     {
         $this->signingKeys[] = Key::fromStaticList();
@@ -73,8 +88,19 @@ abstract class Payload implements \Stringable
         $this->keyRing?->markAsDirty();
     }
 
+    /**
+     * Revokes one of the keys which will sign this payload.
+     *
+     * @param int $which
+     *   The numeric index of the key to revoke. For the oldest key, pass 0. For
+     *   the newest key, pass -1.
+     */
     public function revokeKey(int $which): void
     {
+        // The metadata needs to be signed with ALL of the keys (including
+        // revoked ones), but we still need to keep track of the revoked keys
+        // because the key ring needs to be made aware that the revoked key is
+        // no longer acceptable for this metadata.
         array_push($this->revokedKeys, ...array_splice($this->signingKeys, $which, 1));
 
         $this->markAsDirty();
@@ -83,12 +109,31 @@ abstract class Payload implements \Stringable
         $this->keyRing?->markAsDirty();
     }
 
+    /**
+     * Establishes a relationship between this payload and another one.
+     *
+     * This would be used if, for example, a targets role was delegating to
+     * another targets role. The delegated role is effectively a "child" of the
+     * parent, so the parent needs to be able to loop through its children and
+     * examine them.
+     *
+     * @param \Tuf\Tests\FixtureBuilder\Payload $payload
+     *   Another payload.
+     */
     protected function watch(Payload $payload): void
     {
         $this->payloads[$payload->name] = $payload;
         $this->markAsDirty();
     }
 
+    /**
+     * Generates the complete, signed string representation of this metadata.
+     *
+     * The value returned from this method can be written directly to a file,
+     * and read by a TUF client.
+     *
+     * @return string
+     */
     final public function __toString(): string
     {
         $payload = $this->toArray();

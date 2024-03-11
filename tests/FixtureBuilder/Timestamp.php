@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
+/**
+ * A class that can be used to create TUF timestamp metadata.
+ */
 final class Timestamp extends MetadataAuthorityPayload
 {
     public function __construct(Root $keyRing, mixed ...$arguments)

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tuf\Tests\FixtureBuilder;
 
+/**
+ * A class that can be used to create TUF targets metadata.
+ *
+ * This can also be used to create delegated targets metadata, since they are
+ * just regular targets metadata with a different role name.
+ */
 final class Targets extends Payload
 {
     public ?array $paths = null;
@@ -12,6 +18,14 @@ final class Targets extends Payload
 
     public bool $terminating = false;
 
+    /**
+     * The targets this role will sign.
+     *
+     * The keys are the names of the targets, and the values are their full
+     * paths in the filesystem.
+     *
+     * @var string[]
+     */
     private array $targets = [];
 
     public function __construct(Root|self $keyRing, Snapshot $parent, string $name = 'targets', mixed ...$arguments)
@@ -22,6 +36,14 @@ final class Targets extends Payload
         parent::__construct($name, $keyRing, $parent, ...$arguments);
     }
 
+    /**
+     * Delegates to a new targets role.
+     *
+     * @param string $name
+     *   The name of the delegated role.
+     *
+     * @return self
+     */
     public function delegate(string $name): self
     {
         return new self($this, $this->parent, $name, $this->expires, [
@@ -29,6 +51,14 @@ final class Targets extends Payload
         ]);
     }
 
+    /**
+     * Adds a target to be signed by this role.
+     *
+     * @param string $path
+     *   The path of the file to sign.
+     * @param string|null $name
+     *   The name of the target. If not passed, will be the file's base name.
+     */
     public function add(string $path, ?string $name = null): void
     {
         assert(is_file($path));
