@@ -31,14 +31,6 @@
 - **Contacts:** N/A
 - **Additional dependencies:** The majority of dependencies are other Symfony packages. Dev dependencies include doctrine/annotations, doctrine/cache, and egulias/email-validator.
 
-### DeepCopy
-- **Repository:** https://github.com/myclabs/DeepCopy
-- **Release cycle:** https://github.com/myclabs/DeepCopy/releases
-- **Security policies:** There's no security policy on the Git repo.
-- **Security issue reporting:** ?
-- **Contacts:** N/A
-- **Additional dependencies:** Only php. There are additional dev dependencies.
-
 ## Development PHP dependencies
 
 ### PHPUnit
@@ -64,7 +56,3 @@
 - **Security issue reporting:** `security [at] symfony.com`
 - **Contacts:** fabpot, michaelcullum
 - **Additional dependencies:** None
-
-## Development Python dependencies
-@todo Document dependencies here. https://github.com/php-tuf/php-tuf/issues/159
-

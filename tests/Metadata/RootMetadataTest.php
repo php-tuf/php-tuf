@@ -192,24 +192,6 @@ class RootMetadataTest extends MetadataBaseTest
         }
     }
 
-    /**
-     * Test that keyid_hash_algorithms must equal the exact value.
-     *
-     * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
-     */
-    public function testKeyidHashAlgorithms()
-    {
-        $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
-        $keyId = key($data['signed']['keys']);
-        $data['signed']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
-        self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Array[signed][keys][$keyId][keyid_hash_algorithms]:", '/');
-        $expectedMessage .= '.* This value should be equal to array';
-        self::expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($data));
-    }
-
     public function testInvalidKeyType(): void
     {
         $metadata = json_decode($this->clientStorage->read($this->validJson), true);

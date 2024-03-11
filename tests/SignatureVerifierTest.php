@@ -26,7 +26,7 @@ class SignatureVerifierTest extends TestCase
     {
         $rootJsonPath = static::getFixturePath(
             'Delegated/consistent',
-            'client/metadata/current/2.root.json',
+            'client/2.root.json',
             false
         );
         $rootMetadata = RootMetadata::createFromJson(file_get_contents($rootJsonPath))
@@ -51,7 +51,7 @@ class SignatureVerifierTest extends TestCase
      */
     public function testCheckSignatureWithInvalidRole(): void
     {
-        $fixturePath = static::getFixturePath('Simple/consistent', 'server/metadata');
+        $fixturePath = static::getFixturePath('Simple/consistent', 'server');
 
         $rootMetadata = file_get_contents($fixturePath . '/1.root.json');
         $rootMetadata = RootMetadata::createFromJson($rootMetadata)->trust();

@@ -1,7 +1,5 @@
-metadata.staged/
 fixtures/**/client
 fixtures/**/server
-venv/
 
 /vendor/
 .idea

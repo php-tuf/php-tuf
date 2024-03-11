@@ -115,8 +115,8 @@ class TargetsMetadataTest extends MetadataBaseTest
         $data[] = ["signed:targets:$target:custom", 'array'];
 
         $role = $this->getFixtureNestedArrayFirstKey($this->validJson, ['signed', 'delegations', 'roles']);
-        $data[] = ["signed:delegations:roles:$role:paths", 'array'];
-        $data[] = ["signed:delegations:roles:$role:path_hash_prefixes", 'array'];
+        $data[] = ["signed:delegations:roles:$role:paths", 'iterable'];
+        $data[] = ["signed:delegations:roles:$role:path_hash_prefixes", 'iterable'];
         return $data;
     }
 
@@ -199,24 +199,6 @@ class TargetsMetadataTest extends MetadataBaseTest
         // Confirm that if a role name is specified this will be returned.
         $metadata = static::callCreateFromJson($this->clientStorage->read($this->validJson), 'other_role');
         $this->assertSame('other_role', $metadata->getRole());
-    }
-
-    /**
-     * Test that keyid_hash_algorithms must equal the exact value.
-     *
-     * @see \Tuf\Metadata\ConstraintsTrait::getKeyConstraints()
-     */
-    public function testKeyidHashAlgorithms()
-    {
-        $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
-        $keyId = key($data['signed']['delegations']['keys']);
-        $data['signed']['delegations']['keys'][$keyId]['keyid_hash_algorithms'][1] = 'sha513';
-        self::expectException(MetadataException::class);
-        $expectedMessage = preg_quote("Array[signed][delegations][keys][$keyId][keyid_hash_algorithms]:", '/');
-        $expectedMessage .= '.* This value should be equal to array';
-        self::expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($data));
     }
 
     public function testDuplicateDelegatedRoleNames(): void

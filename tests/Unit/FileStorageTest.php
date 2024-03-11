@@ -39,7 +39,7 @@ class FileStorageTest extends TestCase
      */
     public function testLoadTrustedMetadata(): void
     {
-        $storage = new FileStorage(__DIR__ . '/../../fixtures/Delegated/consistent/client/metadata/current');
+        $storage = new FileStorage(__DIR__ . '/../../fixtures/Delegated/consistent/client');
 
         $metadata = $storage->getRoot();
         $this->assertInstanceOf(RootMetadata::class, $metadata);
