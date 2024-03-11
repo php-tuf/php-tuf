@@ -239,7 +239,7 @@ class Fixture
                 $name = sprintf("%0{$prefixLength}x-%0{$prefixLength}x", $x, $high);
             }
 
-            if ($binSize === 1) {
+            if ($binSize === 1.0) {
                 $properties['pathHashPrefixes'] = [$name];
             } else {
                 for ($y = 0; $y < $x + $binSize; $y++) {
