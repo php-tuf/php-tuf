@@ -53,14 +53,12 @@ class DelegatedRole extends Role
             // `paths` is mutually exclusive with `path_hash_prefixes`.
             // @see ::validate()
             'paths' => new Optional([
-                new Type('array'),
                 new All([
                     new Type('string'),
                     new NotBlank(),
                 ]),
             ]),
             'path_hash_prefixes' => new Optional([
-                new Type('array'),
                 new All([
                     new Type('string'),
                     new NotBlank(),
