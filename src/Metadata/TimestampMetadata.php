@@ -24,7 +24,6 @@ class TimestampMetadata extends FileInfoMetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['meta'] = new Required([
-            new Type('array'),
             new Count(['min' => 1]),
             new All([
                 new Collection([

@@ -312,6 +312,7 @@ abstract class MetadataBaseTest extends TestCase
                 $newValue = 'Abb';
                 break;
             case 'array':
+            case 'iterable':
                 $newValue = 3060;
                 break;
             case 'boolean':
