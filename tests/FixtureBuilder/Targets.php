@@ -30,6 +30,9 @@ final class Targets extends Payload
 
     public function __construct(Root|self $keyRing, Snapshot $parent, string $name = 'targets', mixed ...$arguments)
     {
+        // Only the top-level `targets` role is signed by the root role. All
+        // delegated roles (which have names other than `targets`) are signed by
+        // their parent.
         if ($keyRing instanceof Root) {
             assert($name === 'targets');
         }
