@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }} with ${{ matrix.dependencies }}
+    name: PHP ${{ matrix.php }} test on ${{ matrix.operating-system }}
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
