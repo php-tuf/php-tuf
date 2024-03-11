@@ -148,6 +148,15 @@ abstract class Payload implements \Stringable
         return self::encodeJson($data, JSON_PRETTY_PRINT);
     }
 
+    /**
+     * Generates the `signed` part of the payload (everything but the
+     * actual signatures).
+     *
+     * This gets signed, sorted, and converted to a canonical(-ish) JSON form by
+     * ::__toString().
+     *
+     * @return array
+     */
     protected function toArray(): array
     {
         return [

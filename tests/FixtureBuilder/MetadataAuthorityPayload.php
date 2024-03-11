@@ -26,6 +26,9 @@ abstract class MetadataAuthorityPayload extends Payload
      */
     public bool $withLength = true;
 
+    /**
+     * {@inheritDoc}
+     */
     protected function toArray(): array
     {
         $data = parent::toArray();
