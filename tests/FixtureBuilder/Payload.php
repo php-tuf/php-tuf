@@ -18,7 +18,7 @@ use Tuf\CanonicalJsonTrait;
  *
  * - A "parent" relationship is for a payload that enumerates other payloads.
  *   For example, a snapshot has a parent relationship to all targets roles,
- *   regardless of nesting level. The parent may needs to be updated when one
+ *   regardless of nesting level. The parent may need to be updated when one
  *   of its children change something. (For example, the snapshot payload needs
  *   to be updated if any of the targets roles add or remove a target.)
  * - A "key ring" relationship is for payloads which sign other payloads. There
