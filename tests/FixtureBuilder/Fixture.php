@@ -121,7 +121,7 @@ class Fixture
      * @param string $path
      *   The path of the file to sign.
      * @param string|\Tuf\Tests\FixtureBuilder\Targets $signer
-     *   The role which should sign the file, if any. Defaults to the top-level
+     *   The role which should sign the file. Defaults to the top-level
      *   `targets` role.
      */
     public function addTarget(string $path, string|Targets $signer = 'targets'): void
@@ -162,7 +162,7 @@ class Fixture
         ];
         foreach ($roles as $role) {
             $name = $role->name . '.' . $role::FILE_EXTENSION;
-            file_put_contents("$this->serverDir/$name", (string)$role);
+            file_put_contents("$this->serverDir/$name", (string) $role);
             copy("$this->serverDir/$name", "$this->serverDir/$role->version.$name");
 
             // Now that we've written the metadata, we no longer consider it
