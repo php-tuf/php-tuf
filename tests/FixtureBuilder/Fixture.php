@@ -14,16 +14,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class Fixture
 {
-    /**
-     * When the generated metadata should expire.
-     *
-     * This is only the default value; the expiration may be overridden for
-     * individual metadata objects.
-     *
-     * @var \DateTimeImmutable
-     */
-    private readonly \DateTimeImmutable $expires;
-
     public readonly Root $root;
 
     public readonly Timestamp $timestamp;
@@ -56,7 +46,9 @@ class Fixture
             $this->targetsDir,
         ]);
 
-        $this->expires = $expires ??= new \DateTimeImmutable('+1 year');
+        // By default, all metadata we generate should expire in a year. This
+        // can be overridden for individual metadata objects.
+        $expires ??= new \DateTimeImmutable('+1 year');
 
         $this->root = new Root($expires, [
             Key::fromStaticList(),
