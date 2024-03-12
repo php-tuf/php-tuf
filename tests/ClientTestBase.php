@@ -111,10 +111,10 @@ class ClientTestBase extends TestCase
      * @param string|Fixture $fixture
      *   The fixture, or name of the fixture, from which to load TUF metadata.
      */
-    protected function loadClientAndServerFilesFromFixture(string|Fixture $fixture): void
+    protected function loadClientAndServerFilesFromFixture(string|Fixture $fixture, ?array $expectedClientStartVersions = null): void
     {
         $this->loadServerFilesFromFixture($fixture);
-        $this->loadClientFilesFromFixture($fixture);
+        $this->loadClientFilesFromFixture($fixture, $expectedClientStartVersions);
     }
 
     /**
@@ -124,7 +124,7 @@ class ClientTestBase extends TestCase
      *   The fixture, or name of the fixture, from which to load client-side TUF
      *   metadata.
      */
-    protected function loadClientFilesFromFixture(string|Fixture $fixture): void
+    protected function loadClientFilesFromFixture(string|Fixture $fixture, ?array $expectedClientStartVersions = null): void
     {
         $path = $fixture instanceof Fixture
             ? $fixture->clientDir :
@@ -142,7 +142,8 @@ class ClientTestBase extends TestCase
             }
         }
 
-        $this->assertMetadataVersions(self::getClientStartVersions($fixture), $this->clientStorage);
+        $expectedClientStartVersions ??= self::getClientStartVersions($fixture);
+        $this->assertMetadataVersions($expectedClientStartVersions, $this->clientStorage);
     }
 
     /**

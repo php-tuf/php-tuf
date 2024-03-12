@@ -30,7 +30,6 @@ class FixtureGenerator
             self::thresholdTwoAttack($consistent);
             self::topLevelLTerminating($consistent);
         }
-        self::hashedBins();
     }
 
     private static function init(string $name, bool $consistent): Fixture
@@ -85,27 +84,6 @@ class FixtureGenerator
         $fixture->publish();
         $fixture->targets['targets']->revokeKey(0);
         $fixture->snapshot->revokeKey(0);
-        $fixture->invalidate();
-        $fixture->publish();
-    }
-
-    private static function hashedBins(): void
-    {
-        $dir = implode('/', [
-            realpath(__DIR__ . '/../fixtures'),
-            'HashedBins',
-        ]);
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
-
-        $fixture->publish(true);
-        $fixture->createHashBins(8, ['terminating' => true]);
-
-        for ($c = 97; $c < 123; $c++) {
-            $path = $fixture->createTarget(chr($c) . '.txt', null);
-            $fixture->addToHashBin($path);
-        }
-
         $fixture->invalidate();
         $fixture->publish();
     }
