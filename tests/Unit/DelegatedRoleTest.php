@@ -25,7 +25,7 @@ class DelegatedRoleTest extends RoleTest
     public function testCreateFromMetadata(): void
     {
         parent::testCreateFromMetadata();
-        self::assertFalse($this->role->isTerminating());
+        self::assertFalse($this->role->terminating);
     }
 
     /**

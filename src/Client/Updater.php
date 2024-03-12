@@ -436,7 +436,7 @@ class Updater
             if ($delegatedRole->matchesPath($target)) {
                 $delegatedRoles[] = $delegatedRole;
 
-                if ($delegatedRole->isTerminating()) {
+                if ($delegatedRole->terminating) {
                     break;
                 }
             }
@@ -471,7 +471,7 @@ class Updater
 
             // If $delegatedRole is terminating then we do not search any of the next delegated roles after it
             // in the delegations from $targetsMetadata.
-            if ($delegatedRole->isTerminating()) {
+            if ($delegatedRole->terminating) {
                 $terminated = true;
                 // § 5.6.7.2.1
                 // If the role is terminating then abort searching for a target.
