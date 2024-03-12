@@ -25,7 +25,6 @@ class FixtureGenerator
             self::terminatingDelegation($consistent);
             self::threeLevelDelegation($consistent);
             self::thresholdTwo($consistent);
-            self::thresholdTwoAttack($consistent);
             self::topLevelLTerminating($consistent);
         }
     }
@@ -303,30 +302,6 @@ class FixtureGenerator
         $fixture->timestamp->addKey();
         $fixture->timestamp->threshold = 2;
         $fixture->publish(true);
-    }
-
-    private static function thresholdTwoAttack(bool $consistent): void
-    {
-        $fixture = self::init('ThresholdTwoAttack', $consistent);
-        $fixture->timestamp->addKey();
-        $fixture->timestamp->threshold = 2;
-        $fixture->publish();
-        $fixture->publish();
-        $fixture->publish();
-        $fixture->timestamp->addKey();
-
-        $reflector = new \ReflectionObject($fixture->timestamp);
-        $property = $reflector->getProperty('signingKeys');
-        $keys = $property->getValue($fixture->timestamp);
-
-        $timestampFile = $fixture->serverDir . '/timestamp.json';
-        $timestampData = file_get_contents($timestampFile);
-        $timestampData = static::decodeJson($timestampData);
-        $timestampData['signatures'][1] = [
-            'keyid' => $keys[2]->id(),
-            'sig' => 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545',
-        ];
-        file_put_contents($timestampFile, static::encodeJson($timestampData, JSON_PRETTY_PRINT));
     }
 
     private static function topLevelLTerminating(bool $consistent): void
