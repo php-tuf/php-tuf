@@ -17,11 +17,11 @@
     "require": {
         "php": "^8.1",
         "ext-json": "*",
-        "paragonie/sodium_compat": "^1.13",
         "symfony/validator": "^6.1",
         "guzzlehttp/psr7": "^2.4",
         "symfony/polyfill-php81": "^1.27",
-        "guzzlehttp/promises": "^2"
+        "guzzlehttp/promises": "^2",
+        "ext-sodium": "*"
     },
     "suggest": {
         "ext-sodium": "Provides faster verification of updates"
