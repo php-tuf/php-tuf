@@ -1137,12 +1137,29 @@ abstract class UpdaterTest extends ClientTestBase
     /**
      * @testdox Exception if $fileToChange is bigger than known size
      *
-     * @testWith ["snapshot.json"]
-     *   ["targets.json"]
+     * @testWith ["snapshot.json", true]
+     *   ["snapshot.json", false]
+     *   ["targets.json", true]
+     *   ["targets.json", false]
      */
-    public function testMetadataFileTooBig(string $fileToChange): void
+    public function testMetadataFileTooBig(string $fileToChange, bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture('PublishedTwice');
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->withLength = true;
+        $fixture->snapshot->withLength = true;
+        $fixture->snapshot->withHashes = true;
+        $fixture->publish(true);
+        $fixture->createTarget('test.txt');
+        $fixture->timestamp->markAsDirty();
+        $fixture->snapshot->markAsDirty();
+        $fixture->publish();
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
 
         // Exactly which server-side files we'll need to modify, depends on
         // whether we're using consistent snapshots.

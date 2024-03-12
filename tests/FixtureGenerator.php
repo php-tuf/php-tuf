@@ -17,7 +17,6 @@ class FixtureGenerator
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
-            self::publishedTwice($consistent);
             self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
@@ -204,19 +203,6 @@ class FixtureGenerator
             'paths' => ['*.txt'],
         ]);
         $fixture->createTarget('d.txt', 'd');
-        $fixture->publish();
-    }
-
-    private static function publishedTwice(bool $consistent): void
-    {
-        $fixture = self::init('PublishedTwice', $consistent);
-        $fixture->timestamp->withLength = true;
-        $fixture->snapshot->withLength = true;
-        $fixture->snapshot->withHashes = true;
-        $fixture->publish(true);
-        $fixture->createTarget('test.txt');
-        $fixture->timestamp->markAsDirty();
-        $fixture->snapshot->markAsDirty();
         $fixture->publish();
     }
 
