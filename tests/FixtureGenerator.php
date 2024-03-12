@@ -17,9 +17,7 @@ class FixtureGenerator
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
-            self::publishedTwice($consistent, null);
-            self::publishedTwice($consistent, 'snapshot');
-            self::publishedTwice($consistent, 'timestamp');
+            self::publishedTwice($consistent);
             self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
@@ -209,23 +207,14 @@ class FixtureGenerator
         $fixture->publish();
     }
 
-    private static function publishedTwice(bool $consistent, ?string $rotatedRole): void
+    private static function publishedTwice(bool $consistent): void
     {
-        $name = 'PublishedTwice';
-        if ($rotatedRole) {
-            $name .= "WithRotatedKeys_$rotatedRole";
-        }
-        $fixture = self::init($name, $consistent);
+        $fixture = self::init('PublishedTwice', $consistent);
         $fixture->timestamp->withLength = true;
         $fixture->snapshot->withLength = true;
         $fixture->snapshot->withHashes = true;
         $fixture->publish(true);
         $fixture->createTarget('test.txt');
-
-        if ($rotatedRole) {
-            $fixture->$rotatedRole->addKey();
-            $fixture->$rotatedRole->revokeKey(0);
-        }
         $fixture->timestamp->markAsDirty();
         $fixture->snapshot->markAsDirty();
         $fixture->publish();

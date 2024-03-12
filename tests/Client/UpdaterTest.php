@@ -974,33 +974,67 @@ abstract class UpdaterTest extends ClientTestBase
     public function providerKeyRotation(): array
     {
         return [
-            'no keys rotated' => [
-                'PublishedTwice',
+            'no keys rotated (consistent)' => [
+                null,
                 [
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
                 ],
+                true,
+            ],
+            'no keys rotated (not consistent)' => [
+                null,
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+                false,
             ],
             // We expect the timestamp and snapshot metadata to be deleted from the client if either the
             // timestamp or snapshot roles' keys have been rotated.
-            'timestamp rotated' => [
-                'PublishedTwiceWithRotatedKeys_timestamp',
+            'timestamp rotated (consistent)' => [
+                'timestamp',
                 [
                     'root' => 2,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
                 ],
+                true,
             ],
-            'snapshot rotated' => [
-                'PublishedTwiceWithRotatedKeys_snapshot',
+            'timestamp rotated (not consistent)' => [
+                'timestamp',
                 [
                     'root' => 2,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
                 ],
+                false,
+            ],
+            'snapshot rotated (consistent)' => [
+                'snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+                true,
+            ],
+            'snapshot rotated (not consistent)' => [
+                'snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+                false,
             ],
         ];
     }
@@ -1008,8 +1042,9 @@ abstract class UpdaterTest extends ClientTestBase
     /**
      * Tests that the updater correctly handles key rotation (§ 5.3.11)
      *
-     * @param string $fixtureName
-     *   The name of the fixture to test with.
+     * @param string|null $rotatedRole
+     *   The name of the role whose keys should be rotated, or null if no role's
+     *   keys should be rotated.
      * @param array $expectedUpdatedVersions
      *   The expected client-side versions of the TUF metadata after refresh.
      *
@@ -1018,9 +1053,29 @@ abstract class UpdaterTest extends ClientTestBase
      * @covers ::hasRotatedKeys
      * @covers ::updateRoot
      */
-    public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
+    public function testKeyRotation(?string $rotatedRole, array $expectedUpdatedVersions, bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->withLength = true;
+        $fixture->snapshot->withLength = true;
+        $fixture->snapshot->withHashes = true;
+        $fixture->publish(true);
+        $fixture->createTarget('test.txt');
+        if ($rotatedRole) {
+            $fixture->$rotatedRole->addKey();
+            $fixture->$rotatedRole->revokeKey(0);
+        }
+        $fixture->timestamp->markAsDirty();
+        $fixture->snapshot->markAsDirty();
+        $fixture->publish();
+
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
         // This will purposefully cause the refresh to fail, immediately after
         // updating the root metadata.
         unset($this->serverFiles['timestamp.json']);
