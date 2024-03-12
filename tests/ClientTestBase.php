@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Tuf\Client\Updater;
 use Tuf\Loader\SizeCheckingLoader;
 use Tuf\Tests\Client\TestLoader;
+use Tuf\Tests\FixtureBuilder\Fixture;
 use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 use Tuf\Tests\TestHelpers\FixturesTrait;
 use Tuf\Tests\TestHelpers\TestClock;
@@ -107,24 +108,27 @@ class ClientTestBase extends TestCase
     /**
      * Loads client- and server-side TUF metadata from a fixture.
      *
-     * @param string $fixtureName
-     *   The name of the fixture from which to load TUF metadata.
+     * @param string|Fixture $fixture
+     *   The fixture, or name of the fixture, from which to load TUF metadata.
      */
-    protected function loadClientAndServerFilesFromFixture(string $fixtureName): void
+    protected function loadClientAndServerFilesFromFixture(string|Fixture $fixture): void
     {
-        $this->loadServerFilesFromFixture($fixtureName);
-        $this->loadClientFilesFromFixture($fixtureName);
+        $this->loadServerFilesFromFixture($fixture);
+        $this->loadClientFilesFromFixture($fixture);
     }
 
     /**
      * Populates $this->clientStorage with a fixture's client-side metadata.
      *
-     * @param string $fixtureName
-     *   The name of the fixture from which to load client-side TUF metadata.
+     * @param string|Fixture $fixture
+     *   The fixture, or name of the fixture, from which to load client-side TUF
+     *   metadata.
      */
-    protected function loadClientFilesFromFixture(string $fixtureName): void
+    protected function loadClientFilesFromFixture(string|Fixture $fixture): void
     {
-        $path = static::getFixturePath($fixtureName, 'client');
+        $path = $fixture instanceof Fixture
+            ? $fixture->clientDir :
+            static::getFixturePath($fixture, 'client');
         $this->clientStorage = TestStorage::createFromDirectory($path);
 
         // Remove all '*.[TYPE].json', because they are needed for the tests.
@@ -138,18 +142,20 @@ class ClientTestBase extends TestCase
             }
         }
 
-        $this->assertMetadataVersions(self::getClientStartVersions($fixtureName), $this->clientStorage);
+        $this->assertMetadataVersions(self::getClientStartVersions($fixture), $this->clientStorage);
     }
 
     /**
      * Populates $this->serverFiles with a fixture's server-side metadata.
      *
-     * @param string $fixtureName
-     *   The name of the fixture from which to load server-side TUF metadata.
+     * @param string|Fixture $fixture
+     *   The fixture, or name of the fixture, from which to load TUF metadata.
      */
-    protected function loadServerFilesFromFixture(string $fixtureName): void
+    protected function loadServerFilesFromFixture(string|Fixture $fixture): void
     {
-        $basePath = static::getFixturePath($fixtureName);
+        $basePath = $fixture instanceof Fixture
+            ? $fixture->baseDir
+            : static::getFixturePath($fixture);
         $this->serverFiles->populateFromFixture($basePath);
     }
 }
