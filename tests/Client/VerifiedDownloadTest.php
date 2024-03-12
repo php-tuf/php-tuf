@@ -3,7 +3,6 @@
 namespace Tuf\Tests\Client;
 
 use GuzzleHttp\Psr7\Utils;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Exception\Attack\InvalidHashException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Tests\ClientTestBase;
@@ -13,8 +12,6 @@ use Tuf\Tests\ClientTestBase;
  */
 class VerifiedDownloadTest extends ClientTestBase
 {
-    use ProphecyTrait;
-
     /**
      * @testWith ["consistent"]
      *   ["inconsistent"]
@@ -33,11 +30,16 @@ class VerifiedDownloadTest extends ClientTestBase
 
         // If the file fetcher returns a file stream, the updater should NOT try
         // to read the contents of the stream into memory.
-        $stream = $this->prophesize('\Psr\Http\Message\StreamInterface');
-        $stream->getMetadata('uri')->willReturn($testFilePath);
-        $stream->getContents()->shouldNotBeCalled();
-        $stream->rewind()->shouldNotBeCalled();
-        $stream->getSize()->willReturn(strlen($testFileContents));
+        $stream = $this->createMock('\Psr\Http\Message\StreamInterface');
+        $stream->expects($this->any())
+            ->method('getMetadata')
+            ->with('uri')
+            ->willReturn($testFilePath);
+        $stream->expects($this->never())->method('getContents');
+        $stream->expects($this->never())->method('rewind');
+        $stream->expects($this->any())
+            ->method('getSize')
+            ->willReturn(strlen($testFileContents));
         $updater->download('testtarget.txt');
 
         // If the target isn't known, we should get an exception.

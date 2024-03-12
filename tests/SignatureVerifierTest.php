@@ -3,7 +3,6 @@
 namespace Tuf\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Client\SignatureVerifier;
 use Tuf\Exception\NotFoundException;
 use Tuf\Metadata\RootMetadata;
@@ -16,7 +15,6 @@ use Tuf\Tests\TestHelpers\FixturesTrait;
 class SignatureVerifierTest extends TestCase
 {
     use FixturesTrait;
-    use ProphecyTrait;
 
     /**
      * @covers ::createFromRootMetadata
@@ -56,12 +54,14 @@ class SignatureVerifierTest extends TestCase
         $rootMetadata = file_get_contents($fixturePath . '/1.root.json');
         $rootMetadata = RootMetadata::createFromJson($rootMetadata)->trust();
 
-        $timestampMetadata = $this->prophesize(TimestampMetadata::class);
-        $timestampMetadata->getRole()->willReturn('unknown')->shouldBeCalled();
+        $timestampMetadata = $this->createMock(TimestampMetadata::class);
+        $timestampMetadata->expects($this->atLeastOnce())
+            ->method('getRole')
+            ->willReturn('unknown');
 
         $this->expectException(NotFoundException::class);
         $this->expectExceptionMessage("role not found: unknown");
         SignatureVerifier::createFromRootMetadata($rootMetadata)
-            ->checkSignatures($timestampMetadata->reveal());
+            ->checkSignatures($timestampMetadata);
     }
 }
