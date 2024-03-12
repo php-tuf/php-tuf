@@ -4,6 +4,7 @@ namespace Tuf\Tests\Client;
 
 use Tuf\Exception\Attack\RollbackAttackException;
 use Tuf\Tests\ClientTestBase;
+use Tuf\Tests\FixtureBuilder\Fixture;
 use Tuf\Tests\TestHelpers\DurableStorage\TestStorage;
 
 /**
@@ -41,12 +42,31 @@ class RollbackAttackTest extends ClientTestBase
     }
 
     /**
-     * @testWith ["consistent"]
-     *   ["inconsistent"]
+     * @testWith [true]
+     *   [false]
      */
-    public function testRollbackAttackDetection(string $fixtureVariant): void
+    public function testRollbackAttackDetection(bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture("AttackRollback/$fixtureVariant");
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->createTarget('testtarget.txt');
+        $fixture->publish(true);
+        $backupDir = $fixture->serverDir . '_backup';
+        $fixture->fileSystem->rename($fixture->serverDir, $backupDir);
+        // Because the client will now have newer information than the server,
+        // TUF will consider this a rollback attack.
+        $fixture->createTarget('testtarget2.txt');
+        $fixture->invalidate();
+        $fixture->publish(true);
+        $fixture->fileSystem->remove($fixture->serverDir);
+        $fixture->fileSystem->rename($backupDir, $fixture->serverDir);
+
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 2,
+            'timestamp' => 2,
+            'snapshot' => 2,
+            'targets' => 2,
+        ]);
         try {
             // § 5.4.3
             // § 5.4.4

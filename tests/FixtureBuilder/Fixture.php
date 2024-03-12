@@ -37,7 +37,7 @@ class Fixture
     public function __construct(
         ?string $baseDir = null,
         ?\DateTimeImmutable $expires = null,
-        private readonly Filesystem $fileSystem = new Filesystem(),
+        public readonly Filesystem $fileSystem = new Filesystem(),
     ) {
         // By default, create the fixture in a temporary directory.
         $this->baseDir = $baseDir ??= uniqid(sys_get_temp_dir() . '/TUF_Fixture_');

@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests;
 
-use Symfony\Component\Filesystem\Filesystem;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Tests\FixtureBuilder\Fixture;
 
@@ -14,7 +13,6 @@ class FixtureGenerator
     public static function generateAll(): void
     {
         foreach ([true, false] as $consistent) {
-            self::attackRollback($consistent);
             self::delegated($consistent);
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
@@ -42,26 +40,6 @@ class FixtureGenerator
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = $consistent;
         return $fixture;
-    }
-
-    private static function attackRollback(bool $consistent): void
-    {
-        $fixture = self::init('AttackRollback', $consistent);
-
-        $fixture->createTarget('testtarget.txt');
-        $fixture->publish(true);
-
-        $fs = new Filesystem();
-        $fs->rename($fixture->serverDir, $fixture->serverDir . '_backup');
-
-        // Because the client will now have newer information than the server,
-        // TUF will consider this a rollback attack.
-        $fixture->createTarget('testtarget2.txt');
-        $fixture->invalidate();
-        $fixture->publish(true);
-
-        $fs->remove($fixture->serverDir);
-        $fs->rename($fixture->serverDir . '_backup', $fixture->serverDir);
     }
 
     private static function delegated(bool $consistent): void
