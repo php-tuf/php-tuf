@@ -11,6 +11,7 @@ use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Tests\ClientTestBase;
+use Tuf\Tests\FixtureBuilder\Fixture;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -936,13 +937,24 @@ abstract class UpdaterTest extends ClientTestBase
      *   Whether or not to re-use a signature in timestamp.json, simulating
      *   an attack.
      *
-     * @testWith [false]
-     *   [true]
+     * @testWith [false, false]
+     *   [true, false]
+     *   [false, true]
+     *   [true, true]
      */
-    public function testSignatureThresholds(bool $attack): void
+    public function testSignatureThresholds(bool $attack, bool $consistentSnapshot): void
     {
-        // Begin with ThresholdTwo, and modify it to suit our needs.
-        $this->loadClientAndServerFilesFromFixture('ThresholdTwo');
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->addKey();
+        $fixture->timestamp->threshold = 2;
+        $fixture->publish(true);
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
 
         // § 5.4.2
         // If we're simulating an attack, change the server's timestamp.json so

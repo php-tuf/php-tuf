@@ -24,7 +24,6 @@ class FixtureGenerator
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
             self::threeLevelDelegation($consistent);
-            self::thresholdTwo($consistent);
             self::topLevelLTerminating($consistent);
         }
     }
@@ -294,14 +293,6 @@ class FixtureGenerator
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
         $fixture->publish();
-    }
-
-    private static function thresholdTwo(bool $consistent): void
-    {
-        $fixture = self::init('ThresholdTwo', $consistent);
-        $fixture->timestamp->addKey();
-        $fixture->timestamp->threshold = 2;
-        $fixture->publish(true);
     }
 
     private static function topLevelLTerminating(bool $consistent): void
