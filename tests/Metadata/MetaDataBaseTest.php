@@ -54,8 +54,6 @@ abstract class MetadataBaseTest extends TestCase
      * @param string $json
      *   The json string.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
@@ -66,8 +64,6 @@ abstract class MetadataBaseTest extends TestCase
      *
      * @param string $validJson
      *   The valid json key from $this->clientStorage.
-     *
-     * @return void
      *
      * @dataProvider providerValidMetadata
      */
@@ -99,8 +95,6 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * Tests that validation fails on invalid type.
-     *
-     *  @return void
      */
     public function testInvalidType(): void
     {
@@ -121,8 +115,6 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * @covers ::getRole
-     *
-     *  @return void
      */
     public function testGetRole(): void
     {
@@ -137,8 +129,6 @@ abstract class MetadataBaseTest extends TestCase
      *   Expires date to test.
      * @param boolean $valid
      *   Whether it's valid.
-     *
-     *  @return void
      *
      * @dataProvider providerExpires
      */
@@ -162,8 +152,6 @@ abstract class MetadataBaseTest extends TestCase
      *   Spec version to test.
      * @param boolean $valid
      *   Whether it's valid.
-     *
-     *  @return void
      *
      * @dataProvider providerSpecVersion
      */
@@ -190,8 +178,6 @@ abstract class MetadataBaseTest extends TestCase
      *
      *   A different exception message to expect.
      *
-     * @return void
-     *
      * @dataProvider providerExpectedField
      */
     public function testMissingField(string $expectedField, string $exception = null): void
@@ -217,8 +203,6 @@ abstract class MetadataBaseTest extends TestCase
      *   The name of the field. Nested fields indicated with ":".
      * @param mixed $value
      *   The value to set.
-     *
-     * @return void
      *
      * @dataProvider providerOptionalFields
      */
@@ -268,8 +252,6 @@ abstract class MetadataBaseTest extends TestCase
      *   Ordered keys to the value to unset.
      * @param array $data
      *   The array to modify.
-     *
-     * @return void
      */
     protected function nestedUnset(array $keys, array &$data): void
     {
@@ -289,8 +271,6 @@ abstract class MetadataBaseTest extends TestCase
      *
      * @param string $expectedType
      *   The type of the field.
-     *
-     * @return void
      *
      * @dataProvider providerValidField
      */

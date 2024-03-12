@@ -209,8 +209,6 @@ abstract class MetadataBase
      *
      * @param boolean $allowUntrustedAccess
      *   Whether this method should access even if the metadata is not trusted.
-     *
-     * @return void
      */
     public function ensureIsTrusted(bool $allowUntrustedAccess = false): void
     {

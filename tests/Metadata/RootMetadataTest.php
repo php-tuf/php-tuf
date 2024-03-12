@@ -73,8 +73,6 @@ class RootMetadataTest extends MetadataBaseTest
      * @param string $missingRole
      *   The required role to test.
      *
-     * @return void
-     *
      * @dataProvider providerRequireRoles
      */
     public function testRequiredRoles(string $missingRole): void
@@ -123,8 +121,6 @@ class RootMetadataTest extends MetadataBaseTest
 
     /**
      * Tests that an unknown role name is not allowed.
-     *
-     * @return void
      */
     public function testInvalidRoleName(): void
     {
@@ -139,8 +135,6 @@ class RootMetadataTest extends MetadataBaseTest
 
     /**
      * @covers ::supportsConsistentSnapshots
-     *
-     * @return void
      */
     public function testSupportsConsistentSnapshots(): void
     {

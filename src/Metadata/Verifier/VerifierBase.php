@@ -51,8 +51,6 @@ abstract class VerifierBase
      * @param \Tuf\Metadata\MetadataBase $untrustedMetadata
      *     The untrusted metadata.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\Attack\RollbackAttackException
      *     Thrown if a potential rollback attack is detected.
      */

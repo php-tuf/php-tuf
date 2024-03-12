@@ -196,7 +196,6 @@ class Updater
      * @param \Tuf\Metadata\RootMetadata $rootData
      *   The current root metadata.
      *
-     * @return void
      *@throws \Tuf\Exception\Attack\FreezeAttackException
      *   Throw if a freeze attack is detected.
      * @throws \Tuf\Exception\Attack\RollbackAttackException

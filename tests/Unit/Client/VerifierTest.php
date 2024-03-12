@@ -16,8 +16,6 @@ class VerifierTest extends TestCase
      * Tests that no rollback attack is flagged when one is not performed.
      *
      * @covers ::checkRollbackAttack
-     *
-     * @return void
      */
     public function testCheckRollbackAttackNoAttack(): void
     {
@@ -68,8 +66,6 @@ class VerifierTest extends TestCase
      * Tests that the correct exception is thrown in case of a rollback attack.
      *
      * @covers ::checkRollbackAttack
-     *
-     * @return void
      */
     public function testCheckRollbackAttack(): void
     {
@@ -120,8 +116,6 @@ class VerifierTest extends TestCase
      * § 5.3.5
      *
      * @covers ::checkRollbackAttack
-     *
-     * @return void
      */
     public function testCheckRollbackAttackAttackExpectedVersion(): void
     {
@@ -168,8 +162,6 @@ class VerifierTest extends TestCase
      * Tests that no freeze attack is flagged when the data has not expired.
      *
      * @covers ::checkFreezeAttack
-     *
-     * @return void
      */
     public function testCheckFreezeAttackNoAttack(): void
     {
@@ -210,8 +202,6 @@ class VerifierTest extends TestCase
      * § 5.4.4
      * § 5.5.6
      * @covers ::checkFreezeAttack
-     *
-     * @return void
      */
     public function testCheckFreezeAttackAttack(): void
     {
