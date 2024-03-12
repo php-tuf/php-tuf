@@ -1161,16 +1161,11 @@ abstract class UpdaterTest extends ClientTestBase
             'targets' => 1,
         ]);
 
-        // Exactly which server-side files we'll need to modify, depends on
-        // whether we're using consistent snapshots.
-        $consistentSnapshots = $this->serverMetadata->getRoot(1)
-            ->trust()
-            ->supportsConsistentSnapshots();
         // Get the known lengths of snapshot.json and targets.json.
         $snapshotInfo = $this->serverMetadata->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
-        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshot ? $snapshotInfo['version'] : null)
             ->trust()
             ->getFileMetaInfo('targets.json');
 
@@ -1180,7 +1175,7 @@ abstract class UpdaterTest extends ClientTestBase
         };
         // If using consistent snapshots, the file to change will be prefixed
         // with its version number.
-        if ($consistentSnapshots) {
+        if ($consistentSnapshot) {
             $prefix = match ($fileToChange) {
                 'snapshot.json' => $snapshotInfo['version'],
                 'targets.json' => $targetsInfo['version'],
