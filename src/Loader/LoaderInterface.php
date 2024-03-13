@@ -29,7 +29,7 @@ interface LoaderInterface
      * @return \GuzzleHttp\Promise\PromiseInterface<\Psr\Http\Message\StreamInterface>
      *   A promise wrapping a data stream.
      *
-     * @throws \Tuf\Exception\RepoFileNotFound
+     * @throws \Tuf\Exception\NotFoundException
      *   If the data cannot be found.
      */
     public function load(string $locator, int $maxBytes): PromiseInterface;

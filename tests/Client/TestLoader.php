@@ -5,7 +5,7 @@ namespace Tuf\Tests\Client;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Utils;
-use Tuf\Exception\RepoFileNotFound;
+use Tuf\Exception\NotFoundException;
 use Tuf\Loader\LoaderInterface;
 
 /**
@@ -59,7 +59,7 @@ class TestLoader extends \ArrayObject implements LoaderInterface
             $stream = Utils::streamFor($this[$locator]);
             return Create::promiseFor($stream);
         } else {
-            return Create::rejectionFor(new RepoFileNotFound("File $locator not found."));
+            return Create::rejectionFor(new NotFoundException($locator, 'File'));
         }
     }
 }
