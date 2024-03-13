@@ -34,9 +34,6 @@ class TargetsMetadataTest extends MetadataBaseTest
     /**
      * @covers ::getHashes
      * @covers ::getLength
-     *
-     * @return void
-     *   Describe the void.
      */
     public function testGetHashesAndLength(): void
     {

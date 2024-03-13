@@ -54,8 +54,6 @@ trait UtilsTrait
      *   The array to modify.
      * @param mixed $newValue
      *   The new value to set.
-     *
-     * @return void
      */
     protected static function nestedChange(array $keys, array &$data, $newValue): void
     {

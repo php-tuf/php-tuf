@@ -27,8 +27,6 @@ trait ConstraintsTrait
      * @param \Symfony\Component\Validator\Constraints\Collection $constraints
      *   Th constraints collection for validation.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\MetadataException
      *    Thrown if validation fails.
      */
