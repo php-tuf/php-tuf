@@ -23,9 +23,6 @@
         "guzzlehttp/promises": "^2",
         "ext-sodium": "*"
     },
-    "suggest": {
-        "ext-sodium": "Provides faster verification of updates"
-    },
     "autoload": {
         "psr-4": {
             "Tuf\\": "src/"
