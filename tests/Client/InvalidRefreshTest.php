@@ -2,7 +2,7 @@
 
 namespace Tuf\Tests\Client;
 
-use Tuf\Exception\RepoFileNotFound;
+use Tuf\Exception\NotFoundException;
 use Tuf\Tests\ClientTestBase;
 
 /**
@@ -30,8 +30,8 @@ class InvalidRefreshTest extends ClientTestBase
         $this->assertMetadataVersions(static::getClientStartVersions($fixtureName), $this->clientStorage);
         // If we force a refresh, the invalid state of the server-side repo will
         // raise an exception.
-        $this->expectException(RepoFileNotFound::class);
-        $this->expectExceptionMessage('File timestamp.json not found.');
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('File not found: timestamp.json');
         $updater->refresh(true);
     }
 }
