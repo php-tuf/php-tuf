@@ -128,7 +128,6 @@ trait ConstraintsTrait
                 new IdenticalTo('ed25519'),
             ],
             'keyval' => [
-                new Type('array'),
                 new Collection([
                     'public' => [
                         new Type('string'),

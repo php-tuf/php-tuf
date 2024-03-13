@@ -158,10 +158,10 @@ class DelegatedRoleTest extends RoleTest
     }
 
     /**
-     * @testWith ["paths", "Not an array!", ["paths"], "This value should be of type array."]
+     * @testWith ["paths", "Not an array!", ["paths"], "This value should be of type iterable."]
      *   ["paths", [""], ["paths", 0], "This value should not be blank."]
      *   ["paths", [38], ["paths", 0], "This value should be of type string."]
-     *   ["path_hash_prefixes", "Not an array!", ["path_hash_prefixes"], "This value should be of type array."]
+     *   ["path_hash_prefixes", "Not an array!", ["path_hash_prefixes"], "This value should be of type iterable."]
      *   ["path_hash_prefixes", [""], ["path_hash_prefixes", 0], "This value should not be blank."]
      *   ["path_hash_prefixes", [38], ["path_hash_prefixes", 0], "This value should be of type string."]
      */
