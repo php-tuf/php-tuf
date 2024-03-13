@@ -19,7 +19,6 @@
         "ext-json": "*",
         "symfony/validator": "^6.1",
         "guzzlehttp/psr7": "^2.4",
-        "symfony/polyfill-php81": "^1.27",
         "guzzlehttp/promises": "^2",
         "ext-sodium": "*"
     },
