@@ -39,7 +39,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     {
         $json = $this->clientStorage->read($this->validJson);
         $metadata = TargetsMetadata::createFromJson($json);
-        $json = json_decode($json, true);
+        $json = static::decodeJson($json);
 
         $target = key($json['signed']['targets']);
         $this->assertSame($metadata->getHashes($target), $json['signed']['targets'][$target]['hashes']);
@@ -68,7 +68,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     {
         $json = $this->clientStorage->read($this->validJson);
         $metadata = TargetsMetadata::createFromJson($json);
-        $json = json_decode($json, true);
+        $json = static::decodeJson($json);
 
         $target = key($json['signed']['targets']);
         $this->assertTrue($metadata->hasTarget($target));
@@ -147,7 +147,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $json = $this->clientStorage->read($this->validJson);
         /** @var \Tuf\Metadata\TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
-        $json = json_decode($json, true);
+        $json = static::decodeJson($json);
         $keys = $metadata->getDelegatedKeys();
         $expectedKeys = $json['signed']['delegations']['keys'];
         self::assertCount(count($expectedKeys), $keys);
@@ -167,7 +167,7 @@ class TargetsMetadataTest extends MetadataBaseTest
         $json = $this->clientStorage->read($this->validJson);
         /** @var TargetsMetadata $metadata */
         $metadata = TargetsMetadata::createFromJson($json);
-        $json = json_decode($json, true);
+        $json = static::decodeJson($json);
         $delegatedRoles = $metadata->getDelegatedRoles();
         $expectedRoles = $json['signed']['delegations']['roles'];
         self::assertCount(1, $expectedRoles);
@@ -201,12 +201,12 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testDuplicateDelegatedRoleNames(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
+        $data = static::decodeJson($json);
 
         $this->assertNotEmpty($data['signed']['delegations']['roles']);
         // Duplicating a role should raise a validation exception.
         $data['signed']['delegations']['roles'][] = $data['signed']['delegations']['roles'][0];
-        $json = json_encode($data);
+        $json = static::encodeJson($data);
 
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessage('Delegated role names must be unique.');
