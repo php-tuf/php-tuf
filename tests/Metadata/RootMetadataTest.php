@@ -83,9 +83,9 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Array[signed][roles][$missingRole]:", '/');
         $expectedMessage .= '.*This field is missing';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->clientStorage->read($this->validJson), true);
+        $data = static::decodeJson($this->clientStorage->read($this->validJson));
         unset($data['signed']['roles'][$missingRole]);
-        static::callCreateFromJson(json_encode($data));
+        static::callCreateFromJson(static::encodeJson($data));
     }
 
     /**
@@ -132,9 +132,9 @@ class RootMetadataTest extends MetadataBaseTest
         $expectedMessage = preg_quote("Array[signed][roles][super_root]:", '/');
         $expectedMessage .= '.*This field was not expected';
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        $data = json_decode($this->clientStorage->read($this->validJson), true);
+        $data = static::decodeJson($this->clientStorage->read($this->validJson));
         $data['signed']['roles']['super_root'] = $data['signed']['roles']['root'];
-        static::callCreateFromJson(json_encode($data));
+        static::callCreateFromJson(static::encodeJson($data));
     }
 
     /**
@@ -144,11 +144,11 @@ class RootMetadataTest extends MetadataBaseTest
      */
     public function testSupportsConsistentSnapshots(): void
     {
-        $data = json_decode($this->clientStorage->read($this->validJson), true);
+        $data = static::decodeJson($this->clientStorage->read($this->validJson));
         foreach ([true, false] as $value) {
             $data['signed']['consistent_snapshot'] = $value;
             /** @var \Tuf\Metadata\RootMetadata $metadata */
-            $metadata = static::callCreateFromJson(json_encode($data));
+            $metadata = static::callCreateFromJson(static::encodeJson($data));
             $metadata->trust();
             $this->assertSame($value, $metadata->supportsConsistentSnapshots());
         }
@@ -175,7 +175,7 @@ class RootMetadataTest extends MetadataBaseTest
     public function testGetRoles(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        $data = json_decode($json, true);
+        $data = static::decodeJson($json);
         /** @var \Tuf\Metadata\RootMetadata $metadata */
         $metadata = static::callCreateFromJson($json);
         $metadata->trust();
@@ -194,13 +194,13 @@ class RootMetadataTest extends MetadataBaseTest
 
     public function testInvalidKeyType(): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $keyId = key($metadata['signed']['keys']);
         $metadata['signed']['keys'][$keyId]['keytype'] = 'invalid key type';
         $expectedMessage = preg_quote("Array[signed][keys][$keyId][keytype]", '/');
         $expectedMessage .= ".*This value should be identical to string \"ed25519\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($metadata));
+        static::callCreateFromJson(static::encodeJson($metadata));
     }
 }
