@@ -10,6 +10,7 @@ use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\SignatureThresholdException;
 use Tuf\Exception\TufException;
 use Tuf\Tests\ClientTestBase;
+use Tuf\Tests\FixtureBuilder\Fixture;
 use Tuf\Tests\TestHelpers\UtilsTrait;
 
 /**
@@ -935,13 +936,24 @@ abstract class UpdaterTest extends ClientTestBase
      *   Whether or not to re-use a signature in timestamp.json, simulating
      *   an attack.
      *
-     * @testWith [false]
-     *   [true]
+     * @testWith [false, false]
+     *   [true, false]
+     *   [false, true]
+     *   [true, true]
      */
-    public function testSignatureThresholds(bool $attack): void
+    public function testSignatureThresholds(bool $attack, bool $consistentSnapshot): void
     {
-        // Begin with ThresholdTwo, and modify it to suit our needs.
-        $this->loadClientAndServerFilesFromFixture('ThresholdTwo');
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->addKey();
+        $fixture->timestamp->threshold = 2;
+        $fixture->publish(true);
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
 
         // § 5.4.2
         // If we're simulating an attack, change the server's timestamp.json so
@@ -961,33 +973,67 @@ abstract class UpdaterTest extends ClientTestBase
     public function providerKeyRotation(): array
     {
         return [
-            'no keys rotated' => [
-                'PublishedTwice',
+            'no keys rotated (consistent)' => [
+                null,
                 [
+                    'root' => 2,
                     'timestamp' => 1,
                     'snapshot' => 1,
                     'targets' => 1,
                 ],
+                true,
+            ],
+            'no keys rotated (not consistent)' => [
+                null,
+                [
+                    'root' => 1,
+                    'timestamp' => 1,
+                    'snapshot' => 1,
+                    'targets' => 1,
+                ],
+                false,
             ],
             // We expect the timestamp and snapshot metadata to be deleted from the client if either the
             // timestamp or snapshot roles' keys have been rotated.
-            'timestamp rotated' => [
-                'PublishedTwiceWithRotatedKeys_timestamp',
+            'timestamp rotated (consistent)' => [
+                'timestamp',
                 [
                     'root' => 2,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
                 ],
+                true,
             ],
-            'snapshot rotated' => [
-                'PublishedTwiceWithRotatedKeys_snapshot',
+            'timestamp rotated (not consistent)' => [
+                'timestamp',
                 [
                     'root' => 2,
                     'timestamp' => null,
                     'snapshot' => null,
                     'targets' => 1,
                 ],
+                false,
+            ],
+            'snapshot rotated (consistent)' => [
+                'snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+                true,
+            ],
+            'snapshot rotated (not consistent)' => [
+                'snapshot',
+                [
+                    'root' => 2,
+                    'timestamp' => null,
+                    'snapshot' => null,
+                    'targets' => 1,
+                ],
+                false,
             ],
         ];
     }
@@ -995,8 +1041,9 @@ abstract class UpdaterTest extends ClientTestBase
     /**
      * Tests that the updater correctly handles key rotation (§ 5.3.11)
      *
-     * @param string $fixtureName
-     *   The name of the fixture to test with.
+     * @param string|null $rotatedRole
+     *   The name of the role whose keys should be rotated, or null if no role's
+     *   keys should be rotated.
      * @param array $expectedUpdatedVersions
      *   The expected client-side versions of the TUF metadata after refresh.
      *
@@ -1005,9 +1052,29 @@ abstract class UpdaterTest extends ClientTestBase
      * @covers ::hasRotatedKeys
      * @covers ::updateRoot
      */
-    public function testKeyRotation(string $fixtureName, array $expectedUpdatedVersions): void
+    public function testKeyRotation(?string $rotatedRole, array $expectedUpdatedVersions, bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture($fixtureName);
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->withLength = true;
+        $fixture->snapshot->withLength = true;
+        $fixture->snapshot->withHashes = true;
+        $fixture->publish(true);
+        $fixture->createTarget('test.txt');
+        if ($rotatedRole) {
+            $fixture->$rotatedRole->addKey();
+            $fixture->$rotatedRole->revokeKey(0);
+        }
+        $fixture->timestamp->markAsDirty();
+        $fixture->snapshot->markAsDirty();
+        $fixture->publish();
+
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
         // This will purposefully cause the refresh to fail, immediately after
         // updating the root metadata.
         unset($this->serverFiles['timestamp.json']);
@@ -1069,23 +1136,35 @@ abstract class UpdaterTest extends ClientTestBase
     /**
      * @testdox Exception if $fileToChange is bigger than known size
      *
-     * @testWith ["snapshot.json"]
-     *   ["targets.json"]
+     * @testWith ["snapshot.json", true]
+     *   ["snapshot.json", false]
+     *   ["targets.json", true]
+     *   ["targets.json", false]
      */
-    public function testMetadataFileTooBig(string $fileToChange): void
+    public function testMetadataFileTooBig(string $fileToChange, bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture('PublishedTwice');
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->timestamp->withLength = true;
+        $fixture->snapshot->withLength = true;
+        $fixture->snapshot->withHashes = true;
+        $fixture->publish(true);
+        $fixture->createTarget('test.txt');
+        $fixture->timestamp->markAsDirty();
+        $fixture->snapshot->markAsDirty();
+        $fixture->publish();
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
 
-        // Exactly which server-side files we'll need to modify, depends on
-        // whether we're using consistent snapshots.
-        $consistentSnapshots = $this->serverMetadata->getRoot(1)
-            ->trust()
-            ->supportsConsistentSnapshots();
         // Get the known lengths of snapshot.json and targets.json.
         $snapshotInfo = $this->serverMetadata->getTimestamp()
             ->trust()
             ->getFileMetaInfo('snapshot.json');
-        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshots ? $snapshotInfo['version'] : null)
+        $targetsInfo = $this->serverMetadata->getSnapshot($consistentSnapshot ? $snapshotInfo['version'] : null)
             ->trust()
             ->getFileMetaInfo('targets.json');
 
@@ -1095,7 +1174,7 @@ abstract class UpdaterTest extends ClientTestBase
         };
         // If using consistent snapshots, the file to change will be prefixed
         // with its version number.
-        if ($consistentSnapshots) {
+        if ($consistentSnapshot) {
             $prefix = match ($fileToChange) {
                 'snapshot.json' => $snapshotInfo['version'],
                 'targets.json' => $targetsInfo['version'],
