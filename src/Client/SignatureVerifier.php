@@ -64,8 +64,8 @@ final class SignatureVerifier
         $verifiedKeySignatures = [];
 
         foreach ($metadata->signatures as $signature) {
-            // Per the spec, the same key can't be counted more than once.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
+                // Per the spec, the same key can't be counted more than once.
                 $verifiedKeySignatures[$signature['keyid']] = true;
             }
             // @todo Determine if we should check all signatures and warn for
