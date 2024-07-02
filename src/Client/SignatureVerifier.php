@@ -64,7 +64,7 @@ final class SignatureVerifier
         $verifiedKeySignatures = [];
 
         foreach ($metadata->signatures as $signature) {
-            // Don't allow the same key to be counted twice.
+            // Per the spec, the same key can't be counted more than once.
             if ($role->isKeyIdAcceptable($signature['keyid']) && $this->verifySingleSignature($metadata->toCanonicalJson(), $signature)) {
                 $verifiedKeySignatures[$signature['keyid']] = true;
             }
@@ -134,7 +134,7 @@ final class SignatureVerifier
      * @param string $keyId
      * @param \Tuf\Key $key
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.32#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.33#document-formats
      */
     public function addKey(string $keyId, Key $key): void
     {
