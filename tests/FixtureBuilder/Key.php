@@ -56,6 +56,8 @@ final class Key
             'keyval' => [
                 'public' => sodium_bin2hex($this->publicKey),
             ],
+            // @see \Tuf\Key::getComputedKeyId()
+            'keyid_hash_algorithms' => ['sha256', 'sha512'],
         ];
     }
 
