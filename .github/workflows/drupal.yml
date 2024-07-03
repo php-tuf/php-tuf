@@ -39,7 +39,7 @@ jobs:
           php-version: ${{ matrix.php }}
           tools: composer:v2
 
-      - name: Create Drupal Project
+      - name: Create Drupal project
         run: |
           composer create-project drupal/${{ matrix.template }}:^${{ matrix.core }}@dev project
           cd project
