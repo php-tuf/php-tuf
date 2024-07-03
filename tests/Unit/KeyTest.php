@@ -26,6 +26,8 @@ class KeyTest extends TestCase
         self::assertSame('ed25519', $key->type);
         self::assertSame('12345', $key->public);
         $keySortedCanonicalStruct = [
+            // @see \Tuf\Key::getComputedKeyId()
+            'keyid_hash_algorithms' => ['sha256', 'sha512'],
             'keytype' => 'ed25519',
             'keyval' => ['public' => '12345'],
             'scheme' => 'scheme-ed11111',
