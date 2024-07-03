@@ -1,0 +1,47 @@
+name: Drupal compatibility
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  composer-project:
+    name: ${{ matrix.template }} ${{ matrix.core }}.x on PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        php: ['8.1', '8.2', '8.3']
+        template:
+          - recommended-project
+          - legacy-project
+        core: [10, 11]
+        # Drupal 11's minimum PHP version is 8.3.
+        exclude:
+          - { core: 11, php: 8.1 }
+          - { core: 11, php: 8.2 }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: php-tuf
+
+      - name: Install PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+
+      - name: Create Drupal project
+        run: |
+          composer create-project drupal/${{ matrix.template }}:^${{ matrix.core }}@dev project
+          cd project
+          composer config repositories.local path ../php-tuf
+          composer require php-tuf/php-tuf:@dev --with-all-dependencies
