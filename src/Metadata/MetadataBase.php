@@ -3,10 +3,12 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\EqualTo;
+use Symfony\Component\Validator\Constraints\IdenticalTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
@@ -157,7 +159,10 @@ abstract class MetadataBase
                 'spec_version' => [
                     new NotBlank(),
                     new Type('string'),
-                    new Regex('/^1\.[0-9]+\.[0-9]+$/'),
+                    new AtLeastOneOf([
+                      new IdenticalTo('1.0'),
+                      new Regex('/^1\.[0-9]+\.[0-9]+$/'),
+                    ]),
                 ],
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
