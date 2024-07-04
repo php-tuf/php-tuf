@@ -160,8 +160,8 @@ abstract class MetadataBase
                     new NotBlank(),
                     new Type('string'),
                     new AtLeastOneOf([
-                      new IdenticalTo('1.0'),
-                      new Regex('/^1\.[0-9]+\.[0-9]+$/'),
+                        new IdenticalTo('1.0'),
+                        new Regex('/^1\.[0-9]+\.[0-9]+$/'),
                     ]),
                 ],
             ] + static::getVersionConstraints(),
