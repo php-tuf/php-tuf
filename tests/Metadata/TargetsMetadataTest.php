@@ -216,7 +216,6 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testKeysAreSorted(): void
     {
         $data = [
-            'signatures' => [],
             'signed' => [
                 '_type' => 'targets',
                 'version' => 1,
@@ -236,11 +235,13 @@ class TargetsMetadataTest extends MetadataBaseTest
                     ],
                 ],
             ],
+            'signatures' => [],
         ];
         $metadata = new TargetsMetadata($data, '');
 
         $decoded = static::decodeJson($metadata->toCanonicalJson());
         // The out-of-order keys should have been reordered.
+        $this->assertSame(['_type', 'delegations', 'targets', 'version'], array_keys($decoded));
         $this->assertSame(['baz', 'foo'], array_keys($decoded['targets']));
         $this->assertSame(['a', 'z'], array_keys($decoded['targets']['foo']['custom']));
         $this->assertSame(['a', 'z'], array_keys($decoded['delegations']['keys']));
@@ -249,7 +250,6 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testEmptyStructuresAreEncodedAsObjects(): void
     {
         $data = [
-            'signatures' => [],
             'signed' => [
                 '_type' => 'targets',
                 'version' => 1,
@@ -263,6 +263,7 @@ class TargetsMetadataTest extends MetadataBaseTest
                     'keys' => [],
                 ],
             ],
+            'signatures' => [],
         ];
         $metadata = new TargetsMetadata($data, '');
         $decoded = json_decode($metadata->toCanonicalJson());
