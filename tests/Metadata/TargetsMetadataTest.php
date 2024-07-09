@@ -212,4 +212,77 @@ class TargetsMetadataTest extends MetadataBaseTest
         $this->expectExceptionMessage('Delegated role names must be unique.');
         static::callCreateFromJson($json);
     }
+
+    public function testKeysAreSorted(): void
+    {
+        $data = [
+            'signatures' => [],
+            'signed' => [
+                '_type' => 'targets',
+                'version' => 1,
+                'targets' => [
+                    'foo' => [
+                        'custom' => [
+                            'z' => 'Yes',
+                            'a' => 'No',
+                        ],
+                    ],
+                    'baz' => [],
+                ],
+                'delegations' => [
+                    'keys' => [
+                        'z' => [],
+                        'a' => [],
+                    ],
+                ],
+            ],
+        ];
+        $metadata = new TargetsMetadata($data, '');
+
+        $decoded = static::decodeJson($metadata->toCanonicalJson());
+        // The out-of-order keys should have been reordered.
+        $this->assertSame(['baz', 'foo'], array_keys($decoded['targets']));
+        $this->assertSame(['a', 'z'], array_keys($decoded['targets']['foo']['custom']));
+        $this->assertSame(['a', 'z'], array_keys($decoded['delegations']['keys']));
+    }
+
+    public function testEmptyStructuresAreEncodedAsObjects(): void
+    {
+        $data = [
+            'signatures' => [],
+            'signed' => [
+                '_type' => 'targets',
+                'version' => 1,
+                'targets' => [
+                    'foo.txt' => [
+                        'custom' => [],
+                    ],
+                    'baz.txt' => [],
+                ],
+                'delegations' => [
+                    'keys' => [],
+                ],
+            ],
+        ];
+        $metadata = new TargetsMetadata($data, '');
+
+        $decoded = json_decode($metadata->toCanonicalJson());
+        // Things that should be objects are still objects, despite being empty.
+        $this->assertIsObject($decoded->targets->{'foo.txt'}->custom);
+        $this->assertIsObject($decoded->delegations->keys);
+
+        $data = [
+            'signatures' => [],
+            'signed' => [
+                '_type' => 'targets',
+                'version' => 1,
+                'targets' => [],
+            ],
+        ];
+        $metadata = new TargetsMetadata($data, '');
+
+        $decoded = json_decode($metadata->toCanonicalJson());
+        // Things that should be objects are still objects, despite being empty.
+        $this->assertIsObject($decoded->targets);
+    }
 }
