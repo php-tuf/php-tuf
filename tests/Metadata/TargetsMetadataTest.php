@@ -265,22 +265,13 @@ class TargetsMetadataTest extends MetadataBaseTest
             ],
         ];
         $metadata = new TargetsMetadata($data, '');
-
         $decoded = json_decode($metadata->toCanonicalJson());
         // Things that should be objects are still objects, despite being empty.
         $this->assertIsObject($decoded->targets->{'foo.txt'}->custom);
         $this->assertIsObject($decoded->delegations->keys);
 
-        $data = [
-            'signatures' => [],
-            'signed' => [
-                '_type' => 'targets',
-                'version' => 1,
-                'targets' => [],
-            ],
-        ];
+        $data['signed']['targets'] = [];
         $metadata = new TargetsMetadata($data, '');
-
         $decoded = json_decode($metadata->toCanonicalJson());
         // Things that should be objects are still objects, despite being empty.
         $this->assertIsObject($decoded->targets);
