@@ -153,7 +153,15 @@ abstract class MetadataBaseTest extends TestCase
      * @param boolean $valid
      *   Whether it's valid.
      *
-     * @dataProvider providerSpecVersion
+     * @testWith ["1", false]
+     *   ["1.0", true]
+     *   ["1.1", false]
+     *   ["1.99", false]
+     *   ["2.00", false]
+     *   ["1.0.a", false]
+     *   ["1.0.1", true]
+     *   ["1.99.8", true]
+     *   ["1.1.1", true]
      */
     public function testSpecVersion(string $version, bool $valid): void
     {
@@ -326,25 +334,6 @@ abstract class MetadataBaseTest extends TestCase
             ['2030-11-01T20:50:10Z', true],
             ['2330-12-21T20:50:10Z', true],
         ]);
-    }
-
-    /**
-     * Dataprovider for testSpecVersion().
-     *
-     * @return array
-     *   Array of arrays of spec version, and whether it should be valid.
-     */
-    public function providerSpecVersion(): array
-    {
-        return [
-            ['1', false],
-            ['1.0', false],
-            ['2.00', false],
-            ['1.0.a', false],
-            ['1.0.1', true],
-            ['1.99.8', true],
-            ['1.1.1', true],
-        ];
     }
 
     /**
