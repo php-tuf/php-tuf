@@ -3,10 +3,12 @@
 namespace Tuf\Metadata;
 
 use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\DateTime;
 use Symfony\Component\Validator\Constraints\EqualTo;
+use Symfony\Component\Validator\Constraints\IdenticalTo;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\Required;
@@ -98,7 +100,7 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json): static
     {
-        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $data = static::decodeJson($json);
         static::validate($data, new Collection(static::getConstraints()));
         return new static($data, $json);
     }
@@ -157,7 +159,10 @@ abstract class MetadataBase
                 'spec_version' => [
                     new NotBlank(),
                     new Type('string'),
-                    new Regex('/^1\.[0-9]+\.[0-9]+$/'),
+                    new AtLeastOneOf([
+                        new IdenticalTo('1.0'),
+                        new Regex('/^1\.[0-9]+\.[0-9]+$/'),
+                    ]),
                 ],
             ] + static::getVersionConstraints(),
             'allowExtraFields' => true,
@@ -209,8 +214,6 @@ abstract class MetadataBase
      *
      * @param boolean $allowUntrustedAccess
      *   Whether this method should access even if the metadata is not trusted.
-     *
-     * @return void
      */
     public function ensureIsTrusted(bool $allowUntrustedAccess = false): void
     {

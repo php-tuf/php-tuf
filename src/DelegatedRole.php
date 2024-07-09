@@ -17,14 +17,6 @@ use Tuf\Exception\MetadataException;
 class DelegatedRole extends Role
 {
     /**
-     * @return bool
-     */
-    public function isTerminating(): bool
-    {
-        return $this->terminating;
-    }
-
-    /**
      * DelegatedRole constructor.
      *
      * @param string $name
@@ -34,7 +26,7 @@ class DelegatedRole extends Role
      * @param array|null $pathHashPrefixes
      * @param bool $terminating
      */
-    private function __construct(string $name, int $threshold, array $keyIds, protected ?array $paths, protected ?array $pathHashPrefixes, protected bool $terminating)
+    private function __construct(string $name, int $threshold, array $keyIds, protected ?array $paths, protected ?array $pathHashPrefixes, public readonly bool $terminating)
     {
         parent::__construct($name, $threshold, $keyIds);
     }
@@ -53,14 +45,12 @@ class DelegatedRole extends Role
             // `paths` is mutually exclusive with `path_hash_prefixes`.
             // @see ::validate()
             'paths' => new Optional([
-                new Type('array'),
                 new All([
                     new Type('string'),
                     new NotBlank(),
                 ]),
             ]),
             'path_hash_prefixes' => new Optional([
-                new Type('array'),
                 new All([
                     new Type('string'),
                     new NotBlank(),

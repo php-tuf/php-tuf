@@ -38,8 +38,6 @@ trait TrustedAuthorityTrait
      *
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if the new metadata object cannot be verified.
-     *
-     * @return void
      */
     protected function checkAgainstHashesFromTrustedAuthority(MetadataBase $untrustedMetadata): void
     {
@@ -63,8 +61,6 @@ trait TrustedAuthorityTrait
      *
      * @throws \Tuf\Exception\MetadataException
      *   Thrown if the new metadata object cannot be verified.
-     *
-     * @return void
      */
     protected function checkAgainstVersionFromTrustedAuthority(MetadataBase $untrustedMetadata): void
     {

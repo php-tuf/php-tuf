@@ -14,8 +14,6 @@ trait UntrustedExceptionTrait
      *   The arguments for the method.
      *
      * @dataProvider providerUntrustedException
-     *
-     * @return void
      */
     public function testUntrustedException(string $method, array $args = []): void
     {

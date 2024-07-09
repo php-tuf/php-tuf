@@ -8,7 +8,6 @@ use Tuf\Exception\DownloadSizeException;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\SignatureThresholdException;
-use Tuf\Exception\RepoFileNotFound;
 use Tuf\Exception\TufException;
 use Tuf\Tests\ClientTestBase;
 use Tuf\Tests\FixtureBuilder\Fixture;
@@ -866,7 +865,7 @@ abstract class UpdaterTest extends ClientTestBase
         try {
             $this->getUpdater()->refresh();
             $this->fail('No RepoFileNotFound exception thrown');
-        } catch (RepoFileNotFound $exception) {
+        } catch (NotFoundException) {
             // We don't have to do anything with this exception; we just wanted
             // be sure it got thrown. Since the exception is thrown by TestRepo,
             // there's no point in asserting that its message is as expected.
@@ -1082,7 +1081,7 @@ abstract class UpdaterTest extends ClientTestBase
         try {
             $this->getUpdater()->refresh();
             $this->fail('Expected a RepoFileNotFound exception, but none was thrown.');
-        } catch (RepoFileNotFound) {
+        } catch (NotFoundException) {
             // We don't need to do anything with this exception.
         }
         $this->assertMetadataVersions($expectedUpdatedVersions, $this->clientStorage);

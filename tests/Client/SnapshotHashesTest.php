@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests\Client;
 
-use Prophecy\PhpUnit\ProphecyTrait;
 use Tuf\Exception\MetadataException;
 use Tuf\Metadata\TargetsMetadata;
 use Tuf\Tests\ClientTestBase;
@@ -12,8 +11,6 @@ use Tuf\Tests\ClientTestBase;
  */
 class SnapshotHashesTest extends ClientTestBase
 {
-    use ProphecyTrait;
-
     /**
      * @testWith ["consistent"]
      *   ["inconsistent"]

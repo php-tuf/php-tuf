@@ -54,8 +54,6 @@ abstract class MetadataBaseTest extends TestCase
      * @param string $json
      *   The json string.
      *
-     * @return void
-     *
      * @throws \Tuf\Exception\MetadataException
      *   If validation fails.
      */
@@ -66,8 +64,6 @@ abstract class MetadataBaseTest extends TestCase
      *
      * @param string $validJson
      *   The valid json key from $this->clientStorage.
-     *
-     * @return void
      *
      * @dataProvider providerValidMetadata
      */
@@ -99,18 +95,16 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * Tests that validation fails on invalid type.
-     *
-     *  @return void
      */
     public function testInvalidType(): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $metadata['signed']['_type'] = 'invalid_type_value';
         $expectedMessage = preg_quote("Array[signed][_type]", '/');
         $expectedMessage .= ".*This value should be equal to \"{$this->expectedType}\"";
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/$expectedMessage/s");
-        static::callCreateFromJson(json_encode($metadata));
+        static::callCreateFromJson(static::encodeJson($metadata));
     }
 
     public function testGetType(): void
@@ -121,8 +115,6 @@ abstract class MetadataBaseTest extends TestCase
 
     /**
      * @covers ::getRole
-     *
-     *  @return void
      */
     public function testGetRole(): void
     {
@@ -138,13 +130,11 @@ abstract class MetadataBaseTest extends TestCase
      * @param boolean $valid
      *   Whether it's valid.
      *
-     *  @return void
-     *
      * @dataProvider providerExpires
      */
     public function testExpires(string $expires, bool $valid): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $metadata['signed']['expires'] = $expires;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][expires]', '/');
@@ -152,7 +142,7 @@ abstract class MetadataBaseTest extends TestCase
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         }
-        static::callCreateFromJson(json_encode($metadata));
+        static::callCreateFromJson(static::encodeJson($metadata));
     }
 
     /**
@@ -163,13 +153,19 @@ abstract class MetadataBaseTest extends TestCase
      * @param boolean $valid
      *   Whether it's valid.
      *
-     *  @return void
-     *
-     * @dataProvider providerSpecVersion
+     * @testWith ["1", false]
+     *   ["1.0", true]
+     *   ["1.1", false]
+     *   ["1.99", false]
+     *   ["2.00", false]
+     *   ["1.0.a", false]
+     *   ["1.0.1", true]
+     *   ["1.99.8", true]
+     *   ["1.1.1", true]
      */
     public function testSpecVersion(string $version, bool $valid): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $metadata['signed']['spec_version'] = $version;
         if (!$valid) {
             $expectedMessage = preg_quote('Array[signed][spec_version]', '/');
@@ -177,7 +173,7 @@ abstract class MetadataBaseTest extends TestCase
             $this->expectException(MetadataException::class);
             $this->expectExceptionMessageMatches("/$expectedMessage/s");
         }
-        static::callCreateFromJson(json_encode($metadata));
+        static::callCreateFromJson(static::encodeJson($metadata));
     }
 
     /**
@@ -190,17 +186,15 @@ abstract class MetadataBaseTest extends TestCase
      *
      *   A different exception message to expect.
      *
-     * @return void
-     *
      * @dataProvider providerExpectedField
      */
     public function testMissingField(string $expectedField, string $exception = null): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $keys = explode(':', $expectedField);
         $fieldName = preg_quote('Array[' . implode('][', $keys) . ']', '/');
         $this->nestedUnset($keys, $metadata);
-        $json = json_encode($metadata);
+        $json = static::encodeJson($metadata);
         $this->expectException(MetadataException::class);
         if ($exception) {
             $this->expectExceptionMessageMatches("/$exception/s");
@@ -218,15 +212,13 @@ abstract class MetadataBaseTest extends TestCase
      * @param mixed $value
      *   The value to set.
      *
-     * @return void
-     *
      * @dataProvider providerOptionalFields
      */
     public function testOptionalFields(string $optionalField, $value): void
     {
         $optionalField = explode(':', $optionalField);
 
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         static::nestedChange($optionalField, $metadata, $value);
         $this->assertDataIsValid($metadata);
 
@@ -244,7 +236,7 @@ abstract class MetadataBaseTest extends TestCase
      */
     private function assertDataIsValid(array $data): void
     {
-        $json = json_encode($data);
+        $json = static::encodeJson($data);
         static::assertInstanceOf(MetadataBase::class, static::callCreateFromJson($json));
     }
 
@@ -268,8 +260,6 @@ abstract class MetadataBaseTest extends TestCase
      *   Ordered keys to the value to unset.
      * @param array $data
      *   The array to modify.
-     *
-     * @return void
      */
     protected function nestedUnset(array $keys, array &$data): void
     {
@@ -290,13 +280,11 @@ abstract class MetadataBaseTest extends TestCase
      * @param string $expectedType
      *   The type of the field.
      *
-     * @return void
-     *
      * @dataProvider providerValidField
      */
     public function testInvalidField(string $expectedField, string $expectedType): void
     {
-        $metadata = json_decode($this->clientStorage->read($this->validJson), true);
+        $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $keys = explode(':', $expectedField);
 
         switch ($expectedType) {
@@ -319,7 +307,7 @@ abstract class MetadataBaseTest extends TestCase
         }
 
         static::nestedChange($keys, $metadata, $newValue);
-        $json = json_encode($metadata);
+        $json = static::encodeJson($metadata);
         $this->expectException(MetadataException::class);
         $this->expectExceptionMessageMatches("/This value should be of type " . preg_quote($expectedType) . "/s");
         static::callCreateFromJson($json);
@@ -346,25 +334,6 @@ abstract class MetadataBaseTest extends TestCase
             ['2030-11-01T20:50:10Z', true],
             ['2330-12-21T20:50:10Z', true],
         ]);
-    }
-
-    /**
-     * Dataprovider for testSpecVersion().
-     *
-     * @return array
-     *   Array of arrays of spec version, and whether it should be valid.
-     */
-    public function providerSpecVersion(): array
-    {
-        return [
-            ['1', false],
-            ['1.0', false],
-            ['2.00', false],
-            ['1.0.a', false],
-            ['1.0.1', true],
-            ['1.99.8', true],
-            ['1.1.1', true],
-        ];
     }
 
     /**
@@ -422,7 +391,7 @@ abstract class MetadataBaseTest extends TestCase
     protected function getFixtureNestedArrayFirstKey(string $fixtureName, array $nestedKeys): string
     {
         $realPath = static::getFixturePath('Delegated/consistent', "client/$fixtureName.json", false);
-        $data = json_decode(file_get_contents($realPath), true);
+        $data = static::decodeJson(file_get_contents($realPath));
         foreach ($nestedKeys as $nestedKey) {
             $data = $data[$nestedKey];
         }

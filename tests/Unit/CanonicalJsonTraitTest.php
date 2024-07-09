@@ -18,8 +18,8 @@ class CanonicalJsonTraitTest extends TestCase
     public function testSort(): void
     {
         $fixturesDirectory = __DIR__ . '/../../fixtures/json';
-        $sortedData = json_decode(file_get_contents("$fixturesDirectory/sorted.json"), true, 512, JSON_THROW_ON_ERROR);
-        $unsortedData = json_decode(file_get_contents("$fixturesDirectory/unsorted.json"), true, 512, JSON_THROW_ON_ERROR);
+        $sortedData = static::decodeJson(file_get_contents("$fixturesDirectory/sorted.json"));
+        $unsortedData = static::decodeJson(file_get_contents("$fixturesDirectory/unsorted.json"));
         static::sortKeys($unsortedData);
         $this->assertSame($unsortedData, $sortedData);
 

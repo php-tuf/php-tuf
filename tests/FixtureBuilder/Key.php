@@ -61,7 +61,10 @@ final class Key
 
     public function id(): string
     {
-        return hash('sha256', self::encodeJson($this->toArray()));
+        $value = $this->toArray();
+        // @see \Tuf\Key::getComputedKeyId()
+        $value['keyid_hash_algorithms'] = ['sha256', 'sha512'];
+        return hash('sha256', self::encodeJson($value));
     }
 
     /**

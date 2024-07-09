@@ -8,6 +8,7 @@ on:
   schedule:
     # Run this workflow at 3 AM UTC every day.
     - cron: '0 3 * * *'
+  workflow_dispatch:
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader"
@@ -68,7 +69,7 @@ jobs:
         run: composer test
 
       - name: Check dependencies for known security vulnerabilities
-        run: composer audit
+        run: composer audit --no-dev
 
   build-lowest-version:
     name: Build lowest version

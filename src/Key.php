@@ -38,7 +38,7 @@ final class Key
      *
      * @return static
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.32#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.33#document-formats
      */
     public static function createFromMetadata(array $keyInfo): self
     {
@@ -59,7 +59,7 @@ final class Key
      * @return string
      *     The key ID in hex format for the key metadata hashed using sha256.
      *
-     * @see https://theupdateframework.github.io/specification/v1.0.32#document-formats
+     * @see https://theupdateframework.github.io/specification/v1.0.33#document-formats
      *
      * @todo https://github.com/php-tuf/php-tuf/issues/56
      */
@@ -72,6 +72,12 @@ final class Key
             'keyval' => [
                 'public' => $this->public,
             ],
+            // This field is no longer part of the TUF spec, but it's here for backwards compatibility
+            // with securesystemslib 0.30.0 and older (a Python package used by Rugged, and possibly
+            // others, to generate server-side TUF metadata). We can remove this once
+            // https://gitlab.com/rugged/rugged/-/issues/192 is fixed and deployed.
+            // @see \Tuf\Tests\FixtureBuilder\Key::toArray()
+            'keyid_hash_algorithms' => ['sha256', 'sha512'],
         ]);
         return hash('sha256', $canonical);
     }
