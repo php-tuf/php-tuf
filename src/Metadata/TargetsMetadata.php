@@ -52,15 +52,17 @@ class TargetsMetadata extends MetadataBase
         foreach ($normalized['targets'] as $path => $target) {
             // Custom target info should always encode to an object, even if
             // it's empty.
-            if (array_key_exists('custom', $target)) {
-                $normalized['targets'][$path]['custom'] = (object) $target['custom'];
+            if (array_key_exists('custom', $target) && empty($target['custom'])) {
+                $normalized['targets'][$path]['custom'] = new \stdClass();
             }
         }
 
         // Ensure that these will encode as objects even if they're empty.
-        $normalized['targets'] = (object) $normalized['targets'];
-        if (array_key_exists('delegations', $normalized)) {
-            $normalized['delegations']['keys'] = (object) $normalized['delegations']['keys'];
+        if (empty($normalized['targets'])) {
+            $normalized['targets'] = new \stdClass();
+        }
+        if (array_key_exists('delegations', $normalized) && empty($normalized['delegations']['keys'])) {
+            $normalized['delegations']['keys'] = new \stdClass();
         }
 
         return $normalized;
