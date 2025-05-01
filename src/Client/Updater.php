@@ -422,14 +422,17 @@ class Updater
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata that contains the metadata for the target or null if the target is not found.
      */
-    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
+    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false, array $all_delegated_roles = []): ?TargetsMetadata
     {
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
+        if (!\count($all_delegated_roles)) {
+          $all_delegated_roles = $targetsMetadata->getDelegatedRoles();
+        }
 
         $delegatedRoles = [];
-        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+        foreach ($all_delegated_roles as $delegatedRole) {
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
             if ($delegatedRole->matchesPath($target)) {
@@ -463,7 +466,7 @@ class Updater
             $searchedRoles[] = $delegatedRoleName;
             // § 5.6.7.2
             // Recursively search the list of delegations in order of appearance.
-            $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
+            $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated, $all_delegated_roles);
             if ($terminated || $delegatedRolesMetadataSearchResult) {
                 return $delegatedRolesMetadataSearchResult;
             }
