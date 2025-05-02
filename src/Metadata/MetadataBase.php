@@ -103,7 +103,7 @@ abstract class MetadataBase
     {
         $key = hash('xxh3', $json);
         if (isset(static::$jsonCache[$key])) {
-          return static::$jsonCache[$key];
+            return static::$jsonCache[$key];
         }
         $data = static::decodeJson($json);
         static::validate($data, new Collection(static::getConstraints()));
