@@ -101,7 +101,7 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json): static
     {
-        $key = hash('xxh64', $json);
+        $key = hash('xxh3', $json);
         if (isset(static::$jsonCache[$key])) {
           return static::$jsonCache[$key];
         }
