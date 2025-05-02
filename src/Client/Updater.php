@@ -385,7 +385,7 @@ class Updater
     private function fetchAndVerifyTargetsMetadata(string $role): TargetsMetadata
     {
         if (isset($this->targetsMetadata[$role])) {
-          return $this->targetsMetadata[$role];
+            return $this->targetsMetadata[$role];
         }
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
@@ -438,7 +438,7 @@ class Updater
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
         if (!isset($this->delegatedRoles[$targetsMetadata])) {
-          $this->delegatedRoles[$targetsMetadata] = $targetsMetadata->getDelegatedRoles();
+            $this->delegatedRoles[$targetsMetadata] = $targetsMetadata->getDelegatedRoles();
         }
 
         $delegatedRoles = [];
@@ -455,7 +455,7 @@ class Updater
         }
 
         foreach ($delegatedRoles as $delegatedRole) {
-          $delegatedRoleName = $delegatedRole->name;
+            $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
