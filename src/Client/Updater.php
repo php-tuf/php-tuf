@@ -76,6 +76,10 @@ class Updater
      */
     protected Repository $server;
 
+    protected array $targetsMetadata = [];
+
+    protected \SplObjectStorage $delegatedRoles;
+
     /**
      * Updater constructor.
      *
@@ -92,6 +96,7 @@ class Updater
     {
         $this->server = new Repository($this->serverLoader);
         $this->clock = new Clock();
+        $this->delegatedRoles = new \SplObjectStorage();
     }
 
     /**
@@ -166,7 +171,7 @@ class Updater
         $this->storage->save($newSnapshotData);
 
         // § 5.6
-        $this->fetchAndVerifyTargetsMetadata('targets')->wait();
+        $this->fetchAndVerifyTargetsMetadata('targets');
 
         $this->isRefreshed = true;
         return true;
@@ -377,21 +382,26 @@ class Updater
      * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
      *   A promise wrapping the verified metadata for the role.
      */
-    private function fetchAndVerifyTargetsMetadata(string $role): PromiseInterface
+    private function fetchAndVerifyTargetsMetadata(string $role): TargetsMetadata
     {
+        if (isset($this->targetsMetadata[$role])) {
+          return $this->targetsMetadata[$role];
+        }
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
 
-        return $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
+        $return = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
           ->then(function (TargetsMetadata $newTargetsData) {
               $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
               // § 5.5.6
               $this->storage->save($newTargetsData);
               return $newTargetsData;
           });
+        $this->targetsMetadata[$role] = $return->wait();
+        return $this->targetsMetadata[$role];
     }
 
     /**
@@ -417,24 +427,22 @@ class Updater
      * @param bool $terminated
      *   (optional) For internal recursive calls only. This will be set to true if a terminating delegation is found in
      *   the search.
-     * @param array $all_delegated_roles
-     *   (optional) For internal recursive calls only to avoid looking up the delegated roles every iteration.
      *
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
      *   The target metadata that contains the metadata for the target or null if the target is not found.
      */
-    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false, array $all_delegated_roles = []): ?TargetsMetadata
+    private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
-        if (!\count($all_delegated_roles)) {
-          $all_delegated_roles = $targetsMetadata->getDelegatedRoles();
+        if (!isset($this->delegatedRoles[$targetsMetadata])) {
+          $this->delegatedRoles[$targetsMetadata] = $targetsMetadata->getDelegatedRoles();
         }
 
         $delegatedRoles = [];
-        foreach ($all_delegated_roles as $delegatedRole) {
+        foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
             if ($delegatedRole->matchesPath($target)) {
@@ -447,7 +455,7 @@ class Updater
         }
 
         foreach ($delegatedRoles as $delegatedRole) {
-            $delegatedRoleName = $delegatedRole->name;
+          $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1
                 // If this role has been visited before, skip it (to avoid cycles in the delegation graph).
@@ -460,15 +468,14 @@ class Updater
 
             $this->signatureVerifier->addRole($delegatedRole);
             /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
-              ->wait();
+            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
             if ($delegatedTargetsMetadata->hasTarget($target)) {
                 return $delegatedTargetsMetadata;
             }
             $searchedRoles[] = $delegatedRoleName;
             // § 5.6.7.2
             // Recursively search the list of delegations in order of appearance.
-            $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated, $all_delegated_roles);
+            $delegatedRolesMetadataSearchResult = $this->searchDelegatedRolesForTarget($delegatedTargetsMetadata, $target, $searchedRoles, $terminated);
             if ($terminated || $delegatedRolesMetadataSearchResult) {
                 return $delegatedRolesMetadataSearchResult;
             }
