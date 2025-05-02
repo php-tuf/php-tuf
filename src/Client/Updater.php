@@ -417,6 +417,8 @@ class Updater
      * @param bool $terminated
      *   (optional) For internal recursive calls only. This will be set to true if a terminating delegation is found in
      *   the search.
+     * @param array $all_delegated_roles
+     *   (optional) For internal recursive calls only to avoid looking up the delegated roles every iteration.
      *
      *
      * @return \Tuf\Metadata\TargetsMetadata|null
