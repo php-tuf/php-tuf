@@ -47,6 +47,7 @@ abstract class MetadataBase
 
     public readonly int $version;
 
+    protected static array $jsonCache = [];
 
     /**
      * MetadataBase constructor.
@@ -100,9 +101,14 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json): static
     {
+        $key = hash('xxh3', $json);
+        if (isset(static::$jsonCache[$key])) {
+          return static::$jsonCache[$key];
+        }
         $data = static::decodeJson($json);
         static::validate($data, new Collection(static::getConstraints()));
-        return new static($data, $json);
+        static::$jsonCache[$key] =  new static($data, $json);
+        return static::$jsonCache[$key];
     }
 
     /**
