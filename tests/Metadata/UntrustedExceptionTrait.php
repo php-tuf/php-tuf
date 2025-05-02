@@ -14,6 +14,7 @@ trait UntrustedExceptionTrait
      *   The arguments for the method.
      *
      * @dataProvider providerUntrustedException
+     * @runInSeparateProcess
      */
     public function testUntrustedException(string $method, array $args = []): void
     {
