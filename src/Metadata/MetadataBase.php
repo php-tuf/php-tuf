@@ -47,7 +47,10 @@ abstract class MetadataBase
 
     public readonly int $version;
 
-    protected static array $jsonCache = [];
+    /**
+     * @var array<string, static>
+     */
+    private static array $jsonCache = [];
 
     /**
      * MetadataBase constructor.
@@ -107,8 +110,7 @@ abstract class MetadataBase
         }
         $data = static::decodeJson($json);
         static::validate($data, new Collection(static::getConstraints()));
-        static::$jsonCache[$key] =  new static($data, $json);
-        return static::$jsonCache[$key];
+        return static::$jsonCache[$key] = new static($data, $json);
     }
 
     /**
@@ -121,7 +123,7 @@ abstract class MetadataBase
     {
         return [
             'signatures' => new Required([
-                new Count(['min' => 1]),
+                new Count(min: 1),
                 new All([
                     new Collection([
                         'keyid' => [
