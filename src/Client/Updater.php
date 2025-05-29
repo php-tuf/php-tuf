@@ -382,7 +382,7 @@ class Updater
      * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
      *   A promise wrapping the verified metadata for the role.
      */
-    private function fetchAndVerifyTargetsMetadata(string $role): TargetsMetadata
+    private function fetchAndVerifyTargetsMetadata(string $role): PromiseInterface
     {
         if (isset($this->targetsMetadata[$role])) {
             return $this->targetsMetadata[$role];
@@ -400,7 +400,7 @@ class Updater
               $this->storage->save($newTargetsData);
               return $newTargetsData;
           });
-        $this->targetsMetadata[$role] = $return->wait();
+        $this->targetsMetadata[$role] = $return;
         return $this->targetsMetadata[$role];
     }
 
@@ -466,7 +466,7 @@ class Updater
 
             $this->signatureVerifier->addRole($delegatedRole);
             /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName);
+            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)->wait();
             if ($delegatedTargetsMetadata->hasTarget($target)) {
                 return $delegatedTargetsMetadata;
             }
