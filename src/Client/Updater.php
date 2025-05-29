@@ -442,8 +442,7 @@ class Updater
 
         if (isset($this->delegatedRoles[$target][$targetsMetadata])) {
             $delegatedRoles = $this->delegatedRoles[$target][$targetsMetadata];
-        }
-        else {
+        } else {
             $this->delegatedRoles[$target] ??= new \SplObjectStorage();
 
             $delegatedRoles = [];
@@ -461,8 +460,7 @@ class Updater
                             continue;
                         }
                     }
-                }
-                else {
+                } else {
                     $delegatedRole = DelegatedRole::createFromMetadata($info);
                     // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
                     // do not evaluate this role or any roles it delegates to.
