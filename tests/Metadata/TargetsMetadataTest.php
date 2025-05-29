@@ -26,7 +26,7 @@ class TargetsMetadataTest extends MetadataBaseTest
     /**
      * {@inheritdoc}
      */
-    protected static function callCreateFromJson(string $json, string $role = null): MetadataBase
+    protected static function callCreateFromJson(string $json, ?string $role = null): MetadataBase
     {
         return TargetsMetadata::createFromJson($json, $role);
     }

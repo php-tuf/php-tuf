@@ -136,13 +136,13 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
-                new Unique([
-                    'fields' => ['keyid'],
-                    'message' => 'Key IDs must be unique.',
-                ]),
+                new Unique(
+                    message: 'Key IDs must be unique.',
+                    fields: ['keyid'],
+                ),
             ]),
             'signed' => new Required([
-                new Collection(static::getSignedCollectionOptions()),
+                new Collection(...static::getSignedCollectionOptions()),
             ]),
         ];
     }
@@ -162,7 +162,7 @@ abstract class MetadataBase
                     new EqualTo(static::TYPE),
                     new Type('string'),
                 ],
-                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
+                'expires' => new DateTime(\DateTimeInterface::ISO8601),
                 // We only expect to work with major version 1.
                 'spec_version' => [
                     new NotBlank(),

@@ -35,7 +35,7 @@ class TargetsMetadata extends MetadataBase
      * @param string|null $roleName
      *   The role name if not the same as the type.
      */
-    public static function createFromJson(string $json, string $roleName = null): static
+    public static function createFromJson(string $json, ?string $roleName = null): static
     {
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;
@@ -83,8 +83,8 @@ class TargetsMetadata extends MetadataBase
                 ]),
                 'roles' => new Required([
                     new All([
-                        new Collection([
-                            'fields' => [
+                        new Collection(
+                            [
                                 'name' => [
                                     new NotBlank(),
                                     new Type('string'),
@@ -105,12 +105,12 @@ class TargetsMetadata extends MetadataBase
                                     new Type('boolean'),
                                 ],
                             ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
-                        ]),
+                        ),
                     ]),
-                    new Unique([
-                        'fields' => ['name'],
-                        'message' => 'Delegated role names must be unique.',
-                    ]),
+                    new Unique(
+                        message: 'Delegated role names must be unique.',
+                        fields: ['name'],
+                    ),
                 ]),
             ]),
         ]);

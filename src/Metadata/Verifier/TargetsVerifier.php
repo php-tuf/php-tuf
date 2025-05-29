@@ -25,7 +25,7 @@ class TargetsVerifier extends VerifierBase
      * @param SnapshotMetadata|null $snapshotMetadata
      *   The trusted snapshot metadata, if any.
      */
-    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, MetadataBase $trustedMetadata = null, SnapshotMetadata $snapshotMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $expiration, ?MetadataBase $trustedMetadata = null, ?SnapshotMetadata $snapshotMetadata = null)
     {
         parent::__construct($signatureVerifier, $expiration, $trustedMetadata);
         $this->setTrustedAuthority($snapshotMetadata);
