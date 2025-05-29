@@ -171,7 +171,7 @@ class Updater
         $this->storage->save($newSnapshotData);
 
         // § 5.6
-        $this->fetchAndVerifyTargetsMetadata('targets');
+        $this->fetchAndVerifyTargetsMetadata('targets')->wait();
 
         $this->isRefreshed = true;
         return true;
@@ -393,15 +393,13 @@ class Updater
             ? $fileInfo['version']
             : null;
 
-        $return = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
+        return $this->targetsMetadata[$role] = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
           ->then(function (TargetsMetadata $newTargetsData) {
               $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
               // § 5.5.6
               $this->storage->save($newTargetsData);
               return $newTargetsData;
           });
-        $this->targetsMetadata[$role] = $return;
-        return $this->targetsMetadata[$role];
     }
 
     /**
