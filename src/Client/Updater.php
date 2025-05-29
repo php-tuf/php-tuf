@@ -441,19 +441,12 @@ class Updater
         $this->delegatedRoles[$targetsMetadata] ??= $targetsMetadata->getDelegatedRoles();
 
         $delegatedRoles = [];
-        foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
+        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
-            if ($delegatedRole->matchesPath($target)) {
-                $delegatedRoles[] = $delegatedRole;
-
-                if ($delegatedRole->terminating) {
-                    break;
-                }
+            if (!$delegatedRole->matchesPath($target)) {
+              continue;
             }
-        }
-
-        foreach ($delegatedRoles as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
                 // § 5.6.7.1

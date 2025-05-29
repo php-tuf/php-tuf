@@ -29,6 +29,8 @@ class TargetsMetadata extends MetadataBase
      */
     private ?string $role;
 
+    private array $delegatedRoles = [];
+
     /**
      * {@inheritdoc}
      *
@@ -229,13 +231,14 @@ class TargetsMetadata extends MetadataBase
      * @return \Tuf\DelegatedRole[]
      *   The delegated roles.
      */
-    public function getDelegatedRoles(): array
+    public function getDelegatedRoles(): \Iterator
     {
-        $roles = [];
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
-            $role = DelegatedRole::createFromMetadata($roleInfo);
-            $roles[$role->name] = $role;
+            if (!isset($this->delegatedRoles[$roleInfo['name']])) {
+               $role = DelegatedRole::createFromMetadata($roleInfo);
+               $this->delegatedRoles[$roleInfo['name']] = $role;
+            }
+            yield $roleInfo['name'] => $this->delegatedRoles[$roleInfo['name']];
         }
-        return $roles;
     }
 }
