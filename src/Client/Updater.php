@@ -435,13 +435,13 @@ class Updater
      */
     private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
-        $metadata = json_decode($targetsMetadata->toCanonicalJson(), TRUE);
+        $metadata = json_decode($targetsMetadata->toCanonicalJson(), true);
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
 
         if (isset($this->delegatedRoles[$target][$targetsMetadata])) {
-          $delegatedRoles = $this->delegatedRoles[$target][$targetsMetadata];
+            $delegatedRoles = $this->delegatedRoles[$target][$targetsMetadata];
         }
         else {
             $this->delegatedRoles[$target] ??= new \SplObjectStorage();
@@ -452,14 +452,14 @@ class Updater
             foreach ($metadata['delegations']['roles'] ?? [] as $key => $info) {
                 if (isset($info['path_hash_prefixes'])) {
                     foreach ($info['path_hash_prefixes'] as $prefix) {
-                       if (str_starts_with($targetHash, $prefix)) {
-                           $delegatedRole = DelegatedRole::createFromMetadata($info);
-                           $delegatedRoles[] = $delegatedRole;
-                           if ($delegatedRole->terminating) {
-                               break;
-                           }
-                           continue;
-                       }
+                        if (str_starts_with($targetHash, $prefix)) {
+                            $delegatedRole = DelegatedRole::createFromMetadata($info);
+                            $delegatedRoles[] = $delegatedRole;
+                            if ($delegatedRole->terminating) {
+                                break;
+                            }
+                            continue;
+                        }
                     }
                 }
                 else {
