@@ -128,10 +128,10 @@ abstract class MetadataBase
                         ],
                     ]),
                 ]),
-                new Unique([
-                    'fields' => ['keyid'],
-                    'message' => 'Key IDs must be unique.',
-                ]),
+                new Unique(
+                    message: 'Key IDs must be unique.',
+                    fields: ['keyid'],
+                ),
             ]),
             'signed' => new Required([
                 new Collection(static::getSignedCollectionOptions()),

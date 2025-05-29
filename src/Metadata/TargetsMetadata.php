@@ -107,10 +107,10 @@ class TargetsMetadata extends MetadataBase
                             ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
                         ]),
                     ]),
-                    new Unique([
-                        'fields' => ['name'],
-                        'message' => 'Delegated role names must be unique.',
-                    ]),
+                    new Unique(
+                        message: 'Delegated role names must be unique.',
+                        fields: ['name'],
+                    ),
                 ]),
             ]),
         ]);
