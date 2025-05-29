@@ -134,7 +134,7 @@ abstract class MetadataBase
                 ),
             ]),
             'signed' => new Required([
-                new Collection(static::getSignedCollectionOptions()),
+                new Collection(...static::getSignedCollectionOptions()),
             ]),
         ];
     }

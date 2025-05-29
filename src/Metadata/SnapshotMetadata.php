@@ -26,12 +26,7 @@ class SnapshotMetadata extends FileInfoMetadataBase
         $options['fields']['meta'] = new Required([
             new Count(min: 1),
             new All([
-                new Collection(
-                    [
-                        'fields' => static::getMetaPathConstraints(),
-                        'allowExtraFields' => true,
-                    ]
-                ),
+                new Collection(static::getMetaPathConstraints(), allowExtraFields: true),
             ]),
         ]);
         return $options;
