@@ -115,7 +115,7 @@ abstract class MetadataBase
     {
         return [
             'signatures' => new Required([
-                new Count(['min' => 1]),
+                new Count(min: 1),
                 new All([
                     new Collection([
                         'keyid' => [

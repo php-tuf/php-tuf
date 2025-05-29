@@ -24,7 +24,7 @@ class SnapshotMetadata extends FileInfoMetadataBase
     {
         $options = parent::getSignedCollectionOptions();
         $options['fields']['meta'] = new Required([
-            new Count(['min' => 1]),
+            new Count(min: 1),
             new All([
                 new Collection(
                     [
