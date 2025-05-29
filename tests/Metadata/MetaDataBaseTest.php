@@ -188,7 +188,7 @@ abstract class MetadataBaseTest extends TestCase
      *
      * @dataProvider providerExpectedField
      */
-    public function testMissingField(string $expectedField, string $exception = null): void
+    public function testMissingField(string $expectedField, ?string $exception = null): void
     {
         $metadata = static::decodeJson($this->clientStorage->read($this->validJson));
         $keys = explode(':', $expectedField);

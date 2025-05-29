@@ -80,7 +80,7 @@ class Repository
      * @return \Tuf\Metadata\SnapshotMetadata
      *   The untrusted snapshot metadata.
      */
-    public function getSnapshot(?int $version, int $maxBytes = null): SnapshotMetadata
+    public function getSnapshot(?int $version, ?int $maxBytes = null): SnapshotMetadata
     {
         $name = isset($version) ? "$version.snapshot" : 'snapshot';
         // If a maximum number of bytes was provided, we must download *exactly*
@@ -107,7 +107,7 @@ class Repository
      * @return \GuzzleHttp\Promise\PromiseInterface<\Tuf\Metadata\TargetsMetadata>
      *   A promise wrapping the untrusted targets metadata.
      */
-    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): PromiseInterface
+    public function getTargets(?int $version, string $role = 'targets', ?int $maxBytes = null): PromiseInterface
     {
         $name = isset($version) ? "$version.$role" : $role;
         // If a maximum number of bytes was provided, we must download *exactly*

@@ -26,7 +26,7 @@ class SnapshotVerifier extends FileInfoVerifier
      * @param \Tuf\Metadata\TimestampMetadata|null $timestampMetadata
      *   The trusted timestamp metadata, if there is any.
      */
-    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, MetadataBase $trustedMetadata = null, TimestampMetadata $timestampMetadata = null)
+    public function __construct(SignatureVerifier $signatureVerifier, \DateTimeImmutable $metadataExpiration, ?MetadataBase $trustedMetadata = null, ?TimestampMetadata $timestampMetadata = null)
     {
         parent::__construct($signatureVerifier, $metadataExpiration, $trustedMetadata);
         $this->setTrustedAuthority($timestampMetadata);

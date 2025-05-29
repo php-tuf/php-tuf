@@ -22,7 +22,7 @@ trait UtilsTrait
      *   The new keyed array where the keys are string concatenation of the
      *   arguments.
      */
-    protected static function getKeyedArray(array $providedData, int $useArgumentNumber = null): array
+    protected static function getKeyedArray(array $providedData, ?int $useArgumentNumber = null): array
     {
         $newData = [];
         foreach ($providedData as $arguments) {
