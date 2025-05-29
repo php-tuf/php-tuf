@@ -30,7 +30,7 @@ class InvalidHashException extends TufException
      * @param \Throwable|null $previous
      *   The previous exception, if any.
      */
-    public function __construct(private StreamInterface $stream, $message = "", $code = 0, \Throwable $previous = null)
+    public function __construct(private StreamInterface $stream, $message = "", $code = 0, ?\Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

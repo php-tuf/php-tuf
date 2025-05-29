@@ -35,7 +35,7 @@ class TargetsMetadata extends MetadataBase
      * @param string|null $roleName
      *   The role name if not the same as the type.
      */
-    public static function createFromJson(string $json, string $roleName = null): static
+    public static function createFromJson(string $json, ?string $roleName = null): static
     {
         $newMetadata = parent::createFromJson($json);
         $newMetadata->role = $roleName;

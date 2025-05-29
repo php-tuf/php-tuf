@@ -23,7 +23,7 @@ class TestRepository extends Repository
     /**
      * {@inheritDoc}
      */
-    public function getTargets(?int $version, string $role = 'targets', int $maxBytes = null): PromiseInterface
+    public function getTargets(?int $version, string $role = 'targets', ?int $maxBytes = null): PromiseInterface
     {
         if (!empty($this->targets[$role])) {
             $version ??= array_key_last($this->targets[$role]);

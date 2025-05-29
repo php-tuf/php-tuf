@@ -21,7 +21,7 @@ class NotFoundException extends TufException
      * @param \Throwable|null $previous
      *     (optional) The previous exception, if any, for exception chaining.
      */
-    public function __construct(string $key = '', string $itemType = 'Item', \Throwable $previous = null)
+    public function __construct(string $key = '', string $itemType = 'Item', ?\Throwable $previous = null)
     {
         $message = "$itemType not found";
         if ($key != "") {
