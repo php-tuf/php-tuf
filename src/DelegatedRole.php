@@ -87,15 +87,17 @@ class DelegatedRole extends Role
      *
      * @param string $target
      *   The path of the target file.
+     * @param string $targetHash
+     *   The sha256 hash of the target.
      *
      * @return bool
      *   True if there is path match or no path criteria is set for the role, or
      *   false otherwise.
      */
-    public function matchesPath(string $target): bool
+    public function matchesPath(string $target, ?string $targetHash = NULL): bool
     {
         if (isset($this->pathHashPrefixes)) {
-            $targetHash = hash('sha256', $target);
+            $targetHash ??= hash('sha256', $target);
 
             foreach ($this->pathHashPrefixes as $prefix) {
                 if (str_starts_with($targetHash, $prefix)) {

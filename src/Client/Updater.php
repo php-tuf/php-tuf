@@ -441,10 +441,11 @@ class Updater
         $this->delegatedRoles[$targetsMetadata] ??= $targetsMetadata->getDelegatedRoles();
 
         $delegatedRoles = [];
+        $targetHash = hash('sha256', $target);
         foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
-            if ($delegatedRole->matchesPath($target)) {
+            if ($delegatedRole->matchesPath($target, $targetHash)) {
                 $delegatedRoles[] = $delegatedRole;
 
                 if ($delegatedRole->terminating) {
