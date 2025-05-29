@@ -76,9 +76,9 @@ class Updater
      */
     protected Repository $server;
 
-    protected array $targetsMetadata = [];
+    private array $targetsMetadata = [];
 
-    protected \SplObjectStorage $delegatedRoles;
+    private \SplObjectStorage $delegatedRoles;
 
     /**
      * Updater constructor.
@@ -437,9 +437,7 @@ class Updater
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
-        if (!isset($this->delegatedRoles[$targetsMetadata])) {
-            $this->delegatedRoles[$targetsMetadata] = $targetsMetadata->getDelegatedRoles();
-        }
+        $this->delegatedRoles[$targetsMetadata] ??= $targetsMetadata->getDelegatedRoles();
 
         $delegatedRoles = [];
         foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
