@@ -76,6 +76,9 @@ class Updater
      */
     protected Repository $server;
 
+    /**
+     * @var array<string, PromiseInterface<TargetsMetadata>>
+     */
     private array $targetsMetadata = [];
 
     private \SplObjectStorage $delegatedRoles;
@@ -464,7 +467,8 @@ class Updater
 
             $this->signatureVerifier->addRole($delegatedRole);
             /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
-            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)->wait();
+            $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
+                ->wait();
             if ($delegatedTargetsMetadata->hasTarget($target)) {
                 return $delegatedTargetsMetadata;
             }
