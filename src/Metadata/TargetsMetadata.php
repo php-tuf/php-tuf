@@ -83,8 +83,8 @@ class TargetsMetadata extends MetadataBase
                 ]),
                 'roles' => new Required([
                     new All([
-                        new Collection([
-                            'fields' => [
+                        new Collection(
+                            [
                                 'name' => [
                                     new NotBlank(),
                                     new Type('string'),
@@ -105,12 +105,12 @@ class TargetsMetadata extends MetadataBase
                                     new Type('boolean'),
                                 ],
                             ] + static::getKeyidsConstraints() + static::getThresholdConstraints(),
-                        ]),
+                        ),
                     ]),
-                    new Unique([
-                        'fields' => ['name'],
-                        'message' => 'Delegated role names must be unique.',
-                    ]),
+                    new Unique(
+                        message: 'Delegated role names must be unique.',
+                        fields: ['name'],
+                    ),
                 ]),
             ]),
         ]);
