@@ -77,6 +77,13 @@ class Updater
     protected Repository $server;
 
     /**
+     * @var array<string, PromiseInterface<TargetsMetadata>>
+     */
+    private array $targetsMetadata = [];
+
+    private \SplObjectStorage $delegatedRoles;
+
+    /**
      * Updater constructor.
      *
      * @param \Tuf\Loader\SizeCheckingLoader $serverLoader
@@ -92,6 +99,7 @@ class Updater
     {
         $this->server = new Repository($this->serverLoader);
         $this->clock = new Clock();
+        $this->delegatedRoles = new \SplObjectStorage();
     }
 
     /**
@@ -379,13 +387,16 @@ class Updater
      */
     private function fetchAndVerifyTargetsMetadata(string $role): PromiseInterface
     {
+        if (isset($this->targetsMetadata[$role])) {
+            return $this->targetsMetadata[$role];
+        }
         $fileInfo = $this->storage->getSnapshot()->getFileMetaInfo("$role.json");
         // § 5.6.1
         $targetsVersion = $this->storage->getRoot()->supportsConsistentSnapshots()
             ? $fileInfo['version']
             : null;
 
-        return $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
+        return $this->targetsMetadata[$role] = $this->server->getTargets($targetsVersion, $role, $fileInfo['length'] ?? null)
           ->then(function (TargetsMetadata $newTargetsData) {
               $this->universalVerifier->verify(TargetsMetadata::TYPE, $newTargetsData);
               // § 5.5.6
@@ -427,9 +438,10 @@ class Updater
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
+        $this->delegatedRoles[$targetsMetadata] ??= $targetsMetadata->getDelegatedRoles();
 
         $delegatedRoles = [];
-        foreach ($targetsMetadata->getDelegatedRoles() as $delegatedRole) {
+        foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
             // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
             // do not evaluate this role or any roles it delegates to.
             if ($delegatedRole->matchesPath($target)) {
@@ -456,7 +468,7 @@ class Updater
             $this->signatureVerifier->addRole($delegatedRole);
             /** @var \Tuf\Metadata\TargetsMetadata $delegatedTargetsMetadata */
             $delegatedTargetsMetadata = $this->fetchAndVerifyTargetsMetadata($delegatedRoleName)
-              ->wait();
+                ->wait();
             if ($delegatedTargetsMetadata->hasTarget($target)) {
                 return $delegatedTargetsMetadata;
             }
