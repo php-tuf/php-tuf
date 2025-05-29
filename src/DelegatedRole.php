@@ -94,7 +94,7 @@ class DelegatedRole extends Role
      *   True if there is path match or no path criteria is set for the role, or
      *   false otherwise.
      */
-    public function matchesPath(string $target, ?string $targetHash = NULL): bool
+    public function matchesPath(string $target, ?string $targetHash = null): bool
     {
         if (isset($this->pathHashPrefixes)) {
             $targetHash ??= hash('sha256', $target);
