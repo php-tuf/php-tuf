@@ -154,7 +154,7 @@ abstract class MetadataBase
                     new EqualTo(static::TYPE),
                     new Type('string'),
                 ],
-                'expires' => new DateTime(['value' => \DateTimeInterface::ISO8601]),
+                'expires' => new DateTime(\DateTimeInterface::ISO8601),
                 // We only expect to work with major version 1.
                 'spec_version' => [
                     new NotBlank(),
