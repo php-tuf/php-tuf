@@ -238,4 +238,48 @@ class TargetsMetadata extends MetadataBase
         }
         return $roles;
     }
+
+    /**
+     * Get delegated roles, pre-filtered by target.
+     *
+     * Delegated roles are also filtered so that terminating roles end lookup.
+     * This method duplicates some logic in DelegatedRole::matchesPath() so
+     * that thousands of delegated roles can be checked for applicability prior
+     * to instantiating thousands of objects.
+     *
+     * @param string $target
+     *   The target to filter by.
+     *
+     * @return \Tuf\DelegatedRole[]
+     *   The delegated roles.
+     */
+    public function getDelegatedRolesByTarget($target): array
+    {
+        $targetHash = hash('sha256', $target);
+        $roles = [];
+        foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
+            foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
+              if (str_starts_with($targetHash, $prefix)) {
+                    $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
+                    $roles[] = $delegatedRole;
+                    if ($delegatedRole->terminating) {
+                        break 2;
+                    }
+                    break;
+                }
+            }
+            foreach ($roleInfo['paths'] ?? [] as $path )  {
+                if (fnmatch($path, $target)) {
+                    $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
+                    $roles[] = $delegatedRole;
+                    if ($delegatedRole->terminating) {
+                      break 2;
+                    }
+                    break;
+                }
+            }
+        }
+        return $roles;
+    }
+
 }

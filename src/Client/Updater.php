@@ -82,8 +82,6 @@ class Updater
      */
     private array $targetsMetadata = [];
 
-    private array $delegatedRoles = [];
-
     /**
      * Updater constructor.
      *
@@ -435,47 +433,11 @@ class Updater
      */
     private function searchDelegatedRolesForTarget(TargetsMetadata $targetsMetadata, string $target, array $searchedRoles, bool &$terminated = false): ?TargetsMetadata
     {
-        $metadata = json_decode($targetsMetadata->toCanonicalJson(), true);
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
 
-        if (isset($this->delegatedRoles[$target][$targetsMetadata])) {
-            $delegatedRoles = $this->delegatedRoles[$target][$targetsMetadata];
-        } else {
-            $this->delegatedRoles[$target] ??= new \SplObjectStorage();
-
-            $delegatedRoles = [];
-            $targetHash = hash('sha256', $target);
-
-            foreach ($metadata['delegations']['roles'] ?? [] as $key => $info) {
-                if (isset($info['path_hash_prefixes'])) {
-                    foreach ($info['path_hash_prefixes'] as $prefix) {
-                        if (str_starts_with($targetHash, $prefix)) {
-                            $delegatedRole = DelegatedRole::createFromMetadata($info);
-                            $delegatedRoles[] = $delegatedRole;
-                            if ($delegatedRole->terminating) {
-                                break;
-                            }
-                            continue;
-                        }
-                    }
-                } else {
-                    $delegatedRole = DelegatedRole::createFromMetadata($info);
-                    // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
-                    // do not evaluate this role or any roles it delegates to.
-                    if ($delegatedRole->matchesPath($target, $targetHash)) {
-                        $delegatedRoles[] = $delegatedRole;
-
-                        if ($delegatedRole->terminating) {
-                            break;
-                        }
-                    }
-                }
-            }
-            $this->delegatedRoles[$target][$targetsMetadata] = $delegatedRoles;
-        }
-
+        $delegatedRoles = $targetsMetadata->getDelegatedRolesByTarget($target);
         foreach ($delegatedRoles as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
