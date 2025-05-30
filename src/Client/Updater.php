@@ -437,7 +437,7 @@ class Updater
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
 
-        $delegatedRoles = $targetsMetadata->getDelegatedRolesByTarget($target);
+        $delegatedRoles = $targetsMetadata->getDelegatedRolesForTarget($target);
         foreach ($delegatedRoles as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {

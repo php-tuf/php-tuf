@@ -253,7 +253,7 @@ class TargetsMetadata extends MetadataBase
      * @return \Tuf\DelegatedRole[]
      *   The delegated roles.
      */
-    public function getDelegatedRolesByTarget($target): array
+    public function getDelegatedRolesForTarget($target): array
     {
         $targetHash = hash('sha256', $target);
         $roles = [];
