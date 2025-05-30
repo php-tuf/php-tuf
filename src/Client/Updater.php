@@ -4,7 +4,6 @@ namespace Tuf\Client;
 
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\StreamInterface;
-use Tuf\DelegatedRole;
 use Tuf\Exception\MetadataException;
 use Tuf\Exception\NotFoundException;
 use Tuf\Exception\Attack\DenialOfServiceAttackException;

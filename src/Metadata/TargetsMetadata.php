@@ -259,21 +259,22 @@ class TargetsMetadata extends MetadataBase
         $roles = [];
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
             foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
-              if (str_starts_with($targetHash, $prefix)) {
+                if (str_starts_with($targetHash, $prefix)) {
                     $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
                     $roles[] = $delegatedRole;
+                    // If the delegated role is termining
                     if ($delegatedRole->terminating) {
-                        break 2;
+                        return $roles;
                     }
                     break;
                 }
             }
-            foreach ($roleInfo['paths'] ?? [] as $path )  {
+            foreach ($roleInfo['paths'] ?? [] as $path) {
                 if (fnmatch($path, $target)) {
                     $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
                     $roles[] = $delegatedRole;
                     if ($delegatedRole->terminating) {
-                      break 2;
+                        return $roles;
                     }
                     break;
                 }
@@ -281,5 +282,4 @@ class TargetsMetadata extends MetadataBase
         }
         return $roles;
     }
-
 }
