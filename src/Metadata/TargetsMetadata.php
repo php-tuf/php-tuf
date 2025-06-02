@@ -284,5 +284,4 @@ class TargetsMetadata extends MetadataBase
         }
         return false;
     }
-
 }
