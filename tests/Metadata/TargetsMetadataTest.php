@@ -189,11 +189,15 @@ class TargetsMetadataTest extends MetadataBaseTest
     public function testGetDelegatedRolesForTarget(): void
     {
         $json = $this->clientStorage->read($this->validJson);
-        /** @var TargetsMetadata $metadata */
-        $metadata = TargetsMetadata::createFromJson($json);
         $json = static::decodeJson($json);
+
         $expectedRoles = $json['signed']['delegations']['roles'];
         $target = $expectedRoles[0]['paths'][0];
+
+        $json = static::encodeJson($json);
+
+        /** @var TargetsMetadata $metadata */
+        $metadata = TargetsMetadata::createFromJson($json);
         $delegatedRoles = $metadata->getDelegatedRolesForTarget($target);
         self::assertCount(1, $expectedRoles);
         self::assertCount(1, $delegatedRoles);
@@ -206,6 +210,33 @@ class TargetsMetadataTest extends MetadataBaseTest
             }
             self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
         }
+        $this->assertSame([], $metadata->getDelegatedRolesForTarget('invalid'));
+
+        $json = static::decodeJson($json);
+
+        // Now replace the path with a path hash prefix.
+        $targetHash = hash('sha256', $target);
+        $hashPrefix = substr($targetHash, 0, 2);
+        $json['signed']['delegations']['roles'][0]['path_hash_prefixes'] = [$hashPrefix];
+        unset($json['signed']['delegations']['roles'][0]['paths']);
+
+        $json = static::encodeJson($json);
+
+        /** @var TargetsMetadata $metadata */
+        $metadata = TargetsMetadata::createFromJson($json);
+        $delegatedRoles = $metadata->getDelegatedRolesForTarget($target);
+        self::assertCount(1, $expectedRoles);
+        self::assertCount(1, $delegatedRoles);
+        foreach ($expectedRoles as $expectedRole) {
+            $delegatedRole = $delegatedRoles[$expectedRole['name']];
+            self::assertSame($expectedRole['threshold'], $delegatedRole->threshold);
+            self::assertSame($expectedRole['name'], $delegatedRole->name);
+            foreach ($expectedRole['keyids'] as $keyId) {
+                self::assertTrue($delegatedRole->isKeyIdAcceptable($keyId));
+            }
+            self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
+        }
+        $this->assertSame([], $metadata->getDelegatedRolesForTarget('invalid'));
     }
 
     /**
