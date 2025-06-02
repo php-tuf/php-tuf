@@ -273,7 +273,7 @@ class TargetsMetadata extends MetadataBase
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
             if ($roleMatchesTarget($roleInfo, $target, $targetHash)) {
                 $role = DelegatedRole::createFromMetadata($roleInfo);
-                $roles[] = $role;
+                $roles[$role->name] = $role;
                 if ($role->terminating) {
                     break;
                 }

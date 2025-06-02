@@ -184,6 +184,31 @@ class TargetsMetadataTest extends MetadataBaseTest
     }
 
     /**
+     * @covers ::getDelegatedRolesForTarget
+     */
+    public function testGetDelegatedRolesForTarget(): void
+    {
+        $json = $this->clientStorage->read($this->validJson);
+        /** @var TargetsMetadata $metadata */
+        $metadata = TargetsMetadata::createFromJson($json);
+        $json = static::decodeJson($json);
+        $expectedRoles = $json['signed']['delegations']['roles'];
+        $target = $expectedRoles[0]['paths'][0];
+        $delegatedRoles = $metadata->getDelegatedRolesForTarget($target);
+        self::assertCount(1, $expectedRoles);
+        self::assertCount(1, $delegatedRoles);
+        foreach ($expectedRoles as $expectedRole) {
+            $delegatedRole = $delegatedRoles[$expectedRole['name']];
+            self::assertSame($expectedRole['threshold'], $delegatedRole->threshold);
+            self::assertSame($expectedRole['name'], $delegatedRole->name);
+            foreach ($expectedRole['keyids'] as $keyId) {
+                self::assertTrue($delegatedRole->isKeyIdAcceptable($keyId));
+            }
+            self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function testGetRole(): void
