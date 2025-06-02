@@ -258,28 +258,31 @@ class TargetsMetadata extends MetadataBase
         $targetHash = hash('sha256', $target);
         $roles = [];
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
-            foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
-                if (str_starts_with($targetHash, $prefix)) {
-                    $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
-                    $roles[] = $delegatedRole;
-                    // If the delegated role is termining
-                    if ($delegatedRole->terminating) {
-                        return $roles;
-                    }
-                    break;
-                }
-            }
-            foreach ($roleInfo['paths'] ?? [] as $path) {
-                if (fnmatch($path, $target)) {
-                    $delegatedRole = DelegatedRole::createFromMetadata($roleInfo);
-                    $roles[] = $delegatedRole;
-                    if ($delegatedRole->terminating) {
-                        return $roles;
-                    }
+            if ($this->roleMatchesTarget($roleInfo, $target, $targetHash) {
+                $role = new DelegatedRole($roleInfo);
+                $roles[] = new DelegatedRole($roleInfo);
+                if ($role->terminating) {
                     break;
                 }
             }
         }
         return $roles;
     }
+
+    private function roleMatchesTarget(array $roleInfo, string $target, string $targetHash): bool
+    {
+        $targetHash = hash('sha256', $target);
+        foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
+            if (str_starts_with($targetHash, $prefix)) {
+                return true;
+            }
+        }
+        foreach ($roleInfo['paths'] ?? [] as $path) {
+            if (fnmatch($path, $target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
