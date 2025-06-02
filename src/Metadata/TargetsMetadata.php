@@ -256,9 +256,22 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedRolesForTarget($target): array
     {
         $targetHash = hash('sha256', $target);
+        $roleMatchesTarget = function($roleInfo, $target, $targetHash) {
+            foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
+                if (str_starts_with($targetHash, $prefix)) {
+                    return true;
+                }
+            }
+            foreach ($roleInfo['paths'] ?? [] as $path) {
+                if (fnmatch($path, $target)) {
+                    return true;
+                }
+            }
+            return false;
+        };
         $roles = [];
         foreach ($this->signed['delegations']['roles'] ?? [] as $roleInfo) {
-            if ($this->roleMatchesTarget($roleInfo, $target, $targetHash) {
+            if ($roleMatchesTarget($roleInfo, $target, $targetHash)) {
                 $role = new DelegatedRole($roleInfo);
                 $roles[] = new DelegatedRole($roleInfo);
                 if ($role->terminating) {
@@ -267,21 +280,5 @@ class TargetsMetadata extends MetadataBase
             }
         }
         return $roles;
-    }
-
-    private function roleMatchesTarget(array $roleInfo, string $target, string $targetHash): bool
-    {
-        $targetHash = hash('sha256', $target);
-        foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
-            if (str_starts_with($targetHash, $prefix)) {
-                return true;
-            }
-        }
-        foreach ($roleInfo['paths'] ?? [] as $path) {
-            if (fnmatch($path, $target)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
