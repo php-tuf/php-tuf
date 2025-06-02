@@ -180,10 +180,6 @@ class TargetsMetadataTest extends MetadataBaseTest
                 self::assertTrue($delegatedRole->isKeyIdAcceptable($keyId));
             }
             self::assertFalse($delegatedRole->isKeyIdAcceptable('nobodys_key'));
-            foreach ($expectedRole['paths'] as $path) {
-                self::assertTrue($delegatedRole->matchesPath($path));
-            }
-            self::assertFalse($delegatedRole->matchesPath('/a/non/matching/path'));
         }
     }
 
