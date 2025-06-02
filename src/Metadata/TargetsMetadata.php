@@ -256,7 +256,7 @@ class TargetsMetadata extends MetadataBase
     public function getDelegatedRolesForTarget($target): array
     {
         $targetHash = hash('sha256', $target);
-        $roleMatchesTarget = function($roleInfo, $target, $targetHash) {
+        $roleMatchesTarget = function ($roleInfo, $target, $targetHash) {
             foreach ($roleInfo['path_hash_prefixes'] ?? [] as $prefix) {
                 if (str_starts_with($targetHash, $prefix)) {
                     return true;
