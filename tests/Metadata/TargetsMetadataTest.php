@@ -190,10 +190,8 @@ class TargetsMetadataTest extends MetadataBaseTest
     {
         $json = $this->clientStorage->read($this->validJson);
         $json = static::decodeJson($json);
-
         $expectedRoles = $json['signed']['delegations']['roles'];
         $target = $expectedRoles[0]['paths'][0];
-
         $json = static::encodeJson($json);
 
         /** @var TargetsMetadata $metadata */
@@ -215,11 +213,9 @@ class TargetsMetadataTest extends MetadataBaseTest
         $json = static::decodeJson($json);
 
         // Now replace the path with a path hash prefix.
-        $targetHash = hash('sha256', $target);
-        $hashPrefix = substr($targetHash, 0, 2);
+        $hashPrefix = substr(h ash('sha256', $target), 0, 2);
         $json['signed']['delegations']['roles'][0]['path_hash_prefixes'] = [$hashPrefix];
         unset($json['signed']['delegations']['roles'][0]['paths']);
-
         $json = static::encodeJson($json);
 
         /** @var TargetsMetadata $metadata */
