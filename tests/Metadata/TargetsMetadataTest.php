@@ -224,7 +224,8 @@ class TargetsMetadataTest extends MetadataBaseTest
         $this->assertSame([], $metadata->getDelegatedRolesForTarget('invalid'));
     }
 
-    private function assertDelegatedRoles(array $expectedRoles, array $delegatedRoles) {
+    private function assertDelegatedRoles(array $expectedRoles, array $delegatedRoles)
+    {
         foreach ($expectedRoles as $expectedRole) {
             $delegatedRole = $delegatedRoles[$expectedRole['name']];
             self::assertSame($expectedRole['threshold'], $delegatedRole->threshold);
