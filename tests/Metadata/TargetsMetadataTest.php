@@ -200,7 +200,7 @@ class TargetsMetadataTest extends MetadataBaseTest
 
         $json = static::decodeJson($json);
 
-        // Now replace the path with a path hash prefix
+        // Now replace the path with a path hash prefix.
         $hashPrefix = substr(hash('sha256', $target), 0, 2);
         $json['signed']['delegations']['roles'][0]['path_hash_prefixes'] = [$hashPrefix];
 
