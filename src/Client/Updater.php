@@ -81,8 +81,6 @@ class Updater
      */
     private array $targetsMetadata = [];
 
-    private \SplObjectStorage $delegatedRoles;
-
     /**
      * Updater constructor.
      *
@@ -99,7 +97,6 @@ class Updater
     {
         $this->server = new Repository($this->serverLoader);
         $this->clock = new Clock();
-        $this->delegatedRoles = new \SplObjectStorage();
     }
 
     /**
@@ -438,21 +435,8 @@ class Updater
         foreach ($targetsMetadata->getDelegatedKeys() as $keyId => $delegatedKey) {
             $this->signatureVerifier->addKey($keyId, $delegatedKey);
         }
-        $this->delegatedRoles[$targetsMetadata] ??= $targetsMetadata->getDelegatedRoles();
 
-        $delegatedRoles = [];
-        foreach ($this->delegatedRoles[$targetsMetadata] as $delegatedRole) {
-            // Targets must match the paths of all roles in the delegation chain, so if the path does not match,
-            // do not evaluate this role or any roles it delegates to.
-            if ($delegatedRole->matchesPath($target)) {
-                $delegatedRoles[] = $delegatedRole;
-
-                if ($delegatedRole->terminating) {
-                    break;
-                }
-            }
-        }
-
+        $delegatedRoles = $targetsMetadata->getDelegatedRolesForTarget($target);
         foreach ($delegatedRoles as $delegatedRole) {
             $delegatedRoleName = $delegatedRole->name;
             if (in_array($delegatedRoleName, $searchedRoles, true)) {
