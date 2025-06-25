@@ -3,12 +3,32 @@
 namespace Tuf\Tests\Client;
 
 use Tuf\Tests\ClientTestBase;
+use Tuf\Tests\FixtureBuilder\Fixture;
 
 class HashedBinsTest extends ClientTestBase
 {
-    public function test(): void
+    /**
+     * @testWith [true]
+     *   [false]
+     */
+    public function test(bool $consistentSnapshot): void
     {
-        $this->loadClientAndServerFilesFromFixture('HashedBins');
+        $fixture = new Fixture();
+        $fixture->root->consistentSnapshot = $consistentSnapshot;
+        $fixture->publish(true);
+        $fixture->createHashBins(8, ['terminating' => true]);
+        for ($c = 97; $c < 123; $c++) {
+            $path = $fixture->createTarget(chr($c) . '.txt', null);
+            $fixture->addToHashBin($path);
+        }
+        $fixture->invalidate();
+        $fixture->publish();
+        $this->loadClientAndServerFilesFromFixture($fixture, [
+            'root' => 1,
+            'timestamp' => 1,
+            'snapshot' => 1,
+            'targets' => 1,
+        ]);
 
         // The fixture contains targets a.txt through z.txt (ASCII 97 through
         // 122), distributed across hashed bins.
