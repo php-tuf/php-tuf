@@ -110,7 +110,8 @@ abstract class MetadataBase
         }
         $data = static::decodeJson($json);
         static::validate($data, new Collection(static::getConstraints()));
-        return static::$jsonCache[$key] = new static($data, $json);
+        static::$jsonCache[$key] = new static($data, $json);
+        return clone static::$jsonCache[$key];
     }
 
     /**
