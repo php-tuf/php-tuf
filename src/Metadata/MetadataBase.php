@@ -104,13 +104,16 @@ abstract class MetadataBase
      */
     public static function createFromJson(string $json): static
     {
+        // Maintain a static cache of instances created via the JSON storage.
+        // Because instances can be changed after being returned from this
+        // method, e.g. in TargetsMetadata::createFromJson(), ensure they are
+        // always cloned first.
         $key = hash('xxh3', $json);
-        if (isset(static::$jsonCache[$key])) {
-            return static::$jsonCache[$key];
+        if (!isset(static::$jsonCache[$key])) {
+            $data = static::decodeJson($json);
+            static::validate($data, new Collection(static::getConstraints()));
+            static::$jsonCache[$key] = new static($data, $json);
         }
-        $data = static::decodeJson($json);
-        static::validate($data, new Collection(static::getConstraints()));
-        static::$jsonCache[$key] = new static($data, $json);
         return clone static::$jsonCache[$key];
     }
 
