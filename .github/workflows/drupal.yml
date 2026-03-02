@@ -17,15 +17,17 @@ jobs:
       fail-fast: false
       max-parallel: 10
       matrix:
-        php: ['8.1', '8.2', '8.3', '8.4']
+        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
         template:
           - recommended-project
           - legacy-project
         core: [10, 11]
-        # Drupal 11's minimum PHP version is 8.3.
         exclude:
+          # Drupal 11's minimum PHP version is 8.3.
           - { core: 11, php: 8.1 }
           - { core: 11, php: 8.2 }
+          # Drupal 10's maximum PHP version is 8.4.
+          - { core: 10, php: 8.5 }
 
     steps:
       - name: Checkout code
