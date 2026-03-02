@@ -94,11 +94,9 @@ class ClientTestBase extends TestCase
         // we control what time it is.
         $reflector = new \ReflectionObject($updater);
         $property = $reflector->getProperty('clock');
-        $property->setAccessible(true);
         $property->setValue($updater, new TestClock());
 
         $property = $reflector->getProperty('server');
-        $property->setAccessible(true);
         $property->setValue($updater, $this->serverMetadata);
 
         return $updater;
