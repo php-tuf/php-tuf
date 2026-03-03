@@ -165,7 +165,6 @@ class FileStorageTest extends TestCase
         $this->assertFileExists($dir . '/' . $expectedFileName);
 
         $method = new \ReflectionMethod($storage, 'read');
-        $method->setAccessible(true);
         $this->assertSame($fileContents, $method->invoke($storage, $roleName));
     }
 }

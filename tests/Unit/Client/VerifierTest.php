@@ -184,7 +184,6 @@ class VerifierTest extends TestCase
         $now = \DateTimeImmutable::createFromFormat($dateFormat, $nowString);
 
         $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
-        $method->setAccessible(true);
 
         // The update's expiration is later than now, so no freeze attack
         // exception should be thrown.
@@ -223,7 +222,6 @@ class VerifierTest extends TestCase
         $now = \DateTimeImmutable::createFromFormat($dateFormat, '1970-01-01T00:00:01Z');
 
         $method = new \ReflectionMethod(VerifierBase::class, 'checkFreezeAttack');
-        $method->setAccessible(true);
 
         // The update has already expired, so a freeze attack exception should
         // be thrown.

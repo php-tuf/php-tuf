@@ -32,7 +32,6 @@ class SignatureVerifierTest extends TestCase
 
         $verifier = SignatureVerifier::createFromRootMetadata($rootMetadata);
         $verifierKeys = new \ReflectionProperty($verifier, 'keys');
-        $verifierKeys->setAccessible(true);
         $verifierKeys = $verifierKeys->getValue($verifier);
 
         // All of the root metadata keys should be loaded into the verifier.
