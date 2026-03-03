@@ -52,7 +52,7 @@ class Fixture
 
         // By default, all metadata we generate should expire in a year. This
         // can be overridden for individual metadata objects.
-        $expires ??= new \DateTimeImmutable('+1 year');
+        $expires ??= new \DateTimeImmutable('+1 year', new \DateTimeZone('UTC'));
 
         $this->root = new Root($expires, [
             Key::fromStaticList(),
