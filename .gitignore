@@ -4,5 +4,6 @@ fixtures/**/server
 /vendor/
 .idea
 composer.lock
+/phpstan.neon
 .DS_Store
 .phpunit.result.cache

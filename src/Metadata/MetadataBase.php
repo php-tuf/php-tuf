@@ -60,7 +60,7 @@ abstract class MetadataBase
      * @param string $source
      *   The source JSON.
      */
-    public function __construct(array $metadata, public readonly string $source)
+    final public function __construct(array $metadata, public readonly string $source)
     {
         ['signed' => $this->signed, 'signatures' => $this->signatures] = $metadata;
         ['_type' => $this->type, 'version' => $this->version] = $this->signed;

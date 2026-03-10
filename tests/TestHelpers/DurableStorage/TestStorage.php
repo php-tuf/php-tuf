@@ -13,7 +13,7 @@ class TestStorage extends StorageBase
 
     public static function createFromDirectory(string $dir): static
     {
-        $storage = new static();
+        $storage = new self();
 
         // Loop through and load files in the given path.
         $fsIterator = new \FilesystemIterator($dir, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_FILENAME);
