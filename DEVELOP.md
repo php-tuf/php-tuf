@@ -41,3 +41,10 @@ Fixing style errors that can be automatically fixed:
 ```
 ddev composer phpcbf
 ```
+
+## Static analysis
+
+To run PHPStan against the codebase:
+```
+ddev composer phpstan
+```
