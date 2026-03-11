@@ -22,6 +22,13 @@ To run a single test use PHPUnit's `--filter` option:
 ddev exec phpunit ./tests --debug --filter=testEmptyStructuresAreEncodedAsObjects
 ```
 
+### Checking code coverage
+
+```
+ddev xdebug
+ddev composer coverage
+```
+
 ## Linting and fixing
 
 Linting for syntax, then style:
