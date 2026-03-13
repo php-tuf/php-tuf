@@ -120,7 +120,7 @@ class VerifierTest extends TestCase
     public function testCheckRollbackAttackAttackExpectedVersion(): void
     {
         $this->expectException('\Tuf\Exception\Attack\RollbackAttackException');
-        $this->expectExceptionMessage('Remote \'root\' metadata version "$2" does not the expected version "$3"');
+        $this->expectExceptionMessage('Remote \'root\' metadata version "2" does not match the expected version "3"');
 
         // The incoming version is lower than the local version, so this should
         // be identified as a rollback attack.
