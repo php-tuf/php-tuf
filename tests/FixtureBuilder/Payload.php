@@ -159,8 +159,10 @@ abstract class Payload implements \Stringable
      */
     protected function toArray(): array
     {
+        $expires = $this->expires->format('Y-m-d\TH:i:sp');
+        assert(str_ends_with($expires, 'Z'), sprintf("'expires' datetime must end with Z (zero UTC offset). Actual value: %s", $expires));
         return [
-            'expires' => $this->expires->format('Y-m-d\TH:i:sp'),
+            'expires' => $expires,
             'spec_version' => '1.0.0',
             'version' => $this->version,
             '_type' => $this->name,

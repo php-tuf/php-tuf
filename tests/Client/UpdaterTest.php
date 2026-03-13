@@ -1062,8 +1062,18 @@ abstract class UpdaterTest extends ClientTestBase
 
         // The length of the timestamp metadata is never known in advance, so it
         // is always downloaded with the maximum length.
-        $this->assertSame(Repository::$maxBytes, $this->serverFiles->maxBytes['timestamp.json'][0]);
-        $this->assertSame($expectedLength, $this->serverFiles->maxBytes[$downloadedFileName][0]);
+        $actual = $this->serverFiles->maxBytes['timestamp.json'][0];
+        $this->assertSame(
+            Repository::$maxBytes,
+            $actual,
+            sprintf('Expected timestamp.json to be %s bytes, got %s bytes.', Repository::$maxBytes, $actual),
+        );
+        $actual = $this->serverFiles->maxBytes[$downloadedFileName][0];
+        $this->assertSame(
+            $expectedLength,
+            $actual,
+            sprintf('Expected %s to be %s bytes, got %s bytes.', $downloadedFileName, $expectedLength, $actual),
+        );
     }
 
     /**
