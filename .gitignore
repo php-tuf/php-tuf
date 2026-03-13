@@ -2,6 +2,7 @@ fixtures/**/client
 fixtures/**/server
 
 /vendor/
+/var
 .idea
 composer.lock
 .DS_Store
