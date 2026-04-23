@@ -58,7 +58,7 @@ class DelegatedRole extends Role
             ]),
         ];
         static::validate($roleInfo, $roleConstraints);
-        return new static(
+        return new self(
             $roleInfo['name'],
             $roleInfo['threshold'],
             $roleInfo['keyids'],

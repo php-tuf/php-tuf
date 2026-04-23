@@ -40,7 +40,7 @@ class Role
     public static function createFromMetadata(array $roleInfo, string $name): Role
     {
         self::validate($roleInfo, static::getRoleConstraints());
-        return new static(
+        return new self(
             $name,
             $roleInfo['threshold'],
             $roleInfo['keyids']

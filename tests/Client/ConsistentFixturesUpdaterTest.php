@@ -141,16 +141,6 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
     /**
      * {@inheritdoc}
      */
-    public function providerUnsupportedRepo(): array
-    {
-        $data = parent::providerUnsupportedRepo();
-        $data[0][0]['root'] = 2;
-        return $data;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function providerTimestampAndSnapshotLength(): array
     {
         $data = parent::providerTimestampAndSnapshotLength();

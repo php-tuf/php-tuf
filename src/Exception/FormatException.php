@@ -19,7 +19,7 @@ class FormatException extends TufException
      * @param \Throwable|null $previous
      *     (optional) The previous exception, if any, for exception chaining.
      */
-    public function __construct(string $malformedValue, string $message = "", \Throwable $previous = null)
+    public function __construct(string $malformedValue, string $message = "", ?\Throwable $previous = null)
     {
         if (empty($message)) {
             $message = 'Bad format';
