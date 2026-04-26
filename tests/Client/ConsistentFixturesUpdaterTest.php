@@ -117,16 +117,6 @@ class ConsistentFixturesUpdaterTest extends UpdaterTest
     /**
      * {@inheritdoc}
      */
-    public function providerKeyRotation(): array
-    {
-        $data = parent::providerKeyRotation();
-        $data['no keys rotated'][1]['root'] = 2;
-        return $data;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function providerFileNotFoundExceptions(): array
     {
         $data = parent::providerFileNotFoundExceptions();

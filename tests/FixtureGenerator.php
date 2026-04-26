@@ -2,7 +2,6 @@
 
 namespace Tuf\Tests;
 
-use Symfony\Component\Filesystem\Filesystem;
 use Tuf\CanonicalJsonTrait;
 use Tuf\Tests\FixtureBuilder\Fixture;
 
@@ -14,23 +13,16 @@ class FixtureGenerator
     public static function generateAll(): void
     {
         foreach ([true, false] as $consistent) {
-            self::attackRollback($consistent);
             self::delegated($consistent);
             self::nestedDelegated($consistent);
             self::nestedDelegatedErrors($consistent);
             self::nestedTerminatingNonDelegatingDelegation($consistent);
-            self::publishedTwice($consistent, null);
-            self::publishedTwice($consistent, 'snapshot');
-            self::publishedTwice($consistent, 'timestamp');
             self::simple($consistent);
             self::targetsLengthNoSnapshotLength($consistent);
             self::terminatingDelegation($consistent);
             self::threeLevelDelegation($consistent);
-            self::thresholdTwo($consistent);
-            self::thresholdTwoAttack($consistent);
             self::topLevelLTerminating($consistent);
         }
-        self::hashedBins();
     }
 
     private static function init(string $name, bool $consistent): Fixture
@@ -43,26 +35,6 @@ class FixtureGenerator
         $fixture = new Fixture($dir);
         $fixture->root->consistentSnapshot = $consistent;
         return $fixture;
-    }
-
-    private static function attackRollback(bool $consistent): void
-    {
-        $fixture = self::init('AttackRollback', $consistent);
-
-        $fixture->createTarget('testtarget.txt');
-        $fixture->publish(true);
-
-        $fs = new Filesystem();
-        $fs->rename($fixture->serverDir, $fixture->serverDir . '_backup');
-
-        // Because the client will now have newer information than the server,
-        // TUF will consider this a rollback attack.
-        $fixture->createTarget('testtarget2.txt');
-        $fixture->invalidate();
-        $fixture->publish(true);
-
-        $fs->remove($fixture->serverDir);
-        $fs->rename($fixture->serverDir . '_backup', $fixture->serverDir);
     }
 
     private static function delegated(bool $consistent): void
@@ -85,27 +57,6 @@ class FixtureGenerator
         $fixture->publish();
         $fixture->targets['targets']->revokeKey(0);
         $fixture->snapshot->revokeKey(0);
-        $fixture->invalidate();
-        $fixture->publish();
-    }
-
-    private static function hashedBins(): void
-    {
-        $dir = implode('/', [
-            realpath(__DIR__ . '/../fixtures'),
-            'HashedBins',
-        ]);
-        $fixture = new Fixture($dir);
-        $fixture->root->consistentSnapshot = true;
-
-        $fixture->publish(true);
-        $fixture->createHashBins(8, ['terminating' => true]);
-
-        for ($c = 97; $c < 123; $c++) {
-            $path = $fixture->createTarget(chr($c) . '.txt', null);
-            $fixture->addToHashBin($path);
-        }
-
         $fixture->invalidate();
         $fixture->publish();
     }
@@ -255,28 +206,6 @@ class FixtureGenerator
         $fixture->publish();
     }
 
-    private static function publishedTwice(bool $consistent, ?string $rotatedRole): void
-    {
-        $name = 'PublishedTwice';
-        if ($rotatedRole) {
-            $name .= "WithRotatedKeys_$rotatedRole";
-        }
-        $fixture = self::init($name, $consistent);
-        $fixture->timestamp->withLength = true;
-        $fixture->snapshot->withLength = true;
-        $fixture->snapshot->withHashes = true;
-        $fixture->publish(true);
-        $fixture->createTarget('test.txt');
-
-        if ($rotatedRole) {
-            $fixture->$rotatedRole->addKey();
-            $fixture->$rotatedRole->revokeKey(0);
-        }
-        $fixture->timestamp->markAsDirty();
-        $fixture->snapshot->markAsDirty();
-        $fixture->publish();
-    }
-
     private static function simple(bool $consistent): void
     {
         $fixture = self::init('Simple', $consistent);
@@ -339,38 +268,6 @@ class FixtureGenerator
         $fixture->delegate('targets', 'f', $properties);
         $fixture->createTarget('f.txt', 'f');
         $fixture->publish();
-    }
-
-    private static function thresholdTwo(bool $consistent): void
-    {
-        $fixture = self::init('ThresholdTwo', $consistent);
-        $fixture->timestamp->addKey();
-        $fixture->timestamp->threshold = 2;
-        $fixture->publish(true);
-    }
-
-    private static function thresholdTwoAttack(bool $consistent): void
-    {
-        $fixture = self::init('ThresholdTwoAttack', $consistent);
-        $fixture->timestamp->addKey();
-        $fixture->timestamp->threshold = 2;
-        $fixture->publish();
-        $fixture->publish();
-        $fixture->publish();
-        $fixture->timestamp->addKey();
-
-        $reflector = new \ReflectionObject($fixture->timestamp);
-        $property = $reflector->getProperty('signingKeys');
-        $keys = $property->getValue($fixture->timestamp);
-
-        $timestampFile = $fixture->serverDir . '/timestamp.json';
-        $timestampData = file_get_contents($timestampFile);
-        $timestampData = static::decodeJson($timestampData);
-        $timestampData['signatures'][1] = [
-            'keyid' => $keys[2]->id(),
-            'sig' => 'd1f9ee4f5861ad7b8be61c0c00f3cd4353cee60e70db7d6fbeab81b75e6a5e3871276239caf93d09e9cd406ba764c31abe00e95f2553a3cb543874cb6e7d1545',
-        ];
-        file_put_contents($timestampFile, static::encodeJson($timestampData, JSON_PRETTY_PRINT));
     }
 
     private static function topLevelLTerminating(bool $consistent): void
