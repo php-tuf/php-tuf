@@ -55,6 +55,8 @@ class RoleTest extends TestCase
             'no keyids' => [['threshold' => 1]],
             'no threshold' => [['keyids' => ['good_key']]],
             'invalid threshold' => [['threshold' => '1', 'keyids' => ['good_key']]],
+            'zero threshold' => [['threshold' => 0, 'keyids' => ['good_key']]],
+            'negative threshold' => [['threshold' => -1, 'keyids' => ['good_key']]],
             'invalid keyids' => [['threshold' => 1, 'keyids' => 'good_key_1,good_key_2']],
             'extra field' => [['threshold' => 1, 'keyids' => ['good_key'], 'extra_field' => 1]],
         ];
